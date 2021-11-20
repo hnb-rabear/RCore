@@ -1,0 +1,106 @@
+<dependencies>
+  <packages>
+    <package>com.google.firebase:firebase-analytics:17.4.1</package>
+    <package>com.google.firebase:firebase-app-unity:6.15.0</package>
+    <package>com.google.firebase:firebase-auth:19.3.1</package>
+    <package>com.google.firebase:firebase-auth-unity:6.15.0</package>
+    <package>com.google.firebase:firebase-common:19.3.0</package>
+    <package>com.google.firebase:firebase-database:19.3.0</package>
+    <package>com.google.firebase:firebase-database-unity:6.15.0</package>
+    <package>com.google.firebase:firebase-firestore:21.4.3</package>
+    <package>com.google.firebase:firebase-firestore-unity:6.15.0</package>
+  </packages>
+  <files>
+    <file>Assets/Plugins/Android/androidx.annotation.annotation-1.1.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.arch.core.core-common-2.0.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.arch.core.core-runtime-2.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.asynclayoutinflater.asynclayoutinflater-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.collection.collection-1.0.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.coordinatorlayout.coordinatorlayout-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.core.core-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.cursoradapter.cursoradapter-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.customview.customview-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.documentfile.documentfile-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.drawerlayout.drawerlayout-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.fragment.fragment-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.interpolator.interpolator-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.legacy.legacy-support-core-ui-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.legacy.legacy-support-core-utils-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-common-2.0.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-livedata-2.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-livedata-core-2.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-runtime-2.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-viewmodel-2.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.loader.loader-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.localbroadcastmanager.localbroadcastmanager-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.print.print-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.slidingpanelayout.slidingpanelayout-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.swiperefreshlayout.swiperefreshlayout-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.versionedparcelable.versionedparcelable-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.viewpager.viewpager-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.annotations-4.1.1.4.jar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-ads-identifier-17.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-base-17.1.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-basement-17.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-measurement-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-measurement-api-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-measurement-base-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-measurement-impl-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-measurement-sdk-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-measurement-sdk-api-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-stats-17.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-tasks-17.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.auto.value.auto-value-annotations-1.6.5.jar</file>
+    <file>Assets/Plugins/Android/com.google.code.findbugs.jsr305-3.0.2.jar</file>
+    <file>Assets/Plugins/Android/com.google.code.gson.gson-2.7.jar</file>
+    <file>Assets/Plugins/Android/com.google.errorprone.error_prone_annotations-2.3.2.jar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-analytics-17.4.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-app-unity-6.15.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-auth-19.3.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-auth-interop-19.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-auth-unity-6.15.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-common-19.3.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-components-16.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-database-19.3.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-database-collection-17.0.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-database-unity-6.15.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-firestore-21.4.3.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-firestore-unity-6.15.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-iid-20.1.5.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-iid-interop-17.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-installations-16.2.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-installations-interop-16.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.firebase-measurement-connector-18.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.firebase.protolite-well-known-types-17.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.guava.guava-26.0-android.jar</file>
+    <file>Assets/Plugins/Android/com.google.j2objc.j2objc-annotations-1.1.jar</file>
+    <file>Assets/Plugins/Android/com.google.protobuf.protobuf-lite-3.0.1.jar</file>
+    <file>Assets/Plugins/Android/com.squareup.okhttp.okhttp-2.7.5.jar</file>
+    <file>Assets/Plugins/Android/com.squareup.okio.okio-1.13.0.jar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-android-1.21.0.aar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-api-1.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-context-1.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-core-1.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-okhttp-1.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-protobuf-lite-1.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.grpc.grpc-stub-1.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.opencensus.opencensus-api-0.21.0.jar</file>
+    <file>Assets/Plugins/Android/io.opencensus.opencensus-contrib-grpc-metrics-0.21.0.jar</file>
+    <file>Assets/Plugins/Android/org.checkerframework.checker-compat-qual-2.5.2.jar</file>
+    <file>Assets/Plugins/Android/org.codehaus.mojo.animal-sniffer-annotations-1.17.jar</file>
+  </files>
+  <settings>
+    <setting name="androidAbis" value="armeabi-v7a" />
+    <setting name="bundleId" value="com.redantz.rcore" />
+    <setting name="explodeAars" value="True" />
+    <setting name="gradleBuildEnabled" value="True" />
+    <setting name="gradleTemplateEnabled" value="False" />
+    <setting name="installAndroidPackages" value="True" />
+    <setting name="localMavenRepoDir" value="Assets/GeneratedLocalRepo" />
+    <setting name="packageDir" value="Assets/Plugins/Android" />
+    <setting name="patchAndroidManifest" value="True" />
+    <setting name="patchMainTemplateGradle" value="True" />
+    <setting name="projectExportEnabled" value="False" />
+    <setting name="useJetifier" value="True" />
+  </settings>
+</dependencies>

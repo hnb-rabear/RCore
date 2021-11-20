@@ -1,0 +1,137 @@
+{
+    "m_SelectedDeviceId": "a8cf4503",
+    "m_SelectedPackage": {
+        "deviceId": "a8cf4503",
+        "name": "com.citybay.farming.citybuilding",
+        "processId": 1367,
+        "exited": false
+    },
+    "m_SelectedPriority": 0,
+    "m_KnownPackagesForSerialization": [
+        {
+            "deviceId": "5210ae73483b747f",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 18867,
+            "exited": true
+        },
+        {
+            "deviceId": "5210ae73483b747f",
+            "name": "com.sec.android.app.launcher",
+            "processId": 6020,
+            "exited": false
+        },
+        {
+            "deviceId": "5210ae73483b747f",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 19066,
+            "exited": true
+        },
+        {
+            "deviceId": "5210ae73483b747f",
+            "name": "com.google.android.packageinstaller",
+            "processId": 21958,
+            "exited": true
+        },
+        {
+            "deviceId": "5210ae73483b747f",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 22247,
+            "exited": true
+        },
+        {
+            "deviceId": "5210ae73483b747f",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 29805,
+            "exited": false
+        },
+        {
+            "deviceId": "a8cf4503",
+            "name": "com.miui.global.packageinstaller",
+            "processId": 16028,
+            "exited": true
+        },
+        {
+            "deviceId": "a8cf4503",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 16552,
+            "exited": true
+        },
+        {
+            "deviceId": "a8cf4503",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 17765,
+            "exited": true
+        },
+        {
+            "deviceId": "a8cf4503",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 20953,
+            "exited": true
+        },
+        {
+            "deviceId": "a8cf4503",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 25993,
+            "exited": true
+        },
+        {
+            "deviceId": "a8cf4503",
+            "name": "com.citybay.farming.citybuilding",
+            "processId": 1367,
+            "exited": false
+        }
+    ],
+    "m_Tags": {
+        "m_Entries": [
+            {
+                "m_Name": "Filter by all listed tags",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "No Filter",
+                "m_Selected": true
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Tag Control...",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Unity",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "CRASH",
+                "m_Selected": false
+            }
+        ]
+    },
+    "m_MemoryViewerState": {
+        "MemoryWindowHeight": 300.0,
+        "MemoryWindowWidth": 170.0,
+        "MemoryTypeEnabled": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+        ],
+        "MemoryGroup": 2,
+        "Behavior": 0
+    },
+    "m_Filter": "",
+    "m_FilterIsRegularExpression": false,
+    "m_SymbolPaths": []
+}
