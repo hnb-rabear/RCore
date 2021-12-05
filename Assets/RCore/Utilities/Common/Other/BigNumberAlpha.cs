@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - nbhung71711 @gmail.com - 2018
+ * Author NBear - nbhung71711@gmail.com - 2018
  **/
 
 using System;
@@ -23,8 +23,8 @@ namespace RCore.Common
         public int pow;
         public int valueLength;
 
-        private StringBuilder mNumberBuilder = new StringBuilder();
-        private StringBuilder mPowBuilder = new StringBuilder();
+        private StringBuilder m_NumberBuilder = new StringBuilder();
+        private StringBuilder m_PowBuilder = new StringBuilder();
 
         public BigNumberAlpha()
         {
@@ -504,7 +504,7 @@ namespace RCore.Common
                     return (long)readableValue;
                 else
                 {
-                    Debug.LogError("Value is too big that can not be Integer!");
+                    Debug.LogError("Value is too big that can not be Long!");
                     return 0;
                 }
             }
@@ -517,7 +517,7 @@ namespace RCore.Common
                     return outValue;
                 }
 
-                Debug.LogError("Value is invalid, can not be Integer! " + valueStr);
+                Debug.LogError("Value is invalid, can not be Long! " + valueStr);
                 return long.MaxValue;
             }
         }
@@ -583,31 +583,31 @@ namespace RCore.Common
                     int p2Len = parts[1].Length;
                     if (p2Len > pow)
                     {
-                        mPowBuilder.Clear().Append(parts[1].Substring(0, pow));
+                        m_PowBuilder.Clear().Append(parts[1].Substring(0, pow));
                     }
                     else if (p2Len == pow)
                     {
-                        mPowBuilder.Clear().Append(parts[1]);
+                        m_PowBuilder.Clear().Append(parts[1]);
                     }
                     else if (p2Len < pow)
                     {
-                        mPowBuilder.Clear().Append(parts[1]);
+                        m_PowBuilder.Clear().Append(parts[1]);
                         int a = pow - p2Len;
                         while (a > 0)
                         {
-                            mPowBuilder.Append("0");
+                            m_PowBuilder.Append("0");
                             a--;
                         }
                     }
-                    return mNumberBuilder.Clear().Append(parts[0]).Append(mPowBuilder).ToString();
+                    return m_NumberBuilder.Clear().Append(parts[0]).Append(m_PowBuilder).ToString();
                 }
                 else if (parts.Length == 1)
                 {
-                    mPowBuilder.Clear();
+                    m_PowBuilder.Clear();
                     for (int i = 0; i < pow; i++)
-                        mPowBuilder.Append("0");
+                        m_PowBuilder.Append("0");
 
-                    return mNumberBuilder.Clear().Append(parts[0]).Append(mPowBuilder).ToString();
+                    return m_NumberBuilder.Clear().Append(parts[0]).Append(m_PowBuilder).ToString();
                 }
                 else
                 {
@@ -625,7 +625,7 @@ namespace RCore.Common
 
                 float num = readableValue / Mathf.Pow(10, len - 1);
                 num = (float)Math.Round(num, 2);
-                mNumberBuilder.Clear()
+                m_NumberBuilder.Clear()
                     .Append(num)
                     .Append("E+")
                     .Append(pow + len - 1);
@@ -637,11 +637,11 @@ namespace RCore.Common
                 {
                     float num = readableValue / Mathf.Pow(10, len - 3);
                     num = (float)Math.Round(num, 2);
-                    mNumberBuilder.Clear();
-                    mNumberBuilder.Append(num);
+                    m_NumberBuilder.Clear();
+                    m_NumberBuilder.Append(num);
                     if (pow + len - 3 >= 1)
                     {
-                        mNumberBuilder.Append("E+").Append(pow + len - 3);
+                        m_NumberBuilder.Append("E+").Append(pow + len - 3);
                     }
                 }
                 else
@@ -650,7 +650,7 @@ namespace RCore.Common
                 }
             }
 
-            return mNumberBuilder.ToString();
+            return m_NumberBuilder.ToString();
         }
 
         public string GetKKKString()
@@ -677,7 +677,7 @@ namespace RCore.Common
             else
                 displayPart = truncate;
 
-            mNumberBuilder.Clear().Append(displayPart);
+            m_NumberBuilder.Clear().Append(displayPart);
 
             if (len > 15)
             {
@@ -685,18 +685,18 @@ namespace RCore.Common
                 int unitTypeInt = ((len - 16) / 3) % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
-                    mNumberBuilder.Append(unitChar);
+                    m_NumberBuilder.Append(unitChar);
             }
             else if (len > 12)
-                mNumberBuilder.Append("T");
+                m_NumberBuilder.Append("T");
             else if (len > 9)
-                mNumberBuilder.Append("B");
+                m_NumberBuilder.Append("B");
             else if (len > 6)
-                mNumberBuilder.Append("M");
+                m_NumberBuilder.Append("M");
             else if (len > 3)
-                mNumberBuilder.Append("K");
+                m_NumberBuilder.Append("K");
 
-            return mNumberBuilder.ToString();
+            return m_NumberBuilder.ToString();
         }
 
         public string GetKKKUnit()
@@ -707,7 +707,7 @@ namespace RCore.Common
                 return "";
             }
 
-            mNumberBuilder.Clear();
+            m_NumberBuilder.Clear();
 
             if (len > 15)
             {
@@ -715,22 +715,22 @@ namespace RCore.Common
                 int unitTypeInt = ((len - 16) / 3) % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
-                    mNumberBuilder.Append(unitChar);
+                    m_NumberBuilder.Append(unitChar);
             }
             else if (len > 12)
-                mNumberBuilder.Append("T");
+                m_NumberBuilder.Append("T");
             else if (len > 9)
-                mNumberBuilder.Append("B");
+                m_NumberBuilder.Append("B");
             else if (len > 6)
-                mNumberBuilder.Append("M");
+                m_NumberBuilder.Append("M");
             else if (len > 3)
-                mNumberBuilder.Append("K");
+                m_NumberBuilder.Append("K");
 
-            return mNumberBuilder.ToString();
+            return m_NumberBuilder.ToString();
         }
 
         /// <summary>
-        /// Unit must be aa,bb.cc or aaa,bbb,ccc, ....
+        /// Unit must be aa,bb,cc or aaa,bbb,ccc, ....
         /// </summary>
         public static int GetPowFromUnit(string pUnit)
         {

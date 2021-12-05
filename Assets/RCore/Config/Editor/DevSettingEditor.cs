@@ -11,9 +11,7 @@ using UnityEditorInternal;
 using UnityEngine;
 using RCore.Common;
 using RCore.Editor;
-
-
-using Debug = RCore.Common.Debug;
+using Debug = UnityEngine.Debug;
 
 [CustomEditor(typeof(DevSetting))]
 public class DevSettingEditor : Editor

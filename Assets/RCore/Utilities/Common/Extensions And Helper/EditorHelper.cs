@@ -60,6 +60,13 @@ namespace RCore.Common
         public Action onPressed;
         public bool isPressed { get; private set; }
 
+        public EditorButton() { }
+        public EditorButton(string pLabel, Action pOnPressed, Color pColor = default(Color))
+        {
+            label = pLabel;
+            onPressed = pOnPressed;
+            color = pColor;
+        }
         public void Draw(GUIStyle style = null)
         {
             var defaultColor = GUI.backgroundColor;
@@ -84,7 +91,6 @@ namespace RCore.Common
         public string value;
         public string outputValue { get; private set; }
         public bool readOnly;
-
         public void Draw(GUIStyle style = null)
         {
             if (!string.IsNullOrEmpty(label))

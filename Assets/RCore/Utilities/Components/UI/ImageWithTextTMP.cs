@@ -102,13 +102,13 @@ namespace RCore.Components
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(ImageWithTextTMP), true)]
-    public class ImageWithTextEditor : Editor
+    public class ImageWithTextTMPEditor : Editor
     {
-        private ImageWithTextTMP mScript;
+        private ImageWithTextTMP m_Script;
 
         private void OnEnable()
         {
-            mScript = (ImageWithTextTMP)target;
+            m_Script = (ImageWithTextTMP)target;
         }
 
         public override void OnInspectorGUI()
@@ -116,7 +116,7 @@ namespace RCore.Components
             base.OnInspectorGUI();
 
             if (EditorHelper.Button("Auto Reize"))
-                mScript.SetSprite(mScript.image.sprite);
+                m_Script.SetSprite(m_Script.image.sprite);
         }
     }
 #endif

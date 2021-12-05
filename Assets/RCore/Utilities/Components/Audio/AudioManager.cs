@@ -1,9 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using RCore.Common;
-using System;
-using Random = UnityEngine.Random;
+﻿using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif

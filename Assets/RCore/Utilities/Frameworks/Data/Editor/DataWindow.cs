@@ -184,7 +184,7 @@ namespace RCore.Pattern.Data
                     {
                         if (EditorHelper.ButtonColor("Apply Changes", Color.green))
                         {
-                            string dataStr = JsonHelper.ListToJson(list);
+                            string dataStr = JsonHelper.ToJson(list);
                             DataSaverContainer.SetData(pSaverKey, dataStr);
                             mDictKeyValues = DataSaverContainer.GetAllDataKeyValues();
                         }

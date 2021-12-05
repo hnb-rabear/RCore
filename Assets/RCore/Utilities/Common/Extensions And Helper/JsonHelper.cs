@@ -19,7 +19,7 @@ namespace RCore.Common
 
     public static class JsonHelper
     {
-        public static T[] GetJsonArray<T>(string json)
+        public static T[] ToArray<T>(string json)
         {
             try
             {
@@ -35,7 +35,9 @@ namespace RCore.Common
             }
         }
 
-        public static List<T> GetJsonList<T>(string json)
+        public static void ToArray<T>(string json, out T[] pOutPut) => pOutPut = ToArray<T>(json);
+
+        public static List<T> ToList<T>(string json)
         {
             try
             {
@@ -51,7 +53,9 @@ namespace RCore.Common
             }
         }
 
-        public static string ArrayToJson<T>(T[] array)
+        public static void ToList<T>(string json, out List<T> pOutPut) => pOutPut = ToList<T>(json);
+
+        public static string ToJson<T>(T[] array)
         {
             Wrapper<T> wrapper = new Wrapper<T>();
             wrapper.array = array;
@@ -61,7 +65,7 @@ namespace RCore.Common
             return json;
         }
 
-        public static string ListToJson<T>(List<T> list)
+        public static string ToJson<T>(List<T> list)
         {
             ListWrapper<T> wrapper = new ListWrapper<T>();
             wrapper.list = list;

@@ -119,7 +119,7 @@ namespace RCore.Pattern.Data
                 string data = GetData(saverKey);
                 saverBrands.Add(new KeyValue(saverKey, data));
             }
-            string jsonData = JsonHelper.ListToJson(saverBrands);
+            string jsonData = JsonHelper.ToJson(saverBrands);
             return jsonData;
         }
 
@@ -148,7 +148,7 @@ namespace RCore.Pattern.Data
 
         public static void ImportData(string pJsonData)
         {
-            var saverBrands = JsonHelper.GetJsonList<KeyValue>(pJsonData);
+            var saverBrands = JsonHelper.ToList<KeyValue>(pJsonData);
             if (saverBrands != null)
             {
                 foreach (var brand in saverBrands)
@@ -188,7 +188,7 @@ namespace RCore.Pattern.Data
         public static List<KeyValue> GetAllDataKeyValues(string pSaverKey)
         {
             string data = GetData(pSaverKey);
-            return JsonHelper.GetJsonList<KeyValue>(data);
+            return JsonHelper.ToList<KeyValue>(data);
         }
 
         /// <summary>

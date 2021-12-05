@@ -2,6 +2,7 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,7 +18,18 @@ namespace RCore.Common
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(message);
+            mStrBuilder.Append("[H] ").Append(message);
+            UnityEngine.Debug.Log(mStrBuilder);
+        }
+
+        public static void Log(object message, bool pShowTime)
+        {
+            if (!DevSetting.Instance.EnableLog) return;
+            mStrBuilder.Remove(0, mStrBuilder.Length);
+            if (pShowTime)
+                mStrBuilder.Append($"[{DateTime.Now}] ").Append(message);
+            else
+                mStrBuilder.Append("[H] ").Append(message);
             UnityEngine.Debug.Log(mStrBuilder);
         }
 
@@ -26,7 +38,7 @@ namespace RCore.Common
             if (!DevSetting.Instance.EnableLog) return;
             string c = pColor == default(Color) ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append($"<color=\"#{c}\">{message}</color>");
+            mStrBuilder.Append("[H] ").Append($"<color=\"#{c}\">{message}</color>");
             UnityEngine.Debug.Log(mStrBuilder);
         }
 
@@ -35,31 +47,40 @@ namespace RCore.Common
             if (!DevSetting.Instance.EnableLog) return;
             string c = pColor == default(Color) ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append($"<b><color=\"#{c}\">{title}</color></b> {message}");
+            mStrBuilder.Append("[H] ").Append($"<b><color=\"#{c}\">{title}</color></b> {message}");
             UnityEngine.Debug.Log(mStrBuilder);
         }
 
-        public static void LogError(object message)
+        public static void LogError(object message, bool pShowTime = false)
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(message);
+            if (pShowTime)
+                mStrBuilder.Append($"[{DateTime.Now}] ").Append(message);
+            else
+                mStrBuilder.Append("[H] ").Append(message);
             UnityEngine.Debug.LogError(mStrBuilder);
         }
 
-        public static void LogWarning(object message)
+        public static void LogWarning(object message, bool pShowTime = false)
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(message);
+            if (pShowTime)
+                mStrBuilder.Append($"[{DateTime.Now}] ").Append(message);
+            else
+                mStrBuilder.Append("[H] ").Append(message);
             UnityEngine.Debug.LogWarning(mStrBuilder);
         }
 
-        public static void LogException(System.Exception e)
+        public static void LogException(Exception e, bool pShowTime = false)
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(e);
+            if (pShowTime)
+                mStrBuilder.Append($"[{DateTime.Now}] ").Append(e);
+            else
+                mStrBuilder.Append("[H] ").Append(e);
             UnityEngine.Debug.LogError(mStrBuilder);
         }
 
@@ -71,7 +92,7 @@ namespace RCore.Common
             {
                 string c = pColor == default(Color) ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
                 mStrBuilder.Remove(0, mStrBuilder.Length);
-                mStrBuilder.Append("[HELLO]").Append(string.Format("<color=\"#{2}\">{0}</color>{1}", pObj.GetType().FullName, jsonStr, c));
+                mStrBuilder.Append("[H] ").Append(string.Format("<color=\"#{2}\">{0}</color>{1}", pObj.GetType().FullName, jsonStr, c));
                 UnityEngine.Debug.Log(mStrBuilder);
             }
         }
@@ -100,7 +121,7 @@ namespace RCore.Common
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(additionalText).Append("{");
+            mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
             for (int i = 0; i < array.Length; i++)
             {
                 mStrBuilder.Append((array[i] != null ? array[i].ToString() : "null") + (i < array.Length - 1 ? ", " : ""));
@@ -120,7 +141,7 @@ namespace RCore.Common
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(additionalText).Append("{");
+            mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
             int i = 0;
             foreach (KeyValuePair<TKey, TValue> pair in dict)
             {
@@ -143,7 +164,7 @@ namespace RCore.Common
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append(additionalText).Append("{");
+            mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
             for (int i = 0; i < list.Count; i++)
             {
                 mStrBuilder.Append(list[i]);
@@ -162,7 +183,7 @@ namespace RCore.Common
         {
             if (!DevSetting.Instance.EnableLog) return;
             mStrBuilder.Remove(0, mStrBuilder.Length);
-            mStrBuilder.Append("[HELLO]").Append("{");
+            mStrBuilder.Append("[H] ").Append("{");
             for (int i = 0; i < objs.Length; i++)
             {
                 mStrBuilder.Append(objs[i]);

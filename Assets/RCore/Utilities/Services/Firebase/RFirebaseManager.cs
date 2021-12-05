@@ -117,13 +117,13 @@ namespace RCore.Service.RFirebase
 
         private void OnApplicationPause(bool pause)
         {
-            string failedEvents = JsonHelper.ListToJson(mFailedEvents);
+            string failedEvents = JsonHelper.ToJson(mFailedEvents);
             PlayerPrefs.SetString(FAILED_EVENTS, failedEvents);
         }
 
         private void OnApplicationQuit()
         {
-            string failedEvents = JsonHelper.ListToJson(mFailedEvents);
+            string failedEvents = JsonHelper.ToJson(mFailedEvents);
             PlayerPrefs.SetString(FAILED_EVENTS, failedEvents);
         }
 
@@ -173,7 +173,7 @@ namespace RCore.Service.RFirebase
                 return;
 
             var allEventsStr = PlayerPrefs.GetString(FAILED_EVENTS);
-            mFailedEvents = JsonHelper.GetJsonList<AnalyticEvent>(allEventsStr);
+            mFailedEvents = JsonHelper.ToList<AnalyticEvent>(allEventsStr);
 
             if (mFailedEvents == null)
                 mFailedEvents = new List<AnalyticEvent>();
@@ -198,7 +198,7 @@ namespace RCore.Service.RFirebase
                 }
             }
 
-            allEventsStr = JsonHelper.ListToJson(mFailedEvents);
+            allEventsStr = JsonHelper.ToJson(mFailedEvents);
             PlayerPrefs.SetString(FAILED_EVENTS, allEventsStr);
             PlayerPrefs.Save();
         }

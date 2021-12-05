@@ -358,5 +358,10 @@ namespace RCore.Common
         {
             if (list.Count != 0) list.RemoveAt(list.Count - 1);
         }
+
+        public static string RemoveSpecialCharacters(this string str, string replace = "")
+        {
+            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);
+        }
     }
 }

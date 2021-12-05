@@ -108,7 +108,7 @@ namespace RCore.Components
 
                         var musicFiles = EditorHelper.GetObjects<AudioClip>(musicsSourcePath, "t:AudioClip");
                         string musicsJsonData = Resources.Load<TextAsset>("Data/Musics")?.text;
-                        mScript.musicClips = JsonHelper.GetJsonList<Clip>(musicsJsonData);
+                        mScript.musicClips = JsonHelper.ToList<Clip>(musicsJsonData);
                         if (mScript.musicClips != null)
                             foreach (var sound in mScript.musicClips)
                             {
@@ -129,7 +129,7 @@ namespace RCore.Components
 
                         var sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxsSourcePath, "t:AudioClip");
                         string sFXsJsonData = Resources.Load<TextAsset>("Data/SFXs")?.text;
-                        mScript.SFXClips = JsonHelper.GetJsonList<Clip>(sFXsJsonData);
+                        mScript.SFXClips = JsonHelper.ToList<Clip>(sFXsJsonData);
                         if (mScript.SFXClips != null)
                             foreach (var sound in mScript.SFXClips)
                             {

@@ -14,10 +14,10 @@ namespace RCore.Common
 {
     public class SceneLoader
     {
-        public static AsyncOperation LoadSceneAsync(string pScene, bool pIsAdditive, bool pAutoActive, Action<float> pOnProgress, Action pOnCompleted, float pFixedLoadTime = 0)
+        public static AsyncOperation LoadSceneAsync(string pScene, bool pIsAdditive, bool pAutoActive, Action<float> pOnProgress, Action pOnCompleted, float pFixedLoadTime = 0, bool reLoad = false)
         {
             var scene = SceneManager.GetSceneByName(pScene);
-            if (scene.isLoaded)
+            if (scene.isLoaded && !reLoad)
             {
                 pOnProgress.Raise(1);
                 pOnCompleted.Raise();
@@ -44,7 +44,7 @@ namespace RCore.Common
             pOnProgress.Raise(0f);
 
             float startTime = Time.unscaledTime;
-            float fakeProgress = 0.2f;
+            float fakeProgress = 0.25f;
             float offsetProgress = pFixedLoadTime > 0 ? fakeProgress : 0;
 
             while (true)

@@ -11,18 +11,6 @@ using Debug = UnityEngine.Debug;
 
 namespace RCore.Demo
 {
-    /// <summary>
-    /// BuiltIn Pool of transform which are preload with scene
-    /// NOTE: currently this is not work with PoolContainer
-    /// </summary>
-    [Serializable]
-    public class BuiltInTransformPool : CustomPool<Transform>
-    {
-        public BuiltInTransformPool(Transform pPrefab, int pInitialCount, Transform pParent, string pName = "", bool pAutoRelocate = true) : base(pPrefab, pInitialCount, pParent, pName, pAutoRelocate)
-        {
-        }
-    }
-
     public class ExamplePoolsManager : MonoBehaviour
     {
         #region Members
@@ -38,7 +26,7 @@ namespace RCore.Demo
             }
         }
 
-        [SerializeField] private BuiltInTransformPool mBuiltInPool; //This is a example single pool outside of Pool container
+        [SerializeField] private CustomPool<Transform> mBuiltInPool; //This is a example single pool outside of Pool container
 
         /// <summary>
         /// Container which contain all pools of Transform Object

@@ -348,16 +348,12 @@ namespace RCore.Common
         /// </summary>
         public static DateTime GetStartTimeOfWeekDay(DateTime pDate, DayOfWeek pDay)
         {
-            //NOTE: by the default a week starts at 0:00 of the sunday
-
-            if (pDate.DayOfWeek == pDay)
-                return pDate.Date;
             int dayOfWeek = (int)pDate.DayOfWeek;
             var startTimeOfMonday = pDate.AddDays(-dayOfWeek + 1).Date;
-            //if (pDay > DayOfWeek.Sunday)
+            if (pDay > DayOfWeek.Sunday)
                 return startTimeOfMonday.AddDays((int)pDay - 1);
-            //else
-                //return startTimeOfMonday.AddDays(6);
+            else
+                return startTimeOfMonday.AddDays(6);
         }
 
         /// <summary>

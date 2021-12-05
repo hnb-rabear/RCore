@@ -3,7 +3,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if ADDRESSABLES
 using UnityEngine.AddressableAssets;
+#endif
 using RCore.Common;
 
 namespace RCore.Demo
@@ -11,7 +13,9 @@ namespace RCore.Demo
     public class ExampleAddressables : MonoBehaviour
     {
         public string label;
+#if ADDRESSABLES
         public List<AssetReference> prefabReferences;
+#endif
         public List<GameObject> objects;
         public List<GameObject> prefabs;
 

@@ -13,14 +13,14 @@ namespace RCore.Common
     {
         public Dictionary<int, CustomPool<T>> poolDict;
         public Transform container;
-        private int mInitialNumber;
-        private Dictionary<int, int> idOfAllClones; //Keep tracking the clone instance id and its prefab instance id
+        private int m_InitialNumber;
+        private Dictionary<int, int> m_IdOfAllClones; //Keep tracking the clone instance id and its prefab instance id
 
         public PoolsContainer(Transform pContainer)
         {
             container = pContainer;
             poolDict = new Dictionary<int, CustomPool<T>>();
-            idOfAllClones = new Dictionary<int, int>();
+            m_IdOfAllClones = new Dictionary<int, int>();
         }
 
         public PoolsContainer(string pContainerName, int pInitialNumber = 1, Transform pParent = null)
@@ -31,8 +31,8 @@ namespace RCore.Common
             container.transform.rotation = Quaternion.identity;
             this.container = container.transform;
             poolDict = new Dictionary<int, CustomPool<T>>();
-            idOfAllClones = new Dictionary<int, int>();
-            mInitialNumber = pInitialNumber;
+            m_IdOfAllClones = new Dictionary<int, int>();
+            m_InitialNumber = pInitialNumber;
         }
 
         public CustomPool<T> Get(T pPrefab)
@@ -41,7 +41,7 @@ namespace RCore.Common
                 return poolDict[pPrefab.GameObjectId()];
             else
             {
-                var pool = new CustomPool<T>(pPrefab, mInitialNumber, container.transform);
+                var pool = new CustomPool<T>(pPrefab, m_InitialNumber, container.transform);
                 poolDict.Add(pPrefab.GameObjectId(), pool);
                 return pool;
             }
@@ -58,13 +58,13 @@ namespace RCore.Common
             return Spawn(prefab, Vector3.zero);
         }
 
-        public T Spawn(T prefab, Vector3 position)
+        public T Spawn(T prefab, Vector3 position, bool pIsWorldPosition = true)
         {
             var pool = Get(prefab);
-            var clone = pool.Spawn(position, true);
+            var clone = pool.Spawn(position, pIsWorldPosition);
             //Keep the trace of clone
-            if (!idOfAllClones.ContainsKey(clone.GameObjectId()))
-                idOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
+            if (!m_IdOfAllClones.ContainsKey(clone.GameObjectId()))
+                m_IdOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
             return clone;
         }
 
@@ -73,8 +73,8 @@ namespace RCore.Common
             var pool = Get(prefab);
             var clone = pool.Spawn(transform);
             //Keep the trace of clone
-            if (!idOfAllClones.ContainsKey(clone.GameObjectId()))
-                idOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
+            if (!m_IdOfAllClones.ContainsKey(clone.GameObjectId()))
+                m_IdOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
             return clone;
         }
 
@@ -82,7 +82,7 @@ namespace RCore.Common
         {
             if (!poolDict.ContainsKey(pPrefab.GameObjectId()))
             {
-                var pool = new CustomPool<T>(pPrefab, mInitialNumber, container.transform);
+                var pool = new CustomPool<T>(pPrefab, m_InitialNumber, container.transform);
                 poolDict.Add(pPrefab.GameObjectId(), pool);
             }
             else
@@ -119,8 +119,8 @@ namespace RCore.Common
 
         public void Release(T pObj)
         {
-            if (idOfAllClones.ContainsKey(pObj.GameObjectId()))
-                Release(idOfAllClones[pObj.GameObjectId()], pObj);
+            if (m_IdOfAllClones.ContainsKey(pObj.GameObjectId()))
+                Release(m_IdOfAllClones[pObj.GameObjectId()], pObj);
             else
             {
                 foreach (var pool in poolDict)
@@ -193,29 +193,31 @@ namespace RCore.Common
 #endif
     }
 
+    [Serializable]
     public class CustomPool<T> where T : Component
     {
         #region Members
 
         public Action<T> onSpawn;
 
-        [SerializeField] protected T mPrefab;
-        [SerializeField] protected Transform mParent;
-        [SerializeField] protected string mName;
-        [SerializeField] protected bool mPushToLastSibling;
-        [SerializeField] protected bool mAutoRelocate;
-        [SerializeField] protected int mLimitNumber;
-        [SerializeField] private List<T> mActiveList = new List<T>();
-        [SerializeField] private List<T> mInactiveList = new List<T>();
+        [SerializeField] protected T m_Prefab;
+        [SerializeField] protected Transform m_Parent;
+        [SerializeField] protected string m_Name;
+        [SerializeField] protected bool m_PushToLastSibling;
+        [SerializeField] protected bool m_AutoRelocate;
+        [SerializeField] protected int m_LimitNumber;
+        [SerializeField] private List<T> m_ActiveList = new List<T>();
+        [SerializeField] private List<T> m_InactiveList = new List<T>();
 
-        public T Prefab { get { return mPrefab; } }
-        public Transform Parent { get { return mParent; } }
-        public string Name { get { return mName; } }
-        public List<T> ActiveList { get { return mActiveList; } }
-        public List<T> InactiveList { get { return mInactiveList; } }
-        public bool pushToLastSibling { get { return mPushToLastSibling; } set { mPushToLastSibling = value; } }
-        public int limitNumber { get { return mLimitNumber; } set { mLimitNumber = value; } }
-        public Transform parent { get { return mParent; } }
+        public T Prefab => m_Prefab;
+        public Transform Parent => m_Parent;
+        public string Name => m_Name;
+        public List<T> ActiveList => m_ActiveList;
+        public List<T> InactiveList => m_InactiveList;
+        public bool pushToLastSibling { get { return m_PushToLastSibling; } set { m_PushToLastSibling = value; } }
+        public int limitNumber { get { return m_LimitNumber; } set { m_LimitNumber = value; } }
+        protected bool m_Initialized;
+        protected int m_InitialCount;
 
         #endregion
 
@@ -223,77 +225,67 @@ namespace RCore.Common
 
         #region Public
 
+        public CustomPool() { }
+
         public CustomPool(T pPrefab, int pInitialCount, Transform pParent, string pName = "", bool pAutoRelocate = true)
         {
-            mPrefab = pPrefab;
-            mParent = pParent;
-            mName = pName;
-            mAutoRelocate = pAutoRelocate;
-
-            if (string.IsNullOrEmpty(mName))
-                mName = mPrefab.name;
-
-            if (mParent == null)
-            {
-                GameObject temp = new GameObject();
-                temp.name = string.Format("Pool_{0}", mName);
-                mParent = temp.transform;
-            }
-
-            mActiveList = new List<T>();
-            mInactiveList = new List<T>();
-            mInactiveList.Prepare(mPrefab, pParent, pInitialCount, pPrefab.name);
-            if (!pPrefab.gameObject.IsPrefab())
-            {
-                mInactiveList.Add(mPrefab);
-                pPrefab.SetParent(pParent);
-                pPrefab.transform.SetAsLastSibling();
-                pPrefab.SetActive(false);
-            }
+            m_Prefab = pPrefab;
+            m_Parent = pParent;
+            m_Name = pName;
+            m_AutoRelocate = pAutoRelocate;
+            m_InitialCount = pInitialCount;
+            Init();
         }
 
-        public CustomPool(GameObject pPrefab, int pInitialCount, Transform pParent, bool pBuildinPrefab, string pName = "", bool pAutoRelocate = true)
+        public CustomPool(GameObject pPrefab, int pInitialCount, Transform pParent, string pName = "", bool pAutoRelocate = true)
         {
 #if UNITY_2019_2_OR_NEWER
-            pPrefab.TryGetComponent(out T component);
-            mPrefab = component;
+            pPrefab.TryGetComponent(out m_Prefab);
 #else
-            mPrefab = pPrefab.GetComponent<T>();
+            m_Prefab = pPrefab.GetComponent<T>();
 #endif
-            mParent = pParent;
-            mName = pName;
-            mAutoRelocate = pAutoRelocate;
+            m_Parent = pParent;
+            m_Name = pName;
+            m_AutoRelocate = pAutoRelocate;
+            Init();
+        }
 
-            if (string.IsNullOrEmpty(mName))
-                mName = mPrefab.name;
+        protected void Init()
+        {
+            if (m_Initialized)
+                return;
 
-            if (mParent == null)
+            if (string.IsNullOrEmpty(m_Name))
+                m_Name = m_Prefab.name;
+
+            if (m_Parent == null)
             {
                 GameObject temp = new GameObject();
-                temp.name = string.Format("Pool_{0}", mName);
-                mParent = temp.transform;
+                temp.name = string.Format("Pool_{0}", m_Name);
+                m_Parent = temp.transform;
             }
 
-            mActiveList = new List<T>();
-            mInactiveList = new List<T>();
-            mInactiveList.Prepare(mPrefab, pParent, pInitialCount, pPrefab.name);
-            if (pBuildinPrefab)
+            m_ActiveList = new List<T>();
+            m_InactiveList = new List<T>();
+            m_InactiveList.Prepare(m_Prefab, m_Parent, m_InitialCount, m_Prefab.name);
+            if (!m_Prefab.gameObject.IsPrefab())
             {
-                mInactiveList.Add(mPrefab);
-                pPrefab.transform.SetParent(pParent);
-                pPrefab.transform.SetAsLastSibling();
-                pPrefab.SetActive(false);
+                m_InactiveList.Add(m_Prefab);
+                m_Prefab.SetParent(m_Parent);
+                m_Prefab.transform.SetAsLastSibling();
+                m_Prefab.SetActive(false);
             }
+            m_Initialized = true;
         }
 
         public void Prepare(int pInitialCount)
         {
-            int numberNeeded = pInitialCount - mInactiveList.Count;
+            int numberNeeded = pInitialCount - m_InactiveList.Count;
             if (numberNeeded > 0)
             {
                 var list = new List<T>();
-                list.Prepare(mPrefab, mParent, pInitialCount, mPrefab.name);
-                mInactiveList.AddRange(list);
+                list.Prepare(m_Prefab, m_Parent, pInitialCount, m_Prefab.name);
+                m_InactiveList.AddRange(list);
             }
         }
 
@@ -309,75 +301,75 @@ namespace RCore.Common
 
         public T Spawn(Vector3 position, bool pIsWorldPosition)
         {
-            if (mLimitNumber > 0 && mActiveList.Count == mLimitNumber)
+            if (m_LimitNumber > 0 && m_ActiveList.Count == m_LimitNumber)
             {
-                var activeItem = mActiveList[0];
-                mInactiveList.Add(activeItem);
-                mActiveList.Remove(activeItem);
+                var activeItem = m_ActiveList[0];
+                m_InactiveList.Add(activeItem);
+                m_ActiveList.Remove(activeItem);
             }
 
-            int count = mInactiveList.Count;
-            if (mAutoRelocate && count == 0)
+            int count = m_InactiveList.Count;
+            if (m_AutoRelocate && count == 0)
                 RelocateInactive();
 
             if (count > 0)
             {
-                var item = mInactiveList[mInactiveList.Count - 1];
+                var item = m_InactiveList[m_InactiveList.Count - 1];
                 if (pIsWorldPosition)
                     item.transform.position = position;
                 else
                     item.transform.localPosition = position;
-                Active(item, true, mInactiveList.Count - 1);
+                Active(item, true, m_InactiveList.Count - 1);
 
                 if (onSpawn != null)
                     onSpawn(item);
 
-                if (mPushToLastSibling)
+                if (m_PushToLastSibling)
                     item.transform.SetAsLastSibling();
                 return item;
             }
 
-            T newItem = Object.Instantiate(mPrefab, mParent);
-            newItem.name = mName;
-            mInactiveList.Add(newItem);
+            T newItem = Object.Instantiate(m_Prefab, m_Parent);
+            newItem.name = m_Name;
+            m_InactiveList.Add(newItem);
 
             return Spawn(position, pIsWorldPosition);
         }
 
         public T Spawn(Vector3 position, bool pIsWorldPosition, ref bool pReused)
         {
-            if (mLimitNumber > 0 && mActiveList.Count == mLimitNumber)
+            if (m_LimitNumber > 0 && m_ActiveList.Count == m_LimitNumber)
             {
-                var activeItem = mActiveList[0];
-                mInactiveList.Add(activeItem);
-                mActiveList.Remove(activeItem);
+                var activeItem = m_ActiveList[0];
+                m_InactiveList.Add(activeItem);
+                m_ActiveList.Remove(activeItem);
             }
 
-            int count = mInactiveList.Count;
-            if (mAutoRelocate && count == 0)
+            int count = m_InactiveList.Count;
+            if (m_AutoRelocate && count == 0)
                 RelocateInactive();
 
             if (count > 0)
             {
-                var item = mInactiveList[mInactiveList.Count - 1];
+                var item = m_InactiveList[m_InactiveList.Count - 1];
                 if (pIsWorldPosition)
                     item.transform.position = position;
                 else
                     item.transform.localPosition = position;
-                Active(item, true, mInactiveList.Count - 1);
+                Active(item, true, m_InactiveList.Count - 1);
                 pReused = true;
 
                 if (onSpawn != null)
                     onSpawn(item);
 
-                if (mPushToLastSibling)
+                if (m_PushToLastSibling)
                     item.transform.SetAsLastSibling();
                 return item;
             }
 
-            T newItem = Object.Instantiate(mPrefab, mParent);
-            newItem.name = mName;
-            mInactiveList.Add(newItem);
+            T newItem = Object.Instantiate(m_Prefab, m_Parent);
+            newItem.name = m_Name;
+            m_InactiveList.Add(newItem);
             pReused = false;
 
             return Spawn(position, pIsWorldPosition, ref pReused);
@@ -391,85 +383,125 @@ namespace RCore.Common
 
         public void AddOutsider(T pInSceneObj)
         {
-            if (mInactiveList == null)
-                mInactiveList = new List<T>();
-            if (mActiveList == null)
-                mActiveList = new List<T>();
+            if (m_InactiveList == null)
+                m_InactiveList = new List<T>();
+            if (m_ActiveList == null)
+                m_ActiveList = new List<T>();
 
-            if (mInactiveList.Contains(pInSceneObj)
-                || mActiveList.Contains(pInSceneObj))
+            if (m_InactiveList.Contains(pInSceneObj)
+                || m_ActiveList.Contains(pInSceneObj))
                 return;
 
             if (pInSceneObj.gameObject.activeSelf)
-                mActiveList.Add(pInSceneObj);
+                m_ActiveList.Add(pInSceneObj);
             else
-                mInactiveList.Add(pInSceneObj);
-            pInSceneObj.transform.SetParent(mParent);
+                m_InactiveList.Add(pInSceneObj);
+            pInSceneObj.transform.SetParent(m_Parent);
         }
 
         public void Release(T pObj)
         {
-            for (int i = 0; i < mActiveList.Count; i++)
+            for (int i = 0; i < m_ActiveList.Count; i++)
             {
-                if (ReferenceEquals(mActiveList[i], pObj))
+                if (ReferenceEquals(m_ActiveList[i], pObj))
                 {
-                    Active(mActiveList[i], false, i);
+                    Active(m_ActiveList[i], false, i);
                     return;
                 }
             }
+        }
+
+        public void Release(T pObj, float pDelay)
+        {
+            CoroutineMediatorForScene.Instance.WaitForSecond(new WaitUtil.CountdownEvent()
+            {
+                id = pObj.GetInstanceID(),
+                doSomething = (s) => { if (pObj != null) Release(pObj); },
+                waitTime = pDelay
+            });
+        }
+
+        public void Release(T pObj, ConditionalDelegate pCondition)
+        {
+            CoroutineMediatorForScene.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+            {
+                id = pObj.GetInstanceID(),
+                onTrigger = () => { if (pObj != null) Release(pObj); },
+                triggerCondition = pCondition
+            });
         }
 
         public void Release(GameObject pObj)
         {
-            for (int i = 0; i < mActiveList.Count; i++)
+            for (int i = 0; i < m_ActiveList.Count; i++)
             {
-                if (mActiveList[i].GameObjectId() == pObj.GetInstanceID())
+                if (m_ActiveList[i].GameObjectId() == pObj.GetInstanceID())
                 {
-                    Active(mActiveList[i], false, i);
+                    Active(m_ActiveList[i], false, i);
                     return;
                 }
             }
         }
 
+        public void Release(GameObject pObj, float pDelay)
+        {
+            CoroutineMediatorForScene.Instance.WaitForSecond(new WaitUtil.CountdownEvent()
+            {
+                id = pObj.GetInstanceID(),
+                doSomething = (s) => { if (pObj != null) Release(pObj); },
+                waitTime = pDelay
+            });
+        }
+
+        public void Release(GameObject pObj, ConditionalDelegate pCondition)
+        {
+            CoroutineMediatorForScene.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+            {
+                id = pObj.GetInstanceID(),
+                onTrigger = () => { if (pObj != null) Release(pObj); },
+                triggerCondition = pCondition,
+            });
+        }
+
         public void ReleaseAll()
         {
-            for (int i = 0; i < mActiveList.Count; i++)
+            for (int i = 0; i < m_ActiveList.Count; i++)
             {
-                var item = mActiveList[i];
-                mInactiveList.Add(item);
+                var item = m_ActiveList[i];
+                m_InactiveList.Add(item);
                 item.SetActive(false);
             }
-            mActiveList.Clear();
+            m_ActiveList.Clear();
         }
 
         public void DestroyAll()
         {
-            while (mActiveList.Count > 0)
+            while (m_ActiveList.Count > 0)
             {
-                int index = mActiveList.Count - 1;
-                Object.Destroy(mActiveList[index]);
-                mActiveList.RemoveAt(index);
+                int index = m_ActiveList.Count - 1;
+                Object.Destroy(m_ActiveList[index]);
+                m_ActiveList.RemoveAt(index);
             }
-            while (mInactiveList.Count > 0)
+            while (m_InactiveList.Count > 0)
             {
-                int index = mInactiveList.Count - 1;
-                Object.Destroy(mInactiveList[index]);
-                mInactiveList.RemoveAt(index);
+                int index = m_InactiveList.Count - 1;
+                Object.Destroy(m_InactiveList[index]);
+                m_InactiveList.RemoveAt(index);
             }
         }
 
         public void Destroy(T pItem)
         {
-            mActiveList.Remove(pItem);
-            mInactiveList.Remove(pItem);
+            m_ActiveList.Remove(pItem);
+            m_InactiveList.Remove(pItem);
             Object.Destroy(pItem);
         }
 
         public T FindFromActive(T t)
         {
-            for (int i = 0; i < mActiveList.Count; i++)
+            for (int i = 0; i < m_ActiveList.Count; i++)
             {
-                var item = mActiveList[i];
+                var item = m_ActiveList[i];
                 if (item == t)
                     return item;
             }
@@ -478,19 +510,19 @@ namespace RCore.Common
 
         public T FindComponent(GameObject pObj)
         {
-            for (int i = 0; i < mActiveList.Count; i++)
+            for (int i = 0; i < m_ActiveList.Count; i++)
             {
-                if (mActiveList[i].gameObject == pObj)
+                if (m_ActiveList[i].gameObject == pObj)
                 {
-                    var temp = mActiveList[i];
+                    var temp = m_ActiveList[i];
                     return temp;
                 }
             }
-            for (int i = 0; i < mInactiveList.Count; i++)
+            for (int i = 0; i < m_InactiveList.Count; i++)
             {
-                if (mInactiveList[i].gameObject == pObj)
+                if (m_InactiveList[i].gameObject == pObj)
                 {
-                    var temp = mInactiveList[i];
+                    var temp = m_InactiveList[i];
                     return temp;
                 }
             }
@@ -499,16 +531,16 @@ namespace RCore.Common
 
         public T GetFromActive(int pIndex)
         {
-            if (pIndex < 0 || pIndex >= mActiveList.Count)
+            if (pIndex < 0 || pIndex >= m_ActiveList.Count)
                 return null;
-            return mActiveList[pIndex];
+            return m_ActiveList[pIndex];
         }
 
         public T FindFromInactive(T t)
         {
-            for (int i = 0; i < mInactiveList.Count; i++)
+            for (int i = 0; i < m_InactiveList.Count; i++)
             {
-                var item = mInactiveList[i];
+                var item = m_InactiveList[i];
                 if (item == t)
                     return item;
             }
@@ -517,19 +549,19 @@ namespace RCore.Common
 
         public void RelocateInactive()
         {
-            for (int i = mActiveList.Count - 1; i >= 0; i--)
-                if (!mActiveList[i].gameObject.activeSelf)
-                    Active(mActiveList[i], false, i);
+            for (int i = m_ActiveList.Count - 1; i >= 0; i--)
+                if (!m_ActiveList[i].gameObject.activeSelf)
+                    Active(m_ActiveList[i], false, i);
         }
 
         public void SetParent(Transform pParent)
         {
-            mParent = pParent;
+            m_Parent = pParent;
         }
 
         public void SetName(string pName)
         {
-            mName = pName;
+            m_Name = pName;
         }
 
         #endregion
@@ -542,19 +574,19 @@ namespace RCore.Common
         {
             if (pValue)
             {
-                mActiveList.Add(pItem);
+                m_ActiveList.Add(pItem);
                 if (index == -1)
-                    mInactiveList.Remove(pItem);
+                    m_InactiveList.Remove(pItem);
                 else
-                    mInactiveList.RemoveAt(index);
+                    m_InactiveList.RemoveAt(index);
             }
             else
             {
-                mInactiveList.Add(pItem);
+                m_InactiveList.Add(pItem);
                 if (index == -1)
-                    mActiveList.Remove(pItem);
+                    m_ActiveList.Remove(pItem);
                 else
-                    mActiveList.RemoveAt(index);
+                    m_ActiveList.RemoveAt(index);
             }
             pItem.SetActive(pValue);
         }
@@ -570,10 +602,10 @@ namespace RCore.Common
             {
                 EditorHelper.BoxVertical(() =>
                 {
-                    if (mActiveList != null)
-                        EditorHelper.ListReadonlyObjects(mName + "ActiveList", mActiveList, null, false);
-                    if (mInactiveList != null)
-                        EditorHelper.ListReadonlyObjects(mName + "InactiveList", mInactiveList, null, false);
+                    if (m_ActiveList != null)
+                        EditorHelper.ListReadonlyObjects(m_Name + "ActiveList", m_ActiveList, null, false);
+                    if (m_InactiveList != null)
+                        EditorHelper.ListReadonlyObjects(m_Name + "InactiveList", m_InactiveList, null, false);
                     if (EditorHelper.Button("Relocate"))
                         RelocateInactive();
                 }, Color.white, true);

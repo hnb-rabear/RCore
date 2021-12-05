@@ -26,11 +26,10 @@ namespace RCore.Common
 {
 #if ADDRESSABLES
 
+    [Serializable]
     public class ComponentRef<TComponent> : AssetReference where TComponent : Component
     {
-        public ComponentRef(string guid) : base(guid)
-        {
-        }
+        public ComponentRef(string guid) : base(guid) { }
 
         public new AsyncOperationHandle<TComponent> InstantiateAsync(Vector3 position, Quaternion rotation, Transform parent = null)
         {
@@ -41,6 +40,7 @@ namespace RCore.Common
         {
             return ResourceManager.CreateChainOperation<TComponent, GameObject>(base.InstantiateAsync(parent, instantiateInWorldSpace), GameObjectReady);
         }
+
         public AsyncOperationHandle<TComponent> LoadAssetAsync()
         {
             return ResourceManager.CreateChainOperation<TComponent, GameObject>(base.LoadAssetAsync<GameObject>(), GameObjectReady);
@@ -114,13 +114,6 @@ namespace RCore.Common
         public static AsyncOperationHandle DownloadDependenciesAsync(IList<IResourceLocation> locations, bool pAutoRelease, Action<float> pOnDownload = null, Action pOnComplete = null)
         {
             var operation = Addressables.DownloadDependenciesAsync(locations, pAutoRelease);
-            WaitLoadTask(operation, pOnDownload, pOnComplete);
-            return operation;
-        }
-
-        public static AsyncOperationHandle DownloadDependenciesAsync(IList<object> pKeys, MergeMode mode, bool pAutoRelease, Action<float> pOnDownload = null, Action pOnComplete = null)
-        {
-            var operation = Addressables.DownloadDependenciesAsync(pKeys, mode, pAutoRelease);
             WaitLoadTask(operation, pOnDownload, pOnComplete);
             return operation;
         }
@@ -218,6 +211,16 @@ namespace RCore.Common
             });
         }
 
+        public static void LoadPrefabAsync<TComponent>(ComponentRef<TComponent> pReference, Action<float> pProgress = null, Action<TComponent> pOnCompleted = null) where TComponent : Component
+        {
+            var operation = pReference.LoadAssetAsync();
+            WaitLoadTask(operation, pProgress, (result) =>
+            {
+                result.TryGetComponent(out TComponent component);
+                pOnCompleted?.Invoke(component);
+            });
+        }
+
         public static AsyncOperationHandle<Sprite> LoadSpriteAsync(AssetReferenceSprite pReference, Action<float> pProgress = null, Action<Sprite> pOnCompleted = null)
         {
             var operation = pReference.LoadAssetAsync();
@@ -260,15 +263,6 @@ namespace RCore.Common
             return operation;
         }
 
-        //================ Variation
-
-        public static AsyncOperationHandle<IList<TObject>> LoadAssetsAsync<TObject>(string pAddress, string pLabel, Action<float> pProgress = null, Action<IList<TObject>> pOnCompleted = null)
-        {
-            var operation = Addressables.LoadAssetsAsync<TObject>(new List<object> { pAddress, pLabel }, null, Addressables.MergeMode.Intersection);
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
-
         //=========================================================================================================================================
 
         private static void WaitLoadTask(AsyncOperationHandle operation, Action<float> pProgress = null, Action pOnCompleted = null)
@@ -292,7 +286,7 @@ namespace RCore.Common
             });
         }
 
-        private static void WaitLoadTask<T>(AsyncOperationHandle<T> operation, Action<float> pProgress = null, Action<T> pOnCompleted = null)
+        public static void WaitLoadTask<T>(AsyncOperationHandle<T> operation, Action<float> pProgress = null, Action<T> pOnCompleted = null)
         {
             WaitUtil.Start(new WaitUtil.ConditionEvent()
             {
@@ -304,11 +298,15 @@ namespace RCore.Common
                 },
                 onTrigger = () =>
                 {
-                    if (pOnCompleted != null)
-                        pOnCompleted(operation.Result);
+                    try
+                    {
+                        if (pOnCompleted != null)
+                            pOnCompleted(operation.Result);
 
-                    if (operation.Status == AsyncOperationStatus.Failed)
-                        Debug.LogError("Failed to load asset: " + operation.OperationException.ToString());
+                        if (operation.Status == AsyncOperationStatus.Failed)
+                            Debug.LogError("Failed to load asset: " + operation.OperationException.ToString());
+                    }
+                    catch { }
                 },
             });
         }
@@ -339,7 +337,7 @@ namespace RCore.Common
         public static async Task<long> GetDownloadSizeAsync(object key)
         {
             //Clear all cached AssetBundles
-            Addressables.ClearDependencyCacheAsync(key);
+            ClearDependencyCacheAsync(key);
 
             //Check the download size
             var operation = Addressables.GetDownloadSizeAsync(key);
@@ -556,7 +554,7 @@ namespace RCore.Common
         public static async Task<List<IResourceLocation>> WaitLoadResouceLocationAsync(string pLabel)
         {
             var localtions = new List<IResourceLocation>();
-            var operation = Addressables.LoadResourceLocationsAsync(pLabel);
+            var operation = LoadResourceLocationsAsync(pLabel);
             await operation.Task;
             foreach (var localtion in operation.Result)
                 localtions.Add(localtion);

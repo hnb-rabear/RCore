@@ -14,70 +14,109 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   profile:
     name: Development
-    enableLog: 0
+    enableLog: 1
     enableDraw: 0
-    showFPS: 0
+    showFPS: 1
     defines:
     - name: DEVELOPMENT
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 0
+      enabled: 1
     - name: UNITY_IAP
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: UNITY_MONETIZATION
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
     - name: USE_DOTWEEN
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
-    - name: ADDRESSABLES
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: PROBUILDER_EXPERIMENTAL_FEATURES
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_17_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: URP_OUTLINE
-      color: {r: 0, g: 1, b: 0.18741107, a: 1}
+    - name: MIRROR_18_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: ACTIVE_FIREBASE
-      color: {r: 1, g: 0.8705883, b: 0, a: 1}
+    - name: MIRROR_24_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: ACTIVE_FIREBASE_ANALYTICS
-      color: {r: 1, g: 0.8705883, b: 0, a: 1}
+    - name: MIRROR_26_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: ACTIVE_FIREBASE_CRASHLYTICS
-      color: {r: 1, g: 0.8705883, b: 0, a: 1}
+    - name: MIRROR_27_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: ACTIVE_FIREBASE_MESSAGING
-      color: {r: 1, g: 0.8705883, b: 0, a: 1}
+    - name: MIRROR_28_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: ACTIVE_FIREBASE_REMOTE
-      color: {r: 1, g: 0.86914873, b: 0, a: 1}
+    - name: MIRROR_29_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EPO_DOTWEEN
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_30_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EASY_MOBILE
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_30_5_2_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EASY_MOBILE_PRO
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_32_1_2_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EM_IRONSOURCE
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_32_1_4_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EM_URP
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_35_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EM_UIAP
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_35_1_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
-    - name: EM_FIR_MESSAGING
-      color: {r: 1, g: 1, b: 1, a: 1}
+    - name: MIRROR_37_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_38_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_39_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_40_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_41_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_42_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_43_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_44_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_46_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_47_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_53_0_OR_NEWER
+      color: {r: 0, g: 0.8484955, b: 1, a: 1}
       enabled: 1
     - name: ODIN_INSPECTOR
-      color: {r: 1, g: 1, b: 1, a: 1}
+      color: {r: 1, g: 0.7463965, b: 0, a: 1}
       enabled: 1
     - name: ODIN_INSPECTOR_3
+      color: {r: 1, g: 0.74509805, b: 0, a: 1}
+      enabled: 1
+    - name: ODIN_INSPECTOR_EDITOR_ONLY
+      color: {r: 1, g: 0.74509805, b: 0, a: 1}
+      enabled: 1
+    - name: ENABLE_PLAYFABSERVER_API
+      color: {r: 0.9843138, g: 0.42352945, b: 0.13333334, a: 1}
+      enabled: 1
+    - name: ADDRESSABLES
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1

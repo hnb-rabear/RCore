@@ -28,17 +28,11 @@ namespace RCore.Common
         private List<IUpdate> mUpdateList = new List<IUpdate>();
         private Queue<Action> mListQueueActions = new Queue<Action>();
 
-        private float mTimeBeforePause;
-
         public static void CreatInstance()
         {
             var obj = new GameObject("CoroutineMedator");
             mInstance = obj.AddComponent<CoroutineMediator>();
-#if UNITY_EDITOR
-            DontDestroyOnLoad(mInstance.gameObject);
-#else
             obj.hideFlags = HideFlags.HideAndDontSave;
-#endif
         }
 
         private void LateUpdate()

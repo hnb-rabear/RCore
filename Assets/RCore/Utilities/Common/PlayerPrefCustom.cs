@@ -147,62 +147,49 @@ namespace RCore.Common
 
     public class PlayerPrefList<T> : PlayerPrefCustom
     {
-        public List<T> m_Values = new List<T>();
-        public bool changed;
+        private List<T> m_Values = new List<T>();
 
         public PlayerPrefList(string pKey, List<T> pDefaultValues = null) : base(pKey)
         {
             if (!PlayerPrefs.HasKey(m_Key))
                 m_Values = pDefaultValues;
             else
-                m_Values = JsonHelper.GetJsonList<T>(PlayerPrefs.GetString(m_Key));
+                m_Values = JsonHelper.ToList<T>(PlayerPrefs.GetString(m_Key));
         }
 
         public List<T> Values
         {
             get { return m_Values; }
-            set
-            {
-                m_Values = value;
-                changed = true;
-            }
+            set { m_Values = value; }
         }
 
         public T this[int index]
         {
             get { return m_Values[index]; }
-            set
-            {
-                m_Values[index] = value;
-                changed = true;
-            }
+            set { m_Values[index] = value; }
         }
 
         public void Add(T pValue)
         {
             m_Values.Add(pValue);
-            changed = true;
             onUpdated?.Invoke();
         }
 
         public void AddRange(params T[] pValues)
         {
             m_Values.AddRange(pValues);
-            changed = true;
             onUpdated?.Invoke();
         }
 
         public void AddRange(List<T> pValues)
         {
             m_Values.AddRange(pValues);
-            changed = true;
             onUpdated?.Invoke();
         }
 
         public void Remove(T pValue)
         {
             m_Values.Remove(pValue);
-            changed = true;
             onUpdated?.Invoke();
         }
 
@@ -214,16 +201,12 @@ namespace RCore.Common
         public void RemoveAt(int pIndex)
         {
             m_Values.RemoveAt(pIndex);
-            changed = true;
             onUpdated?.Invoke();
         }
 
         public void SaveChange()
         {
-            if (!changed)
-                return;
-            changed = false;
-            PlayerPrefs.SetString(m_Key, JsonHelper.ListToJson<T>(m_Values));
+            PlayerPrefs.SetString(m_Key, JsonHelper.ToJson(m_Values));
             PlayerPrefs.Save();
         }
     }

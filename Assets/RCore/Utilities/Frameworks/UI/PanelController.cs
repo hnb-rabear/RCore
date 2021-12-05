@@ -366,7 +366,7 @@ namespace RCore.Pattern.UI
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($"{p.Index}: {p.name}");
                     if (GUILayout.Button($"{p.Index}: {p.name}"))
-                        Selection.activeObject = mScript.TopPanel;
+                        Selection.activeObject = p;
                     EditorGUILayout.EndHorizontal();
                     if (p.StackCount > 0)
                     {

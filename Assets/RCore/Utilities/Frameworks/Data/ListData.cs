@@ -116,7 +116,7 @@ namespace RCore.Pattern.Data
         {
             if (mChanged)
             {
-                SetStringValue(JsonHelper.ListToJson(mValues));
+                SetStringValue(JsonHelper.ToJson(mValues));
                 mChanged = false;
                 return true;
             }
@@ -131,7 +131,7 @@ namespace RCore.Pattern.Data
 
             try
             {
-                mValues = JsonHelper.GetJsonList<T>(val);
+                mValues = JsonHelper.ToList<T>(val);
                 return mValues;
             }
             catch (Exception ex)

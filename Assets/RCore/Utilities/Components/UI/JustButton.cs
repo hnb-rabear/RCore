@@ -42,7 +42,7 @@ namespace RCore.Components
         [SerializeField] protected bool mImgSwapEnabled;
         [SerializeField] protected Sprite mImgActive;
         [SerializeField] protected Sprite mImgInactive;
-        [SerializeField] protected string m_SFXClip = "button";
+        [SerializeField] protected string m_SfxClip = "sfx_button_click";
 
         public Image img
         {
@@ -109,8 +109,6 @@ namespace RCore.Components
             base.Start();
 
             mPrePivot = mPivotForFX;
-            //if (mEnabledFX)
-            //    RefreshPivot();
         }
 
         protected override void OnDisable()
@@ -133,9 +131,6 @@ namespace RCore.Components
                 return;
 
             base.OnValidate();
-
-            mGreyMatEnabled = false;
-            mPivotForFX = PivotForScale.Center;
 
             if (targetGraphic == null)
             {
@@ -180,8 +175,8 @@ namespace RCore.Components
             if (mActive)
             {
                 base.OnPointerDown(eventData);
-                if (!string.IsNullOrEmpty(m_SFXClip))
-                    AudioManager.Instance?.PlaySFX(m_SFXClip, 0);
+                if (!string.IsNullOrEmpty(m_SfxClip))
+                    AudioManager.Instance?.PlaySFX(m_SfxClip, 0);
             }
 
             if (mEnabledFX)
@@ -313,7 +308,7 @@ namespace RCore.Components
                 EditorHelper.SerializeField(serializedObject, "mPivotForFX");
                 EditorHelper.SerializeField(serializedObject, "mEnabledFX");
                 EditorHelper.SerializeField(serializedObject, "mGreyMatEnabled");
-                EditorHelper.SerializeField(serializedObject, "m_SFXClip");
+                EditorHelper.SerializeField(serializedObject, "m_SfxClip");
                 var imgSwapEnabled = EditorHelper.SerializeField(serializedObject, "mImgSwapEnabled");
                 if (imgSwapEnabled.boolValue)
                 {
@@ -336,10 +331,10 @@ namespace RCore.Components
             serializedObject.ApplyModifiedProperties();
         }
 
-        [UnityEditor.MenuItem("RUtilities/UI/Replace Button By JustButton")]
+        [MenuItem("RUtilities/UI/Replace Button By JustButton")]
         private static void ReplaceButton()
         {
-            var gameobjects = UnityEditor.Selection.gameObjects;
+            var gameobjects = Selection.gameObjects;
             for (int i = 0; i < gameobjects.Length; i++)
             {
                 var btns = gameobjects[i].FindComponentsInChildren<Button>();

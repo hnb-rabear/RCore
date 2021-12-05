@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿/**
+ * Author RadBear - nbhung71711@gmail.com - 2018
+ **/
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Pattern.Data;

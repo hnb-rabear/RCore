@@ -83,7 +83,7 @@ namespace RCore.Pattern.Data
             mIsEncrypt = encryption != null;
 
             string dataStr = DataSaverContainer.GetData(idString);
-            dataList = JsonHelper.GetJsonList<KeyValue>(dataStr);
+            dataList = JsonHelper.ToList<KeyValue>(dataStr);
 
             if (dataList == null)
                 dataList = new List<KeyValue>();
@@ -134,7 +134,7 @@ namespace RCore.Pattern.Data
         {
             if (mIsChanged || pForce)
             {
-                string dataStr = JsonHelper.ListToJson(dataList);
+                string dataStr = JsonHelper.ToJson(dataList);
                 DataSaverContainer.SetData(idString, dataStr);
                 mIsChanged = false;
             }
@@ -209,7 +209,7 @@ namespace RCore.Pattern.Data
             }
             mIsChanged = true;
 #if UNITY_EDITOR
-            Debug.Log("Removed Indexes: " + JsonHelper.ListToJson(pCleanableKeys));
+            Debug.Log("Removed Indexes: " + JsonHelper.ToJson(pCleanableKeys));
 #endif
         }
 
@@ -252,7 +252,7 @@ namespace RCore.Pattern.Data
         public string GetCurrentData()
         {
             dataList.Sort();
-            return JsonHelper.ListToJson(dataList);
+            return JsonHelper.ToJson(dataList);
         }
 
         /// <summary>
