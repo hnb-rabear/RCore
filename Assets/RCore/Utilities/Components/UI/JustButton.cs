@@ -141,7 +141,7 @@ namespace RCore.Components
                     mImg = targetGraphic as Image;
                 }
             }
-            else if (mImg == null)
+            if (targetGraphic != null && mImg == null)
                 mImg = targetGraphic as Image;
 
             if (transition == Transition.Animation && GetComponent<Animator>() != null)

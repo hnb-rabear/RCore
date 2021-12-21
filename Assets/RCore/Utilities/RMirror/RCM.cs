@@ -6,6 +6,7 @@
 using Mirror;
 #endif
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace RCore.RCM
 {

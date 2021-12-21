@@ -113,9 +113,9 @@ namespace RCore.Components
                     string musicsSourcePath = mScript.musicsPath;
                     string sfxsSourcePath = mScript.sfxsPath;
                     string exportConfigPath = mScript.configPath;
-                    musicsSourcePath = EditorHelper.FolderSelector("Musics Sources Path", "musicsSourcePath", Application.dataPath, true);
-                    sfxsSourcePath = EditorHelper.FolderSelector("SFX Sources Path", "sfxsSourcePath", Application.dataPath, true);
-                    exportConfigPath = EditorHelper.FolderSelector("Export Config Path", "exportConfigPath", Application.dataPath, true);
+                    musicsSourcePath = EditorHelper.FolderSelector("Musics Sources Path", "musicsSourcePath", mScript.musicsPath, true);
+                    sfxsSourcePath = EditorHelper.FolderSelector("SFX Sources Path", "sfxsSourcePath", mScript.sfxsPath, true);
+                    exportConfigPath = EditorHelper.FolderSelector("Export Config Path", "exportConfigPath", mScript.configPath, true);
 
                     if (EditorHelper.Button("Build"))
                     {

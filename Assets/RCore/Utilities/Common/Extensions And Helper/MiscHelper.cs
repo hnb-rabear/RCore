@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -96,6 +97,33 @@ namespace RCore.Common
                 $"\nSafe area: {Screen.safeArea}" +
                 $"\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})" +
                 $"\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
+        }
+
+        public static void CreateBackup(string pContent, string pFileName = null)
+        {
+            if (pFileName == null)
+                pFileName = $"{Application.productName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}";
+            pFileName = pFileName.RemoveSpecialCharacters();
+            string folder = Application.persistentDataPath + Path.DirectorySeparatorChar + "Backup" + Path.DirectorySeparatorChar;
+#if UNITY_EDITOR
+            folder = Application.dataPath + Path.DirectorySeparatorChar + "Backup" + Path.DirectorySeparatorChar;
+#endif
+            if (!string.IsNullOrEmpty(pContent) && pContent != "{}")
+            {
+                var directoryPath = Path.GetDirectoryName(folder);
+                if (!Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
+
+                string path = folder + pFileName + ".json";
+                File.WriteAllText(path, pContent);
+                Debug.Log($"Created Backup successfully {path}", Color.green);
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    System.Diagnostics.Process.Start(folder);
+                };
+#endif
+            }
         }
     }
 
