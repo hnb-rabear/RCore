@@ -1,9 +1,4 @@
-﻿/**
- *  Based on TimeManager of hnim.
- *  Copyright (c) 2017 RedAntz. All rights reserved.
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;

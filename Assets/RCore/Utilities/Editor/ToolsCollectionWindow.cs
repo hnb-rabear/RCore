@@ -240,7 +240,6 @@ namespace RCore.Editor
                     }
                     combinedMeshs.GetComponent<MeshFilter>().sharedMesh = new Mesh();
                     combinedMeshs.GetComponent<MeshFilter>().sharedMesh.CombineMeshes(combine);
-                    combinedMeshs.GetOrAddComponent<KillEmAll.AreaDesignValidator>();
                 }
             }
         }
