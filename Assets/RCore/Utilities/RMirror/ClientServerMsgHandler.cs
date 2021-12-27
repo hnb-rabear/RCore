@@ -42,10 +42,10 @@ namespace RCore.RCM
         public bool WaitForResponse => m_ClientMsgSender.WaitForResponse;
         public float LastTime => m_ClientMsgSender.SendTime;
 
-        public ClientServerMsgHandler(bool pBlockInputWhileWait = true, bool pSingleMessage = true)
+        public ClientServerMsgHandler(bool pRequireAuthentication = true, bool pBlockInputWhileWait = true, bool pSingleMessage = true)
         {
-            m_ClientMsgSender = new ClientMsgSender<ResponseMsgT>(pBlockInputWhileWait, pSingleMessage);
-            m_ServerMsgResponser = new ServerMsgResponser<SendMsgT, ResponseMsgT>();
+            m_ClientMsgSender = new ClientMsgSender<ResponseMsgT>(pRequireAuthentication, pBlockInputWhileWait, pSingleMessage);
+            m_ServerMsgResponser = new ServerMsgResponser<SendMsgT, ResponseMsgT>(pRequireAuthentication);
         }
 
         public void ClientSend(SendMsgT pMessage, Action<ResponseMsgT> pOnServerResponse)
@@ -53,14 +53,30 @@ namespace RCore.RCM
             m_ClientMsgSender.Send(pMessage, pOnServerResponse);
         }
 
-        public void ServerRegisterHandlerAsync(HandleClientMessageDelegateTask<SendMsgT, ResponseMsgT> pOnHandleClientMessage)
+        public void ServerRegisterHandlerAsync(HandleClientMessageDelegateTask<SendMsgT, ResponseMsgT> pClientMessageHandler)
         {
-            m_ServerMsgResponser.RegisterHandlerAsync(pOnHandleClientMessage);
+            m_ServerMsgResponser.RegisterHandlerAsync(pClientMessageHandler);
         }
 
-        public void ServerRegisterHandler(HandleClientMessageDelegate<SendMsgT, ResponseMsgT> pOnHandleClientMessage)
+        public void ServerRegisterMultiHandlersAsync(params HandleClientMessageDelegateTask<SendMsgT, ResponseMsgT>[] pClientMessageHandlers)
         {
-            m_ServerMsgResponser.RegisterHandler(pOnHandleClientMessage);
+            m_ServerMsgResponser.RegisterMultiHandlersAsync(pClientMessageHandlers);
+        }
+
+        public void ServerRegisterHandler(HandleClientMessageDelegate<SendMsgT, ResponseMsgT> pClientMessageHandler)
+        {
+            m_ServerMsgResponser.RegisterHandler(pClientMessageHandler);
+        }
+
+        /// <summary>
+        /// Called in Update
+        /// </summary>
+        public bool AutoCancelByTimeOut(float pMaxTimeOut)
+        {
+            bool isTimeOut = m_ClientMsgSender.TimeOut() >= pMaxTimeOut;
+            if (isTimeOut)
+                m_ClientMsgSender.Cancel();
+            return isTimeOut;
         }
     }
 
@@ -81,13 +97,13 @@ namespace RCore.RCM
 
         private event Action<ResponseMsgT> m_OnServerResponse;
 
-        public ClientMsgSender(bool pBlockInputWhiteWait, bool pSingleMessage)
+        public ClientMsgSender(bool pRequireAuthentication, bool pBlockInputWhiteWait, bool pSingleMessage)
         {
             SingleMessage = pSingleMessage;
             BlockInputWhileWait = pBlockInputWhiteWait;
 
             NetworkClient.OnDisconnectedEvent += OnDisconnected;
-            NetworkClient.RegisterHandler<ResponseMsgT>(OnHandleServerMessage);
+            NetworkClient.RegisterHandler<ResponseMsgT>(OnHandleServerMessage, pRequireAuthentication);
         }
 
         public void Send<SendMsgT>(SendMsgT pMessage, Action<ResponseMsgT> pOnServerResponse)
@@ -121,7 +137,13 @@ namespace RCore.RCM
 
         private void OnDisconnected()
         {
+            Cancel();
+        }
+
+        public void Cancel()
+        {
             WaitForResponse = false;
+            m_OnServerResponse = null;
         }
     }
 
@@ -135,35 +157,49 @@ namespace RCore.RCM
         where ClientMsgT : struct, NetworkMessage
         where ResponseMsgT : struct, NetworkMessage
     {
-        private HandleClientMessageDelegateTask<ClientMsgT, ResponseMsgT> m_HandleClientMessageAsync;
-        private HandleClientMessageDelegate<ClientMsgT, ResponseMsgT> m_HandleClientMessage;
+        private HandleClientMessageDelegateTask<ClientMsgT, ResponseMsgT> m_eClientMessageAsyncHandler;
+        private HandleClientMessageDelegate<ClientMsgT, ResponseMsgT> m_ClientMessageHandler;
+        private HandleClientMessageDelegateTask<ClientMsgT, ResponseMsgT>[] m_ClientMessageAsyncHandlers;
 
-        public ServerMsgResponser()
+        public ServerMsgResponser(bool pRequireAuthentication)
         {
-            NetworkServer.RegisterHandler<ClientMsgT>(OnHandleClientMessage);
+            NetworkServer.RegisterHandler<ClientMsgT>(OnHandleClientMessage, pRequireAuthentication);
         }
 
-        public void RegisterHandlerAsync(HandleClientMessageDelegateTask<ClientMsgT, ResponseMsgT> pOnHandleClientMessage)
+        public void RegisterHandlerAsync(HandleClientMessageDelegateTask<ClientMsgT, ResponseMsgT> pClientMessageHandler)
         {
-            m_HandleClientMessageAsync = pOnHandleClientMessage;
+            m_eClientMessageAsyncHandler = pClientMessageHandler;
         }
 
-        public void RegisterHandler(HandleClientMessageDelegate<ClientMsgT, ResponseMsgT> pOnHandleClientMessage)
+        public void RegisterHandler(HandleClientMessageDelegate<ClientMsgT, ResponseMsgT> pClientMessageHandler)
         {
-            m_HandleClientMessage = pOnHandleClientMessage;
+            m_ClientMessageHandler = pClientMessageHandler;
+        }
+
+        public void RegisterMultiHandlersAsync(params HandleClientMessageDelegateTask<ClientMsgT, ResponseMsgT>[] pClientMessageHandlers)
+        {
+            m_ClientMessageAsyncHandlers = pClientMessageHandlers;
         }
 
         private async void OnHandleClientMessage(NetworkConnection conn, ClientMsgT clientMsg)
         {
-            if (m_HandleClientMessage != null)
+            if (m_ClientMessageHandler != null)
             {
-                var result = m_HandleClientMessage.Invoke(conn, clientMsg);
+                var result = m_ClientMessageHandler.Invoke(conn, clientMsg);
                 conn.Send(result);
             }
-            if (m_HandleClientMessageAsync != null)
+            if (m_eClientMessageAsyncHandler != null)
             {
-                var result = await m_HandleClientMessageAsync.Invoke(conn, clientMsg);
+                var result = await m_eClientMessageAsyncHandler.Invoke(conn, clientMsg);
                 conn.Send(result);
+            }
+            if (m_ClientMessageAsyncHandlers != null)
+            {
+                foreach (var handler in m_ClientMessageAsyncHandlers)
+                {
+                    var result = await handler.Invoke(conn, clientMsg);
+                    conn.Send(result);
+                }
             }
         }
     }

@@ -38,6 +38,7 @@ namespace RCore.Components
         private Tweener m_MusicTweener;
         private Tweener m_SFXTweener;
 #endif
+        private Coroutine m_IEPlayMusics;
 
         private void Awake()
         {
@@ -381,6 +382,54 @@ namespace RCore.Components
             SetMusicVolume(pVolume, pFadeDuration);
         }
 
+        public void PlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
+        {
+            if (m_IEPlayMusics != null)
+                StopCoroutine(m_IEPlayMusics);
+            m_IEPlayMusics = StartCoroutine(IEPlayMusics(pClips, pFadeDuration, pVolume));
+        }
+
+        private IEnumerator IEPlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
+        {
+            if (pClips == null)
+                yield break;
+
+            if (pClips.Length == 1)
+            {
+                PlayMusic(pClips[0], true, pFadeDuration, pVolume);
+                yield break;
+            }
+
+            int index = 0;
+            for (int i = 0; i < pClips.Length; i++)
+                if (pClips[i] == mMusicSource.clip)
+                {
+                    index = i;
+                    break;
+                }
+            while (true)
+            {
+                bool play = true;
+                var clip = pClips[index];
+
+                if (mMusicSource.clip == clip && mMusicSource.isPlaying)
+                    play = false;
+
+                if (play)
+                {
+                    mMusicSource.clip = clip;
+                    mMusicSource.loop = false;
+                    mMusicSource.Play();
+                }
+                if (m_EnabledMusic)
+                    SetMusicVolume(pVolume, pFadeDuration);
+                else
+                    SetMusicVolume(0);
+                yield return new WaitUntil(() => !mMusicSource.isPlaying || mMusicSource.clip == null);
+                index = (index + 1) % pClips.Length;
+            }
+        }
+
         public AudioSource PlaySFX(AudioClip pClip, int limitNumber, bool pLoop, float pPitchRandomMultiplier = 1)
         {
             if (pClip == null)
@@ -409,7 +458,7 @@ namespace RCore.Components
         public bool IsPlayingMusic() => mMusicSource.isPlaying;
 
 #if UNITY_EDITOR
-        private void OnValidate()
+        protected virtual void OnValidate()
         {
             if (mSFXSources == null)
                 mSFXSources = new AudioSource[0];
@@ -447,6 +496,15 @@ namespace RCore.Components
                 obj.transform.SetParent(transform);
                 mSFXSourceUnlimited = obj.GetComponent<AudioSource>();
             }
+
+#if USE_DOTWEEN
+            if (m_MasterTweener == null || !m_MasterTweener.IsPlaying())
+                SetMasterVolume(m_MasterVolume);
+            if (m_MusicTweener == null || !m_MusicTweener.IsPlaying())
+                SetMusicVolume(m_MusicVolume);
+            if (m_SFXTweener == null || !m_SFXTweener.IsPlaying())
+                SetSFXVolume(m_SFXVolume);
+#endif
         }
 
         [CustomEditor(typeof(BaseAudioManager), true)]

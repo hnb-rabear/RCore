@@ -459,17 +459,17 @@ namespace RCore.Common
             var nativeSizeY = pImage.sprite.bounds.size.y * pImage.sprite.pixelsPerUnit;
             float coeffX = pPreferedSize.x / nativeSizeX;
             float coeffY = pPreferedSize.y / nativeSizeY;
-            float sizeX = nativeSizeX * coeffX;
-            float sizeY = nativeSizeY * coeffY;
+            float sizeX = 0;
+            float sizeY = 0;
             if (coeffX > coeffY)
             {
-                sizeX *= coeffY;
-                sizeY *= coeffY;
+                sizeX = nativeSizeX * coeffY;
+                sizeY = nativeSizeY * coeffY;
             }
             else
             {
-                sizeX *= coeffX;
-                sizeY *= coeffX;
+                sizeX = nativeSizeX * coeffX;
+                sizeY = nativeSizeY * coeffX;
             }
             if (pPreferNative && (sizeX > nativeSizeX || sizeY > nativeSizeY))
             {

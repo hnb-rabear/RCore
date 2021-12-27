@@ -364,7 +364,7 @@ namespace RCore.Components
                         mScript.ShowMessageBubble(mTestTarget, new Bubble()
                         {
                             message = "This is a test messsage",
-                            size = new Vector2(600, 200)
+                            size = new Vector2(900, 300)
                         });
 
                 if (GUILayout.Button("Show Notification Message"))
@@ -373,7 +373,7 @@ namespace RCore.Components
                         target = mTestTarget,
                         message = "This is a test messsage",
                         alignment = PointerAlignment.TopRight,
-                        size = new Vector2(600, 200)
+                        size = new Vector2(900, 300)
                     });
 
                 if (GUILayout.Button("Show Toast Message"))

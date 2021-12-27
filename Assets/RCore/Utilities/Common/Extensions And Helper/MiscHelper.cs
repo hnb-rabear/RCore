@@ -146,6 +146,14 @@ namespace RCore.Common
             return textInfo.ToTitleCase(pString);
         }
 
+        public static string ToLowerCaseFirstChar(this string pString)
+        {
+            if (string.IsNullOrEmpty(pString) || char.IsLower(pString[0]))
+                return pString;
+
+            return char.ToLower(pString[0]) + pString.Substring(1);
+        }
+
         public static bool InsideBounds(this Vector2 pPosition, Bounds pBounds)
         {
             if (pPosition.x < pBounds.min.x)

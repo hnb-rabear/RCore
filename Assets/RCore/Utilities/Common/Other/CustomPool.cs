@@ -117,6 +117,17 @@ namespace RCore.Common
             return list;
         }
 
+        public List<T> GetAllItems()
+        {
+            var list = new List<T>();
+            foreach (var pool in poolDict)
+            {
+                list.AddRange(pool.Value.ActiveList);
+                list.AddRange(pool.Value.InactiveList);
+            }
+            return list;
+        }
+
         public void Release(T pObj)
         {
             if (m_IdOfAllClones.ContainsKey(pObj.GameObjectId()))

@@ -483,6 +483,8 @@ namespace RCore.Service.RFirebase
                 {
                     if (selectedDirectives.Count > 0)
                         selectedDirectives.Add("ACTIVE_FIREBASE");
+                    else
+                        EditorHelper.RemoveDirective("ACTIVE_FIREBASE");
                     EditorHelper.AddDirectives(selectedDirectives);
                     EditorHelper.RemoveDirective(nonSelectedDirectives);
                 }

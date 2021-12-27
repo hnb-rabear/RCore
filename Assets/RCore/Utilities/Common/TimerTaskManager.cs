@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using RCore.Common;
+using Cysharp.Threading.Tasks;
 
 namespace RCore.Pattern.Data
 {
@@ -211,7 +212,7 @@ namespace RCore.Pattern.Data
             }
         }
 
-        private void SyncTimeServer()
+        private async void SyncTimeServer()
         {
             if (!m_TimeServerFetched && !m_FetchingTimeServer)
             {
@@ -219,29 +220,28 @@ namespace RCore.Pattern.Data
 
                 var form = new WWWForm();
                 var request = UnityWebRequest.Post(url, form);
-                request.SendWebRequest();
 
                 m_FetchingTimeServer = true;
-                WaitUtil.Start(() => request.isDone,
-                    () =>
+
+                await request.SendWebRequest();
+                
+                m_FetchingTimeServer = false;
+                m_TimeServerFetched = false;
+                
+                if (!request.isNetworkError && !request.isHttpError)
+                {
+                    if (request.responseCode == 200)
                     {
-                        m_FetchingTimeServer = false;
-                        m_TimeServerFetched = false;
-                        if (!request.isNetworkError && !request.isHttpError)
+                        var text = request.downloadHandler.text;
+                        if (TimeHelper.TryParse(text, out DateTime utcTime))
                         {
-                            if (request.responseCode == 200)
-                            {
-                                var text = request.downloadHandler.text;
-                                if (TimeHelper.TryParse(text, out DateTime utcTime))
-                                {
-                                    m_TimeServerFetched = true;
-                                    m_StartServerTime = utcTime;
-                                    m_AppTimeWhenGetServerTime = Time.unscaledTime;
-                                }
-                            }
+                            m_TimeServerFetched = true;
+                            m_StartServerTime = utcTime;
+                            m_AppTimeWhenGetServerTime = Time.unscaledTime;
                         }
-                        OnFetched?.Invoke(m_TimeServerFetched);
-                    });
+                    }
+                }
+                OnFetched?.Invoke(m_TimeServerFetched);
             }
         }
 

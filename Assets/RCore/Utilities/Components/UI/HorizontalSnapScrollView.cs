@@ -28,6 +28,7 @@ namespace RCore.Components
         public Action onScrollStart;
 
 #pragma warning disable 0649
+        [SerializeField] private int m_StartIndex;
         [SerializeField] private float m_MinSpringTime = 0.5f;
         [SerializeField] private float m_MaxSpringTime = 1f;
         [SerializeField] private float m_SpringThreshold = 15;
@@ -74,8 +75,9 @@ namespace RCore.Components
         {
             if (!m_Validated)
                 Validate();
-            //m_PreviousItemIndex = m_StartIndex;
-            //MoveToItem(m_StartIndex, true);
+
+            m_PreviousItemIndex = m_StartIndex;
+            MoveToItem(m_StartIndex, true);
         }
 
         public void SetStartIndex(int pIndex)
@@ -279,6 +281,9 @@ namespace RCore.Components
             if (m_MinScrollReaction < 10)
                 m_MinScrollReaction = 10;
             m_Validated = true;
+
+            if (m_StartIndex != m_PreviousItemIndex)
+                MoveToItem(m_StartIndex, true);
         }
 
         private void MoveToFocusedItem(bool pImmediately, float pSpeed)

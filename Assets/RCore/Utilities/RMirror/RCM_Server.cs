@@ -5,11 +5,11 @@
 #if MIRROR
 using Cysharp.Threading.Tasks;
 using Mirror;
+using Newtonsoft.Json;
 #endif
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Newtonsoft.Json;
 using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;

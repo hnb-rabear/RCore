@@ -1,0 +1,43 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "<class_name>", menuName = "RUtilities/Animations/Create <class_name>")]
+public class <class_name> : ScriptableObject
+{
+<enum_>
+<const>
+<fieldsName>
+<names>
+    public List<AnimationClip> animations = new List<AnimationClip>();
+#if UNITY_EDITOR
+<paths>
+    private void OnValidate()
+    {
+        var enumValues = System.Enum.GetValues(typeof(Clip));
+        if (animations == null || animations.Count == 0 || animations.Count != enumValues.Length)
+        {
+            animations = new List<AnimationClip>()
+            {
+<arrayElements>
+            };
+        }
+<validateFields>
+    }
+#endif
+    public AnimationClip GetAnimation(string pName)
+    {
+        foreach (var anim in animations)
+            if (anim.name == pName)
+                return anim;
+        return null;
+    }
+    public AnimationClip GetAnimation(Clip pClip)
+    {
+        return animations[pClip.GetHashCode()];
+    }
+    public AnimationClip GetAnimation(int pClipIndex)
+    {
+        return animations[pClipIndex];
+    }
+}

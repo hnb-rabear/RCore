@@ -128,7 +128,7 @@ namespace RCore.Pattern.Data
         /// Level is 0, every values are 0
         /// Level starts from 1
         /// </summary>
-        public virtual float[] GetValues(int pLevel)
+        public virtual float[] GetValues(int pLevel = 1)
         {
             float[] outputValues = new float[1] { 0 };
 

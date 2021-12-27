@@ -25,10 +25,11 @@ namespace RCore.Common
 
     public static class TransformExtension
     {
-        public static Vector3 Add(this Vector3 pVector, Vector2 pValue)
+        public static Vector3 Add(this Vector3 pVector, Vector3 pValue)
         {
             pVector.x += pValue.x;
             pVector.y += pValue.y;
+            pVector.z += pValue.z;
             return pVector;
         }
 
