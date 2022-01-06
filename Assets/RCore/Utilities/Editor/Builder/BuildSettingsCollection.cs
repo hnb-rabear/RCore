@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
+ * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
  **/
 
 using System.Collections.Generic;

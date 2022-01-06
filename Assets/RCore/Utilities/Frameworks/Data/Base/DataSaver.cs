@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2018
+ * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2018
  **/
 
 using RCore.Common;
