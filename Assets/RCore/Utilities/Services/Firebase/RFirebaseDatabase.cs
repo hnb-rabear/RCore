@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - nbhung71711 @gmail.com - 2019
+ * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 #pragma warning disable 0649
 #if ACTIVE_FIREBASE_DATABASE

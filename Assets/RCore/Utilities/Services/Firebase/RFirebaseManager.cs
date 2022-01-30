@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - nbhung71711 @gmail.com - 2019
+ * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
 using System;
@@ -483,6 +483,8 @@ namespace RCore.Service.RFirebase
                 {
                     if (selectedDirectives.Count > 0)
                         selectedDirectives.Add("ACTIVE_FIREBASE");
+                    else
+                        EditorHelper.RemoveDirective("ACTIVE_FIREBASE");
                     EditorHelper.AddDirectives(selectedDirectives);
                     EditorHelper.RemoveDirective(nonSelectedDirectives);
                 }
