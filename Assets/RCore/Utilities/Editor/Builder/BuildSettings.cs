@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
+ * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
  **/
 
 using System;
@@ -63,6 +63,7 @@ namespace RCore.Editor
         public string bundleVersion;
         public int bundleVersionCode;
         public string buildNumber;
+        public bool enableHeadlessMode;
         /// <summary>
         /// Suffix which automatic add to end of build name
         /// </summary>

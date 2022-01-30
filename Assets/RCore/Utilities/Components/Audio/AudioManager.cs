@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using RCore.Common;
+using System;
+using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -29,13 +34,17 @@ namespace RCore.Components
                 Destroy(gameObject);
         }
 
-        private void OnValidate()
+#if UNITY_EDITOR
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             mSFXSourceUnlimited.loop = false;
             mSFXSourceUnlimited.playOnAwake = false;
             mMusicSource.loop = true;
             mMusicSource.playOnAwake = false;
         }
+#endif
 
         #endregion
 
@@ -52,7 +61,7 @@ namespace RCore.Components
 
         public AudioSource PlaySFX(int pIndex, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
-            if (!m_EnabledSFX) return null;
+            if (pIndex == -1 || !m_EnabledSFX) return null;
             var clip = AudioCollection.Instance.GetSFXClip(pIndex);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
@@ -73,6 +82,14 @@ namespace RCore.Components
         {
             var clip = AudioCollection.Instance.GetMusicClip(pId);
             PlayMusic(clip, pLoop, pFadeDuration, pVolume);
+        }
+
+        public void PlayMusicByIds(int[] pIds, float pFadeDuration = 0, float pVolume = 1f)
+        {
+            var clips = new AudioClip[pIds.Length];
+            for (int i = 0; i < pIds.Length; i++)
+                clips[i] = AudioCollection.Instance.GetMusicClip(pIds[i]);
+            PlayMusics(clips, pFadeDuration, pVolume);
         }
 
         #endregion

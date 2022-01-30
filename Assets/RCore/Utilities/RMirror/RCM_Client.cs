@@ -1,95 +1,112 @@
 /**
  * Author RadBear - nbhung71711@gmail.com - 2021
  **/
-
+//#define TEST_RCM
+#if MIRROR
 using System.Collections.Generic;
 using UnityEngine;
-#if MIRROR
 using Cysharp.Threading.Tasks;
 using Mirror;
-#endif
-using System;
 using Newtonsoft.Json;
+using System;
+using Random = UnityEngine.Random;
+using RCore.Common;
 #if UNITY_EDITOR
 using UnityEditor;
+using Debug = RCore.Common.Debug;
 #endif
+
 namespace RCore.RCM
 {
-#if MIRROR
+    public interface IMirrorClientListener
+    {
+        void OnStartClient();
+        void OnStopClient();
+        void OnClientConnect();
+    }
     public struct WrapMessage : NetworkMessage
     {
         public byte k;
         public string v;
     }
-#endif
 
     public class RCM_Client : MonoBehaviour
     {
-#if MIRROR
-        internal event Action ConnectedEvent;
-        internal event Action DisconnectedEvent;
+        private static RCM_Client m_Instance;
+        private Dictionary<byte, Action<string>> m_ServerMessageHandlers;
+        private List<IMsgSender> m_MsgSenders;
+        private List<byte> m_ProcessingOperations;
+        private List<IMirrorClientListener> m_Listeners;
 
-        private Dictionary<byte, Action<string>> m_ServerMessageHandlers = new Dictionary<byte, Action<string>>();
-
-        private ClientServerMsgHandler<ExampleSendMessage1, ExampleResponseMessage1> m_ExampleClientMessageHandler;
-        private ClientServerMsgHandler<ExampleSendMessage2, ExampleResponseMessage2> m_ExampleClientMessageHandlerAsync;
-        private List<IMsgSender> m_MsgSenders = new List<IMsgSender>();
-        private List<byte> m_ProcessingOperations = new List<byte>();
+        private void Awake()
+        {
+            if (m_Instance == null)
+                m_Instance = this;
+            else if (m_Instance != this)
+                Destroy(gameObject);
+        }
 
         private void Start()
         {
-#if UNITY_EDITOR
-            //TEST
-            RegisterMessageHandler(103, HandleServerTestMessage103);
-
-            m_ExampleClientMessageHandler = new ClientServerMsgHandler<ExampleSendMessage1, ExampleResponseMessage1>();
-            m_ExampleClientMessageHandler.ServerRegisterHandler(HandleExampleClientMessage);
-
-            m_ExampleClientMessageHandlerAsync = new ClientServerMsgHandler<ExampleSendMessage2, ExampleResponseMessage2>(true, true);
-            m_ExampleClientMessageHandlerAsync.ServerRegisterHandlerAsync(HandleExampleClientMessageAsync);
+#if UNITY_EDITOR && TEST_RCM
+            InitTestHandlers();
 #endif
         }
 
-#if DEVELOPMENT && !UNITY_SERVER
-        public int GUIStartX = 100;
-        public int GUIStartY = 100;
+#if UNITY_EDITOR && !UNITY_SERVER
+        private int m_GuiWidth = 500;
+        private int m_GuiHeight = 100;
         private void OnGUI()
         {
-            if (NetworkClient.isConnected)
+            if (NetworkClient.isConnected && DevSetting.Instance.EnableLog)
             {
-                GUILayout.BeginArea(new Rect(GUIStartX, GUIStartY, 300, 300));
+                var boxStyle = new GUIStyle(GUI.skin.box);
+                GUILayout.BeginArea(new Rect(0, 0, m_GuiWidth, m_GuiHeight), boxStyle);
 
                 bool waitingForResponse = WaitingResponse();
+                var lableStyle = new GUIStyle(GUI.skin.label);
+                lableStyle.fontSize = 30 * Screen.height / 1280;
                 GUI.color = waitingForResponse ? Color.yellow : Color.green;
-                GUILayout.Label($"Waiting for response: {waitingForResponse}");
+                GUILayout.Label($"Waiting for response: {waitingForResponse}", lableStyle);
 
                 GUI.color = BlockingInput() ? Color.red : Color.green;
-                GUILayout.Label($"Blocking input: {BlockingInput()}");
+                GUILayout.Label($"Blocking input: {BlockingInput()}", lableStyle);
 
                 GUILayout.EndArea();
             }
         }
 #endif
-
-        /// <summary>
-        /// Should be called from <see cref="NetworkManager"/>
-        /// </summary>
-        internal void OnClientConnect(NetworkConnection conn)
+        public void Init()
         {
-            ConnectedEvent?.Invoke();
+            m_ServerMessageHandlers = new Dictionary<byte, Action<string>>();
+            m_MsgSenders = new List<IMsgSender>();
+            m_ProcessingOperations = new List<byte>();
+            m_Listeners = new List<IMirrorClientListener>();
+        }
+
+        public void OnStartClient()
+        {
+            foreach (var listener in m_Listeners)
+                listener.OnStartClient();
+        }
+
+        public void OnClientConnect()
+        {
             m_MsgSenders = new List<IMsgSender>();
             m_ProcessingOperations = new List<byte>();
             NetworkClient.RegisterHandler<ServerMessage>(HandleServerMessage, false);
+
+            foreach (var listener in m_Listeners)
+                listener.OnClientConnect();
         }
 
-        /// <summary>
-        /// Should be called from <see cref="NetworkManager"/>
-        /// </summary>
-        internal void OnClientDisconnect(NetworkConnection conn)
+        public void OnStopClient()
         {
             m_MsgSenders = new List<IMsgSender>();
             m_ProcessingOperations = new List<byte>();
-            DisconnectedEvent?.Invoke();
+
+            foreach (var listener in m_Listeners)
+                listener.OnStopClient();
         }
 
         public void Send<T>(byte opCode, T message, Action<string> svResponseCallback) where T : struct
@@ -138,41 +155,6 @@ namespace RCore.RCM
             }
         }
 
-        /// <summary>
-        /// TEST
-        /// </summary>
-        private void HandleServerTestMessage103(string svMessage)
-        {
-            Debug.Log($"Server message: {svMessage}");
-        }
-
-        /// <summary>
-        /// TEST
-        /// </summary>
-        private async UniTask<ExampleResponseMessage2> HandleExampleClientMessageAsync(NetworkConnection conn, ExampleSendMessage2 clientMsg)
-        {
-            await UniTask.DelayFrame(180);
-            Debug.Log($"Client send message: {clientMsg.value}");
-            var result = new ExampleResponseMessage2
-            {
-                value = $"Hello Client ({clientMsg.index})"
-            };
-            return result;
-        }
-
-        /// <summary>
-        /// TEST
-        /// </summary>
-        private ExampleResponseMessage1 HandleExampleClientMessage(NetworkConnection conn, ExampleSendMessage1 clientMsg)
-        {
-            Debug.Log($"Client send message: {clientMsg.value}");
-            var result = new ExampleResponseMessage1
-            {
-                value = $"Hello Client ({clientMsg.index})"
-            };
-            return result;
-        }
-
         public void TrackMsgSender(IMsgSender pHandler)
         {
             if (!m_MsgSenders.Contains(pHandler))
@@ -195,7 +177,137 @@ namespace RCore.RCM
             return m_ProcessingOperations.Count > 0;
         }
 
-#if UNITY_EDITOR
+        public void Register<T>(T pListener) where T : IMirrorClientListener
+        {
+            if (!m_Listeners.Contains(pListener))
+            {
+                m_Listeners.Add(pListener);
+                if (NetworkClient.active)
+                    pListener.OnStartClient();
+                if (NetworkClient.isConnected)
+                    pListener.OnClientConnect();
+            }
+        }
+
+        public void UnRegister<T>(T pListener) where T : IMirrorClientListener
+        {
+            m_Listeners.Remove(pListener);
+        }
+
+        //=======================================================================================================
+
+#if UNITY_EDITOR && TEST_RCM
+#region Examples
+
+        private ClientServerMsgHandler<ExampleSendMsg1, ExampleResponseMsg1> m_ExampleClientMsgHandler;
+        private ClientServerMsgHandler<ExampleSendMsg2, ExampleResponseMsg2> m_ExampleClientMsgHandlerAsync;
+        private ClientServerMsgHandler<ExampleSendMsg3, ExampleResponseMsg3> m_ExampleClientMsgMultiHandlersAsync;
+
+        private void InitTestHandlers()
+        {
+            RegisterMessageHandler(103, HandleServerTestMessage103);
+
+            m_ExampleClientMsgHandler = new ClientServerMsgHandler<ExampleSendMsg1, ExampleResponseMsg1>(false, true, true);
+            m_ExampleClientMsgHandler.ServerRegisterHandler(HandleExampleClientMsg1);
+
+            m_ExampleClientMsgHandlerAsync = new ClientServerMsgHandler<ExampleSendMsg2, ExampleResponseMsg2>(false, true, true);
+            m_ExampleClientMsgHandlerAsync.ServerRegisterHandlerAsync(HandleExampleClientMsg2Async);
+
+            m_ExampleClientMsgMultiHandlersAsync = new ClientServerMsgHandler<ExampleSendMsg3, ExampleResponseMsg3>(false, true, true);
+            m_ExampleClientMsgMultiHandlersAsync.ServerRegisterMultiHandlersAsync(HandleExampleClientMsg3Async1, HandleExampleClientMsg3Async2, HandleExampleClientMsg3Async3);
+        }
+
+        private void HandleServerTestMessage103(string svMessage)
+        {
+            Debug.Log($"Server message: {svMessage}");
+        }
+
+        private async UniTask<ExampleResponseMsg2> HandleExampleClientMsg2Async(NetworkConnection conn, ExampleSendMsg2 clientMsg)
+        {
+            await UniTask.DelayFrame(180);
+            Debug.Log($"Client send message: {clientMsg.value}");
+            var result = new ExampleResponseMsg2
+            {
+                value = $"{nameof(HandleExampleClientMsg2Async)} ({clientMsg.index})"
+            };
+            return result;
+        }
+
+        private ExampleResponseMsg1 HandleExampleClientMsg1(NetworkConnection conn, ExampleSendMsg1 clientMsg)
+        {
+            Debug.Log($"Client send message: {clientMsg.value}");
+            var result = new ExampleResponseMsg1
+            {
+                value = $"{nameof(HandleExampleClientMsg1)} ({clientMsg.index})"
+            };
+            return result;
+        }
+
+        private async UniTask<ExampleResponseMsg3> HandleExampleClientMsg3Async1(NetworkConnection conn, ExampleSendMsg3 clientMsg)
+        {
+            await UniTask.DelayFrame(Random.Range(100, 1000));
+            Debug.Log($"Client send message: {clientMsg.value}");
+            var result = new ExampleResponseMsg3
+            {
+                value = $"{nameof(HandleExampleClientMsg3Async1)} ({clientMsg.index})"
+            };
+            return result;
+        }
+
+        private async UniTask<ExampleResponseMsg3> HandleExampleClientMsg3Async2(NetworkConnection conn, ExampleSendMsg3 clientMsg)
+        {
+            await UniTask.DelayFrame(Random.Range(100, 1000));
+            Debug.Log($"Client send message: {clientMsg.value}");
+            var result = new ExampleResponseMsg3
+            {
+                value = $"{nameof(HandleExampleClientMsg3Async2)} ({clientMsg.index})"
+            };
+            return result;
+        }
+
+        private async UniTask<ExampleResponseMsg3> HandleExampleClientMsg3Async3(NetworkConnection conn, ExampleSendMsg3 clientMsg)
+        {
+            await UniTask.DelayFrame(Random.Range(100, 1000));
+            Debug.Log($"Client send message: {clientMsg.value}");
+            var result = new ExampleResponseMsg3
+            {
+                value = $"{nameof(HandleExampleClientMsg3Async3)} ({clientMsg.index})"
+            };
+            return result;
+        }
+
+        public struct ExampleSendMsg1 : NetworkMessage
+        {
+            public int index;
+            public string value;
+        }
+        public struct ExampleResponseMsg1 : NetworkMessage
+        {
+            public string value;
+        }
+        public struct ExampleSendMsg2 : NetworkMessage
+        {
+            public int index;
+            public string value;
+        }
+        public struct ExampleResponseMsg2 : NetworkMessage
+        {
+            public string value;
+        }
+        public struct ExampleSendMsg3 : NetworkMessage
+        {
+            public int index;
+            public string value;
+        }
+        public struct ExampleResponseMsg3 : NetworkMessage
+        {
+            public string value;
+        }
+
+#endregion
+#endif
+
+#if UNITY_EDITOR && TEST_RCM
         [CustomEditor(typeof(RCM_Client))]
         public class RCM_ClientEditor : Editor
         {
@@ -210,6 +322,8 @@ namespace RCore.RCM
             {
                 base.OnInspectorGUI();
 
+                EditorGUILayout.LabelField("Operation Message Wrapper Example", GUI.skin.horizontalSlider);
+
                 if (GUILayout.Button("Send Hello"))
                     RCM.Client.Send(101, "Hello", svReponse =>
                     {
@@ -222,11 +336,13 @@ namespace RCore.RCM
                         Debug.Log($"[CLIENT] Server response: {svReponse}");
                     });
 
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+                //===================================================================================
 
-                if (GUILayout.Button("Send Example Message"))
+                EditorGUILayout.LabelField("Pure Message Wrapper Example", GUI.skin.horizontalSlider);
+
+                if (GUILayout.Button("Send Message"))
                 {
-                    m_Script.m_ExampleClientMessageHandler.ClientSend(new ExampleSendMessage1()
+                    m_Script.m_ExampleClientMsgHandler.ClientSend(new ExampleSendMsg1()
                     {
                         value = "Hello Server",
                     }, svResponse =>
@@ -234,9 +350,9 @@ namespace RCore.RCM
                         Debug.Log($"Server response message: {svResponse.value}");
                     });
                 }
-                if (GUILayout.Button("Send Example Message Async"))
+                if (GUILayout.Button("Send Message Async"))
                 {
-                    m_Script.m_ExampleClientMessageHandlerAsync.ClientSend(new ExampleSendMessage2()
+                    m_Script.m_ExampleClientMsgHandlerAsync.ClientSend(new ExampleSendMsg2()
                     {
                         value = "Hello Server",
                     }, svResponse =>
@@ -244,12 +360,12 @@ namespace RCore.RCM
                         Debug.Log($"Server response message: {svResponse.value}");
                     });
                 }
-                if (GUILayout.Button("Send Multi Example Message"))
+                if (GUILayout.Button("Send Multi Message"))
                 {
                     for (int i = 0; i < 10; i++)
                     {
                         int index = i;
-                        m_Script.m_ExampleClientMessageHandlerAsync.ClientSend(new ExampleSendMessage2()
+                        m_Script.m_ExampleClientMsgHandlerAsync.ClientSend(new ExampleSendMsg2()
                         {
                             index = index,
                             value = $"Hello Server ({index})",
@@ -259,29 +375,20 @@ namespace RCore.RCM
                         });
                     }
                 }
+                if (GUILayout.Button("Send Message with multi Responses"))
+                {
+                    m_Script.m_ExampleClientMsgMultiHandlersAsync.ClientSend(new ExampleSendMsg3()
+                    {
+                        value = "Client is testing multi responses"
+                    }, svResponse =>
+                    {
+                        Debug.Log($"Server response message: {svResponse.value}");
+                    });
+                }
             }
         }
 #endif
-        public struct ExampleSendMessage1 : NetworkMessage
-        {
-            public int index;
-            public string value;
-        }
-        public struct ExampleResponseMessage1 : NetworkMessage
-        {
-            public int index;
-            public string value;
-        }
-        public struct ExampleSendMessage2 : NetworkMessage
-        {
-            public int index;
-            public string value;
-        }
-        public struct ExampleResponseMessage2 : NetworkMessage
-        {
-            public int index;
-            public string value;
-        }
-#endif
+
     }
 }
+#endif

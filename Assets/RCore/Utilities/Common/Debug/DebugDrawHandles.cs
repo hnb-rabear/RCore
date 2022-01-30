@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - nbhung71711 @gmail.com - 2017
+ * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 #pragma warning disable 0649
 #if UNITY_EDITOR

@@ -513,14 +513,15 @@ namespace RCore.Common
     {
         #region File Utilities
 
-        public static void SaveFilePanel(string mainDirectory, string defaultName, string content)
+        public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt")
         {
             if (string.IsNullOrEmpty(mainDirectory))
                 mainDirectory = Application.dataPath;
 
-            string path = EditorUtility.SaveFilePanel("Save File", mainDirectory, defaultName, "json,txt");
+            string path = EditorUtility.SaveFilePanel("Save File", mainDirectory, defaultName, extension);
             if (!string.IsNullOrEmpty(path))
                 SaveFile(path, content);
+            return path;
         }
 
         public static void SaveFile(string path, string content)
@@ -1245,7 +1246,7 @@ namespace RCore.Common
                                 list[i] = (T)ObjectField<T>(list[i], "", 0, boxSize, true);
                             EditorGUILayout.LabelField((i + 1).ToString(), GUILayout.Width(25));
                             if (pLabels != null && i < pLabels.Count)
-                                LabelField(pLabels[i], (int)Mathf.Max(pLabels[i].Length * 6.5f, 100), false);
+                                LabelField(pLabels[i], (int)Mathf.Max(pLabels[i].Length * 9f, 100), false);
                             list[i] = (T)ObjectField<T>(list[i], "");
                             if (!pReadOnly)
                             {
@@ -1692,24 +1693,6 @@ namespace RCore.Common
                 EditorGUI.LabelField(rect, pName);
             };
             return reorderableList;
-        }
-
-        public static List<AnimationClip> GetAnimClipsFromFBX()
-        {
-            var list = new List<AnimationClip>();
-            var selections = Selection.objects;
-            for (int i = 0; i < selections.Length; i++)
-            {
-                var path = AssetDatabase.GetAssetPath(selections[i]);
-                var representations = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
-                foreach (var asset in representations)
-                {
-                    var clip = asset as AnimationClip;
-                    if (clip != null)
-                        list.Add(clip);
-                }
-            }
-            return list;
         }
 
         public static void ReplaceGameobjectsInScene(ref List<GameObject> selections, List<GameObject> prefabs)
@@ -2292,6 +2275,51 @@ namespace RCore.Common
             }
 
             return list;
+        }
+
+        public static List<AnimationClip> GetAnimClipsFromFBX()
+        {
+            var list = new List<AnimationClip>();
+            var selections = Selection.objects;
+            for (int i = 0; i < selections.Length; i++)
+            {
+                var path = AssetDatabase.GetAssetPath(selections[i]);
+                var representations = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
+                foreach (var asset in representations)
+                {
+                    var clip = asset as AnimationClip;
+                    if (clip != null)
+                        list.Add(clip);
+                }
+            }
+            return list;
+        }
+
+        public static ModelImporterClipAnimation[] GetAnimationsFromModel(string pPath)
+        {
+            ModelImporter mi = AssetImporter.GetAtPath(pPath) as ModelImporter;
+            if (mi != null)
+                return mi.defaultClipAnimations;
+            return null;
+        }
+
+        public static AnimationClip GetAnimationFromModel(string pPath, string pName)
+        {
+            //var anims = GetAnimationsFromModel(pPath);
+            //if (anims != null)
+            //    foreach (var anim in anims)
+            //        if (anim.name == pName)
+            //            return anim;
+            //return null;
+
+            var representations = AssetDatabase.LoadAllAssetRepresentationsAtPath(pPath);
+            foreach (var asset in representations)
+            {
+                var clip = asset as AnimationClip;
+                if (clip != null && clip.name == pName)
+                    return clip;
+            }
+            return null;
         }
 
         #endregion

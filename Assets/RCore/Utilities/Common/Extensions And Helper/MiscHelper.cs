@@ -125,6 +125,11 @@ namespace RCore.Common
 #endif
             }
         }
+    
+        public static int GenerateHashCode(int a, int b)
+        {
+            return (a * 13) ^ b;
+        }
     }
 
     public static class MiscExtension
@@ -144,6 +149,14 @@ namespace RCore.Common
             // Creates a TextInfo based on the "en-US" culture.
             TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
             return textInfo.ToTitleCase(pString);
+        }
+
+        public static string ToLowerCaseFirstChar(this string pString)
+        {
+            if (string.IsNullOrEmpty(pString) || char.IsLower(pString[0]))
+                return pString;
+
+            return char.ToLower(pString[0]) + pString.Substring(1);
         }
 
         public static bool InsideBounds(this Vector2 pPosition, Bounds pBounds)

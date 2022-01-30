@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - Nguyen Ba Hung - nbhung71711@gmail.com 
+ * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
 using System;
@@ -131,6 +131,7 @@ namespace RCore.Editor
             mBackupProfile.autoConnectProfiler = EditorUserBuildSettings.connectProfiler;
             mBackupProfile.buildAppBundle = EditorUserBuildSettings.buildAppBundle;
             mBackupProfile.allowDebugging = EditorUserBuildSettings.allowDebugging;
+            mBackupProfile.enableHeadlessMode = EditorUserBuildSettings.enableHeadlessMode;
         }
 
         private static void RestoreSettings()
@@ -152,6 +153,7 @@ namespace RCore.Editor
             EditorUserBuildSettings.connectProfiler = mBackupProfile.autoConnectProfiler;
             EditorUserBuildSettings.buildAppBundle = mBackupProfile.buildAppBundle;
             EditorUserBuildSettings.allowDebugging = mBackupProfile.allowDebugging;
+            EditorUserBuildSettings.enableHeadlessMode = mBackupProfile.enableHeadlessMode;
         }
 
         public static List<BuildPlayerOptions> GetPlayerBuildOptions(BuildProfile pProfile)
@@ -270,6 +272,7 @@ namespace RCore.Editor
             EditorUserBuildSettings.connectProfiler = pProfile.developmentBuild && pProfile.autoConnectProfiler;
             EditorUserBuildSettings.buildAppBundle = pProfile.buildAppBundle;
             EditorUserBuildSettings.allowDebugging = pProfile.developmentBuild && pProfile.allowDebugging;
+            EditorUserBuildSettings.enableHeadlessMode = pProfile.enableHeadlessMode;
         }
 
         public static Texture2D FindIcon(BuildTargetGroup target, bool small = false)

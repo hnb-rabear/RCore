@@ -29,7 +29,7 @@ MonoBehaviour:
       enabled: 0
     - name: USE_DOTWEEN
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: MIRROR
       color: {r: 0, g: 0.8470589, b: 1, a: 1}
       enabled: 1
@@ -105,6 +105,12 @@ MonoBehaviour:
     - name: MIRROR_53_0_OR_NEWER
       color: {r: 0, g: 0.8484955, b: 1, a: 1}
       enabled: 1
+    - name: MIRROR_55_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_57_0_OR_NEWER
+      color: {r: 0, g: 0.8470589, b: 1, a: 1}
+      enabled: 1
     - name: ODIN_INSPECTOR
       color: {r: 1, g: 0.7463965, b: 0, a: 1}
       enabled: 1
@@ -116,7 +122,7 @@ MonoBehaviour:
       enabled: 1
     - name: ENABLE_PLAYFABSERVER_API
       color: {r: 0.9843138, g: 0.42352945, b: 0.13333334, a: 1}
-      enabled: 1
-    - name: ADDRESSABLES
+      enabled: 0
+    - name: UNITY_CLIENT
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0

@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - nbhung71711@gmail.com - 2018
+ * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
 using UnityEngine;
@@ -43,13 +43,15 @@ namespace RCore.Pattern.Data
                 Save(true);
         }
 
-        public void OnApplicationQuit()
+#if !UNITY_WEBGL
+        private void OnApplicationQuit()
         {
             foreach (var item in mMainGroups)
                 foreach (var g in item.Value)
                     g.OnApplicationQuit();
             Save(true);
         }
+#endif
 
         #endregion
 

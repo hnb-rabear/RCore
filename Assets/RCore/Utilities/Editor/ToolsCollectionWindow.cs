@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using System;
-using Debug = RCore.Common.Debug;
+using Debug = UnityEngine.Debug;
+using System.IO;
 
 namespace RCore.Editor
 {
@@ -16,53 +17,56 @@ namespace RCore.Editor
         {
             mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, false, false);
 
-            GUILayout.Space(15);
+            GUILayout.Space(10);
             DrawGameObjectUtilities();
 
-            GUILayout.Space(15);
+            GUILayout.Space(10);
             DrawRendererUtilities();
 
-            GUILayout.Space(15);
+            GUILayout.Space(10);
             DrawUIUtilties();
 
-            GUILayout.Space(15);
+            GUILayout.Space(10);
             DrawMathUtitlies();
+
+            GUILayout.Space(10);
+            DrawGenerators();
 
             GUILayout.EndScrollView();
         }
 
         #region GameObject Utilities
-        public List<GameObject> sources = new List<GameObject>();
-        public List<GameObject> prefabs = new List<GameObject>();
+        private List<GameObject> m_ReplacableGameObjects = new List<GameObject>();
+        private List<GameObject> m_Prefabs = new List<GameObject>();
         private void DrawGameObjectUtilities()
         {
             EditorHelper.HeaderFoldout("GameObject Utilties", "", () =>
             {
-                ReplaceGameobjects();
+                ReplaceGameobjectsInScene();
                 FindGameObjectsMissingScript();
             });
         }
-        private void ReplaceGameobjects()
+        private void ReplaceGameobjectsInScene()
         {
-            if (EditorHelper.HeaderFoldout("Replace gameobjects"))
+            if (EditorHelper.HeaderFoldout("Replace gameobjects in scene"))
                 EditorHelper.BoxVertical(() =>
                 {
-                    if (sources == null || sources.Count == 0)
+                    if (m_ReplacableGameObjects == null || m_ReplacableGameObjects.Count == 0)
                         EditorGUILayout.HelpBox("Select at least one Object to see how it work", MessageType.Info);
 
-                    EditorHelper.ListObjects("Replaceable Objects", ref sources, null, false);
-                    EditorHelper.ListObjects("Prefabs", ref prefabs, null, false);
+                    EditorHelper.ListObjects("Replaceable Objects", ref m_ReplacableGameObjects, null, false);
+                    EditorHelper.ListObjects("Prefabs", ref m_Prefabs, null, false);
 
                     if (GUILayout.Button("Replace"))
-                        EditorHelper.ReplaceGameobjectsInScene(ref sources, prefabs);
+                        EditorHelper.ReplaceGameobjectsInScene(ref m_ReplacableGameObjects, m_Prefabs);
                 }, Color.white, true);
         }
-        private bool mAlsoChildren;
+        private bool m_AlsoChildren;
         private void FindGameObjectsMissingScript()
         {
             if (EditorHelper.HeaderFoldout("Find Gameobjects missing script"))
             {
-                mAlsoChildren = EditorHelper.Toggle(mAlsoChildren, "Also Children of children");
+                m_AlsoChildren = EditorHelper.Toggle(m_AlsoChildren, "Also Children of children");
                 if (!SelectedObject())
                     return;
 
@@ -83,7 +87,7 @@ namespace RCore.Editor
                             }
                         }
 
-                        if (mAlsoChildren)
+                        if (m_AlsoChildren)
                         {
                             var children = objs[i].GetAllChildren();
                             for (int k = children.Count - 1; k >= 0; k--)
@@ -108,10 +112,10 @@ namespace RCore.Editor
         #endregion
         //===================================================================================================
         #region Renderer Utilities
-        private int mMeshCount = 1;
-        private int mVertexCount;
-        private int mSubmeshCount;
-        private int mTriangleCount;
+        private int m_MeshCount = 1;
+        private int m_VertexCount;
+        private int m_SubmeshCount;
+        private int m_TriangleCount;
         private void DrawRendererUtilities()
         {
             EditorHelper.HeaderFoldout("Renderer Utilties", "", () =>
@@ -125,22 +129,22 @@ namespace RCore.Editor
             if (EditorHelper.HeaderFoldout("Mesh Info"))
                 EditorHelper.BoxVertical(() =>
                 {
-                    if (mMeshCount == 0)
+                    if (m_MeshCount == 0)
                         EditorGUILayout.HelpBox("Select at least one Mesh Object to see how it work", MessageType.Info);
 
-                    if (mMeshCount > 1)
+                    if (m_MeshCount > 1)
                     {
-                        EditorGUILayout.LabelField("Total Vertices: ", mVertexCount.ToString());
-                        EditorGUILayout.LabelField("Total Triangles: ", mTriangleCount.ToString());
-                        EditorGUILayout.LabelField("Total SubMeshes: ", mSubmeshCount.ToString());
-                        EditorGUILayout.LabelField("Avr Vertices: ", (mVertexCount / mMeshCount).ToString());
-                        EditorGUILayout.LabelField("Avr Triangles: ", (mTriangleCount / mMeshCount).ToString());
+                        EditorGUILayout.LabelField("Total Vertices: ", m_VertexCount.ToString());
+                        EditorGUILayout.LabelField("Total Triangles: ", m_TriangleCount.ToString());
+                        EditorGUILayout.LabelField("Total SubMeshes: ", m_SubmeshCount.ToString());
+                        EditorGUILayout.LabelField("Avr Vertices: ", (m_VertexCount / m_MeshCount).ToString());
+                        EditorGUILayout.LabelField("Avr Triangles: ", (m_TriangleCount / m_MeshCount).ToString());
                     }
 
-                    mVertexCount = 0;
-                    mTriangleCount = 0;
-                    mSubmeshCount = 0;
-                    mMeshCount = 0;
+                    m_VertexCount = 0;
+                    m_TriangleCount = 0;
+                    m_SubmeshCount = 0;
+                    m_MeshCount = 0;
 
                     foreach (GameObject g in Selection.gameObjects)
                     {
@@ -151,10 +155,10 @@ namespace RCore.Editor
                             var a = filter.sharedMesh.vertexCount;
                             var b = filter.sharedMesh.triangles.Length / 3;
                             var c = filter.sharedMesh.subMeshCount;
-                            mVertexCount += a;
-                            mTriangleCount += b;
-                            mSubmeshCount += c;
-                            mMeshCount += 1;
+                            m_VertexCount += a;
+                            m_TriangleCount += b;
+                            m_SubmeshCount += c;
+                            m_MeshCount += 1;
 
                             EditorGUILayout.Space();
                             EditorGUILayout.LabelField(g.name);
@@ -176,10 +180,10 @@ namespace RCore.Editor
                                 b += obj.sharedMesh.triangles.Length / 3;
                                 c += obj.sharedMesh.subMeshCount;
                             }
-                            mVertexCount += a;
-                            mTriangleCount += b;
-                            mSubmeshCount += c;
-                            mMeshCount += 1;
+                            m_VertexCount += a;
+                            m_TriangleCount += b;
+                            m_SubmeshCount += c;
+                            m_MeshCount += 1;
                             EditorGUILayout.Space();
                             EditorGUILayout.LabelField(g.name);
                             EditorGUILayout.LabelField("Vertices: ", a.ToString());
@@ -249,8 +253,8 @@ namespace RCore.Editor
             CapitalizeEachWord,
             SentenceCase
         }
-        private FormatType mFormatType;
-        private int mTextCount;
+        private FormatType m_FormatType;
+        private int m_TextCount;
         private void DrawUIUtilties()
         {
             EditorHelper.HeaderFoldout("UI Utilties", "", () =>
@@ -269,14 +273,14 @@ namespace RCore.Editor
             {
                 GUILayout.BeginVertical("box");
                 {
-                    if (mTextCount == 0)
+                    if (m_TextCount == 0)
                         EditorGUILayout.HelpBox("Select at least one Text Object to see how it work", MessageType.Info);
                     else
-                        EditorGUILayout.LabelField("Text Count: ", mTextCount.ToString());
+                        EditorGUILayout.LabelField("Text Count: ", m_TextCount.ToString());
 
-                    mFormatType = EditorHelper.DropdownListEnum(mFormatType, "Format Type");
+                    m_FormatType = EditorHelper.DropdownListEnum(m_FormatType, "Format Type");
 
-                    mTextCount = 0;
+                    m_TextCount = 0;
                     var allTexts = new List<Text>();
                     var allTextPros = new List<TextMeshProUGUI>();
                     foreach (GameObject g in Selection.gameObjects)
@@ -285,14 +289,14 @@ namespace RCore.Editor
                         var textPros = g.FindComponentsInChildren<TextMeshProUGUI>();
                         if (texts.Count > 0)
                         {
-                            mTextCount += texts.Count;
+                            m_TextCount += texts.Count;
                             allTexts.AddRange(texts);
                             foreach (var t in allTexts)
                                 EditorGUILayout.LabelField("Text: ", t.name.ToString());
                         }
                         if (textPros.Count > 0)
                         {
-                            mTextCount += textPros.Count;
+                            m_TextCount += textPros.Count;
                             allTextPros.AddRange(textPros);
                             foreach (var t in allTextPros)
                                 EditorGUILayout.LabelField("Text Mesh Pro: ", t.name.ToString());
@@ -303,7 +307,7 @@ namespace RCore.Editor
                     {
                         foreach (var t in allTexts)
                         {
-                            switch (mFormatType)
+                            switch (m_FormatType)
                             {
                                 case FormatType.UpperCase:
                                     t.text = t.text.ToUpper();
@@ -321,7 +325,7 @@ namespace RCore.Editor
                         }
                         foreach (var t in allTextPros)
                         {
-                            switch (mFormatType)
+                            switch (m_FormatType)
                             {
                                 case FormatType.UpperCase:
                                     t.text = t.text.ToUpper();
@@ -342,24 +346,24 @@ namespace RCore.Editor
                 GUILayout.EndVertical();
             }
         }
-        private float mImgWidth;
-        private float mImgHeight;
-        private int mCountImgs;
+        private float m_ImgWidth;
+        private float m_ImgHeight;
+        private int m_CountImgs;
         private void SketchImages()
         {
             if (EditorHelper.HeaderFoldout("Sketch Images"))
             {
                 GUILayout.BeginVertical("box");
                 {
-                    if (mCountImgs == 0)
+                    if (m_CountImgs == 0)
                         EditorGUILayout.HelpBox("Select at least one Image Object to see how it work", MessageType.Info);
                     else
-                        EditorGUILayout.LabelField("Image Count: ", mCountImgs.ToString());
+                        EditorGUILayout.LabelField("Image Count: ", m_CountImgs.ToString());
 
-                    mImgWidth = EditorHelper.FloatField(mImgWidth, "Width");
-                    mImgHeight = EditorHelper.FloatField(mImgHeight, "Height");
+                    m_ImgWidth = EditorHelper.FloatField(m_ImgWidth, "Width");
+                    m_ImgHeight = EditorHelper.FloatField(m_ImgHeight, "Height");
 
-                    mCountImgs = 0;
+                    m_CountImgs = 0;
                     var allImages = new List<Image>();
                     foreach (GameObject g in Selection.gameObjects)
                     {
@@ -377,7 +381,7 @@ namespace RCore.Editor
                         onPressed = () =>
                         {
                             foreach (var img in allImages)
-                                img.SketchByHeight(mImgHeight);
+                                img.SketchByHeight(m_ImgHeight);
                         }
                     });
                     buttons.Add(new EditorButton()
@@ -386,7 +390,7 @@ namespace RCore.Editor
                         onPressed = () =>
                         {
                             foreach (var img in allImages)
-                                img.SketchByWidth(mImgWidth);
+                                img.SketchByWidth(m_ImgWidth);
                         }
                     });
                     buttons.Add(new EditorButton()
@@ -395,7 +399,7 @@ namespace RCore.Editor
                         onPressed = () =>
                         {
                             foreach (var img in allImages)
-                                img.Sketch(new Vector2(mImgWidth, mImgHeight));
+                                img.Sketch(new Vector2(m_ImgWidth, m_ImgHeight));
                         }
                     });
                     EditorHelper.GridDraws(2, buttons);
@@ -567,7 +571,7 @@ namespace RCore.Editor
                                 if (m_ColorBlocksForChange[3])
                                     colors.disabledColor = m_ButtonColors.disabledColor;
                                 button.colors = colors;
-                                Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+                                Common.Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
                             }
                             EditorUtility.SetDirty(buttons.Key);
                         }
@@ -618,7 +622,7 @@ namespace RCore.Editor
                                     animator = button.gameObject.AddComponent<Animator>();
                                 button.transition = Selectable.Transition.Animation;
                                 animator.runtimeAnimatorController = m_ButtonAnimation;
-                                Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+                                Common.Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
                             }
                             EditorUtility.SetDirty(buttons.Key);
                         }
@@ -659,11 +663,11 @@ namespace RCore.Editor
                             foreach (var text in texts.Value)
                             {
                                 if (text.font == m_Font)
-                                    Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
+                                    Common.Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
                                 else
                                 {
                                     text.font = m_Font;
-                                    Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+                                    Common.Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
                                 }
                             }
                             EditorUtility.SetDirty(texts.Key);
@@ -705,11 +709,11 @@ namespace RCore.Editor
                             foreach (var text in texts.Value)
                             {
                                 if (text.font == m_TMPFont)
-                                    Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
+                                    Common.Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
                                 else
                                 {
                                     text.font = m_TMPFont;
-                                    Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+                                    Common.Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
                                 }
                             }
                             EditorUtility.SetDirty(texts.Key);
@@ -728,7 +732,7 @@ namespace RCore.Editor
         #endregion
         //===================================================================================================
         #region Math Utilities
-        private DayOfWeek mNextDayOfWeeok;
+        private DayOfWeek m_NextDayOfWeeok;
         private void DrawMathUtitlies()
         {
             EditorHelper.HeaderFoldout("Math Utitlies", "", () =>
@@ -740,12 +744,111 @@ namespace RCore.Editor
         {
             EditorHelper.BoxVertical("Seconds till day of week", () =>
             {
-                mNextDayOfWeeok = EditorHelper.DropdownListEnum<DayOfWeek>(mNextDayOfWeeok, "Day of week");
-                var seconds = TimeHelper.GetSecondsTillDayOfWeek(mNextDayOfWeeok, DateTime.Now);
+                m_NextDayOfWeeok = EditorHelper.DropdownListEnum<DayOfWeek>(m_NextDayOfWeeok, "Day of week");
+                var seconds = TimeHelper.GetSecondsTillDayOfWeek(m_NextDayOfWeeok, DateTime.Now);
                 EditorHelper.TextField(seconds.ToString(), "Seconds till day of week", 200);
-                seconds = TimeHelper.GetSecondsTillEndDayOfWeek(mNextDayOfWeeok, DateTime.Now);
+                seconds = TimeHelper.GetSecondsTillEndDayOfWeek(m_NextDayOfWeeok, DateTime.Now);
                 EditorHelper.TextField(seconds.ToString(), "Seconds till end day of week", 200);
             }, Color.white, true);
+        }
+        #endregion
+        //===================================================================================================
+        #region Generator
+        private List<ModelImporterClipAnimation> m_AnimationClips;
+        private List<string> m_AnimationPaths;
+        private EditorPrefsString m_AnimationClipsPackScript;
+        private EditorPrefsString m_AnimationClipsPackPath;
+        private void DrawGenerators()
+        {
+            GenerateAnimationsPackScript();
+        }
+        private void GenerateAnimationsPackScript()
+        {
+            if (EditorHelper.HeaderFoldout("Generate Animations Pack Script"))
+            {
+                if (!SelectedObject())
+                    return;
+
+                m_AnimationClipsPackScript = new EditorPrefsString("m_AnimationClipsPackScript");
+                m_AnimationClipsPackPath = new EditorPrefsString("m_AnimationClipsPackPath");
+
+                if (EditorHelper.Button("Scan"))
+                {
+                    m_AnimationClips = new List<ModelImporterClipAnimation>();
+                    m_AnimationPaths = new List<string>();
+
+                    var objs = Selection.gameObjects;
+                    for (int i = 0; i < objs.Length; i++)
+                    {
+                        var path = AssetDatabase.GetAssetPath(objs[i]);
+                        ModelImporter mi = AssetImporter.GetAtPath(path) as ModelImporter;
+                        ModelImporterClipAnimation[] anims = mi.defaultClipAnimations;
+                        foreach (var clip in anims)
+                        {
+                            m_AnimationClips.Add(clip);
+                            m_AnimationPaths.Add(path);
+                        }
+                    }
+                }
+
+                if (m_AnimationClips != null && m_AnimationClips.Count > 0)
+                {
+                    GUILayout.BeginVertical("box");
+                    for (int i = 0; i < m_AnimationClips.Count; i++)
+                    {
+                        var clip = m_AnimationClips[i];
+                        EditorGUILayout.LabelField($"{i}: {clip.name} | {clip.loop} | {clip.wrapMode}");
+                    }
+
+                    GUILayout.BeginHorizontal();
+                    m_AnimationClipsPackScript.Value = EditorHelper.TextField(m_AnimationClipsPackScript.Value, "Script Name");
+
+                    if (EditorHelper.Button("Generate Script"))
+                    {
+                        if (string.IsNullOrEmpty(m_AnimationClipsPackScript.Value))
+                            return;
+                        string templateFilePath = "Assets/RCore/Utilities/Editor/AnimationsPackTemplate.txt";
+                        string fieldsName = "";
+                        string enum_ = "\tpublic enum Clip \n\t{\n";
+                        string indexes = "";
+                        string arrayElements = "";
+                        string paths = "";
+                        string names = "";
+                        string validateFields = "";
+                        int i = 0;
+                        foreach (var clip in m_AnimationClips)
+                        {
+                            string fieldName = clip.name.ToCapitalizeEachWord().Replace(" ", "");
+                            fieldsName += $"\tpublic AnimationClip {fieldName};\n";
+                            enum_ += $"\t\t{fieldName} = {i},\n";
+                            indexes += $"\tpublic const int {fieldName}_ID = {i};\n";
+                            names += $"\tpublic const string {fieldName}_NAME = \"{clip.name}\";\n";
+                            arrayElements += $"\t\t\t\t{fieldName},\n";
+                            paths += $"\tpublic const string {fieldName}_PATH = \"{m_AnimationPaths[i]}\";\n";
+                            validateFields += $"\t\t\tif ({fieldName} == null) {fieldName} = RCore.Common.EditorHelper.GetAnimationFromModel({fieldName}_PATH, {fieldName}_NAME);\n";
+                            i++;
+                        }
+                        enum_ += "\t}\n";
+                        var generatedContent = AssetDatabase.LoadAssetAtPath<TextAsset>(templateFilePath).text;
+                        generatedContent = generatedContent
+                            .Replace("<class_name>", m_AnimationClipsPackScript.Value)
+                            .Replace("<enum_>", enum_)
+                            .Replace("<const>", indexes)
+                            .Replace("<fieldsName>", fieldsName)
+                            .Replace("<names>", names)
+                            .Replace("<paths>", paths)
+                            .Replace("<arrayElements>", arrayElements)
+                            .Replace("<validateFields>", validateFields);
+
+                        Debug.Log($"{generatedContent}");
+
+                        m_AnimationClipsPackPath.Value = EditorHelper.SaveFilePanel(m_AnimationClipsPackPath.Value, m_AnimationClipsPackScript.Value, generatedContent, "cs");
+                    }
+
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+                }
+            }
         }
         #endregion
         //===================================================================================================

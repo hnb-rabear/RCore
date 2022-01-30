@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
+ * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
  **/
 
 using System;
@@ -31,7 +31,7 @@ namespace RCore.Editor
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false);
             mSelectedCount = 0;
 
-            EditorHelper.BoxVertical("Simple Builder Util [by NBear]", () =>
+            EditorHelper.BoxVertical("Simple Builder Util [by RadBear]", () =>
             {
                 for (int i = 0; i < mBuildProfilesCollection.profiles.Count; i++)
                 {
@@ -112,6 +112,7 @@ namespace RCore.Editor
                                 profile.productName = EditorHelper.TextField(profile.productName, "Product Name", 120, 230);
                             }
                             EditorHelper.Seperator();
+                            profile.enableHeadlessMode = EditorHelper.Toggle(profile.enableHeadlessMode, "Enable Headless Mode", 120, 20);
                             profile.customPackage = EditorHelper.Toggle(profile.customPackage, "Custom Package", 120, 20);
                             if (!profile.customPackage)
                             {
@@ -301,8 +302,12 @@ namespace RCore.Editor
                                     BuilderUtil.OverwritePlayerBuildSettings(profile);
                                 if (EditorHelper.ButtonColor("Build Profile", Color.cyan))
                                     EditorApplication.delayCall += () => { Build(profile); };
-                                if (EditorHelper.ButtonColor("CLI", Color.cyan, 50))
-                                    Debug.Log(mCommandLine.Replace("[index]", i.ToString()).Replace("[path]", profile.outputFolder));
+                                if (EditorHelper.ButtonColor("Copy CLI", Color.cyan, 100))
+                                {
+                                    string cli = mCommandLine.Replace("[index]", i.ToString()).Replace("[path]", profile.outputFolder);
+                                    UniClipboard.SetText(cli);
+                                    Debug.Log(cli);
+                                }
                             });
                         }, default(Color), true);
                     }
@@ -358,7 +363,7 @@ namespace RCore.Editor
             unityExePath = string.Join("\\", splits);
 
             mCommandLine = $"{unityExePath} -quit -batchmode -projectPath {projectPath} " +
-                $"-executeMethod Utilities.Editor.BuilderUtil.BuildByCommandLine -profileIndex [index] -outputFolder [path]";
+                $"-executeMethod RCore.Editor.BuilderUtil.BuildByCommandLine -profileIndex [index] -outputFolder [path]";
         }
 
         private void BuildSelectedProfiles()

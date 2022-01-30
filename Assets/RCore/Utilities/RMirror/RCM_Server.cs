@@ -5,63 +5,53 @@
 #if MIRROR
 using Cysharp.Threading.Tasks;
 using Mirror;
-#endif
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Newtonsoft.Json;
 using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 namespace RCore.RCM
 {
-#if MIRROR
+    public interface IMirrorServerListener
+    {
+        void OnStartServer();
+        void OnStopServer();
+    }
     public struct ServerMessage : NetworkMessage
     {
         public byte k;
         public string v;
     }
-
     public delegate string ServerResponseDelegate(NetworkConnection conn, string data);
     public delegate UniTask<string> ServerResponseDelegateAsync(NetworkConnection conn, string data);
-#endif
+    
     public class RCM_Server : MonoBehaviour
     {
-#if MIRROR
-
-        /// <summary>
-        /// Invoked when server is initialized
-        /// </summary>
-        internal event Action StartedEvent;
-        internal event Action<NetworkConnection> ClientJoinedEvent;
-        internal event Action<NetworkConnection> ClientLeftEvent;
-
-        private Dictionary<byte, ServerResponseDelegate> m_ClientMessageHandlers = new Dictionary<byte, ServerResponseDelegate>();
-        private Dictionary<byte, ServerResponseDelegateAsync> m_ClientMessageHandlersAsync = new Dictionary<byte, ServerResponseDelegateAsync>();
-
-        /// <summary>
-        /// Should be called from <see cref="NetworkManager"/>
-        /// </summary>
-        internal void OnServerConnect(NetworkConnection conn)
+        private static RCM_Server m_Instance;
+        private Dictionary<byte, ServerResponseDelegate> m_ClientMessageHandlers;
+        private Dictionary<byte, ServerResponseDelegateAsync> m_ClientMessageHandlersAsync;
+        private List<IMirrorServerListener> m_Listeners;
+       
+        private void Awake()
         {
-            ClientJoinedEvent?.Invoke(conn);
+            if (m_Instance == null)
+                m_Instance = this;
+            else if (m_Instance != this)
+                Destroy(gameObject);
         }
 
-        /// <summary>
-        /// Should be called from <see cref="NetworkManager"/>
-        /// </summary>
-        internal void OnServerDisconnect(NetworkConnection conn)
+        public void Init()
         {
-            ClientLeftEvent?.Invoke(conn);
+            m_ClientMessageHandlers = new Dictionary<byte, ServerResponseDelegate>();
+            m_ClientMessageHandlersAsync = new Dictionary<byte, ServerResponseDelegateAsync>();
+            m_Listeners = new List<IMirrorServerListener>();
         }
 
-        /// <summary>
-        /// Should be called from <see cref="NetworkManager"/>
-        /// </summary>
-        internal void OnStartServer()
+        public void OnStartServer()
         {
-            StartedEvent?.Invoke();
             NetworkServer.RegisterHandler<WrapMessage>(HandleClientMessage);
 
 #if UNITY_EDITOR
@@ -69,6 +59,15 @@ namespace RCore.RCM
             RegisterHandler(101, HandleClientTestMessage101);
             RegisterHandlerAsync(102, HandleClientTestMessage102);
 #endif
+
+            foreach (var listener in m_Listeners)
+                listener.OnStartServer();
+        }
+
+        public void OnStopServer()
+        {
+            foreach (var listener in m_Listeners)
+                listener.OnStopServer();
         }
 
         public void SendToAll<T>(byte opCode, T pMessage) where T : struct
@@ -149,6 +148,22 @@ namespace RCore.RCM
                 m_ClientMessageHandlersAsync.Remove(opCode);
         }
 
+        public void Register<T>(T pListener) where T : IMirrorServerListener
+        {
+            if (!m_Listeners.Contains(pListener))
+            {
+                m_Listeners.Add(pListener);
+                if (NetworkServer.active)
+                    pListener.OnStartServer();
+            }
+        }
+
+        public void UnRegister<T>(T pListener) where T : IMirrorServerListener
+        {
+            m_Listeners.Remove(pListener);
+        }
+
+#if UNITY_EDITOR
         /// <summary>
         /// TEST
         /// </summary>
@@ -168,17 +183,9 @@ namespace RCore.RCM
             return "I'll kill you Client!";
         }
 
-#if UNITY_EDITOR
         [CustomEditor(typeof(RCM_Server))]
         public class RCM_ServerEditor : Editor
         {
-            private RCM_Server m_Script;
-
-            private void OnEnable()
-            {
-                m_Script = target as RCM_Server;
-            }
-
             public override void OnInspectorGUI()
             {
                 base.OnInspectorGUI();
@@ -190,7 +197,6 @@ namespace RCore.RCM
             }
         }
 #endif
-
-#endif
     }
 }
+#endif

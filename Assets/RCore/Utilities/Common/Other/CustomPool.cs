@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - nbhung71711@gmail.com - 2017
+ * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
 using System;
@@ -113,6 +113,17 @@ namespace RCore.Common
             foreach (var pool in poolDict)
             {
                 list.AddRange(pool.Value.ActiveList);
+            }
+            return list;
+        }
+
+        public List<T> GetAllItems()
+        {
+            var list = new List<T>();
+            foreach (var pool in poolDict)
+            {
+                list.AddRange(pool.Value.ActiveList);
+                list.AddRange(pool.Value.InactiveList);
             }
             return list;
         }

@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-
+#if UNITY_EDITOR
 [ExecuteInEditMode]
 public class Screenshot : EditorWindow
 {
@@ -214,3 +214,4 @@ public class Screenshot : EditorWindow
 	}
 
 }
+#endif

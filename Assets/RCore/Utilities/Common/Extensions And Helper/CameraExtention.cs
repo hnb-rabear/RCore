@@ -1,5 +1,5 @@
 ﻿/**
- * Author NBear - Nguyen Ba Hung - nbhung71711@gmail.com 
+ * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
 using UnityEngine;
