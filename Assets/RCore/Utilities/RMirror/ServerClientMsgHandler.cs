@@ -23,7 +23,7 @@ namespace RCore.RCM
     /// </summary>
     /// <typeparam name="SendMsgT"></typeparam>
     /// <typeparam name="ResponseMsgT"></typeparam>
-    public class ServerClientMsgHandler<SendMsgT, ResponseMsgT>
+    public class ServerClientMsgHandler<SendMsgT, ResponseMsgT> : IRCM_MsgHandler
         where SendMsgT : struct, NetworkMessage
         where ResponseMsgT : struct, NetworkMessage
     {
@@ -50,6 +50,26 @@ namespace RCore.RCM
         {
             m_ClientMsgResponser.RegisterHandler(pOnHandleServerResponse);
         }
+
+        public void OnStartClient()
+        {
+            m_ClientMsgResponser.OnStartClient();
+        }
+
+        public void OnStopClient()
+        {
+            m_ClientMsgResponser.OnStopClient();
+        }
+
+        public void OnStartServer()
+        {
+            m_ServerMsgSender.OnStartServer();
+        }
+
+        public void OnStopServer()
+        {
+            m_ServerMsgSender.OnStopServer();
+        }
     }
 
     #endregion
@@ -66,11 +86,6 @@ namespace RCore.RCM
         public float ResponseTime { get; private set; }
         private event Action<NetworkConnection, ResponseMsgT> m_OnClientResponse;
 
-        public ServerMsgSender()
-        {
-            NetworkServer.RegisterHandler<ResponseMsgT>(OnHandleClientMessage);
-        }
-
         public void Send<SendMsgT>(NetworkConnection conn, SendMsgT pMessage, Action<NetworkConnection, ResponseMsgT> pOnClientResponse)
             where SendMsgT : struct, NetworkMessage
         {
@@ -85,6 +100,16 @@ namespace RCore.RCM
             ResponseTime = Time.time;
             WaitForResponse = false;
             m_OnClientResponse?.Invoke(conn, clientMsg);
+        }
+
+        internal void OnStartServer()
+        {
+            NetworkServer.RegisterHandler<ResponseMsgT>(OnHandleClientMessage);
+        }
+
+        internal void OnStopServer()
+        {
+            NetworkServer.UnregisterHandler<ResponseMsgT>();
         }
     }
 
@@ -101,11 +126,6 @@ namespace RCore.RCM
         private HandleServerMessageDelegateTask<ServerMsgT, ResponseMsgT> m_HandleServerMessageAsync;
         private HandleServerMessageDelegate<ServerMsgT, ResponseMsgT> m_HandleServerMessage;
 
-        public ClientMsgResponser()
-        {
-            NetworkClient.RegisterHandler<ServerMsgT>(OnHandleServerMessage);
-        }
-
         public void RegisterHandler(HandleServerMessageDelegate<ServerMsgT, ResponseMsgT> pOnHandleServerMessage)
         {
             m_HandleServerMessage = pOnHandleServerMessage;
@@ -114,6 +134,16 @@ namespace RCore.RCM
         public void RegisterHandlerAsync(HandleServerMessageDelegateTask<ServerMsgT, ResponseMsgT> pOnHandleServerMessage)
         {
             m_HandleServerMessageAsync = pOnHandleServerMessage;
+        }
+
+        internal void OnStartClient()
+        {
+            NetworkClient.RegisterHandler<ServerMsgT>(OnHandleServerMessage);
+        }
+
+        internal void OnStopClient()
+        {
+            NetworkClient.UnregisterHandler<ServerMsgT>();
         }
 
         private async void OnHandleServerMessage(ServerMsgT serverMsg)

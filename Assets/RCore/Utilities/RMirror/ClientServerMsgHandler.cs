@@ -11,12 +11,6 @@ using Debug = RCore.Common.Debug;
 
 namespace RCore.RCM
 {
-    //public struct ConfirmMsgFromClient : NetworkMessage
-    //{
-    //    public ushort clientMsgId;
-    //    public ConfirmMsgFromClient(ushort pId) { clientMsgId = pId; }
-    //}
-
     public interface IMsgSender
     {
         bool SingleMessage { get; }
@@ -24,7 +18,7 @@ namespace RCore.RCM
         bool BlockInputWhileWait { get; }
     }
 
-    public interface IClientServerMsgHandler
+    public interface IRCM_MsgHandler
     {
         void OnStartClient();
         void OnStartServer();
@@ -53,7 +47,7 @@ namespace RCore.RCM
     /// </summary>
     /// <typeparam name="SendMsgT"></typeparam>
     /// <typeparam name="ResponseMsgT"></typeparam>
-    public class ClientServerMsgHandler<SendMsgT, ResponseMsgT> : IClientServerMsgHandler
+    public class ClientServerMsgHandler<SendMsgT, ResponseMsgT> : IRCM_MsgHandler
         where SendMsgT : struct, NetworkMessage
         where ResponseMsgT : struct, NetworkMessage
     {

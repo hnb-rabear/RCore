@@ -43,7 +43,7 @@ namespace RCore.Pattern.Data
                 Save(true);
         }
 
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
         private void OnApplicationQuit()
         {
             foreach (var item in mMainGroups)

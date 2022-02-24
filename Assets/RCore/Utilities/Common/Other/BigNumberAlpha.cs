@@ -658,7 +658,7 @@ namespace RCore.Common
             int len = valueLength + pow;
             if (len <= 3)
             {
-                return Math.Round(readableValue, 0).ToString();
+                return MathHelper.Round(readableValue, 2).ToString();
             }
 
             int integerPart = (len - 1) % 3 + 1;

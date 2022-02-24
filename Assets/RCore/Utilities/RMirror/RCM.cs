@@ -22,7 +22,7 @@ namespace RCore.RCM
         public static RCM_Server Server => m_Server;
 
         private static Dictionary<int, List<ServerResponseHistory>> m_ResponseHistories = new Dictionary<int, List<ServerResponseHistory>>();
-        private static List<IClientServerMsgHandler> m_ClientServerMsgHandlers;
+        private static List<IRCM_MsgHandler> m_MsgHandlers;
 
         static RCM()
         {
@@ -31,16 +31,37 @@ namespace RCore.RCM
             m_Client.Init();
             m_Server = m_RCMObject.AddComponent<RCM_Server>();
             m_Server.Init();
-            m_ClientServerMsgHandlers = new List<IClientServerMsgHandler>();
+            m_MsgHandlers = new List<IRCM_MsgHandler>();
             GameObject.DontDestroyOnLoad(m_RCMObject);
         }
 
+        /// <summary>
+        /// Client send and server response
+        /// </summary>
+        /// <typeparam name="ClientMsgT">Message client send</typeparam>
+        /// <typeparam name="ResponseMsgT">Message server response</typeparam>
+        /// <returns></returns>
         public static ClientServerMsgHandler<ClientMsgT, ResponseMsgT> AddClientServerMsgHandler<ClientMsgT, ResponseMsgT>(bool pRequireAuthentication = true, bool pBlockInputWhileWait = true, bool pSingleMessage = true)
             where ClientMsgT : struct, NetworkMessage
             where ResponseMsgT : struct, NetworkMessage
         {
             var handler = new ClientServerMsgHandler<ClientMsgT, ResponseMsgT>(pRequireAuthentication, pBlockInputWhileWait, pSingleMessage);
-            m_ClientServerMsgHandlers.Add(handler);
+            m_MsgHandlers.Add(handler);
+            return handler;
+        }
+
+        /// <summary>
+        /// Server send and client response
+        /// </summary>
+        /// <typeparam name="ServerMsgT">Message server send</typeparam>
+        /// <typeparam name="ResponseMsgT">Message client response</typeparam>
+        /// <returns></returns>
+        public static ServerClientMsgHandler<ServerMsgT, ResponseMsgT> AddServerClientMsgHandler<ServerMsgT, ResponseMsgT>()
+            where ServerMsgT : struct, NetworkMessage
+            where ResponseMsgT : struct, NetworkMessage
+        {
+            var handler = new ServerClientMsgHandler<ServerMsgT, ResponseMsgT>();
+            m_MsgHandlers.Add(handler);
             return handler;
         }
 
@@ -49,11 +70,10 @@ namespace RCore.RCM
         /// </summary>
         public static void OnStartServer()
         {
-            foreach (var handler in m_ClientServerMsgHandlers)
+            foreach (var handler in m_MsgHandlers)
                 handler.OnStartServer();
             m_Server.OnStartServer();
             m_ResponseHistories = new Dictionary<int, List<ServerResponseHistory>>();
-            //NetworkServer.RegisterHandler<ConfirmMsgFromClient>(HandleConfirmMsgFromClient);
         }
 
         /// <summary>
@@ -61,11 +81,9 @@ namespace RCore.RCM
         /// </summary>
         public static void OnStopServer()
         {
-            foreach (var handler in m_ClientServerMsgHandlers)
+            foreach (var handler in m_MsgHandlers)
                 handler.OnStopServer();
             m_Server.OnStopServer();
-
-            //NetworkServer.UnregisterHandler<ConfirmMsgFromClient>();
         }
 
         /// <summary>
@@ -73,7 +91,7 @@ namespace RCore.RCM
         /// </summary>
         public static void OnStartClient()
         {
-            foreach (var handler in m_ClientServerMsgHandlers)
+            foreach (var handler in m_MsgHandlers)
                 handler.OnStartClient();
             m_Client.OnStartClient();
         }
@@ -88,7 +106,7 @@ namespace RCore.RCM
         /// </summary>
         public static void OnStopClient()
         {
-            foreach (var handler in m_ClientServerMsgHandlers)
+            foreach (var handler in m_MsgHandlers)
                 handler.OnStopClient();
             m_Client.OnStopClient();
         }
@@ -110,21 +128,6 @@ namespace RCore.RCM
             m_Server.UnRegister(pListener);
         }
 
-
-        /// <summary>
-        /// Server received a Confirmation Message from Client about success message
-        /// </summary>
-        //private static void HandleConfirmMsgFromClient(NetworkConnection conn, ConfirmMsgFromClient msg)
-        //{
-        //    if (m_ResponseHistories.ContainsKey(conn.connectionId))
-        //    {
-        //        var histories = m_ResponseHistories[conn.connectionId];
-        //        for (int i = histories.Count - 1; i >= 0; i--)
-        //            if (histories[i].clientMsgId == msg.clientMsgId)
-        //                histories.RemoveAt(i);
-        //    }
-        //}
-
         /// <summary>
         /// Server save the last response which just sent to client
         /// </summary>
@@ -134,16 +137,6 @@ namespace RCore.RCM
                 m_ResponseHistories[connectionId].Add(history);
             else
                 m_ResponseHistories.Add(connectionId, new List<ServerResponseHistory>() { history });
-        }
-
-        public static void ResendLostMessages(NetworkConnection conn, int prevConnectionId)
-        {
-            //if (m_ResponseHistories.ContainsKey(prevConnectionId))
-            //{
-            //    var histories = m_ResponseHistories[prevConnectionId];
-            //    foreach (var history in histories)
-            //        conn.Send(history.responseMsg);
-            //}
         }
     }
 
