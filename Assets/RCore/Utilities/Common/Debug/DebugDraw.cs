@@ -22,6 +22,19 @@ namespace RCore.Common
         }
 
         [Conditional("UNITY_EDITOR")]
+        public static void DrawLines(Vector3[] points, Color color, float duration = 0.5f)
+        {
+            if (!DevSetting.Instance.enableDraw || points.Length < 2) return;
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (i < points.Length - 1)
+                    UnityEngine.Debug.DrawLine(points[i], points[i + 1], color, duration);
+                else
+                    UnityEngine.Debug.DrawLine(points[i], points[0], color, duration);
+            }
+        }
+
+        [Conditional("UNITY_EDITOR")]
         public static void DrawLine(Vector3 start, Vector3 dir, float length, Color color, float duration = 0.1f)
         {
             if (!DevSetting.Instance.EnableDraw) return;
@@ -139,48 +152,33 @@ namespace RCore.Common
             }
         }
 
-        public static List<Vector3> DrawGridLinesGizmos(Vector3 rootPos, int width, int length, float pHeight = 0, float pTileSize = 1)
+        [Conditional("UNITY_EDITOR")]
+        public static void DrawGridLinesGizmos(Vector3 rootPos, int width, int length, float pTileSize)
         {
-            var points = new List<Vector3>();
-            var from = rootPos;
-            var to = rootPos;
-            for (int i = 0; i <= width; i++)
+            for (int i = 0; i < width; i++)
             {
                 //Draw verticle line
-                from = rootPos;
+                var from = rootPos;
                 from.x += i * pTileSize;
-                to = rootPos;
+                var to = rootPos;
                 to.z += length * pTileSize;
                 to.x += i * pTileSize;
                 Gizmos.DrawLine(from, to);
             }
-            for (int i = 0; i <= length; i++)
+            for (int i = 0; i < length; i++)
             {
                 //Draw horizontal line
-                from = rootPos;
+                var from = rootPos;
                 from.z += i * pTileSize;
-                to = rootPos;
+                var to = rootPos;
                 to.x += width * pTileSize;
                 to.z += i * pTileSize;
                 Gizmos.DrawLine(from, to);
             }
-
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < length; j++)
-                {
-                    var pos = rootPos;
-                    pos.x += i + 1 / 2f;
-                    pos.z += j + 1 / 2f;
-                    points.Add(pos);
-                    Gizmos.DrawLine(pos, pos.AddY(pHeight));
-                }
-            }
-            return points;
         }
 
         [Conditional("UNITY_EDITOR")]
-        public static void DrawGridLines(Vector2 rootPos, float width, float length, Vector2 cellSize, float rootCellSize = 0, float centerCellSize = 0)
+        public static void DrawGridLinesGizmos(Vector2 rootPos, float width, float length, Vector2 cellSize, float rootCellSize = 0, float centerCellSize = 0)
         {
             Vector2 from = new Vector2();
             Vector2 to = new Vector2();
@@ -240,6 +238,40 @@ namespace RCore.Common
 
 
         [Conditional("UNITY_EDITOR")]
+        public static void DrawGridIsometricGizmos(Vector2 rootPos, float sizeX, float sizeY, Vector2 cellSize, bool pShowCoordinate = false, Color color = default(Color))
+        {
+            var offsetX = cellSize.x / 2f;
+            var offsetY = cellSize.y / 2f;
+            for (int y = 0; y < sizeY; y++)
+            {
+                for (int x = 0; x < sizeX; x++)
+                {
+                    var pos = new Vector2((x * offsetX) - (y * offsetX), (y * offsetY) + (x * offsetY));
+                    pos.x += rootPos.x;
+                    pos.y += rootPos.y;
+                    DrawGizmosPoint(pos, color, 0.1f);
+                    if (pShowCoordinate)
+                        DrawText($"({x},{y})", pos, color);
+                }
+            }
+
+            Gizmos.color = color;
+            for (int y = 0; y < sizeY; y++)
+            {
+                var pos1 = rootPos + new Vector2((0 * offsetX) - (y * offsetX), (y * offsetY) + (0 * offsetY));
+                var pos2 = rootPos + new Vector2(((sizeX - 1) * offsetX) - (y * offsetX), (y * offsetY) + ((sizeX - 1) * offsetY));
+                Gizmos.DrawLine(pos1, pos2);
+            }
+
+            for (int x = 0; x < sizeX; x++)
+            {
+                var pos1 = rootPos + new Vector2((x * offsetX) - (0 * offsetX), (0 * offsetY) + (x * offsetY));
+                var pos2 = rootPos + new Vector2((x * offsetX) - ((sizeY - 1) * offsetX), ((sizeY - 1) * offsetY) + (x * offsetY));
+                Gizmos.DrawLine(pos1, pos2);
+            }
+        }
+
+        [Conditional("UNITY_EDITOR")]
         public static void DrawGridLines(Vector3 rootPos, int width, int length, float pTileSize, Color pColor = default(Color), float pDuration = 0.1f)
         {
             for (int i = 0; i < width; i++)
@@ -280,10 +312,12 @@ namespace RCore.Common
             {
                 for (int i = 0; i < pPath.Count - 1; i++)
                 {
+                    Gizmos.DrawCube(pPath[i], Vector3.one * 0.1f);
                     Gizmos.DrawLine(pPath[i], pPath[i + 1]);
                 }
                 if (pLoop && pPath.Count > 2)
                 {
+                    Gizmos.DrawCube(pPath[pPath.Count - 1], Vector3.one * 0.1f);
                     Gizmos.DrawLine(pPath[0], pPath[pPath.Count - 1]);
                 }
             }
