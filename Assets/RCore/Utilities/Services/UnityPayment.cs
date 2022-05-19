@@ -9,16 +9,12 @@
 //#define INTERCEPT_PROMOTIONAL_PURCHASES // Enables intercepting promotional purchases that come directly from the Apple App Store
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Security;
 
 #if RECEIPT_VALIDATION
-using UnityEngine.Purchasing.Security;
-using RCore.Common;
 using Debug = UnityEngine.Debug;
 #endif
 
@@ -332,7 +328,9 @@ public class UnityPayment : IStoreListener
 #endif
         try
         {
+#if !UNITY_EDITOR
             m_Validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), appIdentifier);
+#endif
         }
         catch (NotImplementedException exception)
         {
@@ -340,8 +338,8 @@ public class UnityPayment : IStoreListener
         }
 #endif
 
-        // Now we're ready to initialize Unity IAP.
-        UnityPurchasing.Initialize(this, builder);
+            // Now we're ready to initialize Unity IAP.
+            UnityPurchasing.Initialize(this, builder);
     }
 
     /// <summary>

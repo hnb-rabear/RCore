@@ -24,7 +24,7 @@ namespace RCore.Common
         [Conditional("UNITY_EDITOR")]
         public static void DrawLines(Vector3[] points, Color color, float duration = 0.5f)
         {
-            if (!DevSetting.Instance.enableDraw || points.Length < 2) return;
+            if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
             for (int i = 0; i < points.Length; i++)
             {
                 if (i < points.Length - 1)
