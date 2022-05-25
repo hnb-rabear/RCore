@@ -35,7 +35,6 @@ namespace RCore.Components
         [SerializeField] protected PivotForScale mPivotForFX;
         [SerializeField] protected bool mEnabledFX = true;
         [SerializeField] protected Image mImg;
-        [SerializeField] protected RectTransform[] mRelatedObjects;
         [SerializeField] protected Vector2 mInitialScale = Vector2.one;
 
         [SerializeField] protected bool mGreyMatEnabled;
@@ -43,6 +42,10 @@ namespace RCore.Components
         [SerializeField] protected Sprite mImgActive;
         [SerializeField] protected Sprite mImgInactive;
         [SerializeField] protected string m_SfxClip = "sfx_button_click";
+
+        [SerializeField] protected bool mContentSwapEnabled;
+        [SerializeField] protected GameObject[] mContentActive;
+        [SerializeField] protected GameObject[] mContentInactive;
 
         public Image img
         {
@@ -62,7 +65,6 @@ namespace RCore.Components
         {
             get { return image != null ? image.rectTransform : null; }
         }
-        public RectTransform[] relatedObjects { get { return mRelatedObjects; } }
 
         private PivotForScale mPrePivot;
         private Action mInactionStateAction;
@@ -78,6 +80,14 @@ namespace RCore.Components
                     mImg.sprite = mImgActive;
                 else
                     imgMaterial = null;
+
+                if (mContentSwapEnabled)
+                {
+                    foreach (var obj in mContentActive)
+                        obj.SetActive(true);
+                    foreach (var obj in mContentInactive)
+                        obj.SetActive(false);
+                }
             }
             else
             {
@@ -87,13 +97,19 @@ namespace RCore.Components
                 }
                 else
                 {
-                    //Use grey material here
                     transform.localScale = mInitialScale;
-                    foreach (var obj in relatedObjects)
-                        obj.localScale = mInitialScale;
 
+                    //Use grey material here
                     if (mGreyMatEnabled)
                         imgMaterial = GetGreyMat();
+
+                    if (mContentSwapEnabled)
+                    {
+                        foreach (var obj in mContentActive)
+                            obj.SetActive(false);
+                        foreach (var obj in mContentInactive)
+                            obj.SetActive(true);
+                    }
                 }
             }
         }
@@ -116,12 +132,7 @@ namespace RCore.Components
             base.OnDisable();
 
             if (mEnabledFX)
-            {
                 transform.localScale = mInitialScale;
-                if (relatedObjects != null)
-                    foreach (var obj in relatedObjects)
-                        obj.localScale = mInitialScale;
-            }
         }
 
 #if UNITY_EDITOR
@@ -161,9 +172,6 @@ namespace RCore.Components
             if (mEnabledFX)
             {
                 transform.localScale = mInitialScale;
-                if (relatedObjects != null)
-                    foreach (var obj in relatedObjects)
-                        obj.localScale = mInitialScale;
             }
         }
 
@@ -185,20 +193,9 @@ namespace RCore.Components
                 {
                     mPrePivot = mPivotForFX;
                     RefreshPivot(rectTransform);
-                    if (relatedObjects != null)
-                    {
-                        foreach (var obj in relatedObjects)
-                            RefreshPivot(obj);
-                    }
                 }
 
                 transform.localScale = mInitialScale * 0.95f;
-                if (relatedObjects != null)
-                    if (relatedObjects != null)
-                    {
-                        foreach (var obj in relatedObjects)
-                            obj.localScale = mInitialScale * 0.95f;
-                    }
             }
         }
 
@@ -210,9 +207,6 @@ namespace RCore.Components
             if (mEnabledFX)
             {
                 transform.localScale = mInitialScale;
-                if (relatedObjects != null)
-                    foreach (var obj in relatedObjects)
-                        obj.localScale = mInitialScale;
             }
         }
 
@@ -231,11 +225,6 @@ namespace RCore.Components
         public void RefreshPivot()
         {
             RefreshPivot(rectTransform);
-            if (relatedObjects != null)
-            {
-                foreach (var obj in relatedObjects)
-                    RefreshPivot(obj);
-            }
         }
 
         private void RefreshPivot(RectTransform pRect)
@@ -319,12 +308,24 @@ namespace RCore.Components
                     EditorGUILayout.EndVertical();
                     EditorGUI.indentLevel--;
                 }
-
-                SerializedProperty relatedObjs = serializedObject.FindProperty("mRelatedObjects");
-                if (relatedObjs.isExpanded)
-                    EditorGUILayout.PropertyField(relatedObjs, true);
-                else
-                    EditorGUILayout.PropertyField(relatedObjs, new GUIContent(relatedObjs.displayName));
+                var contentSwapEnabled = EditorHelper.SerializeField(serializedObject, "mContentSwapEnabled");
+                if (contentSwapEnabled.boolValue)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.BeginVertical("box");
+                    SerializedProperty mContentActive = serializedObject.FindProperty("mContentActive");
+                    if (mContentActive.isExpanded)
+                        EditorGUILayout.PropertyField(mContentActive, true);
+                    else
+                        EditorGUILayout.PropertyField(mContentActive, new GUIContent(mContentActive.displayName));
+                    SerializedProperty mContentInactive = serializedObject.FindProperty("mContentInactive");
+                    if (mContentInactive.isExpanded)
+                        EditorGUILayout.PropertyField(mContentInactive, true);
+                    else
+                        EditorGUILayout.PropertyField(mContentInactive, new GUIContent(mContentInactive.displayName));
+                    EditorGUILayout.EndVertical();
+                    EditorGUI.indentLevel--;
+                }
             }
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();

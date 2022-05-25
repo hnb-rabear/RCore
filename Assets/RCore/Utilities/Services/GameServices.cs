@@ -607,7 +607,7 @@ namespace RCore.Service.GPGS
 
                 if (request.fromRank > 0 && request.scoreCount > 0)
                 {
-                    ldb.range = new Range(request.fromRank, request.scoreCount);
+                    ldb.range = new UnityEngine.SocialPlatforms.Range(request.fromRank, request.scoreCount);
                 }
 
                 ldb.LoadScores((bool success) =>
