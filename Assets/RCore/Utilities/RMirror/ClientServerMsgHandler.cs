@@ -143,8 +143,8 @@ namespace RCore.RCM
         public float ResponseTime { get; private set; }
         public bool SingleMessage { get; private set; }
         public bool BlockInputWhileWait { get; private set; }
-        private bool m_RequireAuthentication;
-        private ushort m_MessageId;
+        public bool requireAuthentication { get; private set; }
+        public ushort messageId { get; private set; }
 
         private event Action<ResponseMsgT> m_OnServerResponse;
         public event Action<ResponseMsgT> m_OnServerResponseCustom;
@@ -153,12 +153,12 @@ namespace RCore.RCM
         {
             SingleMessage = pSingleMessage;
             BlockInputWhileWait = pBlockInputWhiteWait;
-            m_RequireAuthentication = pRequireAuthentication;
+            requireAuthentication = pRequireAuthentication;
         }
 
         public void OnStartClient()
         {
-            NetworkClient.RegisterHandler<ResponseMsgT>(OnHandleServerMessage, m_RequireAuthentication);
+            NetworkClient.RegisterHandler<ResponseMsgT>(OnHandleServerMessage, requireAuthentication);
 
             Cancel();
 
@@ -194,7 +194,7 @@ namespace RCore.RCM
                 return;
             }
 
-            m_MessageId = MessagePacking.GetId<SendMsgT>();
+            messageId = MessagePacking.GetId<SendMsgT>();
             SendTime = Time.time;
             m_OnServerResponse = pOnServerResponse;
             RCM.Client.TrackMsgSender(this);
@@ -210,7 +210,6 @@ namespace RCore.RCM
             m_OnServerResponse?.Invoke(pSvMessage);
             m_OnServerResponse = null;
             m_OnServerResponseCustom?.Invoke(pSvMessage);
-            //NetworkClient.Send(new ConfirmMsgFromClient(m_MessageId));
         }
 
         public float TimeOut()
@@ -319,10 +318,6 @@ namespace RCore.RCM
                 NullValueHandling = NullValueHandling.Ignore,
             }), ColorHelper.LightGold);
 #endif
-            //var history = new ServerResponseHistory();
-            //history.clientMsgId = MessagePacking.GetId<ClientMsgT>();
-            //history.responseMsg = result;
-            //RCM.SaveResponseHistory(conn.connectionId, history);
         }
     }
 

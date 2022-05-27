@@ -21,7 +21,6 @@ namespace RCore.RCM
         public static RCM_Client Client => m_Client;
         public static RCM_Server Server => m_Server;
 
-        private static Dictionary<int, List<ServerResponseHistory>> m_ResponseHistories = new Dictionary<int, List<ServerResponseHistory>>();
         private static List<IRCM_MsgHandler> m_MsgHandlers;
 
         static RCM()
@@ -73,7 +72,6 @@ namespace RCore.RCM
             foreach (var handler in m_MsgHandlers)
                 handler.OnStartServer();
             m_Server.OnStartServer();
-            m_ResponseHistories = new Dictionary<int, List<ServerResponseHistory>>();
         }
 
         /// <summary>
@@ -126,17 +124,6 @@ namespace RCore.RCM
         public static void RemoveServerListener<T>(T pListener) where T : IMirrorServerListener
         {
             m_Server.UnRegister(pListener);
-        }
-
-        /// <summary>
-        /// Server save the last response which just sent to client
-        /// </summary>
-        public static void SaveResponseHistory(int connectionId, ServerResponseHistory history)
-        {
-            if (m_ResponseHistories.ContainsKey(connectionId))
-                m_ResponseHistories[connectionId].Add(history);
-            else
-                m_ResponseHistories.Add(connectionId, new List<ServerResponseHistory>() { history });
         }
     }
 
