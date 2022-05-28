@@ -9,14 +9,12 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using RCore.Common;
 using Debug = UnityEngine.Debug;
-using Cysharp.Threading.Tasks;
-using Random = UnityEngine.Random;
 
 namespace RCore.Common
 {
     public class SceneLoader
     {
-        public static async UniTask<AsyncOperation> LoadSceneAsync(string pScene, bool pIsAdditive, bool pAutoActive, Action<float> pOnProgress, Action pOnCompleted, float pFixedLoadTime = 0, bool reLoad = false)
+        public static AsyncOperation LoadSceneAsync(string pScene, bool pIsAdditive, bool pAutoActive, Action<float> pOnProgress, Action pOnCompleted, float pFixedLoadTime = 0, bool reLoad = false)
         {
             var scene = SceneManager.GetSceneByName(pScene);
             if (scene.isLoaded && !reLoad)
@@ -28,32 +26,32 @@ namespace RCore.Common
 
             var sceneOperator = SceneManager.LoadSceneAsync(pScene, pIsAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
             sceneOperator.allowSceneActivation = false;
-            await ProcessOperationAsync(sceneOperator, pAutoActive, pOnProgress, pOnCompleted, pFixedLoadTime);
+            CoroutineUtil.StartCoroutine(IEProcessOperation(sceneOperator, pAutoActive, pOnProgress, pOnCompleted, pFixedLoadTime));
             return sceneOperator;
         }
 
-        public static void LoadScene(string pScene, bool pIsAdditive, bool reLoad = false)
+        public static void LoadScene(string pScene, bool pIsAdditive)
         {
             var scene = SceneManager.GetSceneByName(pScene);
-            if (scene.isLoaded && !reLoad)
+            if (scene.isLoaded)
                 return;
 
             SceneManager.LoadScene(pScene, pIsAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
         }
 
-        private static async UniTask ProcessOperationAsync(AsyncOperation sceneOperator, bool pAutoActive, Action<float> pOnProgress, Action pOnCompleted, float pFixedLoadTime = 0)
+        private static IEnumerator IEProcessOperation(AsyncOperation sceneOperator, bool pAutoActive, Action<float> pOnProgress, Action pOnCompleted, float pFixedLoadTime = 0)
         {
             pOnProgress.Raise(0f);
 
             float startTime = Time.unscaledTime;
-            float fakeProgress = Random.Range(0.2f, 0.4f);
+            float fakeProgress = 0.25f;
             float offsetProgress = pFixedLoadTime > 0 ? fakeProgress : 0;
 
             while (true)
             {
                 float progress = Mathf.Clamp01(sceneOperator.progress / 0.9f);
-                pOnProgress.Raise(Mathf.Clamp01(progress - offsetProgress));
-                await UniTask.Yield();
+                pOnProgress.Raise(progress - offsetProgress);
+                yield return null;
 
                 if (sceneOperator.isDone || progress >= 1)
                     break;
@@ -73,8 +71,8 @@ namespace RCore.Common
                         break;
 
                     float progress = (1 - fakeProgress) + time / additionalTime * fakeProgress;
-                    pOnProgress.Raise(Mathf.Clamp01(progress));
-                    await UniTask.Yield();
+                    pOnProgress.Raise(progress);
+                    yield return null;
                 }
                 pOnProgress.Raise(1);
             }
@@ -85,7 +83,7 @@ namespace RCore.Common
                 sceneOperator.allowSceneActivation = true;
         }
 
-        public static async UniTask<AsyncOperation> UnloadSceneAsync(string pScene, Action<float> pOnProgress, Action pOnComplted)
+        public static AsyncOperation UnloadSceneAsync(string pScene, Action<float> pOnProgress, Action pOnComplted)
         {
             var scene = SceneManager.GetSceneByName(pScene);
             if (!scene.isLoaded)
@@ -95,11 +93,11 @@ namespace RCore.Common
             }
 
             var sceneOperator = SceneManager.UnloadSceneAsync(pScene);
-            await ProcessOperationAsync(sceneOperator, false, pOnProgress, pOnComplted);
+            CoroutineUtil.StartCoroutine(IEProcessOperation(sceneOperator, false, pOnProgress, pOnComplted));
             return sceneOperator;
         }
 
-        public static async UniTask<AsyncOperation> UnloadScene(Scene pScene, Action<float> pOnProgress, Action pOnComplted)
+        public static AsyncOperation UnloadScene(Scene pScene, Action<float> pOnProgress, Action pOnComplted)
         {
             if (!pScene.isLoaded)
             {
@@ -108,7 +106,7 @@ namespace RCore.Common
             }
 
             var sceneOperator = SceneManager.UnloadSceneAsync(pScene);
-            await ProcessOperationAsync(sceneOperator, false, pOnProgress, pOnComplted);
+            CoroutineUtil.StartCoroutine(IEProcessOperation(sceneOperator, false, pOnProgress, pOnComplted));
             return sceneOperator;
         }
     }

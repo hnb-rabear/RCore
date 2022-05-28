@@ -491,6 +491,17 @@ namespace RCore.Service.RFirebase
 
                 GUILayout.EndVertical();
             }
+
+            [MenuItem("RUtilities/Services/Add Firebase Manager")]
+            private static void AddFirebaseManager()
+            {
+                var manager = FindObjectOfType<RFirebase.RFirebaseManager>();
+                if (manager == null)
+                {
+                    var obj = new GameObject("RFirebaseManager");
+                    obj.AddComponent<RFirebase.RFirebaseManager>();
+                }
+            }
         }
 
 #endif

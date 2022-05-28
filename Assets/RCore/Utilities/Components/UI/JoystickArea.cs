@@ -28,6 +28,10 @@ namespace RCore.Components
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            //Only Left Mouse and Single Tap are allowed
+            if (eventData.pointerId != 0 && eventData.pointerId != -1)
+                return;
+
             joystick.OnBeginDrag(eventData);
         }
 
@@ -38,16 +42,28 @@ namespace RCore.Components
 
         public void OnDrag(PointerEventData eventData)
         {
+            //Only Left Mouse and Single Tap are allowed
+            if (eventData.pointerId != 0 && eventData.pointerId != -1)
+                return;
+
             joystick.OnDrag(eventData);
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            //Only Left Mouse and Single Tap are allowed
+            if (eventData.pointerId != 0 && eventData.pointerId != -1)
+                return;
+
             joystick.OnEndDrag(eventData);
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            //Only Left Mouse and Single Tap are allowed
+            if (eventData.pointerId != 0 && eventData.pointerId != -1)
+                return;
+
             if (autoHideJoystick)
                 joystick.SetActive(true);
 
@@ -59,6 +75,10 @@ namespace RCore.Components
 
         public void OnPointerUp(PointerEventData eventData)
         {
+            //Only Left Mouse and Single Tap are allowed
+            if (eventData.pointerId != 0 && eventData.pointerId != -1)
+                return;
+
             if (canvas.renderMode == RenderMode.ScreenSpaceOverlay)
                 joystick.transform.position = eventData.position;
             else if (canvas.renderMode == RenderMode.ScreenSpaceCamera)

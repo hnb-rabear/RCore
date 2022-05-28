@@ -27,18 +27,18 @@ namespace RCore.Components
         public int totalCellOnRow = 1;
         public RectTransform content => scrollView.content;
 
-        private int mTotalVisible;
-        private int mTotalBuffer = 2;
-        private float mHalftSizeContainer;
-        private float mPrefabSizeY;
-        private float mPrefabSizeX;
+        private int m_TotalVisible;
+        private int m_TotalBuffer = 2;
+        private float m_HalftSizeContainer;
+        private float m_PrefabSizeY;
+        private float m_PrefabSizeX;
 
-        private List<RectTransform> mListItemRect = new List<RectTransform>();
-        private List<OptimizedScrollItem> mListItem = new List<OptimizedScrollItem>();
-        private int mOptimizedTotal = 0;
-        private Vector3 mStartPos;
-        private Vector3 mOffsetVec;
-        private Vector2 mPivot;
+        private List<RectTransform> m_ListItemRect = new List<RectTransform>();
+        private List<OptimizedScrollItem> m_ListItem = new List<OptimizedScrollItem>();
+        private int m_OptimizedTotal = 0;
+        private Vector3 m_StartPos;
+        private Vector3 m_OffsetVec;
+        private Vector2 m_Pivot;
 
         //Advance settings, in case the height of View is flexible
         [Separator("Advance Settings")]
@@ -66,31 +66,31 @@ namespace RCore.Components
             if (pTotalItems == total && !pForce)
                 return;
 
-            mListItemRect = new List<RectTransform>();
+            m_ListItemRect = new List<RectTransform>();
 
-            if (mListItem == null || mListItem.Count == 0)
+            if (m_ListItem == null || m_ListItem.Count == 0)
             {
-                mListItem = new List<OptimizedScrollItem>();
-                mListItem.Prepare(prefab, container.parent, 5);
+                m_ListItem = new List<OptimizedScrollItem>();
+                m_ListItem.Prepare(prefab, container.parent, 5);
             }
             else
-                mListItem.Free(container);
+                m_ListItem.Free(container);
 
             total = pTotalItems;
 
             container.anchoredPosition3D = new Vector3(0, 0, 0);
 
-            var rectZero = mListItem[0].GetComponent<RectTransform>();
+            var rectZero = m_ListItem[0].GetComponent<RectTransform>();
             Vector2 prefabScale = rectZero.rect.size;
-            mPrefabSizeY = prefabScale.y + spacing;
+            m_PrefabSizeY = prefabScale.y + spacing;
             if (totalCellOnRow > 1)
-                mPrefabSizeX = prefabScale.x + spacing;
+                m_PrefabSizeX = prefabScale.x + spacing;
             else
-                mPrefabSizeX = prefabScale.x;
-            mPivot = rectZero.pivot;
+                m_PrefabSizeX = prefabScale.x;
+            m_Pivot = rectZero.pivot;
 
-            container.sizeDelta = new Vector2(prefabScale.x * totalCellOnRow, mPrefabSizeY * Mathf.CeilToInt(total * 1f / totalCellOnRow));
-            mHalftSizeContainer = container.rect.size.y * 0.5f;
+            container.sizeDelta = new Vector2(prefabScale.x * totalCellOnRow, m_PrefabSizeY * Mathf.CeilToInt(total * 1f / totalCellOnRow));
+            m_HalftSizeContainer = container.rect.size.y * 0.5f;
 
             var scrollRect = scrollView.transform as RectTransform;
 
@@ -109,32 +109,32 @@ namespace RCore.Components
             }
 
             var viewport = scrollView.viewport;
-            mTotalVisible = Mathf.CeilToInt(viewport.rect.size.y / mPrefabSizeY) * totalCellOnRow;
-            mTotalBuffer *= totalCellOnRow;
+            m_TotalVisible = Mathf.CeilToInt(viewport.rect.size.y / m_PrefabSizeY) * totalCellOnRow;
+            m_TotalBuffer *= totalCellOnRow;
 
-            mOffsetVec = Vector3.down;
-            mStartPos = container.anchoredPosition3D - (mOffsetVec * mHalftSizeContainer) + (mOffsetVec * (prefabScale.y * 0.5f));
-            mOptimizedTotal = Mathf.Min(total, mTotalVisible + mTotalBuffer);
+            m_OffsetVec = Vector3.down;
+            m_StartPos = container.anchoredPosition3D - (m_OffsetVec * m_HalftSizeContainer) + (m_OffsetVec * (prefabScale.y * 0.5f));
+            m_OptimizedTotal = Mathf.Min(total, m_TotalVisible + m_TotalBuffer);
 
-            for (int i = 0; i < mOptimizedTotal; i++)
+            for (int i = 0; i < m_OptimizedTotal; i++)
             {
                 int cellIndex = i % totalCellOnRow;
                 int rowIndex = Mathf.FloorToInt(i * 1f / totalCellOnRow);
 
-                OptimizedScrollItem item = mListItem.Obtain(container);
+                OptimizedScrollItem item = m_ListItem.Obtain(container);
                 RectTransform rt = item.transform as RectTransform;
-                rt.anchoredPosition3D = mStartPos + (mOffsetVec * rowIndex * mPrefabSizeY);
-                rt.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * mPrefabSizeX + mPrefabSizeX * 0.5f,
+                rt.anchoredPosition3D = m_StartPos + (m_OffsetVec * rowIndex * m_PrefabSizeY);
+                rt.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_PrefabSizeX + m_PrefabSizeX * 0.5f,
                     rt.anchoredPosition3D.y,
                     rt.anchoredPosition3D.z);
-                mListItemRect.Add(rt);
+                m_ListItemRect.Add(rt);
 
                 item.SetActive(true);
                 item.UpdateContent(i);
             }
 
             prefab.gameObject.SetActive(false);
-            container.anchoredPosition3D += mOffsetVec * (mHalftSizeContainer - (viewport.rect.size.y * 0.5f));
+            container.anchoredPosition3D += m_OffsetVec * (m_HalftSizeContainer - (viewport.rect.size.y * 0.5f));
         }
 
         public void MoveToTop()
@@ -153,7 +153,7 @@ namespace RCore.Components
 
         public void ScrollBarChanged(float pNormPos)
         {
-            if (mOptimizedTotal <= 0)
+            if (m_OptimizedTotal <= 0)
                 return;
 
             if (totalCellOnRow > 1)
@@ -163,22 +163,22 @@ namespace RCore.Components
             if (pNormPos > 1)
                 pNormPos = 1;
 
-            int numOutOfView = Mathf.CeilToInt(pNormPos * (total - mTotalVisible));   //number of elements beyond the left boundary (or top)
-            int firstIndex = Mathf.Max(0, numOutOfView - mTotalBuffer);   //index of first element beyond the left boundary (or top)
-            int originalIndex = firstIndex % mOptimizedTotal;
+            int numOutOfView = Mathf.CeilToInt(pNormPos * (total - m_TotalVisible));   //number of elements beyond the left boundary (or top)
+            int firstIndex = Mathf.Max(0, numOutOfView - m_TotalBuffer);   //index of first element beyond the left boundary (or top)
+            int originalIndex = firstIndex % m_OptimizedTotal;
 
 
             int newIndex = firstIndex;
-            for (int i = originalIndex; i < mOptimizedTotal; i++)
+            for (int i = originalIndex; i < m_OptimizedTotal; i++)
             {
-                MoveItemByIndex(mListItemRect[i], newIndex);
-                mListItem[i].UpdateContent(newIndex);
+                MoveItemByIndex(m_ListItemRect[i], newIndex);
+                m_ListItem[i].UpdateContent(newIndex);
                 newIndex++;
             }
             for (int i = 0; i < originalIndex; i++)
             {
-                MoveItemByIndex(mListItemRect[i], newIndex);
-                mListItem[i].UpdateContent(newIndex);
+                MoveItemByIndex(m_ListItemRect[i], newIndex);
+                m_ListItem[i].UpdateContent(newIndex);
                 newIndex++;
             }
         }
@@ -187,8 +187,8 @@ namespace RCore.Components
         {
             int cellIndex = index % totalCellOnRow;
             int rowIndex = Mathf.FloorToInt(index * 1f / totalCellOnRow);
-            item.anchoredPosition3D = mStartPos + (mOffsetVec * rowIndex * mPrefabSizeY);
-            item.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * mPrefabSizeX + mPrefabSizeX * 0.5f,
+            item.anchoredPosition3D = m_StartPos + (m_OffsetVec * rowIndex * m_PrefabSizeY);
+            item.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_PrefabSizeX + m_PrefabSizeX * 0.5f,
                    item.anchoredPosition3D.y,
                    item.anchoredPosition3D.z);
             //Debug.Log(item.anchoredPosition3D);
@@ -196,7 +196,7 @@ namespace RCore.Components
 
         public List<OptimizedScrollItem> GetListItem()
         {
-            return mListItem;
+            return m_ListItem;
         }
 
         public void MoveToTargetIndex(int pIndex, bool pTween = false)
@@ -211,9 +211,9 @@ namespace RCore.Components
             float contentHeight = content.rect.height;
             float viewHeight = scrollView.viewport.rect.height;
             float scrollLength = contentHeight - viewHeight;
-            float targetPosition = rowIndex * mPrefabSizeY;
+            float targetPosition = rowIndex * m_PrefabSizeY;
 
-            float offsetY = mPrefabSizeY * (0.5f - mPivot.y);
+            float offsetY = m_PrefabSizeY * (0.5f - m_Pivot.y);
             targetPosition -= offsetY;
 
             if (targetPosition > scrollLength)

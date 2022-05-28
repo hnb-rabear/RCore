@@ -102,6 +102,13 @@ namespace RCore.Common
             return dot;
         }
 
+        public static bool OnRightOrLeft(Transform pRoot, Vector3 pPosition)
+        {
+            var dir = pPosition - pRoot.position;
+            float dot = Vector3.Dot(pRoot.right, dir);
+            return dot > 0;
+        }
+
         /// <summary>
         /// A utility function to calculate area of triangle formed by(x1, y1) (x2, y2) and(x3, y3)
         /// </summary>
