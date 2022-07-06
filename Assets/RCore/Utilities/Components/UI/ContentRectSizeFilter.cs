@@ -23,14 +23,13 @@ namespace RCore.Components
 
 #pragma warning disable 0649
         [SerializeField] private RectTransform m_Content;
-        [SerializeField] private List<RectTransform> m_Children;
-        [SerializeField] private Vector2 m_ContentSizeBonus;
-        [Separator("Movement")]
         [SerializeField] private float m_mMinTweenTime = 0.25f;
         [SerializeField] private float m_mMaxTweenTime = 0.75f;
         [SerializeField] private float m_TransitionSpeed = 10;
+        [SerializeField] private List<RectTransform> m_Children;
         [SerializeField] private int m_Index;
         [SerializeField] private Vector2 m_ChildPosOffset;
+        [SerializeField] private Vector2 m_ContentSizeBonus;
 #pragma warning restore 0649
 
         [SerializeField, ReadOnly] private Vector2 m_ChildTopRight;
@@ -42,12 +41,6 @@ namespace RCore.Components
 
         #region MonoBehaviour
 
-        private void OnValidate()
-        {
-            if (m_Content == null)
-                m_Content = transform as RectTransform;
-        }
-
         #endregion
 
         //=============================================
@@ -58,7 +51,7 @@ namespace RCore.Components
         {
             if (Application.isPlaying)
             {
-                if (m_Children == null || m_Children.Count == 0)
+                if (m_Children == null || m_Children.Count != m_Content.childCount)
                 {
                     m_Children = new List<RectTransform>();
                     foreach (RectTransform child in m_Content)
