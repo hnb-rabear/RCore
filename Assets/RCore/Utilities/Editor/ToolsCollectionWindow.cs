@@ -265,6 +265,7 @@ namespace RCore.Editor
                 ChangeButtonsTransitionColor();
                 ChangeTextsFont();
                 ChangeTMPTextsFont();
+                RepalceTextByTextTMP();
             });
         }
         private void FormatTexts()
@@ -727,6 +728,53 @@ namespace RCore.Editor
                 }
 
                 GUILayout.EndVertical();
+            }
+        }
+        private void RepalceTextByTextTMP()
+        {
+            if (EditorHelper.HeaderFoldout("Replace Text By TextMeshProUGUI"))
+            {
+                if (!SelectedObject())
+                    return;
+
+                if (EditorHelper.Button("Replace Texts"))
+                {
+                    var textsDict = FindComponents<Text>(null);
+                    if (textsDict != null)
+                        foreach (var item in textsDict)
+                        {
+                            for (int i = item.Value.Count - 1; i >= 0; i--)
+                            {
+                                var gameObj = item.Value[i].gameObject;
+                                var content = item.Value[i].text;
+                                var fontSize = item.Value[i].fontSize;
+                                var alignMent = item.Value[i].alignment;
+                                var bestFit = item.Value[i].resizeTextForBestFit;
+                                var color = item.Value[i].color;
+                                GameObject.DestroyImmediate(item.Value[i]);
+                                var textTMP = gameObj.AddComponent<TextMeshProUGUI>();
+                                textTMP.text = content;
+                                textTMP.fontSize = fontSize;
+                                textTMP.enableAutoSizing = bestFit;
+                                textTMP.color = color;
+                                switch (alignMent)
+                                {
+                                    case TextAnchor.MiddleLeft: textTMP.alignment = TextAlignmentOptions.Left; break;
+                                    case TextAnchor.MiddleCenter: textTMP.alignment = TextAlignmentOptions.Center; break;
+                                    case TextAnchor.MiddleRight: textTMP.alignment = TextAlignmentOptions.Right; break;
+
+                                    case TextAnchor.LowerLeft: textTMP.alignment = TextAlignmentOptions.BottomLeft; break;
+                                    case TextAnchor.LowerCenter: textTMP.alignment = TextAlignmentOptions.Bottom; break;
+                                    case TextAnchor.LowerRight: textTMP.alignment = TextAlignmentOptions.BottomRight; break;
+
+                                    case TextAnchor.UpperLeft: textTMP.alignment = TextAlignmentOptions.TopLeft; break;
+                                    case TextAnchor.UpperCenter: textTMP.alignment = TextAlignmentOptions.Top; break;
+                                    case TextAnchor.UpperRight: textTMP.alignment = TextAlignmentOptions.TopRight; break;
+                                }
+                                Debug.Log($"Replace Text in gameobject {gameObj.name}");
+                            }
+                        }
+                }
             }
         }
         #endregion
