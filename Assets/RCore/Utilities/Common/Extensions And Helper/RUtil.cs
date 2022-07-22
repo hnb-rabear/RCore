@@ -21,7 +21,7 @@ namespace RCore.Common
     public delegate void FloatDelegate(float value);
     public delegate bool ConditionalDelegate();
 
-    public static class Util
+    public static class RUtil
     {
         public static void SeparateStringAndNum(string pStr, out string pNumberPart, out string pStringPart)
         {
@@ -137,7 +137,7 @@ namespace RCore.Common
         }
     }
 
-    public static class UtilExtension
+    public static class RUtilExtension
     {
         public static string ToSentenceCase(this string pString)
         {
@@ -318,7 +318,7 @@ namespace RCore.Common
             return pList;
         }
 
-        public static Dictionary<int, int> Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+        public static void Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
         {
             foreach (var item in pDict)
             {
@@ -327,10 +327,9 @@ namespace RCore.Common
                 else
                     pSource.Add(item.Key, item.Value);
             }
-            return pSource;
         }
 
-        public static Dictionary<int, int> Remove(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+        public static void Minus(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
         {
             var removedKeys = new List<int>();
             foreach (var item in pDict)
@@ -347,12 +346,17 @@ namespace RCore.Common
                 foreach (var key in removedKeys)
                     pSource.Remove(key);
             }
-            return pSource;
         }
 
-        public static int RandomKey(this Dictionary<int, int> pSource)
+        public static void Remove<K, V>(this Dictionary<K, V> pSource, List<K> pKeys)
         {
-            var keys = new int[pSource.Count];
+            for (int i = 0; i < pKeys.Count; i++)
+                pSource.Remove(pKeys[i]);
+        }
+
+        public static T1 RandomKey<T1, T2>(this Dictionary<T1, T2> pSource)
+        {
+            var keys = new T1[pSource.Count];
             int index = 0;
             foreach (var item in pSource)
             {
@@ -362,42 +366,60 @@ namespace RCore.Common
             return keys[Random.Range(0, keys.Length)];
         }
 
-        public static List<KeyValuePair<int, int>> ToKeyValuePairs(this Dictionary<int, int> pSource)
+        public static List<KeyValuePair<T1, T2>> ToKeyValuePairs<T1, T2>(this Dictionary<T1, T2> pSource)
         {
-            var list = new List<KeyValuePair<int, int>>();
+            var list = new List<KeyValuePair<T1, T2>>();
             foreach (var item in pSource)
-                list.Add(new KeyValuePair<int, int>(item.Key, item.Value));
+                list.Add(new KeyValuePair<T1, T2>(item.Key, item.Value));
             return list;
         }
 
-        public static int RandomKeyHasLowestValue(this Dictionary<int, int> pSource)
+        public static T1 RandomKeyHasLowestValue<T1, T2>(this Dictionary<T1, T2> pSource) where T2 : IComparable<T2>
         {
-            int minValue = 0;
-            var keys = new List<int>();
+            T2 minValue = default(T2);
+            var keys = new List<T1>();
             foreach (var item in pSource)
             {
-                if (item.Value < minValue)
+                if (item.Value.CompareTo(minValue) < 0)
                     minValue = item.Value;
             }
             foreach (var item in pSource)
             {
-                if (minValue == item.Value)
+                if (item.Value.CompareTo(minValue) == 0)
                     keys.Add(item.Key);
             }
             return keys[Random.Range(0, keys.Count)];
         }
 
-        public static int RandomKey(this Dictionary<int, int> pSource, int pMinVal)
+        public static T1 RandomKey<T1, T2>(this Dictionary<T1, T2> pSource, T2 pMinVal) where T2 : IComparable<T2>
         {
-            var keys = new List<int>();
+            var keys = new List<T1>();
             foreach (var item in pSource)
             {
-                if (item.Value >= pMinVal)
+                if (item.Value.CompareTo(pMinVal) < 0)
                     keys.Add(item.Key);
             }
             if (keys.Count == 0)
-                return -1;
+                return default(T1);
             return keys[Random.Range(0, keys.Count)];
+        }
+        
+        public static bool ContainsKey<T>(this List<KeyValuePair<int, T>> pList, int pKey)
+        {
+            for (int i = 0; i < pList.Count; i++)
+                if (pList[i].Key == pKey)
+                    return true;
+            return false;
+        }
+
+        public static void Remove<T>(this List<KeyValuePair<int, T>> pList, int pKey)
+        {
+            for (int i = pList.Count - 1; i >= 0; i--)
+                if (pList[i].Key == pKey)
+                {
+                    pList.RemoveAt(i);
+                    break;
+                }
         }
 
         public static void RemoveLast<T>(this List<T> list)
