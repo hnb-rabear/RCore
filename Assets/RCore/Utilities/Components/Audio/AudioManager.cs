@@ -61,7 +61,7 @@ namespace RCore.Components
 
         public AudioSource PlaySFX(int pIndex, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
-            if (pIndex == -1 || !m_EnabledSFX) return null;
+            if (!m_EnabledSFX) return null;
             var clip = AudioCollection.Instance.GetSFXClip(pIndex);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }

@@ -10,13 +10,16 @@ namespace RCore.Components
 {
     public class DontDestroyObject : MonoBehaviour
     {
-        private IEnumerator Start()
-        {
-            yield return null;
+        private static DontDestroyObject m_Instance;
 
-            if (transform.childCount > 0)
+        private void Start()
+        {
+            if (m_Instance == null)
+            {
+                m_Instance = this;
                 DontDestroyOnLoad(gameObject);
-            else
+            }
+            else if (m_Instance != this)
                 Destroy(gameObject);
         }
     }

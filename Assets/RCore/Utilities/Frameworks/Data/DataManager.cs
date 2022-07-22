@@ -43,15 +43,13 @@ namespace RCore.Pattern.Data
                 Save(true);
         }
 
-#if !UNITY_WEBGL || UNITY_EDITOR
-        private void OnApplicationQuit()
+        public void OnApplicationQuit()
         {
             foreach (var item in mMainGroups)
                 foreach (var g in item.Value)
                     g.OnApplicationQuit();
             Save(true);
         }
-#endif
 
         #endregion
 
