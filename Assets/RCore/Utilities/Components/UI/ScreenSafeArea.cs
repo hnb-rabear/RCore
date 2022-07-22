@@ -7,6 +7,7 @@ namespace RCore.Components
 {
     public class ScreenSafeArea : MonoBehaviour
     {
+        public static float topOffset;
         public Canvas canvas;
         public RectTransform[] safeRects;
         public bool fixedTop;
@@ -18,7 +19,6 @@ namespace RCore.Components
         {
             m_CurrentOrientation = Screen.orientation;
             m_CurrentSafeArea = Screen.safeArea;
-
             CheckSafeArea2();
         }
 
@@ -61,6 +61,7 @@ namespace RCore.Components
         public void CheckSafeArea2()
         {
             var safeArea = Screen.safeArea;
+            safeArea.height -= topOffset;
             var anchorMin = safeArea.position;
             var anchorMax = safeArea.position + safeArea.size;
 
@@ -83,6 +84,42 @@ namespace RCore.Components
 
             m_CurrentOrientation = Screen.orientation;
             m_CurrentSafeArea = Screen.safeArea;
+        }
+
+        public static void SetTopOffsetForBannerAd(float pBannerHeight) //150
+        {
+            float offset = 0;
+            var safeAreaHeightOffer = Screen.height - Screen.safeArea.height; //80
+            if (pBannerHeight <= safeAreaHeightOffer)
+                offset = 0;
+            else
+                offset = pBannerHeight - safeAreaHeightOffer;
+
+            if (topOffset == offset)
+                return;
+
+            topOffset = offset;
+
+            var ScreenSafeAreas = FindObjectsOfType<ScreenSafeArea>();
+            foreach (var component in ScreenSafeAreas)
+                component.StartCoroutine(component.IECheckSafeArea2());
+        }
+
+        private IEnumerator IECheckSafeArea2()
+        {
+            float time = 0.5f;
+            while (time > 0)
+            {
+                CheckSafeArea2();
+                time -= Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        [ContextMenu("Test")]
+        private void Test()
+        {
+            SetTopOffsetForBannerAd(150);
         }
 
 #if UNITY_EDITOR

@@ -754,7 +754,7 @@ namespace RCore.Editor
         #endregion
         //===================================================================================================
         #region Generator
-        private List<ModelImporterClipAnimation> m_AnimationClips;
+        private List<AnimationClip> m_AnimationClips;
         private List<string> m_AnimationPaths;
         private EditorPrefsString m_AnimationClipsPackScript;
         private EditorPrefsString m_AnimationClipsPackPath;
@@ -774,19 +774,22 @@ namespace RCore.Editor
 
                 if (EditorHelper.Button("Scan"))
                 {
-                    m_AnimationClips = new List<ModelImporterClipAnimation>();
+                    m_AnimationClips = new List<AnimationClip>();
                     m_AnimationPaths = new List<string>();
 
                     var objs = Selection.gameObjects;
                     for (int i = 0; i < objs.Length; i++)
                     {
                         var path = AssetDatabase.GetAssetPath(objs[i]);
-                        ModelImporter mi = AssetImporter.GetAtPath(path) as ModelImporter;
-                        ModelImporterClipAnimation[] anims = mi.defaultClipAnimations;
-                        foreach (var clip in anims)
+                        var representations = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
+                        foreach (var asset in representations)
                         {
-                            m_AnimationClips.Add(clip);
-                            m_AnimationPaths.Add(path);
+                            var clip = asset as AnimationClip;
+                            if (clip != null)
+                            {
+                                m_AnimationClips.Add(clip);
+                                m_AnimationPaths.Add(path);
+                            }
                         }
                     }
                 }
@@ -797,7 +800,7 @@ namespace RCore.Editor
                     for (int i = 0; i < m_AnimationClips.Count; i++)
                     {
                         var clip = m_AnimationClips[i];
-                        EditorGUILayout.LabelField($"{i}: {clip.name} | {clip.loop} | {clip.wrapMode}");
+                        EditorGUILayout.LabelField($"{i}: {clip.name} | {clip.length} | {clip.wrapMode} | {clip.isLooping}");
                     }
 
                     GUILayout.BeginHorizontal();
@@ -818,14 +821,15 @@ namespace RCore.Editor
                         int i = 0;
                         foreach (var clip in m_AnimationClips)
                         {
-                            string fieldName = clip.name.ToCapitalizeEachWord().Replace(" ", "");
+                            string fieldName = clip.name.ToCapitalizeEachWord().Replace(" ", "").RemoveSpecialCharacters();
                             fieldsName += $"\tpublic AnimationClip {fieldName};\n";
                             enum_ += $"\t\t{fieldName} = {i},\n";
                             indexes += $"\tpublic const int {fieldName}_ID = {i};\n";
                             names += $"\tpublic const string {fieldName}_NAME = \"{clip.name}\";\n";
                             arrayElements += $"\t\t\t\t{fieldName},\n";
-                            paths += $"\tpublic const string {fieldName}_PATH = \"{m_AnimationPaths[i]}\";\n";
+                            paths += $"\tprivate const string {fieldName}_PATH = \"{m_AnimationPaths[i]}\";\n";
                             validateFields += $"\t\t\tif ({fieldName} == null) {fieldName} = RCore.Common.EditorHelper.GetAnimationFromModel({fieldName}_PATH, {fieldName}_NAME);\n";
+                            validateFields += $"\t\t\tif ({fieldName} == null) Debug.LogError(nameof({fieldName}) + \" is Null\");\n";
                             i++;
                         }
                         enum_ += "\t}\n";

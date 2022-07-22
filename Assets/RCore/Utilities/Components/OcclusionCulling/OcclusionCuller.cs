@@ -23,9 +23,9 @@ namespace RCore.Components
             }
         }
 
+        public bool active;
         public Camera mainCamera;
         public List<OcclusionCulledRenderer> culledRenderers = new List<OcclusionCulledRenderer>();
-        public int visibleCount;
         public bool initialized;
 
         private Vector3 mLastCamPos;
@@ -63,14 +63,18 @@ namespace RCore.Components
             culledRenderers = new List<OcclusionCulledRenderer>();
             var targets = FindObjectsOfType<OcclusionCulledRenderer>();
             for (int i = 0; i < targets.Length; i++)
-                if (targets[i].isStatic)
-                    culledRenderers.Add(targets[i]);
+                culledRenderers.Add(targets[i]);
+
+            if (!active)
+                MakeVisibleAll();
+            else
+                CheckVisibleAll();
         }
 #endif
 
         private void LateUpdate()
         {
-            if (!initialized)
+            if (!initialized || !active)
                 return;
 
             Check();
@@ -107,18 +111,47 @@ namespace RCore.Components
                 mLastCamPos = mainCamera.transform.position;
                 mLastCamRot = mainCamera.transform.rotation;
 
-                Plane[] planes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
-                visibleCount = 0;
-                for (int i = 0; i < culledRenderers.Count; i++)
+                CheckVisibleAll();
+            }
+        }
+
+        private void MakeVisibleAll()
+        {
+            for (int i = 0; i < culledRenderers.Count; i++)
+            {
+                var obj = culledRenderers[i];
+                obj.MakeVisible();
+#if UNITY_EDITOR
+                obj.name = gameObject.name.Replace("_HIDE", "").Replace("_SHOW", "");
+                obj.name += "_SHOW";
+#endif
+            }
+        }
+
+        private void CheckVisibleAll()
+        {
+            if (mainCamera == null)
+                return;
+
+            Plane[] planes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
+            for (int i = 0; i < culledRenderers.Count; i++)
+            {
+                var obj = culledRenderers[i];
+                if (obj.InSidePlanes(planes))
                 {
-                    var obj = culledRenderers[i];
-                    if (obj.InSidePlanes(planes))
-                    {
-                        obj.MakeVisible();
-                        visibleCount++;
-                    }
-                    else
-                        obj.MakeInvisible();
+                    obj.MakeVisible();
+#if UNITY_EDITOR
+                    obj.name = gameObject.name.Replace("_HIDE", "").Replace("_SHOW", "");
+                    obj.name += "_SHOW";
+#endif
+                }
+                else
+                {
+                    obj.MakeInvisible();
+#if UNITY_EDITOR
+                    obj.name = gameObject.name.Replace("_HIDE", "").Replace("_SHOW", "");
+                    obj.name += "_HIDE";
+#endif
                 }
             }
         }

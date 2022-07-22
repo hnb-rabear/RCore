@@ -21,7 +21,7 @@ namespace RCore.Common
     public delegate void FloatDelegate(float value);
     public delegate bool ConditionalDelegate();
 
-    public static class MiscHelper
+    public static class Util
     {
         public static void SeparateStringAndNum(string pStr, out string pNumberPart, out string pStringPart)
         {
@@ -125,14 +125,19 @@ namespace RCore.Common
 #endif
             }
         }
-    
-        public static int GenerateHashCode(int a, int b)
+
+        public static T NullArgumentTest<T>(T value)
         {
-            return (a * 13) ^ b;
+            if (value == null)
+            {
+                throw new ArgumentNullException(typeof(T).ToString());
+            }
+
+            return value;
         }
     }
 
-    public static class MiscExtension
+    public static class UtilExtension
     {
         public static string ToSentenceCase(this string pString)
         {

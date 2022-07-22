@@ -13,6 +13,7 @@ namespace RCore.Common
     {
         public Dictionary<int, CustomPool<T>> poolDict;
         public Transform container;
+        public int limitNumber;
         private int m_InitialNumber;
         private Dictionary<int, int> m_IdOfAllClones; //Keep tracking the clone instance id and its prefab instance id
 
@@ -42,6 +43,7 @@ namespace RCore.Common
             else
             {
                 var pool = new CustomPool<T>(pPrefab, m_InitialNumber, container.transform);
+                pool.limitNumber = limitNumber;
                 poolDict.Add(pPrefab.GameObjectId(), pool);
                 return pool;
             }
@@ -83,6 +85,7 @@ namespace RCore.Common
             if (!poolDict.ContainsKey(pPrefab.GameObjectId()))
             {
                 var pool = new CustomPool<T>(pPrefab, m_InitialNumber, container.transform);
+                pool.limitNumber = limitNumber;
                 poolDict.Add(pPrefab.GameObjectId(), pool);
             }
             else
@@ -98,12 +101,12 @@ namespace RCore.Common
             {
                 var pool = poolDict[pPool.Prefab.GameObjectId()];
                 //Merge two pool
-                foreach (var obj in pPool.ActiveList)
-                    if (!pool.ActiveList.Contains(obj))
-                        pool.ActiveList.Add(obj);
-                foreach (var obj in pPool.InactiveList)
-                    if (!pool.InactiveList.Contains(obj))
-                        pool.InactiveList.Add(obj);
+                foreach (var obj in pPool.ActiveList())
+                    if (!pool.ActiveList().Contains(obj))
+                        pool.ActiveList().Add(obj);
+                foreach (var obj in pPool.InactiveList())
+                    if (!pool.InactiveList().Contains(obj))
+                        pool.InactiveList().Add(obj);
             }
         }
 
@@ -112,7 +115,7 @@ namespace RCore.Common
             var list = new List<T>();
             foreach (var pool in poolDict)
             {
-                list.AddRange(pool.Value.ActiveList);
+                list.AddRange(pool.Value.ActiveList());
             }
             return list;
         }
@@ -122,8 +125,8 @@ namespace RCore.Common
             var list = new List<T>();
             foreach (var pool in poolDict)
             {
-                list.AddRange(pool.Value.ActiveList);
-                list.AddRange(pool.Value.InactiveList);
+                list.AddRange(pool.Value.ActiveList());
+                list.AddRange(pool.Value.InactiveList());
             }
             return list;
         }
@@ -195,7 +198,7 @@ namespace RCore.Common
                     foreach (var item in poolDict)
                     {
                         var pool = item.Value;
-                        if (EditorHelper.HeaderFoldout($"{pool.Prefab.name} Pool {pool.ActiveList.Count}/{pool.InactiveList.Count} (Key:{item.Key})", item.Key.ToString()))
+                        if (EditorHelper.HeaderFoldout($"{pool.Prefab.name} Pool {pool.ActiveList().Count}/{pool.InactiveList().Count} (Key:{item.Key})", item.Key.ToString()))
                             pool.DrawOnEditor();
                     }
                 }, Color.white, true);
@@ -223,12 +226,13 @@ namespace RCore.Common
         public T Prefab => m_Prefab;
         public Transform Parent => m_Parent;
         public string Name => m_Name;
-        public List<T> ActiveList => m_ActiveList;
-        public List<T> InactiveList => m_InactiveList;
         public bool pushToLastSibling { get { return m_PushToLastSibling; } set { m_PushToLastSibling = value; } }
         public int limitNumber { get { return m_LimitNumber; } set { m_LimitNumber = value; } }
         protected bool m_Initialized;
         protected int m_InitialCount;
+
+        public List<T> ActiveList() => m_ActiveList;
+        public List<T> InactiveList() => m_InactiveList;
 
         #endregion
 

@@ -113,7 +113,7 @@ namespace RCore.Demo
         {
             mPoolsContainerTransform.Spawn(prefab, position);
             var pool = mPoolsContainerTransform.Get(prefab);
-            var activeList = pool.ActiveList;
+            var activeList = pool.ActiveList();
             if (activeList.Count > 10)
                 pool.Release(activeList[0]);
         }
@@ -125,7 +125,7 @@ namespace RCore.Demo
         {
             mPoolsContainerTransform.Spawn(prefab, position);
             var pool = mPoolsContainerTransform.Get(prefab);
-            var activeList = pool.ActiveList;
+            var activeList = pool.ActiveList();
             if (activeList.Count > 10)
                 pool.Release(activeList[0]);
         }

@@ -6,6 +6,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using RCore.Common;
+using Debug = RCore.Common.Debug;
 
 namespace RCore.Components
 {
@@ -13,16 +15,7 @@ namespace RCore.Components
     {
         #region Members
 
-        public enum RendererCachingScheme
-        {
-            Self,
-            Manual,
-            Children
-        }
-
-        public bool isStatic = true;
         public Renderer[] renderers;
-        public RendererCachingScheme scheme;
 
         #endregion
 
@@ -33,19 +26,13 @@ namespace RCore.Components
         private void Awake()
         {
             if (OcclusionCuller.Instance != null)
-            {
-                if (!isStatic)
-                    OcclusionCuller.Instance.Register(this);
-
-                if (OcclusionCuller.Instance.initialized
-                    && !InsideCamera(OcclusionCuller.Instance.mainCamera))
-                    MakeInvisible();
-            }
+                OcclusionCuller.Instance.Register(this);
         }
 
         private void OnDestroy()
         {
-            OcclusionCuller.Instance?.UnRegister(this);
+            if (OcclusionCuller.Instance != null)
+                OcclusionCuller.Instance?.UnRegister(this);
         }
 
 #if UNITY_EDITOR
@@ -68,7 +55,9 @@ namespace RCore.Components
         public void MakeVisible()
         {
             for (int i = 0; i < renderers.Length; i++)
+            {
                 renderers[i].enabled = true;
+            }
         }
 
         /// <summary>
@@ -77,7 +66,9 @@ namespace RCore.Components
         public void MakeInvisible()
         {
             for (int i = 0; i < renderers.Length; i++)
+            {
                 renderers[i].enabled = false;
+            }
         }
 
         /// <summary>
@@ -118,34 +109,12 @@ namespace RCore.Components
 
         private void CacheRenderers()
         {
-            switch (scheme)
+            var _renderers = gameObject.FindComponentsInChildren<Renderer>();
+            if (_renderers.Count > 0)
             {
-                case RendererCachingScheme.Self:
-                    var _renderer = GetComponent<Renderer>();
-                    if (_renderer != null)
-                    {
-                        renderers = new Renderer[1];
-                        renderers[0] = _renderer;
-                    }
-                    else
-                    {
-                        string warningMsg = gameObject.name + " has DistanceCulledRenderer component with SELF caching scheme but has no renderer component!";
-                        Debug.LogWarning(warningMsg);
-                    }
-                    break;
-
-                case RendererCachingScheme.Children:
-                    var _renderers = GetComponentsInChildren<Renderer>();
-                    if (_renderers.Length > 0)
-                    {
-                        renderers = new Renderer[_renderers.Length];
-                        for (int i = 0; i < _renderers.Length; i++)
-                            renderers[i] = _renderers[i];
-                    }
-                    break;
-
-                case RendererCachingScheme.Manual:
-                    break;
+                renderers = new Renderer[_renderers.Count];
+                for (int i = 0; i < _renderers.Count; i++)
+                    renderers[i] = _renderers[i];
             }
         }
 

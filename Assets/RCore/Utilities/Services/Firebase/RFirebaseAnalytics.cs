@@ -103,6 +103,11 @@ namespace RCore.Service.RFirebase.Analytics
             FirebaseAnalytics.LogEvent(name, array);
         }
 
+        public void LogEvent(string name, params Parameter[] pParams)
+        {
+            FirebaseAnalytics.LogEvent(name, pParams);
+        }
+
         public void LogEvent(string name, string[] paramNames, double[] paramValues)
         {
             var array = new Parameter[paramNames.Length];

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using RCore.Inspector;
 using Debug = UnityEngine.Debug;
+using RCore.Common;
 
 [CreateAssetMenu(fileName = "DevSetting", menuName = "RUtilities/Dev Setting")]
 public class DevSetting : ScriptableObject
@@ -52,17 +53,24 @@ public class DevSetting : ScriptableObject
         get
         {
             if (mInstance == null)
+            {
                 mInstance = Resources.Load<DevSetting>("DevSetting");
+                mInstance.enableLogSystem = new PlayerPrefBool("EnableLogSystem");
+#if DEVELOPMENT
+                mInstance.enableLogSystem.Value = true;
+#endif
+            }
             return mInstance;
         }
     }
 
     public Action onSettingsChanged;
     public Profile profile = new Profile();
+    public PlayerPrefBool enableLogSystem;
 
     public bool EnableLog
     {
-        get { return profile.enableLog; }
+        get { return profile.enableLog || enableLogSystem.Value; }
         set
         {
             profile.enableLog = value;

@@ -282,7 +282,7 @@ namespace RCore.Pattern.UI
                 mParentPanel.PopChildrenThenParent();
         }
 
-        protected void BtnBack_Pressed()
+        protected virtual void BtnBack_Pressed()
         {
             Back();
         }

@@ -19,15 +19,15 @@ public class DevSettingEditor : Editor
     private DevSetting mScript;
 
     //-- FIREBASE CONFIGURATION
-    private static string FirebaseDevConfigPath
+    private static string FirebaseConfigPath1
     {
-        get { return EditorPrefs.GetString("firebaseDevConfigPath"); }
-        set { EditorPrefs.SetString("firebaseDevConfigPath", value); }
+        get { return EditorPrefs.GetString("FirebaseConfigPath1"); }
+        set { EditorPrefs.SetString("FirebaseConfigPath1", value); }
     }
-    private static string FirebaseLiveConfigPath
+    private static string FirebaseConfigPath2
     {
-        get { return EditorPrefs.GetString("firebaseLiveConfigPath"); }
-        set { EditorPrefs.SetString("firebaseLiveConfigPath", value); }
+        get { return EditorPrefs.GetString("FirebaseConfigPath2"); }
+        set { EditorPrefs.SetString("FirebaseConfigPath2", value); }
     }
     public static string FirebaseConfigOutputFolder
     {
@@ -448,63 +448,59 @@ public class DevSettingEditor : Editor
     {
         EditorHelper.BoxVertical("Firebase", () =>
         {
-            FirebaseDevConfigPath = EditorHelper.FileSelector("Dev Config Fire", "FirebaseDevConfigPath" + GetInstanceID(), "json,txt");
-            FirebaseLiveConfigPath = EditorHelper.FileSelector("Live Config Fire", "FirebaseLiveConfigPath" + GetInstanceID(), "json,txt");
-            FirebaseConfigOutputFolder = EditorHelper.FolderSelector("Output Folder", "FirebaseConfigOutputFolder" + GetInstanceID());
+            FirebaseConfigPath1 = EditorHelper.FileSelector("Config Firebase 1", "FirebaseConfigPath1", "json,txt");
+            FirebaseConfigPath2 = EditorHelper.FileSelector("Config Firebase 2", "FirebaseConfigPath2", "json,txt");
+            FirebaseConfigOutputFolder = EditorHelper.FolderSelector("Output Folder", "FirebaseConfigOutputFolder");
 
-            string testPath = Application.dataPath + FirebaseDevConfigPath;
-            string livePath = Application.dataPath + FirebaseLiveConfigPath;
+            string testPath = Application.dataPath + FirebaseConfigPath1;
+            string livePath = Application.dataPath + FirebaseConfigPath2;
             string destination = Application.dataPath + FirebaseConfigOutputFolder + "/google-services.json";
             string curProjectNumber = FirebaseProjectNumber;
 
             EditorHelper.BoxHorizontal(() =>
             {
-                if (livePath == testPath && livePath != "")
-                {
-                    EditorGUILayout.HelpBox("Live and Test Path must not be the same!", MessageType.Warning);
-                    return;
-                }
-
-                EditorHelper.Button("Use Live Config", () =>
-                {
-                    FileInfo theSourceFile = new FileInfo(livePath);
-                    using (StreamReader reader = theSourceFile.OpenText())
+                if (!string.IsNullOrEmpty(FirebaseConfigPath2))
+                    EditorHelper.Button($"Use {FirebaseConfigPath2}", () =>
                     {
-                        string content = reader.ReadToEnd();
-                        var contentNode = SimpleJSON.JSON.Parse(content);
-                        var projectNumberNode = contentNode["project_info"]["project_number"];
-                        if (curProjectNumber != projectNumberNode)
+                        FileInfo theSourceFile = new FileInfo(livePath);
+                        using (StreamReader reader = theSourceFile.OpenText())
                         {
-                            curProjectNumber = projectNumberNode;
-                            File.WriteAllText(destination, content);
-                            FirebaseConfig = content;
-                            FirebaseProjectNumber = curProjectNumber;
-                            AssetDatabase.Refresh();
-                            EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-                            EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+                            string content = reader.ReadToEnd();
+                            var contentNode = SimpleJSON.JSON.Parse(content);
+                            var projectNumberNode = contentNode["project_info"]["project_number"];
+                            if (curProjectNumber != projectNumberNode)
+                            {
+                                curProjectNumber = projectNumberNode;
+                                File.WriteAllText(destination, content);
+                                FirebaseConfig = content;
+                                FirebaseProjectNumber = curProjectNumber;
+                                AssetDatabase.Refresh();
+                                EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+                                EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+                            }
                         }
-                    }
-                });
-                EditorHelper.Button("Use Dev Config", () =>
-                {
-                    FileInfo theSourceFile = new FileInfo(testPath);
-                    using (StreamReader reader = theSourceFile.OpenText())
+                    });
+                if (!string.IsNullOrEmpty(FirebaseConfigPath1))
+                    EditorHelper.Button($"Use {FirebaseConfigPath1}", () =>
                     {
-                        string content = reader.ReadToEnd();
-                        var contentNode = SimpleJSON.JSON.Parse(content);
-                        var projectNumberNode = contentNode["project_info"]["project_number"];
-                        if (curProjectNumber != projectNumberNode)
+                        FileInfo theSourceFile = new FileInfo(testPath);
+                        using (StreamReader reader = theSourceFile.OpenText())
                         {
-                            curProjectNumber = projectNumberNode;
-                            File.WriteAllText(destination, content);
-                            FirebaseConfig = content;
-                            FirebaseProjectNumber = curProjectNumber;
-                            AssetDatabase.Refresh();
-                            EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-                            EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+                            string content = reader.ReadToEnd();
+                            var contentNode = SimpleJSON.JSON.Parse(content);
+                            var projectNumberNode = contentNode["project_info"]["project_number"];
+                            if (curProjectNumber != projectNumberNode)
+                            {
+                                curProjectNumber = projectNumberNode;
+                                File.WriteAllText(destination, content);
+                                FirebaseConfig = content;
+                                FirebaseProjectNumber = curProjectNumber;
+                                AssetDatabase.Refresh();
+                                EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+                                EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+                            }
                         }
-                    }
-                });
+                    });
             });
             string currentConfig = FirebaseConfig;
             if (string.IsNullOrEmpty(currentConfig))
@@ -533,8 +529,8 @@ public class DevSettingEditor : Editor
 
     private void CheckFirebaseConfigPaths()
     {
-        string devFilePath = Application.dataPath + "/" + FirebaseDevConfigPath;
-        string liveFilePath = Application.dataPath + "/" + FirebaseLiveConfigPath;
+        string devFilePath = Application.dataPath + "/" + FirebaseConfigPath1;
+        string liveFilePath = Application.dataPath + "/" + FirebaseConfigPath2;
         string outputFolder = Application.dataPath + "/" + FirebaseConfigOutputFolder;
         if (!Directory.Exists(outputFolder))
         {
@@ -545,17 +541,17 @@ public class DevSettingEditor : Editor
         }
         if (!File.Exists(devFilePath))
         {
-            if (FirebaseDevConfigPath.Contains("Assets"))
-                FirebaseDevConfigPath = EditorHelper.FormatPathToUnityPath(FirebaseDevConfigPath).Replace("Assets/", "");
+            if (FirebaseConfigPath1.Contains("Assets"))
+                FirebaseConfigPath1 = EditorHelper.FormatPathToUnityPath(FirebaseConfigPath1).Replace("Assets/", "");
             else
-                FirebaseDevConfigPath = "";
+                FirebaseConfigPath1 = "";
         }
         if (!File.Exists(liveFilePath))
         {
-            if (FirebaseLiveConfigPath.Contains("Assets"))
-                FirebaseLiveConfigPath = EditorHelper.FormatPathToUnityPath(FirebaseLiveConfigPath).Replace("Assets/", "");
+            if (FirebaseConfigPath2.Contains("Assets"))
+                FirebaseConfigPath2 = EditorHelper.FormatPathToUnityPath(FirebaseConfigPath2).Replace("Assets/", "");
             else
-                FirebaseLiveConfigPath = "";
+                FirebaseConfigPath2 = "";
         }
     }
 

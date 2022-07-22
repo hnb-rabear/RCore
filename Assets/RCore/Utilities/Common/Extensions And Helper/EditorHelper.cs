@@ -1002,7 +1002,8 @@ namespace RCore.Common
                 mDefaultPath = Application.dataPath;
             if (pFormatToUnityPath)
                 mDefaultPath = FormatPathToUnityPath(mDefaultPath).Replace("Assets", "");
-            string savedPath = EditorPrefs.GetString(label + pSavingKey, mDefaultPath);
+            string saveKey = label + pSavingKey + Application.productName;
+            string savedPath = EditorPrefs.GetString(saveKey);
             var text = new EditorText()
             {
                 label = label,
@@ -1020,7 +1021,7 @@ namespace RCore.Common
                     {
                         if (pFormatToUnityPath)
                             path = FormatPathToUnityPath(path).Replace("Assets", "");
-                        EditorPrefs.SetString(label + pSavingKey, path);
+                        EditorPrefs.SetString(saveKey, path);
                         savedPath = path;
                     }
                 }
