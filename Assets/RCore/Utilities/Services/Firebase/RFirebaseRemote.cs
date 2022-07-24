@@ -11,24 +11,13 @@ using Firebase.Extensions;
 using System;
 using Debug = RCore.Common.Debug;
 
-namespace RCore.Service.RFirebase
+namespace RCore.Service
 {
-    public class RFirebaseRemote
+    public static class RFirebaseRemote
     {
-        private static RFirebaseRemote mInstance;
-        public static RFirebaseRemote Instance
-        {
-            get
-            {
-                if (mInstance == null)
-                    mInstance = new RFirebaseRemote();
-                return mInstance;
-            }
-        }
+        public static Dictionary<string, object> defaultData = new Dictionary<string, object>();
 
-        public Dictionary<string, object> defaultData = new Dictionary<string, object>();
-
-        public void Initialize(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
+        public static void Initialize(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
         {
 #if ACTIVE_FIREBASE_REMOTE
             if (!RFirebaseManager.initialized)
@@ -55,7 +44,7 @@ namespace RCore.Service.RFirebase
         /// Get the currently loaded data. If fetch has been called, this will be the data fetched from the server. Otherwise, it will be the defaults.
         /// Note: Firebase will cache this between sessions, so even if you haven't called fetch yet, if it was called on a previous run of the program, you will still have data from the last time it was run.
         /// </summary>
-        public double GetNumberValue(object pKey)
+        public static double GetNumberValue(object pKey)
         {
 #if ACTIVE_FIREBASE_REMOTE
             return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).DoubleValue;
@@ -64,7 +53,7 @@ namespace RCore.Service.RFirebase
 #endif
         }
 
-        public string GetStringValue(object pKey)
+        public static string GetStringValue(object pKey)
         {
 #if ACTIVE_FIREBASE_REMOTE
             return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).StringValue;
@@ -73,7 +62,7 @@ namespace RCore.Service.RFirebase
 #endif
         }
 
-        public bool GetBoolValue(object pKey)
+        public static bool GetBoolValue(object pKey)
         {
 #if ACTIVE_FIREBASE_REMOTE
             return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).BooleanValue;
@@ -82,7 +71,7 @@ namespace RCore.Service.RFirebase
 #endif
         }
 
-        public T GetObjectValue<T>(object pKey)
+        public static T GetObjectValue<T>(object pKey)
         {
             var json = "";
 #if ACTIVE_FIREBASE_REMOTE
@@ -100,7 +89,7 @@ namespace RCore.Service.RFirebase
             return JsonUtility.FromJson<T>(json);
         }
 
-        private void SetDefaultData(Dictionary<string, object> pDefaultData)
+        private static void SetDefaultData(Dictionary<string, object> pDefaultData)
         {
             defaultData = pDefaultData;
 #if ACTIVE_FIREBASE_REMOTE
@@ -125,7 +114,7 @@ namespace RCore.Service.RFirebase
         /// For this example though, it's set to a timespan of zero, so that
         /// changes in the console will always show up immediately.
         /// </summary>
-        public void FetchDataAsync(Action<bool> pOnFetched)
+        public static void FetchDataAsync(Action<bool> pOnFetched)
         {
 #if ACTIVE_FIREBASE_REMOTE
             FirebaseRemoteConfig.DefaultInstance.FetchAsync(TimeSpan.Zero).ContinueWithOnMainThread((task) =>
@@ -175,7 +164,7 @@ namespace RCore.Service.RFirebase
 #endif
         }
 
-        public void LogFetchedData()
+        public static void LogFetchedData()
         {
 #if ACTIVE_FIREBASE_REMOTE
             string log = "";

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -134,6 +135,14 @@ namespace RCore.Common
             }
 
             return value;
+        }
+
+        public static string DictToString(IDictionary<string, object> d)
+        {
+            return "{ " + d
+                .Select(kv => "(" + kv.Key + ", " + kv.Value + ")")
+                .Aggregate("", (current, next) => current + next + ", ")
+                + "}";
         }
     }
 
@@ -318,7 +327,7 @@ namespace RCore.Common
             return pList;
         }
 
-        public static void Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+        public static Dictionary<int, int> Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
         {
             foreach (var item in pDict)
             {
@@ -327,9 +336,10 @@ namespace RCore.Common
                 else
                     pSource.Add(item.Key, item.Value);
             }
+            return pSource;
         }
 
-        public static void Minus(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+        public static Dictionary<int, int> Remove(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
         {
             var removedKeys = new List<int>();
             foreach (var item in pDict)
@@ -346,6 +356,7 @@ namespace RCore.Common
                 foreach (var key in removedKeys)
                     pSource.Remove(key);
             }
+            return pSource;
         }
 
         public static void Remove<K, V>(this Dictionary<K, V> pSource, List<K> pKeys)

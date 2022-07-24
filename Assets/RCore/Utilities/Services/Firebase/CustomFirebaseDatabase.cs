@@ -1,9 +1,6 @@
 ﻿#if ACTIVE_FIREBASE_DATABASE
 using Firebase;
 using Firebase.Database;
-#if UNITY_EDITOR
-using Firebase.Unity.Editor;
-#endif
 #endif
 using System;
 using System.Collections;
@@ -12,7 +9,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using RCore.Common;
 
-namespace RCore.Service.RFirebase.Database
+namespace RCore.Service
 {
     public class CustomFirebaseDatabase
     {

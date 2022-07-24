@@ -12,35 +12,49 @@ using Debug = UnityEngine.Debug;
 
 namespace RCore.Service
 {
-    public class SavedGame
-    {
 #if UNITY_ANDROID && GPGS
-        public bool IsOpen => GPGSSavedGameMetadata.IsOpen;
-        public string Filename => GPGSSavedGameMetadata.Filename;
-        public DateTime ModificationDate => GPGSSavedGameMetadata.LastModifiedTimestamp;
-        public string Description => GPGSSavedGameMetadata.Description;
-        public string CoverImageURL => GPGSSavedGameMetadata.CoverImageURL;
-        public TimeSpan TotalTimePlayed => GPGSSavedGameMetadata.TotalTimePlayed;
-        public ISavedGameMetadata GPGSSavedGameMetadata { get; private set; }
+    public class SavedGame : ISavedGameMetadata
+    {
+        public bool IsOpen { get; set; }
+        public string Filename { get; set; }
+        public string Description { get; set; }
+        public string CoverImageURL { get; set; }
+        public TimeSpan TotalTimePlayed { get; set; }
+        public DateTime LastModifiedTimestamp { get; set; }
         public SavedGame(ISavedGameMetadata metadata)
         {
-            GPGSSavedGameMetadata = metadata;
+            IsOpen = metadata.IsOpen;
+            Filename = metadata.Filename;
+            Description = metadata.Description;
+            CoverImageURL = metadata.CoverImageURL;
+            TotalTimePlayed = metadata.TotalTimePlayed;
+            LastModifiedTimestamp = metadata.LastModifiedTimestamp;
         }
-#endif
     }
+#else
+    public class SavedGame
+    {
+        public bool IsOpen { get; set; }
+        public string Filename { get; set; }
+        public string Description { get; set; }
+        public string CoverImageURL { get; set; }
+        public TimeSpan TotalTimePlayed { get; set; }
+        public DateTime LastModifiedTimestamp { get; set; }
+    }
+#endif
 
     public class AndroidSaveGameServices
     {
 #if UNITY_ANDROID && GPGS
         public delegate ConflictResolutionStrategy SavedGameConflictResolver(SavedGame baseVersion, byte[] baseVersionData, SavedGame remoteVersion, byte[] remoteVersionData);
 
-        public static void OpenWithAutomaticConflictResolution(string name, DataSource dataSource, ConflictResolutionStrategy conflictResolutionStrategy, Action<SavedGame, SavedGameRequestStatus> callback)
+        public static void OpenWithAutomaticConflictResolution(string fileName, DataSource dataSource, ConflictResolutionStrategy conflictResolutionStrategy, Action<SavedGame, SavedGameRequestStatus> callback)
         {
-            Util.NullArgumentTest(name);
-            Util.NullArgumentTest(callback);
+            RUtil.NullArgumentTest(fileName);
+            RUtil.NullArgumentTest(callback);
 
             PlayGamesPlatform.Instance.SavedGame.OpenWithAutomaticConflictResolution(
-                name,
+                fileName,
                 dataSource,
                 conflictResolutionStrategy,
                 (SavedGameRequestStatus status, ISavedGameMetadata game) =>
@@ -49,13 +63,13 @@ namespace RCore.Service
                 });
         }
 
-        public static void OpenWithManualConflictResolution(string name, bool prefetchDataOnConflict, DataSource dataSource, SavedGameConflictResolver resolverFunction, Action<SavedGame, SavedGameRequestStatus> completedCallback)
+        public static void OpenWithManualConflictResolution(string fileName, bool prefetchDataOnConflict, DataSource dataSource, SavedGameConflictResolver resolverFunction, Action<SavedGame, SavedGameRequestStatus> completedCallback)
         {
-            Util.NullArgumentTest(name);
-            Util.NullArgumentTest(resolverFunction);
-            Util.NullArgumentTest(completedCallback);
+            RUtil.NullArgumentTest(fileName);
+            RUtil.NullArgumentTest(resolverFunction);
+            RUtil.NullArgumentTest(completedCallback);
 
-            PlayGamesPlatform.Instance.SavedGame.OpenWithManualConflictResolution(name, dataSource, prefetchDataOnConflict,
+            PlayGamesPlatform.Instance.SavedGame.OpenWithManualConflictResolution(fileName, dataSource, prefetchDataOnConflict,
                 // Internal conflict callback
                 (IConflictResolver resolver, ISavedGameMetadata original, byte[] originalData, ISavedGameMetadata unmerged, byte[] unmergedData) =>
                 {
@@ -88,11 +102,11 @@ namespace RCore.Service
 
         public static void ReadSavedGameData(SavedGame savedGame, Action<SavedGame, byte[], SavedGameRequestStatus> callback)
         {
-            Util.NullArgumentTest(savedGame);
-            Util.NullArgumentTest(callback);
+            RUtil.NullArgumentTest(savedGame);
+            RUtil.NullArgumentTest(callback);
 
             PlayGamesPlatform.Instance.SavedGame.ReadBinaryData(
-                savedGame.GPGSSavedGameMetadata,
+                savedGame,
                 (SavedGameRequestStatus status, byte[] data) =>
                 {
                     callback(savedGame, data, status);
@@ -102,9 +116,9 @@ namespace RCore.Service
 
         public static void WriteSavedGameData(SavedGame savedGame, byte[] data, TimeSpan totalPlaytime, Action<SavedGame, SavedGameRequestStatus> callback)
         {
-            Util.NullArgumentTest(savedGame);
-            Util.NullArgumentTest(data);
-            Util.NullArgumentTest(callback);
+            RUtil.NullArgumentTest(savedGame);
+            RUtil.NullArgumentTest(data);
+            RUtil.NullArgumentTest(callback);
 
             SavedGameMetadataUpdate.Builder builder = new SavedGameMetadataUpdate.Builder();
             builder = builder
@@ -114,7 +128,7 @@ namespace RCore.Service
             SavedGameMetadataUpdate updatedMetadata = builder.Build();
 
             PlayGamesPlatform.Instance.SavedGame.CommitUpdate(
-                savedGame.GPGSSavedGameMetadata,
+                savedGame,
                 updatedMetadata,
                 data,
                 (SavedGameRequestStatus status, ISavedGameMetadata game) =>
@@ -126,7 +140,7 @@ namespace RCore.Service
 
         public static void FetchAllSavedGames(DataSource dataSource, Action<List<SavedGame>, SavedGameRequestStatus> callback)
         {
-            Util.NullArgumentTest(callback);
+            RUtil.NullArgumentTest(callback);
 
             PlayGamesPlatform.Instance.SavedGame.FetchAllSavedGames(dataSource,
                 (SavedGameRequestStatus status, List<ISavedGameMetadata> games) =>
@@ -148,18 +162,18 @@ namespace RCore.Service
 
         public static void DeleteSavedGame(SavedGame savedGame)
         {
-            Util.NullArgumentTest(savedGame);
-            PlayGamesPlatform.Instance.SavedGame.Delete(savedGame.GPGSSavedGameMetadata);
+            RUtil.NullArgumentTest(savedGame);
+            PlayGamesPlatform.Instance.SavedGame.Delete(savedGame);
         }
 
-        public static void ShowSelectSavedGameUI(string uiTitle, uint maxDisplayedSavedGames, bool showCreateSaveUI, bool showDeleteSaveUI, Action<SavedGame, SelectUIStatus> callback)
+        public static void ShowSelectSavedGameUI(string uiTitle, uint maxDisplayedSavedGames, Action<SavedGame, SelectUIStatus> callback)
         {
-            Util.NullArgumentTest(uiTitle);
-            Util.NullArgumentTest(callback);
+            RUtil.NullArgumentTest(uiTitle);
+            RUtil.NullArgumentTest(callback);
             PlayGamesPlatform.Instance.SavedGame.ShowSelectSavedGameUI(uiTitle,
                 maxDisplayedSavedGames,
-                showCreateSaveUI,
-                showDeleteSaveUI,
+                true,
+                true,
                 (SelectUIStatus status, ISavedGameMetadata game) =>
                 {
                     if (status == SelectUIStatus.SavedGameSelected)

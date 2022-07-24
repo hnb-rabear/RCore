@@ -9,30 +9,19 @@ using System.Threading.Tasks;
 using RCore.Common;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Service.RFirebase
+namespace RCore.Service
 {
-    public class RFirebaseMessaging
+    public static class RFirebaseMessaging
     {
         #region Members
 
-        private static RFirebaseMessaging mInstance;
-        public static RFirebaseMessaging Instance
-        {
-            get
-            {
-                if (mInstance == null)
-                    mInstance = new RFirebaseMessaging();
-                return mInstance;
-            }
-        }
+        public static Action<FirebaseMessage> onRecievedNotification;
+        public static Action<string> onRecivedToken;
 
-        public Action<FirebaseMessage> onRecievedNotification;
-        public Action<string> onRecivedToken;
+        private static bool m_Intiailized;
+        private static FirebaseNotification m_Notification;
 
-        private bool mIntiailized;
-        private FirebaseNotification mNotification;
-
-        public FirebaseNotification Notification => mNotification;
+        public static FirebaseNotification Notification => m_Notification;
 
         #endregion
 
@@ -40,10 +29,10 @@ namespace RCore.Service.RFirebase
 
         #region Public
 
-        public void Initialize()
+        public static void Initialize()
         {
 #if ACTIVE_FIREBASE_MESSAGING
-            if (mIntiailized)
+            if (m_Intiailized)
                 return;
 
             FirebaseMessaging.MessageReceived += OnMessageRecieved;
@@ -56,9 +45,31 @@ namespace RCore.Service.RFirebase
             var task = FirebaseMessaging.RequestPermissionAsync();
             WaitUtil.WaitTask(task, () =>
             {
-                LogTaskCompletion(task, "RequestPermissionAsync");
+                bool complete = false;
+                if (task.IsCanceled)
+                {
+                    Debug.Log("RequestPermissionAsync canceled.");
+                }
+                else if (task.IsFaulted)
+                {
+                    Debug.Log("RequestPermissionAsync encounted an error.");
+                    foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
+                    {
+                        string errorCode = "";
+                        var firebaseEx = exception as Firebase.FirebaseException;
+                        if (firebaseEx != null)
+                            errorCode = string.Format("Error.{0}: ", ((Error)firebaseEx.ErrorCode).ToString());
+
+                        Debug.Log(errorCode + exception.ToString());
+                    }
+                }
+                else if (task.IsCompleted)
+                {
+                    Debug.Log("RequestPermissionAsync completed");
+                    complete = true;
+                }
             });
-            mIntiailized = true;
+            m_Intiailized = true;
 #endif
         }
 
@@ -69,7 +80,7 @@ namespace RCore.Service.RFirebase
         #region Private
 
 #if ACTIVE_FIREBASE_MESSAGING
-        private void OnTokenReceived(object sender, TokenReceivedEventArgs e)
+        private static void OnTokenReceived(object sender, TokenReceivedEventArgs e)
         {
 #if DEVELOPMENT || UNITY_EDITOR
             Debug.Log("Received Registration Token: " + e.Token);
@@ -77,7 +88,7 @@ namespace RCore.Service.RFirebase
             onRecivedToken?.Invoke(e.Token);
         }
 
-        private void OnMessageRecieved(object sender, MessageReceivedEventArgs e)
+        private static void OnMessageRecieved(object sender, MessageReceivedEventArgs e)
         {
 #if DEVELOPMENT || UNITY_EDITOR
             string log = "Received a new message\n";
@@ -105,34 +116,6 @@ namespace RCore.Service.RFirebase
             Debug.Log(log);
 #endif
             onRecievedNotification?.Invoke(new FirebaseMessage(e.Message));
-        }
-
-        private bool LogTaskCompletion(Task task, string operation)
-        {
-            bool complete = false;
-            if (task.IsCanceled)
-            {
-                Debug.Log(operation + " canceled.");
-            }
-            else if (task.IsFaulted)
-            {
-                Debug.Log(operation + " encounted an error.");
-                foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
-                {
-                    string errorCode = "";
-                    var firebaseEx = exception as Firebase.FirebaseException;
-                    if (firebaseEx != null)
-                        errorCode = string.Format("Error.{0}: ", ((Error)firebaseEx.ErrorCode).ToString());
-
-                    Debug.Log(errorCode + exception.ToString());
-                }
-            }
-            else if (task.IsCompleted)
-            {
-                Debug.Log(operation + " completed");
-                complete = true;
-            }
-            return complete;
         }
 #endif
 

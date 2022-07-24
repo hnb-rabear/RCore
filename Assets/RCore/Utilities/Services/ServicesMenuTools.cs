@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace RCore.Service
 {
@@ -11,11 +9,11 @@ namespace RCore.Service
         [MenuItem("RUtilities/Services/Add Firebase Manager")]
         private static void AddFirebaseManager()
         {
-            var manager = FindObjectOfType<RFirebase.RFirebaseManager>();
+            var manager = FindObjectOfType<RFirebaseManager>();
             if (manager == null)
             {
                 var obj = new GameObject("RFirebaseManager");
-                obj.AddComponent<RFirebase.RFirebaseManager>();
+                obj.AddComponent<RFirebaseManager>();
             }
         }
 
@@ -29,28 +27,6 @@ namespace RCore.Service
                 obj.AddComponent<GameServices>();
             }
         }
-
-        //[MenuItem("RUtilities/Services/Add Ads Manager")]
-        //private static void AddAdsManager()
-        //{
-        //    var manager = FindObjectOfType<Ads.AdsManager>();
-        //    if (manager == null)
-        //    {
-        //        var obj = new GameObject("AdsManager");
-        //        obj.AddComponent<Ads.AdsManager>();
-        //    }
-        //}
-
-        //[MenuItem("RUtilities/Services/Add Local Notification Helper")]
-        //private static void AddLocalNotificationHelper()
-        //{
-        //    var manager = FindObjectOfType<Notification.LocalNotificationHelper>();
-        //    if (manager == null)
-        //    {
-        //        var obj = new GameObject("LocalNotificationHelper");
-        //        obj.AddComponent<Notification.LocalNotificationHelper>();
-        //    }
-        //}
     }
 }
 #endif

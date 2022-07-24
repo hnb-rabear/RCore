@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace RCore.Service.RFirebase.Crashlytics
+namespace RCore.Service
 {
     public static class RCrashlytics
     {

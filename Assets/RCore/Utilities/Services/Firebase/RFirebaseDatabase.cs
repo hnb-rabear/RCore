@@ -5,16 +5,13 @@
 #if ACTIVE_FIREBASE_DATABASE
 using Firebase;
 using Firebase.Database;
-#if UNITY_EDITOR
-using Firebase.Unity.Editor;
-#endif
 #endif
 using System;
 using System.Collections;
 using System.Threading.Tasks;
 using RCore.Common;
 
-namespace RCore.Service.RFirebase.Database
+namespace RCore.Service
 {
     public class RDatabaseReference
     {
@@ -253,40 +250,20 @@ namespace RCore.Service.RFirebase.Database
 #endif
     }
 
-    public class RFirebaseDatabase
+    public static class RFirebaseDatabase
     {
-        private static RFirebaseDatabase mInstance;
-        public static RFirebaseDatabase Instance
-        {
-            get
-            {
-                if (mInstance == null)
-                    mInstance = new RFirebaseDatabase();
-                return mInstance;
-            }
-        }
+        private static bool m_Initialized;
 
-        private bool mInitialized;
-
-        public bool Initialized { get { return mInitialized; } }
-
+        public static bool Initialized { get { return m_Initialized; } }
 #if ACTIVE_FIREBASE_DATABASE
-
-        public void Initialize(bool pReset = false)
+        public static void Initialize()
         {
-            if (mInitialized && !pReset)
+            if (m_Initialized)
                 return;
 
-#if UNITY_EDITOR
-            FirebaseApp app = FirebaseApp.DefaultInstance;
-            //Database url look like that https://my-kingdom-1a712.firebaseio.com/
-            app.SetEditorDatabaseUrl(app.Options.DatabaseUrl);
-#endif
-
-            mInitialized = true;
+            m_Initialized = true;
         }
-
-        public void CheckOnline(Action pOnConnected)
+        public static void CheckOnline(Action pOnConnected)
         {
             var reference = FirebaseDatabase.DefaultInstance.GetReference(".info/connected");
             GetData(reference, (loadData, success) =>
@@ -296,7 +273,7 @@ namespace RCore.Service.RFirebase.Database
             });
         }
 
-        public void GetData(DatabaseReference reference, Action<string, bool> pOnFinished)
+        public static void GetData(DatabaseReference reference, Action<string, bool> pOnFinished)
         {
             if (reference == null)
             {
@@ -319,7 +296,7 @@ namespace RCore.Service.RFirebase.Database
                     pOnFinished(loadData, success);
             });
         }
-        public void GetDataWithCoroutine(DatabaseReference reference, Action<string, bool> pOnFinished)
+        public static void GetDataWithCoroutine(DatabaseReference reference, Action<string, bool> pOnFinished)
         {
             if (reference == null)
             {
@@ -329,7 +306,7 @@ namespace RCore.Service.RFirebase.Database
             }
             CoroutineUtil.StartCoroutine(IEGetData(reference, pOnFinished));
         }
-        private IEnumerator IEGetData(DatabaseReference reference, Action<string, bool> pOnFinished)
+        private static IEnumerator IEGetData(DatabaseReference reference, Action<string, bool> pOnFinished)
         {
             var task = reference.GetValueAsync();
 
@@ -347,7 +324,7 @@ namespace RCore.Service.RFirebase.Database
                 pOnFinished(loadData, success);
         }
 
-        public void SetData(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
+        public static void SetData(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
         {
             if (reference == null)
             {
@@ -363,7 +340,7 @@ namespace RCore.Service.RFirebase.Database
                     pOnFinished(success);
             });
         }
-        public void SetDataWithCoroutine(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
+        public static void SetDataWithCoroutine(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
         {
             if (reference == null)
             {
@@ -373,7 +350,7 @@ namespace RCore.Service.RFirebase.Database
             }
             CoroutineUtil.StartCoroutine(IESetData(reference, pUploadData, pOnFinished));
         }
-        private IEnumerator IESetData(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
+        private static IEnumerator IESetData(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
         {
             var task = reference.SetValueAsync(pUploadData);
             yield return new WaitForTask(task);
@@ -382,7 +359,7 @@ namespace RCore.Service.RFirebase.Database
                 pOnFinished(success);
         }
 
-        public void RemoveData(DatabaseReference reference, Action<bool> pOnFinished)
+        public static void RemoveData(DatabaseReference reference, Action<bool> pOnFinished)
         {
             if (reference == null)
             {
@@ -399,29 +376,29 @@ namespace RCore.Service.RFirebase.Database
             });
         }
 #else
-        public void Initialize() { }
-        public void CheckOnline(Action pOnConnected) { }
-        public void GetData(object reference, Action<string, bool> pOnFinished)
+        public static void Initialize() { }
+        public static void CheckOnline(Action pOnConnected) { }
+        public static void GetData(object reference, Action<string, bool> pOnFinished)
         {
             if (pOnFinished != null)
                 pOnFinished("", false);
         }
-        public void GetDataWithCoroutine(object reference, Action<string, bool> pOnFinished)
+        public static void GetDataWithCoroutine(object reference, Action<string, bool> pOnFinished)
         {
             if (pOnFinished != null)
                 pOnFinished("", false);
         }
-        public void SetData(object reference, string pUploadData, Action<bool> pOnFinished)
+        public static void SetData(object reference, string pUploadData, Action<bool> pOnFinished)
         {
             if (pOnFinished != null)
                 pOnFinished(false);
         }
-        public void SetDataWithCoroutine(object reference, string pUploadData, Action<bool> pOnFinished)
+        public static void SetDataWithCoroutine(object reference, string pUploadData, Action<bool> pOnFinished)
         {
             if (pOnFinished != null)
                 pOnFinished(false);
         }
-        public void RemoveData(object reference, Action<bool> pOnFinished)
+        public static void RemoveData(object reference, Action<bool> pOnFinished)
         {
             if (pOnFinished != null)
                 pOnFinished(false);

@@ -11,57 +11,45 @@ using Firebase;
 using Firebase.Auth;
 #endif
 
-namespace RCore.Service.RFirebase.Auth
+namespace RCore.Service
 {
-    public class RFirebaseAuth
+    public static class RFirebaseAuth
     {
-        private static RFirebaseAuth mInstance;
-        public static RFirebaseAuth Instance
-        {
-            get
-            {
-                if (mInstance == null)
-                    mInstance = new RFirebaseAuth();
-                return mInstance;
-            }
-        }
-
 #if ACTIVE_FIREBASE_AUTH
-        private bool mFetchingToken = true;
-        private Dictionary<string, FirebaseUser> mUserByAuth;
-        private FirebaseAuth mAuth;
+        private static bool m_FetchingToken = true;
+        private static Dictionary<string, FirebaseUser> m_UserByAuth;
 
-        public bool initialized { get; private set; }
-        public bool authenticated { get { return mAuth.CurrentUser != null; } }
+        private static FirebaseAuth auth => FirebaseAuth.DefaultInstance;
+        public static bool initialized { get; private set; }
+        public static bool authenticated { get { return auth.CurrentUser != null; } }
 
-        public void Initialize()
+        public static void Initialize()
         {
             if (initialized)
                 return;
 
             initialized = true;
 
-            mUserByAuth = new Dictionary<string, FirebaseUser>();
-            mAuth = FirebaseAuth.DefaultInstance;
-            mAuth.StateChanged += OnStateChanged;
-            mAuth.IdTokenChanged += OnTokenChanged;
-            OnStateChanged(mAuth, null);
+            m_UserByAuth = new Dictionary<string, FirebaseUser>();
+            auth.StateChanged += OnStateChanged;
+            auth.IdTokenChanged += OnTokenChanged;
+            OnStateChanged(auth, null);
         }
 
-        public void LogUserInfo()
+        public static void LogUserInfo()
         {
-            if (mAuth.CurrentUser == null)
-                Debug.Log("FirebaseAuth::GetUserInfo Not signed in, unable to get info.");
+            if (auth.CurrentUser == null)
+                Debug.Log("RFirebaseAuth:LogUserInfo Not signed in, unable to get info.");
             else
-                Debug.Log(string.Format("FirebaseAuth::GetUserInfo Current user info: anonymous: {0}, displayName: {1}, email: {2}, userId: {3}",
-                    mAuth.CurrentUser.IsAnonymous, mAuth.CurrentUser.DisplayName, mAuth.CurrentUser.Email, mAuth.CurrentUser.UserId));
+                Debug.Log(string.Format("RFirebaseAuth:LogUserInfo Current user info: anonymous: {0}, displayName: {1}, email: {2}, userId: {3}",
+                    auth.CurrentUser.IsAnonymous, auth.CurrentUser.DisplayName, auth.CurrentUser.Email, auth.CurrentUser.UserId));
         }
 
         //======== Sign in
 
-        public Task SigninAnonymouslyAsync()
+        public static Task SigninAnonymouslyAsync()
         {
-            var task = mAuth.SignInAnonymouslyAsync();
+            var task = auth.SignInAnonymouslyAsync();
             WaitUtil.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Sign-in");
@@ -73,9 +61,9 @@ namespace RCore.Service.RFirebase.Auth
         /// <summary>
         /// Sign in with the token from your authentication server. (eg. GPGS)
         /// </summary>
-        public Task SignInWithCustomTokenAsync(string pToken)
+        public static Task SignInWithCustomTokenAsync(string pToken)
         {
-            var task = mAuth.SignInWithCustomTokenAsync(pToken);
+            var task = auth.SignInWithCustomTokenAsync(pToken);
             WaitUtil.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Sign-in");
@@ -84,11 +72,11 @@ namespace RCore.Service.RFirebase.Auth
             return task;
         }
 
-        public Task SigninWithEmailAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword)
+        public static Task SigninWithEmailAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword)
         {
             if (pSignInAndFetchProfile)
             {
-                var task = mAuth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
+                var task = auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -98,7 +86,7 @@ namespace RCore.Service.RFirebase.Auth
             }
             else
             {
-                var task = mAuth.SignInWithEmailAndPasswordAsync(pEmail, pPassword);
+                var task = auth.SignInWithEmailAndPasswordAsync(pEmail, pPassword);
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -113,11 +101,11 @@ namespace RCore.Service.RFirebase.Auth
         /// illustrates the use of Credentials, which can be aquired from many
         /// different sources of authentication.
         /// </summary>
-        public Task SigninWithEmailCredentialAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword)
+        public static Task SigninWithEmailCredentialAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword)
         {
             if (pSignInAndFetchProfile)
             {
-                var task = mAuth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
+                var task = auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -127,7 +115,7 @@ namespace RCore.Service.RFirebase.Auth
             }
             else
             {
-                var task = mAuth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
+                var task = auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -140,9 +128,9 @@ namespace RCore.Service.RFirebase.Auth
         /// <summary>
         /// Link the current user with an email / password credential.
         /// </summary>
-        public Task LinkWithEmailCredentialAsync(bool signInAndFetchProfile, string email, string password)
+        public static Task LinkWithEmailCredentialAsync(bool signInAndFetchProfile, string email, string password)
         {
-            if (mAuth.CurrentUser == null)
+            if (auth.CurrentUser == null)
             {
                 Debug.Log("Not signed in, unable to link credential to user.");
                 var tcs = new TaskCompletionSource<bool>();
@@ -152,7 +140,7 @@ namespace RCore.Service.RFirebase.Auth
             Credential cred = EmailAuthProvider.GetCredential(email, password);
             if (signInAndFetchProfile)
             {
-                var task = mAuth.CurrentUser.LinkAndRetrieveDataWithCredentialAsync(cred);
+                var task = auth.CurrentUser.LinkAndRetrieveDataWithCredentialAsync(cred);
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Link Credential");
@@ -161,7 +149,7 @@ namespace RCore.Service.RFirebase.Auth
             }
             else
             {
-                var task = mAuth.CurrentUser.LinkWithCredentialAsync(cred);
+                var task = auth.CurrentUser.LinkWithCredentialAsync(cred);
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Link Credential");
@@ -173,9 +161,9 @@ namespace RCore.Service.RFirebase.Auth
         /// <summary>
         /// Reauthenticate the user with the current email / password.
         /// </summary>
-        public Task ReauthenticateAsync(bool signInAndFetchProfile, string email, string password)
+        public static Task ReauthenticateAsync(bool signInAndFetchProfile, string email, string password)
         {
-            var user = mAuth.CurrentUser;
+            var user = auth.CurrentUser;
             if (user == null)
             {
                 Debug.Log("Not signed in, unable to reauthenticate user.");
@@ -207,16 +195,16 @@ namespace RCore.Service.RFirebase.Auth
         /// <summary>
         /// Unlink the email credential from the currently logged in user.
         /// </summary>
-        public Task UnlinkEmailAsync(string pEmail, string pPassword)
+        public static Task UnlinkEmailAsync(string pEmail, string pPassword)
         {
-            if (mAuth.CurrentUser == null)
+            if (auth.CurrentUser == null)
             {
                 Debug.Log("Not signed in, unable to unlink");
                 var tcs = new TaskCompletionSource<bool>();
                 tcs.SetException(new Exception("Not signed in"));
                 return tcs.Task;
             }
-            var task = mAuth.CurrentUser.UnlinkAsync(EmailAuthProvider.GetCredential(pEmail, pPassword).Provider);
+            var task = auth.CurrentUser.UnlinkAsync(EmailAuthProvider.GetCredential(pEmail, pPassword).Provider);
             WaitUtil.WaitTask(task, () => { LogTaskCompletion(task, "Unlinking"); });
             return task;
         }
@@ -224,9 +212,9 @@ namespace RCore.Service.RFirebase.Auth
 
         //========
 
-        public void ReloadUser()
+        public static void ReloadUser()
         {
-            var task = mAuth.CurrentUser.ReloadAsync();
+            var task = auth.CurrentUser.ReloadAsync();
             WaitUtil.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Reload");
@@ -234,16 +222,16 @@ namespace RCore.Service.RFirebase.Auth
             });
         }
 
-        public void SignOut()
+        public static void SignOut()
         {
-            mAuth.SignOut();
+            auth.SignOut();
         }
 
-        public Task DeleteUserAsync()
+        public static Task DeleteUserAsync()
         {
-            if (mAuth.CurrentUser != null)
+            if (auth.CurrentUser != null)
             {
-                var task = mAuth.CurrentUser.DeleteAsync();
+                var task = auth.CurrentUser.DeleteAsync();
                 WaitUtil.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Delete user");
@@ -260,96 +248,96 @@ namespace RCore.Service.RFirebase.Auth
 
         //========
 
-        public void GetUserToken()
+        public static void GetUserToken()
         {
-            if (mAuth.CurrentUser == null)
+            if (auth.CurrentUser == null)
             {
-                Debug.Log("FirebaseAuth::GetUserToken Not signed in, unable to get token.");
+                Debug.Log("RFirebaseAuth:GetUserToken Not signed in, unable to get token.");
                 return;
             }
-            mFetchingToken = true;
-            var task = mAuth.CurrentUser.TokenAsync(false);
+            m_FetchingToken = true;
+            var task = auth.CurrentUser.TokenAsync(false);
             WaitUtil.WaitTask(task, () =>
             {
-                mFetchingToken = false;
+                m_FetchingToken = false;
                 LogTaskCompletion(task, "User token fetch");
             });
         }
 
-        private bool LogTaskCompletion(Task task, string operation)
+        private static bool LogTaskCompletion(Task task, string operation)
         {
             if (task.IsCanceled)
-                Debug.Log("RFirebaseAuth::logTaskCompletion " + operation + " canceled.");
+                Debug.Log($"RFirebaseAuth:{operation} canceled.");
 
             else if (task.IsFaulted)
             {
-                Debug.Log("RFirebaseAuth::logTaskCompletion " + operation + " encounted an error.");
+                Debug.Log($"RFirebaseAuth:{operation} encounted an error.");
                 foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
                 {
                     string authErrorCode = "";
-                    var firebaseEx = exception as global::Firebase.FirebaseException;
+                    var firebaseEx = exception as FirebaseException;
                     if (firebaseEx != null)
                         authErrorCode = string.Format("AuthError.{0}: ", ((AuthError)firebaseEx.ErrorCode).ToString());
 
-                    Debug.Log("RFirebaseAuth::logTaskCompletion " + authErrorCode + exception.ToString());
+                    Debug.Log($"RFirebaseAuth:{operation} {authErrorCode}");
                 }
             }
             else if (task.IsCompleted)
-                Debug.Log("FirebaseAuth::logTaskCompletion " + operation + " completed");
+                Debug.Log($"RFirebaseAuth:{operation} completed");
 
             return task.IsCompleted;
         }
 
-        private void OnTokenChanged(object sender, EventArgs e)
+        private static void OnTokenChanged(object sender, EventArgs e)
         {
             FirebaseAuth senderAuth = sender as FirebaseAuth;
-            if (senderAuth == mAuth && senderAuth.CurrentUser != null && !mFetchingToken)
+            if (senderAuth == auth && senderAuth.CurrentUser != null && !m_FetchingToken)
             {
                 var task = senderAuth.CurrentUser.TokenAsync(false);
                 WaitUtil.WaitTask(task, () =>
                 {
-                    Debug.Log(string.Format("[RFirebaseAuth::OnTokenChanged] Token[0:8] = {0}", task.Result.Substring(0, 8)));
+                    Debug.Log(string.Format("[RFirebaseAuth:OnTokenChanged] Token[0:8] = {0}", task.Result.Substring(0, 8)));
                 });
             }
         }
 
-        private void OnStateChanged(object sender, EventArgs e)
+        private static void OnStateChanged(object sender, EventArgs e)
         {
             FirebaseAuth senderAuth = sender as FirebaseAuth;
             FirebaseUser user = null;
             if (senderAuth != null)
-                mUserByAuth.TryGetValue(senderAuth.App.Name, out user);
-            if (senderAuth == mAuth && senderAuth.CurrentUser != user)
+                m_UserByAuth.TryGetValue(senderAuth.App.Name, out user);
+            if (senderAuth == auth && senderAuth.CurrentUser != user)
             {
                 bool signedIn = user != senderAuth.CurrentUser && senderAuth.CurrentUser != null;
                 if (!signedIn && user != null)
                 {
-                    Debug.Log("RFirebaseAuth::OnStateChanged user" + user.UserId + " sign out!");
+                    Debug.Log("RFirebaseAuth:OnStateChanged user" + user.UserId + " sign out!");
                 }
                 user = senderAuth.CurrentUser;
-                mUserByAuth[senderAuth.App.Name] = user;
+                m_UserByAuth[senderAuth.App.Name] = user;
                 if (signedIn)
                 {
-                    Debug.Log("RFirebaseAuth::OnStateChanged user" + user.UserId + " sign in!");
+                    Debug.Log("RFirebaseAuth:OnStateChanged user" + user.UserId + " sign in!");
                 }
             }
         }
 #else
-        public bool initialized { get; private set; }
-        public bool logged { get { return false; } }
-        public void Initialize() { }
-        public void LogUserInfo() { }
-        public void SignOut() { }
-        public Task DeleteUserAsync() { return Task.FromResult(0); }
-        public Task SigninAnonymouslyAsync() { return Task.FromResult(0); }
-        public Task SignInWithCustomTokenAsync(string pToken) { return Task.FromResult(0); }
-        public Task SigninWithEmailAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword) { return Task.FromResult(0); }
-        public Task SigninWithEmailCredentialAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword) { return Task.FromResult(0); }
-        public Task LinkWithEmailCredentialAsync(bool signInAndFetchProfile, string email, string password) { return Task.FromResult(0); }
-        public Task ReauthenticateAsync(bool signInAndFetchProfile, string email, string password) { return Task.FromResult(0); }
-        public Task UnlinkEmailAsync(string pEmail, string pPassword) { return Task.FromResult(0); }
-        public void ReloadUser() { }
-        public void GetUserToken() { }
+        public static bool initialized { get; private set; }
+        public static bool logged { get { return false; } }
+        public static void Initialize() { }
+        public static void LogUserInfo() { }
+        public static void SignOut() { }
+        public static Task DeleteUserAsync() { return Task.FromResult(0); }
+        public static Task SigninAnonymouslyAsync() { return Task.FromResult(0); }
+        public static Task SignInWithCustomTokenAsync(string pToken) { return Task.FromResult(0); }
+        public static Task SigninWithEmailAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword) { return Task.FromResult(0); }
+        public static Task SigninWithEmailCredentialAsync(bool pSignInAndFetchProfile, string pEmail, string pPassword) { return Task.FromResult(0); }
+        public static Task LinkWithEmailCredentialAsync(bool signInAndFetchProfile, string email, string password) { return Task.FromResult(0); }
+        public static Task ReauthenticateAsync(bool signInAndFetchProfile, string email, string password) { return Task.FromResult(0); }
+        public static Task UnlinkEmailAsync(string pEmail, string pPassword) { return Task.FromResult(0); }
+        public static void ReloadUser() { }
+        public static void GetUserToken() { }
 #endif
     }
 }
