@@ -35,6 +35,38 @@ namespace RCore.Common
         }
 
         [Conditional("UNITY_EDITOR")]
+        public static void DrawLinesGizmos(Vector3[] points, Color color)
+        {
+            if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
+            Color colorTemp = Gizmos.color;
+            Gizmos.color = color;
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (i < points.Length - 1)
+                    Gizmos.DrawLine(points[i], points[i + 1]);
+                else
+                    Gizmos.DrawLine(points[i], points[0]);
+            }
+            Gizmos.color = colorTemp;
+        }
+
+        [Conditional("UNITY_EDITOR")]
+        public static void DrawLinesGizmos(Transform[] points, Color color)
+        {
+            if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
+            Color colorTemp = Gizmos.color;
+            Gizmos.color = color;
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (i < points.Length - 1)
+                    Gizmos.DrawLine(points[i].position, points[i + 1].position);
+                else
+                    Gizmos.DrawLine(points[i].position, points[0].position);
+            }
+            Gizmos.color = colorTemp;
+        }
+
+        [Conditional("UNITY_EDITOR")]
         public static void DrawLine(Vector3 start, Vector3 dir, float length, Color color, float duration = 0.1f)
         {
             if (!DevSetting.Instance.EnableDraw) return;

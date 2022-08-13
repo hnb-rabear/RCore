@@ -144,6 +144,32 @@ namespace RCore.Common
                 .Aggregate("", (current, next) => current + next + ", ")
                 + "}";
         }
+
+        public static void CombineMeshs(List<Transform> pMeshobjects, Material pMat, ref GameObject m_CombinedMesh, bool pDetroyOrginal)
+        {
+            if (m_CombinedMesh == null)
+            {
+                m_CombinedMesh = new GameObject();
+                m_CombinedMesh.GetOrAddComponent<MeshRenderer>();
+                m_CombinedMesh.GetOrAddComponent<MeshFilter>();
+            }
+
+            var meshFilters = new MeshFilter[pMeshobjects.Count];
+            var combine = new CombineInstance[meshFilters.Length];
+            for (int i = 0; i < pMeshobjects.Count; i++)
+            {
+                meshFilters[i] = pMeshobjects[i].GetComponent<MeshFilter>();
+                combine[i].mesh = meshFilters[i].sharedMesh;
+                combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+                pMeshobjects[i].gameObject.SetActive(false);
+                if (pDetroyOrginal)
+                    GameObject.DestroyImmediate(pMeshobjects[i].gameObject);
+            }
+
+            m_CombinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh = new Mesh();
+            m_CombinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh.CombineMeshes(combine);
+            m_CombinedMesh.GetComponent<MeshRenderer>().sharedMaterial = pMat;
+        }
     }
 
     public static class RUtilExtension
@@ -357,6 +383,14 @@ namespace RCore.Common
                     pSource.Remove(key);
             }
             return pSource;
+        }
+
+        public static void AddOrSet<K, V>(this Dictionary<K, V> pSource, K pKey, V pVal)
+        {
+            if (pSource.ContainsKey(pKey))
+                pSource[pKey] = pVal;
+            else
+                pSource.Add(pKey, pVal);
         }
 
         public static void Remove<K, V>(this Dictionary<K, V> pSource, List<K> pKeys)

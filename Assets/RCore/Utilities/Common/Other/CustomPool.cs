@@ -494,13 +494,19 @@ namespace RCore.Common
             while (m_ActiveList.Count > 0)
             {
                 int index = m_ActiveList.Count - 1;
-                Object.Destroy(m_ActiveList[index]);
+                if (Application.isPlaying)
+                    Object.Destroy(m_ActiveList[index].gameObject);
+                else
+                    Object.DestroyImmediate(m_ActiveList[index].gameObject);
                 m_ActiveList.RemoveAt(index);
             }
             while (m_InactiveList.Count > 0)
             {
                 int index = m_InactiveList.Count - 1;
-                Object.Destroy(m_InactiveList[index]);
+                if (Application.isPlaying)
+                    Object.Destroy(m_InactiveList[index].gameObject);
+                else
+                    Object.DestroyImmediate(m_InactiveList[index].gameObject);
                 m_InactiveList.RemoveAt(index);
             }
         }
@@ -509,7 +515,10 @@ namespace RCore.Common
         {
             m_ActiveList.Remove(pItem);
             m_InactiveList.Remove(pItem);
-            Object.Destroy(pItem);
+            if (Application.isPlaying)
+                Object.Destroy(pItem.gameObject);
+            else
+                Object.DestroyImmediate(pItem.gameObject);
         }
 
         public T FindFromActive(T t)

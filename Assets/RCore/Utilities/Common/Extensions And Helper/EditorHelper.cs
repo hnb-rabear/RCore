@@ -1003,7 +1003,7 @@ namespace RCore.Common
             if (pFormatToUnityPath)
                 mDefaultPath = FormatPathToUnityPath(mDefaultPath).Replace("Assets", "");
             string saveKey = label + pSavingKey + Application.productName;
-            string savedPath = EditorPrefs.GetString(saveKey);
+            string savedPath = EditorPrefs.GetString(saveKey, mDefaultPath);
             var text = new EditorText()
             {
                 label = label,
