@@ -14,9 +14,6 @@ namespace RCore.Service
 {
     public static class RFirebaseAnalytics
     {
-        private const string FAILED_EVENTS = "FailedEvents";
-        private static List<AnalyticEvent> m_FailedEvents = new List<AnalyticEvent>();
-
 #if ACTIVE_FIREBASE_ANALYTICS
         public static bool initialized { get; private set; }
 
@@ -30,8 +27,6 @@ namespace RCore.Service
             initialized = true;
 
             LogEvent(FirebaseAnalytics.EventLogin);
-
-            ResendFailedEvents();
         }
 
         public static void SetUserProperty(string name, string property)
@@ -50,10 +45,7 @@ namespace RCore.Service
         public static void LogEvent(string name)
         {
             if (!initialized)
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name));
                 return;
-            }
 
             Debug.Log(string.Format("LogEvent_{0}", name));
             FirebaseAnalytics.LogEvent(name);
@@ -62,10 +54,7 @@ namespace RCore.Service
         public static void LogEvent(string name, string parameterName, string parameterValue)
         {
             if (!initialized)
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, parameterName, parameterValue));
                 return;
-            }
 
             Debug.Log(string.Format("LogEvent_{0}", name));
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
@@ -81,10 +70,7 @@ namespace RCore.Service
         public static void LogEvent(string name, string parameterName, float parameterValue)
         {
             if (!initialized)
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, parameterName, parameterValue));
                 return;
-            }
 
             Debug.Log(string.Format("LogEvent_{0}", name));
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
@@ -93,10 +79,7 @@ namespace RCore.Service
         public static void LogEvent(string name, string parameterName, long parameterValue)
         {
             if (!initialized)
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, parameterName, parameterValue));
                 return;
-            }
 
             Debug.Log(string.Format("LogEvent_{0}", name));
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
@@ -105,10 +88,7 @@ namespace RCore.Service
         public static void LogEvent(string name, string parameterName, int parameterValue)
         {
             if (!initialized)
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, parameterName, parameterValue));
                 return;
-            }
 
             Debug.Log(string.Format("LogEvent_{0}", name));
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
@@ -125,10 +105,6 @@ namespace RCore.Service
                 }
                 Debug.Log(string.Format("LogEvent_{0}", name));
                 FirebaseAnalytics.LogEvent(name, array);
-            }
-            else
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, paramNames, paramValues));
             }
         }
 
@@ -160,19 +136,12 @@ namespace RCore.Service
                 Debug.Log(string.Format("LogEvent_{0}", name));
                 FirebaseAnalytics.LogEvent(name, array);
             }
-            else
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, paramNames, paramValues));
-            }
         }
 
         public static void LogEvent(string name, string[] paramNames, int[] paramValues)
         {
             if (!initialized)
-            {
-                m_FailedEvents.Add(new AnalyticEvent(name, paramNames, paramValues));
                 return;
-            }
 
             var array = new Parameter[paramNames.Length];
             for (int i = 0; i < paramNames.Length; i++)
@@ -181,46 +150,6 @@ namespace RCore.Service
             }
             Debug.Log(string.Format("LogEvent_{0}", name));
             FirebaseAnalytics.LogEvent(name, array);
-        }
-
-        public static void SaveFailedEvents()
-        {
-            string failedEvents = JsonHelper.ToJson(m_FailedEvents);
-            PlayerPrefs.SetString(FAILED_EVENTS, failedEvents);
-        }
-
-        public static void ResendFailedEvents()
-        {
-            if (!initialized)
-                return;
-
-            var allEventsStr = PlayerPrefs.GetString(FAILED_EVENTS);
-            m_FailedEvents = JsonHelper.ToList<AnalyticEvent>(allEventsStr);
-
-            if (m_FailedEvents == null)
-                m_FailedEvents = new List<AnalyticEvent>();
-
-            if (m_FailedEvents.Count > 0)
-            {
-                for (int i = m_FailedEvents.Count - 1; i >= 0; i--)
-                {
-                    string name = m_FailedEvents[i].name;
-                    string[] paramNames = m_FailedEvents[i].paramNames;
-                    string[] paramValuesStr = m_FailedEvents[i].paramValuesStr;
-                    float[] paramValuesNum = m_FailedEvents[i].paramValuesNum;
-
-                    if (paramValuesStr != null && paramValuesStr.Length > 0)
-                        LogEvent(name, paramNames, paramValuesStr);
-                    else if (paramValuesNum != null && paramValuesNum.Length > 0)
-                        LogEvent(name, paramNames, paramValuesNum);
-                    else
-                        LogEvent(name);
-
-                    m_FailedEvents.RemoveAt(i);
-                }
-            }
-
-            PlayerPrefs.DeleteKey(FAILED_EVENTS);
         }
 #else
         public static bool initialized { get; private set; }

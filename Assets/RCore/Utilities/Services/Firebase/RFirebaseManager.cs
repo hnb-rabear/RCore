@@ -97,17 +97,6 @@ namespace RCore.Service
 
         }
 
-        private void OnApplicationPause(bool pause)
-        {
-            if (pause)
-                RFirebaseAnalytics.SaveFailedEvents();
-        }
-
-        private void OnApplicationQuit()
-        {
-            RFirebaseAnalytics.SaveFailedEvents();
-        }
-
         #endregion
 
         //=============================================
