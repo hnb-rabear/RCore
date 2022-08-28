@@ -202,6 +202,48 @@ namespace RCore.Service
                 new Rect(0, 0, Screen.width, (Screen.width / 1024) * 700), 0, 0);
             return screenShot;
         }
+
+        public static void SaveSimple(string gameData, float totalPlayTime, Action<bool> pCallback)
+		{
+			OpenWithAutomaticConflictResolution("gameData", DataSource.ReadCacheOrNetwork, ConflictResolutionStrategy.UseLongestPlaytime, (metaData, status) =>
+			{
+				//Save
+				if (status == SavedGameRequestStatus.Success)
+				{
+					var byteData = ASCIIEncoding.ASCII.GetBytes(gameData);
+					WriteSavedGameData(metaData, byteData, TimeSpan.FromSeconds(totalPlayTime), (metaData2, status2) =>
+					{
+						Debug.Log(Newtonsoft.Json.JsonConvert.SerializeObject(metaData2));
+						pCallback?.Invoke(status2 == SavedGameRequestStatus.Success);
+					});
+				}
+				else
+					pCallback?.Invoke(false);
+			});
+		}
+
+		public static void LoadSimple(Action<string, SavedGame> pCallback)
+		{
+			OpenWithAutomaticConflictResolution("gameData", DataSource.ReadCacheOrNetwork, ConflictResolutionStrategy.UseLongestPlaytime, (metaData, status) =>
+			{
+				//Load
+				if (status == SavedGameRequestStatus.Success)
+				{
+					ReadSavedGameData(metaData, (metaData2, byteData, status2) =>
+					{
+						if (status2 == SavedGameRequestStatus.Success)
+						{
+							string gameData = ASCIIEncoding.ASCII.GetString(byteData);
+							pCallback?.Invoke(gameData, metaData2);
+						}
+						else
+							pCallback?.Invoke(null, null);
+					});
+				}
+				else
+					pCallback?.Invoke(null, null);
+			});
+		}
 #endif
     }
 }
