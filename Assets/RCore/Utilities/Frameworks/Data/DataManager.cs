@@ -89,11 +89,11 @@ namespace RCore.Pattern.Data
         /// <summary>
         /// Discard all changes, back to last data save
         /// </summary>
-        public void Reload(bool pClearCache)
+        public void Reload()
         {
             foreach (var item in mMainGroups)
                 foreach (var g in item.Value)
-                    g.Reload(pClearCache);
+                    g.Reload();
         }
 
         public void Save(bool pNow = false)
@@ -148,7 +148,7 @@ namespace RCore.Pattern.Data
         public void Import(string pJsonData)
         {
             DataSaverContainer.ImportData(pJsonData);
-            Reload(true);
+            Reload();
         }
 
         public void EnableAutoSave(bool pValue)

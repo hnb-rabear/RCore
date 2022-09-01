@@ -65,9 +65,9 @@ namespace RCore.Pattern.Data
             }
         }
 
-        public override void Reload(bool pClearIndex)
+        public override void Reload()
         {
-            base.Reload(pClearIndex);
+            base.Reload();
             mValue = GetSavedValue();
             mChanged = false;
         }

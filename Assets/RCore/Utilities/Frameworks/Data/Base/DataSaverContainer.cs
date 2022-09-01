@@ -160,6 +160,13 @@ namespace RCore.Pattern.Data
 #if UNITY_EDITOR
                     Debug.Log(string.Format("Restored {0}\n{1}", brand.Key, brand.Value));
 #endif
+                    var saver = GetSaver(brand.Key);
+                    if (saver != null)
+                    {
+                        saver.dataList = JsonHelper.ToList<KeyValue>(brand.Value);
+                        if (saver.dataList == null)
+                            saver.dataList = new List<KeyValue>();
+                    }
                 }
                 if (USE_PLAYERPREFS)
                     PlayerPrefs.Save();

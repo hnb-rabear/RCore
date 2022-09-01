@@ -145,12 +145,12 @@ namespace RCore.Pattern.Data
         /// Reload data back to last saved
         /// </summary>
         /// <param name="pClearIndex">Clear cached index of data in data list</param>
-        public override void Reload(bool pClearIndex)
+        public override void Reload()
         {
-            base.Reload(pClearIndex);
+            base.Reload();
 
             for (int i = 0; i < mChildren.Count; i++)
-                mChildren[i].Reload(pClearIndex);
+                mChildren[i].Reload();
         }
 
         public override void Reset()
