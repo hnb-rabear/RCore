@@ -18,20 +18,6 @@ namespace RCore.Common
     /// </summary>
     public class EventDispatcher
     {
-        public static EventDispatcher Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new EventDispatcher();
-                }
-
-                return instance;
-            }
-        }
-        private static EventDispatcher instance = null;
-
         public delegate void EventDelegate<T>(T e) where T : BaseEvent;
         private delegate void EventDelegate(BaseEvent e);
 

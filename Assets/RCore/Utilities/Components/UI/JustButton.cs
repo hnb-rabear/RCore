@@ -43,10 +43,6 @@ namespace RCore.Components
         [SerializeField] protected Sprite mImgInactive;
         [SerializeField] protected string m_SfxClip = "sfx_button_click";
 
-        [SerializeField] protected bool mContentSwapEnabled;
-        [SerializeField] protected GameObject[] mContentActive;
-        [SerializeField] protected GameObject[] mContentInactive;
-
         public Image img
         {
             get
@@ -80,14 +76,6 @@ namespace RCore.Components
                     mImg.sprite = mImgActive;
                 else
                     imgMaterial = null;
-
-                if (mContentSwapEnabled)
-                {
-                    foreach (var obj in mContentActive)
-                        obj.SetActive(true);
-                    foreach (var obj in mContentInactive)
-                        obj.SetActive(false);
-                }
             }
             else
             {
@@ -102,14 +90,6 @@ namespace RCore.Components
                     //Use grey material here
                     if (mGreyMatEnabled)
                         imgMaterial = GetGreyMat();
-
-                    if (mContentSwapEnabled)
-                    {
-                        foreach (var obj in mContentActive)
-                            obj.SetActive(false);
-                        foreach (var obj in mContentInactive)
-                            obj.SetActive(true);
-                    }
                 }
             }
         }
@@ -305,24 +285,6 @@ namespace RCore.Components
                     EditorGUILayout.BeginVertical("box");
                     EditorHelper.SerializeField(serializedObject, "mImgActive");
                     EditorHelper.SerializeField(serializedObject, "mImgInactive");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
-                var contentSwapEnabled = EditorHelper.SerializeField(serializedObject, "mContentSwapEnabled");
-                if (contentSwapEnabled.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    SerializedProperty mContentActive = serializedObject.FindProperty("mContentActive");
-                    if (mContentActive.isExpanded)
-                        EditorGUILayout.PropertyField(mContentActive, true);
-                    else
-                        EditorGUILayout.PropertyField(mContentActive, new GUIContent(mContentActive.displayName));
-                    SerializedProperty mContentInactive = serializedObject.FindProperty("mContentInactive");
-                    if (mContentInactive.isExpanded)
-                        EditorGUILayout.PropertyField(mContentInactive, true);
-                    else
-                        EditorGUILayout.PropertyField(mContentInactive, new GUIContent(mContentInactive.displayName));
                     EditorGUILayout.EndVertical();
                     EditorGUI.indentLevel--;
                 }

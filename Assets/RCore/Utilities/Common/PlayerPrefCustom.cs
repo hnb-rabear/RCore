@@ -1,4 +1,5 @@
-﻿using RCore.Common;
+﻿using Newtonsoft.Json;
+using RCore.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -207,7 +208,46 @@ namespace RCore.Common
         public void SaveChange()
         {
             PlayerPrefs.SetString(m_Key, JsonHelper.ToJson(m_Values));
-            PlayerPrefs.Save();
+        }
+    }
+
+    public class PlayerPrefObject<T> : PlayerPrefCustom
+    {
+        private T m_Value;
+        public T Value
+        {
+            get { return m_Value; }
+            set
+            {
+                m_Value = value;
+                if (value != null)
+                    PlayerPrefs.SetString(m_Key, JsonConvert.SerializeObject(value, new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.Ignore,
+                    }));
+                else
+                    PlayerPrefs.SetString(m_Key, "");
+                onUpdated?.Invoke();
+            }
+        }
+        public PlayerPrefObject(string pKey, T pDefault) : base(pKey)
+        {
+            string dateStr = PlayerPrefs.GetString(m_Key);
+            if (!string.IsNullOrEmpty(dateStr))
+                m_Value = JsonConvert.DeserializeObject<T>(dateStr);
+            else
+                m_Value = pDefault;
+        }
+        public override string ToString()
+        {
+            if (m_Value != null)
+                return JsonConvert.SerializeObject(m_Value, new JsonSerializerSettings()
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                });
+            return null;
         }
     }
 }

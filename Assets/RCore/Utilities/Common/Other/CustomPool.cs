@@ -344,9 +344,20 @@ namespace RCore.Common
                 return item;
             }
 
-            T newItem = Object.Instantiate(m_Prefab, m_Parent);
-            newItem.name = m_Name;
-            m_InactiveList.Add(newItem);
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                T newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
+                newItem.name = m_Name;
+                m_InactiveList.Add(newItem);
+            }
+            else
+#endif
+            {
+                T newItem = Object.Instantiate(m_Prefab, m_Parent);
+                newItem.name = m_Name;
+                m_InactiveList.Add(newItem);
+            }
 
             return Spawn(position, pIsWorldPosition);
         }
@@ -382,9 +393,21 @@ namespace RCore.Common
                 return item;
             }
 
-            T newItem = Object.Instantiate(m_Prefab, m_Parent);
-            newItem.name = m_Name;
-            m_InactiveList.Add(newItem);
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                T newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
+                newItem.name = m_Name;
+                m_InactiveList.Add(newItem);
+
+            }
+            else
+#endif
+            {
+                T newItem = Object.Instantiate(m_Prefab, m_Parent);
+                newItem.name = m_Name;
+                m_InactiveList.Add(newItem);
+            }
             pReused = false;
 
             return Spawn(position, pIsWorldPosition, ref pReused);

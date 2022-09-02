@@ -8,251 +8,234 @@ using System;
 using RCore.Common;
 using Debug = RCore.Common.Debug;
 using RCore.Pattern.DataBasic;
+using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace RCore.Pattern.Data
 {
-    public class DataManager : MonoBehaviour
-    {
-        #region Members
+	public class DataManager : MonoBehaviour
+	{
+		#region Members
 
-        private const float MIN_TIME_BETWEEN_SAVES = 5;
+		private const float MIN_TIME_BETWEEN_SAVES = 5;
 
-        private bool m_EnabledAutoSave = true;
-        /// <summary>
-        /// Key is saver id string
-        /// Children are first generations of this saver
-        /// </summary>
-        private Dictionary<string, List<DataGroup>> mMainGroups = new Dictionary<string, List<DataGroup>>();
+		private bool m_EnabledAutoSave = true;
+		/// <summary>
+		/// Key is saver id string
+		/// Children are first generations of this saver
+		/// </summary>
+		private Dictionary<string, List<DataGroup>> mMainGroups = new Dictionary<string, List<DataGroup>>();
+		private Coroutine m_SaveCoroutine;
 
-        #endregion
+		#endregion
 
-        //===========================================
+		//===========================================
 
-        #region MonoBehaviour
+		#region MonoBehaviour
 
-        public void OnApplicationPause(bool paused)
-        {
-            foreach (var item in mMainGroups)
-                foreach (var g in item.Value)
-                    g.OnApplicationPaused(paused);
+		public void OnApplicationPause(bool paused)
+		{
+			foreach (var item in mMainGroups)
+				foreach (var g in item.Value)
+					g.OnApplicationPaused(paused);
 
-            if (paused)
-                Save(true);
-        }
+			if (paused)
+				Save(true);
+		}
 
-        public void OnApplicationQuit()
-        {
-            foreach (var item in mMainGroups)
-                foreach (var g in item.Value)
-                    g.OnApplicationQuit();
-            Save(true);
-        }
+		public void OnApplicationQuit()
+		{
+			foreach (var item in mMainGroups)
+				foreach (var g in item.Value)
+					g.OnApplicationQuit();
+			Save(true);
+		}
 
-        #endregion
+		#endregion
 
-        //===========================================
+		//===========================================
 
-        #region Public
+		#region Public
 
-        /// <summary>
-        /// Step 0: Preparation, add all main data groups to the manager
-        /// </summary>
-        protected T AddMainDataGroup<T>(T pDataGroup, DataSaver pSaver) where T : DataGroup
-        {
-            if (!mMainGroups.ContainsKey(pSaver.idString))
-                mMainGroups.Add(pSaver.idString, new List<DataGroup>());
-            else
-            {
-                var list = mMainGroups[pSaver.idString];
-                for (int i = 0; i < list.Count; i++)
-                {
-                    if (list[i].Id == pDataGroup.Id)
-                        Debug.LogError($"Main Data Group with id {pDataGroup.Id} is already existed");
-                }
-            }
-            mMainGroups[pSaver.idString].Add(pDataGroup);
-            return pDataGroup;
-        }
+		/// <summary>
+		/// Step 0: Preparation, add all main data groups to the manager
+		/// </summary>
+		protected T AddMainDataGroup<T>(T pDataGroup, DataSaver pSaver) where T : DataGroup
+		{
+			if (!mMainGroups.ContainsKey(pSaver.idString))
+				mMainGroups.Add(pSaver.idString, new List<DataGroup>());
+			else
+			{
+				var list = mMainGroups[pSaver.idString];
+				for (int i = 0; i < list.Count; i++)
+				{
+					if (list[i].Id == pDataGroup.Id)
+						Debug.LogError($"Main Data Group with id {pDataGroup.Id} is already existed");
+				}
+			}
+			mMainGroups[pSaver.idString].Add(pDataGroup);
+			return pDataGroup;
+		}
 
-        /// <summary>
-        /// Step 1: Init main data groups
-        /// </summary>
-        public virtual void Init()
-        {
-            Load();
-            PostLoad();
-        }
+		/// <summary>
+		/// Step 1: Init main data groups
+		/// </summary>
+		public virtual void Init()
+		{
+			Load();
+			PostLoad();
+		}
 
-        /// <summary>
-        /// Discard all changes, back to last data save
-        /// </summary>
-        public void Reload()
-        {
-            foreach (var item in mMainGroups)
-                foreach (var g in item.Value)
-                    g.Reload();
-        }
+		/// <summary>
+		/// Discard all changes, back to last data save
+		/// </summary>
+		public void Reload()
+		{
+			foreach (var item in mMainGroups)
+				foreach (var g in item.Value)
+					g.Reload();
+		}
 
-        public void Save(bool pNow = false)
-        {
-            if (!m_EnabledAutoSave)
-                return;
+		public void Save(bool pNow = false)
+		{
+			if (m_SaveCoroutine != null)
+				StopCoroutine(m_SaveCoroutine);
+			m_SaveCoroutine = StartCoroutine(SaveAsync(pNow ? 0 : MIN_TIME_BETWEEN_SAVES));
+		}
 
-            if (pNow)
-            {
-                var groups = new List<DataGroup>();
-                foreach (var item in mMainGroups)
-                    foreach (var g in item.Value)
-                    {
-                        if (g.Stage())
-                            groups.Add(g);
-                    }
+		private IEnumerator SaveAsync(float pDelay)
+		{
+			if (!m_EnabledAutoSave)
+				yield break;
 
-                foreach (var g in groups)
-                    g.DataSaver.Save(false);
+			yield return new WaitForSeconds(pDelay);
+			var groups = new List<DataGroup>();
+			foreach (var item in mMainGroups)
+				foreach (var g in item.Value)
+				{
+					if (g.Stage())
+						groups.Add(g);
+				}
 
-                PlayerPrefsSaver.SaveAll();
-                WaitUtil.RemoveCountdownEvent(GetInstanceID());
-                return;
-            }
+			foreach (var g in groups)
+				g.DataSaver.Save(false);
 
-            WaitUtil.Start(new WaitUtil.CountdownEvent(GetInstanceID())
-            {
-                id = GetInstanceID(),
-                waitTime = MIN_TIME_BETWEEN_SAVES,
-                unscaledTime = false,
-                doSomething = (s) =>
-                {
-                    if (!m_EnabledAutoSave)
-                        return;
+			PlayerPrefs.Save();
+			PostSave();
+		}
 
-                    var groups = new List<DataGroup>();
-                    foreach (var item in mMainGroups)
-                        foreach (var g in item.Value)
-                        {
-                            if (g.Stage())
-                                groups.Add(g);
-                        }
+		protected virtual void PostSave() { }
 
-                    foreach (var g in groups)
-                        g.DataSaver.Save(false);
+		public void Import(string pJsonData)
+		{
+			DataSaverContainer.ImportData(pJsonData);
+			Reload();
+		}
 
-                    PlayerPrefsSaver.SaveAll();
-                },
-            });
-        }
+		public void EnableAutoSave(bool pValue)
+		{
+			m_EnabledAutoSave = pValue;
+		}
 
-        public void Import(string pJsonData)
-        {
-            DataSaverContainer.ImportData(pJsonData);
-            Reload();
-        }
+		#endregion
 
-        public void EnableAutoSave(bool pValue)
-        {
-            m_EnabledAutoSave = pValue;
-        }
+		//=================================================
 
-        #endregion
+		#region Private
 
-        //=================================================
+		/// <summary>
+		/// Step 2: Load Data Saver
+		/// </summary>
+		private void Load()
+		{
+			foreach (var item in mMainGroups)
+				foreach (var g in item.Value)
+					g.Load("", item.Key);
+		}
 
-        #region Private
+		/// <summary>
+		/// Step 3: Verify all data
+		/// </summary>
+		private void PostLoad()
+		{
+			foreach (var item in mMainGroups)
+				foreach (var g in item.Value)
+					g.PostLoad();
+		}
 
-        /// <summary>
-        /// Step 2: Load Data Saver
-        /// </summary>
-        private void Load()
-        {
-            foreach (var item in mMainGroups)
-                foreach (var g in item.Value)
-                    g.Load("", item.Key);
-        }
+		#endregion
 
-        /// <summary>
-        /// Step 3: Verify all data
-        /// </summary>
-        private void PostLoad()
-        {
-            foreach (var item in mMainGroups)
-                foreach (var g in item.Value)
-                    g.PostLoad();
-        }
+		//=================================================
 
-        #endregion
+		#region Utilities
 
-        //=================================================
+		public static string LoadFile(string pPath, IEncryption pEncryption)
+		{
+			var textAsset = Resources.Load<TextAsset>(pPath);
+			if (textAsset != null)
+			{
+				string content = "";
+				if (pEncryption != null)
+					content = pEncryption.Decrypt(textAsset.text);
+				else
+					content = textAsset.text;
+				Resources.UnloadAsset(textAsset);
+				return content;
+			}
+			else
+				Debug.LogError($"File {pPath} not found");
+			return "";
+		}
 
-        #region Utilities
-
-        public static string LoadFile(string pPath, IEncryption pEncryption)
-        {
-            var textAsset = Resources.Load<TextAsset>(pPath);
-            if (textAsset != null)
-            {
-                string content = "";
-                if (pEncryption != null)
-                    content = pEncryption.Decrypt(textAsset.text);
-                else
-                    content = textAsset.text;
-                Resources.UnloadAsset(textAsset);
-                return content;
-            }
-            else
-                Debug.LogError($"File {pPath} not found");
-            return "";
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 #if UNITY_EDITOR
-    [CustomEditor(typeof(DataManager), true)]
-    public class DataManagerEditor : Editor
-    {
-        protected DataManager mTarget;
+	[CustomEditor(typeof(DataManager), true)]
+	public class DataManagerEditor : Editor
+	{
+		protected DataManager mTarget;
 
-        private void OnEnable()
-        {
-            mTarget = target as DataManager;
-        }
+		private void OnEnable()
+		{
+			mTarget = target as DataManager;
+		}
 
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
+		public override void OnInspectorGUI()
+		{
+			base.OnInspectorGUI();
 
-            if (GUILayout.Button("Clear"))
-            {
-                DataSaverContainer.DeleteAll();
-            }
-            if (GUILayout.Button("Back Up"))
-            {
-                string path = EditorUtility.SaveFilePanelInProject("Save Backup", "GameData_" + DateTime.Now.ToString().Replace("/", "_").Replace(":", "_")
-                            + ".txt", "txt", "Please enter a file name to save!");
-                if (!string.IsNullOrEmpty(path))
-                    DataSaverContainer.BackupData(path);
-            }
-            if (GUILayout.Button("Restore"))
-            {
-                string jsonData = EditorUtility.OpenFilePanel("Select Backup Data File", Application.dataPath, "txt");
-                if (!string.IsNullOrEmpty(jsonData))
-                    DataSaverContainer.RestoreData(jsonData);
-            }
-            if (GUILayout.Button("Log"))
-            {
-                DataSaverContainer.LogData();
-            }
-            if (GUILayout.Button("Save (In Game)"))
-            {
-                if (!Application.isPlaying)
-                    return;
+			if (GUILayout.Button("Clear"))
+			{
+				DataSaverContainer.DeleteAll();
+			}
+			if (GUILayout.Button("Back Up"))
+			{
+				string path = EditorUtility.SaveFilePanelInProject("Save Backup", "GameData_" + DateTime.Now.ToString().Replace("/", "_").Replace(":", "_")
+							+ ".txt", "txt", "Please enter a file name to save!");
+				if (!string.IsNullOrEmpty(path))
+					DataSaverContainer.BackupData(path);
+			}
+			if (GUILayout.Button("Restore"))
+			{
+				string jsonData = EditorUtility.OpenFilePanel("Select Backup Data File", Application.dataPath, "txt");
+				if (!string.IsNullOrEmpty(jsonData))
+					DataSaverContainer.RestoreData(jsonData);
+			}
+			if (GUILayout.Button("Log"))
+			{
+				DataSaverContainer.LogData();
+			}
+			if (GUILayout.Button("Save (In Game)"))
+			{
+				if (!Application.isPlaying)
+					return;
 
-                foreach (var saver in DataSaverContainer.savers)
-                    saver.Value.Save(true);
-            }
-        }
-    }
+				foreach (var saver in DataSaverContainer.savers)
+					saver.Value.Save(true);
+			}
+		}
+	}
 #endif
 }

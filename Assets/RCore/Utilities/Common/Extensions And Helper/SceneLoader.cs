@@ -30,10 +30,10 @@ namespace RCore.Common
             return sceneOperator;
         }
 
-        public static void LoadScene(string pScene, bool pIsAdditive)
+        public static void LoadScene(string pScene, bool pIsAdditive, bool pReload = false)
         {
             var scene = SceneManager.GetSceneByName(pScene);
-            if (scene.isLoaded)
+            if (scene.isLoaded && !pReload)
                 return;
 
             SceneManager.LoadScene(pScene, pIsAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);

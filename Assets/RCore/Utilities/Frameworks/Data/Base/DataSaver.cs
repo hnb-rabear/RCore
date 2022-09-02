@@ -263,6 +263,11 @@ namespace RCore.Pattern.Data
             return DataSaverContainer.GetData(idString);
         }
 
+        public void SetSavedData(string pContent)
+        {
+            DataSaverContainer.SetData(idString, pContent);
+        }
+
         #endregion
 
         private string Encrypt(string value)

@@ -128,7 +128,6 @@ namespace RCore.Common
         public static readonly Color DarkCornflowerBlue = HexToColor("#26428B");
         public static readonly Color DarkCyan = HexToColor("#008B8B");
         public static readonly Color DarkElectricBlue = HexToColor("#536878");
-        public static readonly Color DarkGoldenrod = HexToColor("#B8860B");
         public static readonly Color DarkGreen = HexToColor("#013220");
         public static readonly Color DarkGreenX11 = HexToColor("#006400");
         public static readonly Color DarkJungleGreen = HexToColor("#1A2421");

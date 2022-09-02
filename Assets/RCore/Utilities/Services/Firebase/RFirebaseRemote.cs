@@ -16,6 +16,7 @@ namespace RCore.Service
     public static class RFirebaseRemote
     {
         public static Dictionary<string, object> defaultData = new Dictionary<string, object>();
+        public static bool fetched;
 
         public static void Initialize(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
         {
@@ -37,6 +38,9 @@ namespace RCore.Service
                 SetDefaultData(pDefaultData);
                 FetchDataAsync(pOnFetched);
             }
+#else
+            SetDefaultData(pDefaultData);
+            FetchDataAsync(pOnFetched);
 #endif
         }
 
@@ -71,12 +75,18 @@ namespace RCore.Service
 #endif
         }
 
+        public static bool HasKey(object pKey)
+        {
+            return defaultData.ContainsKey(pKey.ToString());
+        }
+
         public static T GetObjectValue<T>(object pKey)
         {
             var json = "";
 #if ACTIVE_FIREBASE_REMOTE
             try
             {
+
                 json = FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).StringValue;
             }
             catch
@@ -138,6 +148,7 @@ namespace RCore.Service
                     case LastFetchStatus.Success:
                         FirebaseRemoteConfig.DefaultInstance.ActivateAsync().ContinueWithOnMainThread(task2 =>
                         {
+                            fetched = true;
                             Debug.Log(string.Format("Remote data loaded and ready (last fetch time {0}).", info.FetchTime));
                         });
                         break;
@@ -161,6 +172,8 @@ namespace RCore.Service
 
                 pOnFetched?.Invoke(!task.IsCanceled && !task.IsFaulted);
             });
+#else
+            pOnFetched?.Invoke(false);
 #endif
         }
 

@@ -23,6 +23,11 @@ namespace RCore.Components
 
         #region MonoBehaviour
 
+        private void OnEnable()
+        {
+            MakeVisible();
+        }
+
         private void Awake()
         {
             if (OcclusionCuller.Instance != null)
@@ -32,7 +37,7 @@ namespace RCore.Components
         private void OnDestroy()
         {
             if (OcclusionCuller.Instance != null)
-                OcclusionCuller.Instance?.UnRegister(this);
+                OcclusionCuller.Instance.UnRegister(this);
         }
 
 #if UNITY_EDITOR

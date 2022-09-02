@@ -22,10 +22,19 @@ namespace RCore.Service
             get
             {
                 if (m_Instance == null)
-                    return m_Instance = new UnityPayment();
+                    m_Instance = FindObjectOfType<UnityPayment>();
                 return m_Instance;
             }
         }
+
+        private void Awake()
+        {
+            if (m_Instance == null)
+                m_Instance = this;
+            else if (m_Instance != this)
+                Destroy(gameObject);
+        }
+
 #if UNITY_IAP
         public const string PROCESSING_PURCHASE_ABORT = "PROCESSING_PURCHASE_ABORT";
         public const string PROCESSING_PURCHASE_INVALID_RECEIPT = "PROCESSING_PURCHASE_INVALID_RECEIPT";

@@ -86,14 +86,21 @@ namespace RCore.Components
             m_CurrentSafeArea = Screen.safeArea;
         }
 
-        public static void SetTopOffsetForBannerAd(float pBannerHeight) //150
+        public static void SetTopOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true) //150
         {
             float offset = 0;
             var safeAreaHeightOffer = Screen.height - Screen.safeArea.height; //80
-            if (pBannerHeight <= safeAreaHeightOffer)
-                offset = 0;
+            if (!pPlaceInSafeArea)
+            {
+                if (pBannerHeight <= safeAreaHeightOffer)
+                    offset = 0;
+                else
+                    offset = pBannerHeight - safeAreaHeightOffer;
+            }
             else
-                offset = pBannerHeight - safeAreaHeightOffer;
+            {
+                offset = pBannerHeight;
+            }
 
             if (topOffset == offset)
                 return;
@@ -119,7 +126,7 @@ namespace RCore.Components
         [ContextMenu("Test")]
         private void Test()
         {
-            SetTopOffsetForBannerAd(150);
+            SetTopOffsetForBannerAd(143);
         }
 
 #if UNITY_EDITOR
