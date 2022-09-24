@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Components;
-using RCore.Pattern.UI;
+using RCore.Framework.UI;
 
 namespace RCore.Demo
 {

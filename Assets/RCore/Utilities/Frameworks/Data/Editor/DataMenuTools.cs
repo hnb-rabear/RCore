@@ -7,7 +7,7 @@ using UnityEngine;
 using RCore.Common;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     public class DataMenuTools
     {

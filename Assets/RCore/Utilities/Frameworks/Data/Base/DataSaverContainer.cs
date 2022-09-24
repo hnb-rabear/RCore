@@ -4,7 +4,7 @@ using System.IO;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     /// <summary>
     /// NOTE: this class used string mostly to load data because It should be friendly with Unity Editor
@@ -87,7 +87,7 @@ namespace RCore.Pattern.Data
             }
             if (USE_BINARY)
             {
-                DataBasic.BinarySaver.SaveBinary(pData, pSaverKey);
+                Data.BinarySaver.SaveBinary(pData, pSaverKey);
             }
 #if UNITY_EDITOR
             Debug.Log(string.Format("Saved Key: {0}\nData: {1}", pSaverKey, pData));
@@ -100,7 +100,7 @@ namespace RCore.Pattern.Data
             if (USE_PLAYERPREFS)
                 dataStr = PlayerPrefs.GetString(pSaverKey, "");
             if (USE_BINARY)
-                dataStr = DataBasic.BinarySaver.LoadBinary(pSaverKey);
+                dataStr = Data.BinarySaver.LoadBinary(pSaverKey);
             return dataStr;
         }
 
@@ -139,7 +139,7 @@ namespace RCore.Pattern.Data
                     if (USE_PLAYERPREFS)
                         PlayerPrefs.DeleteKey(saverKeys[i]);
                     if (USE_BINARY)
-                        DataBasic.BinarySaver.DeleteFile(saverKeys[i]);
+                        Data.BinarySaver.DeleteFile(saverKeys[i]);
                 }
             }
             if (USE_PLAYERPREFS)
@@ -156,7 +156,7 @@ namespace RCore.Pattern.Data
                     if (USE_PLAYERPREFS)
                         PlayerPrefs.SetString(brand.Key, brand.Value);
                     if (USE_BINARY)
-                        DataBasic.BinarySaver.SaveBinary(brand.Value, brand.Key);
+                        Data.BinarySaver.SaveBinary(brand.Value, brand.Key);
 #if UNITY_EDITOR
                     Debug.Log(string.Format("Restored {0}\n{1}", brand.Key, brand.Value));
 #endif

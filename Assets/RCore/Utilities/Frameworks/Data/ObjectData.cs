@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     /// <summary>
     /// 

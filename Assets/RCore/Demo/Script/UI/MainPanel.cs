@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Components;
-using RCore.Pattern.UI;
+using RCore.Framework.UI;
 using RCore.Inspector;
 using RCore.Common;
 

@@ -5,9 +5,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Pattern.Data;
+using RCore.Framework.Data;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     public class BigNumberData : DataGroup
     {

@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RCore.Common;
 using RCore.Inspector;
-using RCore.Pattern.UI;
+using RCore.Framework.UI;
 #if NEW_INPUT
 using UnityEngine.InputSystem;
 #endif

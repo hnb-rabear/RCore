@@ -1,7 +1,7 @@
 ﻿using System;
 using RCore.Common;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     /// <summary>
     /// Note: this can not not prevent time cheating

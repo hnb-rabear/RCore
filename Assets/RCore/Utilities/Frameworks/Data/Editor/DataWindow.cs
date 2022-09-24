@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     public class DataWindow : EditorWindow
     {

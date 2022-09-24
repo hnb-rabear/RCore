@@ -12,7 +12,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using RCore.Common;
 
-namespace RCore.Pattern.UI
+namespace RCore.Framework.UI
 {
     public class PanelController : PanelStack
     {

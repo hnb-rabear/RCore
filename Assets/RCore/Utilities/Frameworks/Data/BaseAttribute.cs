@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     #region To Parse Data from Json Data Source
 

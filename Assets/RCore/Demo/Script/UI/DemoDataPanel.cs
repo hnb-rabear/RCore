@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Pattern.UI;
+using RCore.Framework.UI;
 using RCore.Components;
 using RCore.Common;
 using TMPro;

@@ -6,7 +6,7 @@
 using System;
 using RCore.Common;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     public class TimerTask : DataGroup
     {

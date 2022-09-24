@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
 	public interface IInventoryItem : IComparable<IInventoryItem>
 	{

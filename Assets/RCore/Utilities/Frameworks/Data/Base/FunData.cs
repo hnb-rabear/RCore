@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
 	public abstract class FunData
 	{

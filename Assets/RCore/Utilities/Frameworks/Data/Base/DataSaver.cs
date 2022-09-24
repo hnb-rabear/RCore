@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     [System.Serializable]
     public class KeyValue : IComparable<KeyValue>

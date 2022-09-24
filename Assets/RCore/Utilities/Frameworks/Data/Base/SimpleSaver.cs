@@ -9,7 +9,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-namespace RCore.Pattern.DataBasic
+namespace RCore.Framework.Data
 {
     [Obsolete("It's not really helpful")]
     public class PlayerPrefsSaver

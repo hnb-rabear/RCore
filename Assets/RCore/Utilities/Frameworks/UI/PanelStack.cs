@@ -9,7 +9,7 @@ using UnityEngine;
 using RCore.Common;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Pattern.UI
+namespace RCore.Framework.UI
 {
     public class TransitionFX
     {

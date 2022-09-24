@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System;
 using RCore.Common;
 using Debug = RCore.Common.Debug;
-using RCore.Pattern.DataBasic;
+using RCore.Framework.Data;
 using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
 	public class DataManager : MonoBehaviour
 	{

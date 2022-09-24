@@ -4,7 +4,7 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using RCore.Common;
-using RCore.Pattern.Data;
+using RCore.Framework.Data;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 

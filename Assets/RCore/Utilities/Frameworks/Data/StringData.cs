@@ -4,7 +4,7 @@
 
 using System;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     public class StringData : FunData
     {

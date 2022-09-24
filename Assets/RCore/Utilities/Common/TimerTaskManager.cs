@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using RCore.Common;
 using Cysharp.Threading.Tasks;
 
-namespace RCore.Pattern.Data
+namespace RCore.Framework.Data
 {
     public class TimerTaskManager : IUpdate
     {
