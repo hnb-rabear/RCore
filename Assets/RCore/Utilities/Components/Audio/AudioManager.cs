@@ -55,32 +55,32 @@ namespace RCore.Components
         public AudioSource PlaySFX(string pFileName, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (!m_EnabledSFX) return null;
-            var clip = AudioCollection.Instance.GetSFXClip(pFileName);
+            var clip = audioCollection.GetSFXClip(pFileName);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
 
         public AudioSource PlaySFX(int pIndex, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (!m_EnabledSFX) return null;
-            var clip = AudioCollection.Instance.GetSFXClip(pIndex);
+            var clip = audioCollection.GetSFXClip(pIndex);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
 
         public void StopSFX(int pIndex)
         {
-            var clip = AudioCollection.Instance.GetSFXClip(pIndex);
+            var clip = audioCollection.GetSFXClip(pIndex);
             StopSFX(clip);
         }
 
         public void PlayMusic(string pFileName, bool pLoop = false, float pFadeDuration = 0)
         {
-            var clip = AudioCollection.Instance.GetMusicClip(pFileName);
+            var clip = audioCollection.GetMusicClip(pFileName);
             PlayMusic(clip, pLoop, pFadeDuration);
         }
 
         public void PlayMusicById(int pId, bool pLoop = false, float pFadeDuration = 0, float pVolume = 1f)
         {
-            var clip = AudioCollection.Instance.GetMusicClip(pId);
+            var clip = audioCollection.GetMusicClip(pId);
             PlayMusic(clip, pLoop, pFadeDuration, pVolume);
         }
 
@@ -88,7 +88,7 @@ namespace RCore.Components
         {
             var clips = new AudioClip[pIds.Length];
             for (int i = 0; i < pIds.Length; i++)
-                clips[i] = AudioCollection.Instance.GetMusicClip(pIds[i]);
+                clips[i] = audioCollection.GetMusicClip(pIds[i]);
             PlayMusics(clips, pFadeDuration, pVolume);
         }
 
@@ -103,15 +103,24 @@ namespace RCore.Components
         [CustomEditor(typeof(AudioManager))]
         protected class AudioManagerEditor : BaseAudioManagerEditor
         {
+            private AudioManager m_Target;
+
+            protected override void OnEnable()
+            {
+                base.OnEnable();
+
+                m_Target = target as AudioManager;
+            }
+
             public override void OnInspectorGUI()
             {
                 base.OnInspectorGUI();
-                if (AudioCollection.Instance == null)
+
+                if (m_Target.audioCollection == null)
                     EditorGUILayout.HelpBox("AudioManager require AudioCollection. " +
-                        "To create AudioCollection, select Resources folder then from Create Menu " +
-                        "select RUtilities/Create Audio Collection", MessageType.Error);
+                        "To create AudioCollection, In project window select RUtilities/Create Audio Collection", MessageType.Error);
                 else if (GUILayout.Button("Open Audio Collection"))
-                    Selection.activeObject = AudioCollection.Instance;
+                    Selection.activeObject = m_Target.audioCollection;
             }
         }
 

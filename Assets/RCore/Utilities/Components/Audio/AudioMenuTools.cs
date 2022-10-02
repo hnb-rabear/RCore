@@ -30,12 +30,6 @@ namespace RCore.Components
             }
         }
 
-        [MenuItem("RUtilities/Audio/Open Audio Collection")]
-        private static void OpenAudioCollection()
-        {
-            Selection.activeObject = AudioCollection.Instance;
-        }
-
         [MenuItem("RUtilities/Audio/Open Hybird Audio Collection")]
         private static void OpenHybirdAudioCollection()
         {

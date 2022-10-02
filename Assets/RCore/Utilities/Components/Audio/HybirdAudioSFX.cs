@@ -65,7 +65,7 @@ namespace RCore.Components
                 {
                     if (!HybirdAudioManager.Instance.EnabledSFX)
                         return;
-                    var clip = AudioCollection.Instance.GetSFXClip(index);
+                    var clip = HybirdAudioManager.Instance.audioCollection.GetSFXClip(index);
                     m_AudioSource.volume = HybirdAudioManager.Instance.SFXVolume * HybirdAudioManager.Instance.MasterVolume;
                     m_AudioSource.loop = mIsLoop;
                     m_AudioSource.clip = clip;

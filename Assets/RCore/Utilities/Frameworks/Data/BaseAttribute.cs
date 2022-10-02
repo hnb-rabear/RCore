@@ -2,11 +2,10 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
+using RCore.Common;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
 
 namespace RCore.Framework.Data
 {
@@ -34,6 +33,12 @@ namespace RCore.Framework.Data
         {
             var att = GetAtt(pId);
             return att == null ? pDefault : att.GetValue(pLevel);
+        }
+        public float[] GetAttValues(int pId, int pLevel)
+        {
+            var att = GetAtt(pId);
+            var values = att.GetValues(pLevel);
+            return values;
         }
         public int GetAttIntValue(int pId, int pDefault = 0)
         {
@@ -77,6 +82,86 @@ namespace RCore.Framework.Data
                     dict[item.id] += item.GetValue(pLevel);
             }
             return dict;
+        }
+        public virtual List<Mod> GetMods()
+        {
+            var mods = new List<Mod>();
+            for (int i = 0; i < Attributes.Count; i++)
+            {
+                var att = Attributes[i];
+                if (att.values != null && att.values.Length > 0)
+                    mods.Add(new Mod(att.id, att.values));
+                else
+                    mods.Add(new Mod(att.id, att.value));
+            }
+            return mods;
+        }
+        public virtual List<Mod> GetMods(int pLevel)
+        {
+            var mods = new List<Mod>();
+            for (int i = 0; i < Attributes.Count; i++)
+            {
+                var att = Attributes[i];
+                var values = att.GetValues(pLevel);
+                mods.Add(new Mod(att.id, values));
+            }
+            return mods;
+        }
+        public virtual Dictionary<int, float[]> GetModsDict(int pLevel = 1)
+        {
+            var mods = new Dictionary<int, float[]>();
+            for (int i = 0; i < Attributes.Count; i++)
+            {
+                var id = Attributes[i].id;
+                var values = Attributes[i].GetValues(pLevel);
+                if (!mods.ContainsKey(id))
+                    mods.Add(id, values);
+                else
+                {
+                    for (int j = 0; j < values.Length; j++)
+                        mods[id][j] += values[j];
+                }
+            }
+            return mods;
+        }
+        public virtual List<Mod> GetModsFromTo(int pLevel, int pNextLevel)
+        {
+            if (pLevel == 0)
+                return GetMods(pNextLevel);
+            var mods = new List<Mod>();
+            for (int i = 0; i < Attributes.Count; i++)
+            {
+                var id = Attributes[i].id;
+                var values = Attributes[i].GetValues(pLevel);
+                var nextValues = Attributes[i].GetValues(pNextLevel);
+                for (int j = 0; j < nextValues.Length; j++)
+                    nextValues[j] = nextValues[j] - values[j];
+                mods.Add(new Mod(id, nextValues));
+            }
+            return mods;
+        }
+        public virtual Dictionary<int, float[]> GetModsFromToDict(int pFromLevel, int pToLevel)
+        {
+            if (pFromLevel == 0)
+                return GetModsDict(pToLevel);
+            var mods = new Dictionary<int, float[]>();
+            for (int i = 0; i < Attributes.Count; i++)
+            {
+                var id = Attributes[i].id;
+                var values = Attributes[i].GetValues(pFromLevel);
+                var nextValues = Attributes[i].GetValues(pToLevel);
+                for (int j = 0; j < nextValues.Length; j++)
+                    nextValues[j] = nextValues[j] - values[j];
+
+                if (!mods.ContainsKey(id))
+                    mods.Add(id, nextValues);
+                else
+                {
+                    for (int j = 0; j < nextValues.Length; j++)
+                        mods[id][j] += nextValues[j];
+                }
+            }
+            return mods;
         }
     }
 
