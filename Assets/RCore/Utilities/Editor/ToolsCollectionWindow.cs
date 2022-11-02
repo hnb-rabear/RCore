@@ -266,6 +266,7 @@ namespace RCore.Editor
                 ChangeTextsFont();
                 ChangeTMPTextsFont();
                 RepalceTextByTextTMP();
+                PerfectRatioButtons();
             });
         }
         private void FormatTexts()
@@ -774,6 +775,65 @@ namespace RCore.Editor
                                 Debug.Log($"Replace Text in gameobject {gameObj.name}");
                             }
                         }
+                }
+            }
+        }
+        private void PerfectRatioButtons()
+        {
+            if (EditorHelper.HeaderFoldout("Perfect Ratio Buttons"))
+            {
+                if (!SelectedObject())
+                    return;
+
+                if (EditorHelper.Button("Set Perfect Width"))
+                {
+                    foreach (GameObject g in Selection.gameObjects)
+                    {
+                        var buttons = g.FindComponentsInChildren<Button>();
+                        foreach (var button in buttons)
+                        {
+                            var image = button.GetComponent<Image>();
+                            if (image != null && image.sprite != null && image.type == Image.Type.Sliced)
+                            {
+                                var nativeSize = image.sprite.NativeSize();
+                                var rectSize = image.rectTransform.sizeDelta;
+                                if (rectSize.x > 0 && rectSize.x < nativeSize.x)
+                                {
+                                    var ratio = nativeSize.x * 1f / rectSize.x;
+                                    image.pixelsPerUnitMultiplier = ratio;
+                                }
+                                else
+                                    image.pixelsPerUnitMultiplier = 1;
+                            }
+
+                            Debug.Log($"Perfect ratio {image.name}");
+                        }
+                    }
+                }
+                if (EditorHelper.Button("Set Perfect Height"))
+                {
+                    foreach (GameObject g in Selection.gameObjects)
+                    {
+                        var buttons = g.FindComponentsInChildren<Button>();
+                        foreach (var button in buttons)
+                        {
+                            var image = button.GetComponent<Image>();
+                            if (image != null && image.sprite != null && image.type == Image.Type.Sliced)
+                            {
+                                var nativeSize = image.sprite.NativeSize();
+                                var rectSize = image.rectTransform.sizeDelta;
+                                if (rectSize.y > 0 && rectSize.y < nativeSize.y)
+                                {
+                                    var ratio = nativeSize.y * 1f / rectSize.y;
+                                    image.pixelsPerUnitMultiplier = ratio;
+                                }
+                                else
+                                    image.pixelsPerUnitMultiplier = 1;
+
+                                Debug.Log($"Perfect ratio {image.name}");
+                            }
+                        }
+                    }
                 }
             }
         }

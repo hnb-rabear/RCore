@@ -30,12 +30,21 @@ namespace RCore.Components
             Center,
         }
 
+        public enum PerfectRatio
+        {
+            None,
+            Width,
+            Height,
+        }
+
         private static Material mGreyMat;
 
         [SerializeField] protected PivotForScale mPivotForFX;
         [SerializeField] protected bool mEnabledFX = true;
         [SerializeField] protected Image mImg;
         [SerializeField] protected Vector2 mInitialScale = Vector2.one;
+        [SerializeField] protected PerfectRatio m_PerfectRatio = PerfectRatio.Height;
+        [SerializeField, HideInInspector] protected int m_PerferctSpriteId;
 
         [SerializeField] protected bool mGreyMatEnabled;
         [SerializeField] protected bool mImgSwapEnabled;
@@ -142,6 +151,8 @@ namespace RCore.Components
             }
 
             RefreshPivot();
+
+            CheckPerfectRatio();
         }
 #endif
 
@@ -260,6 +271,44 @@ namespace RCore.Components
         }
 
         public bool Enabled() { return enabled && mActive; }
+
+        protected void CheckPerfectRatio()
+        {
+            if (m_PerfectRatio == PerfectRatio.Width)
+            {
+                var image = mImg;
+                if (image != null && image.sprite != null && image.type == Image.Type.Sliced)
+                {
+                    var nativeSize = image.sprite.NativeSize();
+                    var rectSize = rectTransform.sizeDelta;
+                    if (rectSize.x > 0 && rectSize.x < nativeSize.x)
+                    {
+                        var ratio = nativeSize.x * 1f / rectSize.x;
+                        image.pixelsPerUnitMultiplier = ratio;
+                    }
+                    else
+                        image.pixelsPerUnitMultiplier = 1;
+                    m_PerferctSpriteId = image.sprite.GetInstanceID();
+                }
+            }
+            else if (m_PerfectRatio == PerfectRatio.Height)
+            {
+                var image = mImg;
+                if (image != null && image.sprite != null && image.type == Image.Type.Sliced)
+                {
+                    var nativeSize = image.sprite.NativeSize();
+                    var rectSize = rectTransform.sizeDelta;
+                    if (rectSize.y > 0 && rectSize.y < nativeSize.y)
+                    {
+                        var ratio = nativeSize.y * 1f / rectSize.y;
+                        image.pixelsPerUnitMultiplier = ratio;
+                    }
+                    else
+                        image.pixelsPerUnitMultiplier = 1;
+                    m_PerferctSpriteId = image.sprite.GetInstanceID();
+                }
+            }
+        }
     }
 
 #if UNITY_EDITOR
@@ -278,6 +327,7 @@ namespace RCore.Components
                 EditorHelper.SerializeField(serializedObject, "mEnabledFX");
                 EditorHelper.SerializeField(serializedObject, "mGreyMatEnabled");
                 EditorHelper.SerializeField(serializedObject, "m_SfxClip");
+                EditorHelper.SerializeField(serializedObject, "m_PerfectRatio");
                 var imgSwapEnabled = EditorHelper.SerializeField(serializedObject, "mImgSwapEnabled");
                 if (imgSwapEnabled.boolValue)
                 {
