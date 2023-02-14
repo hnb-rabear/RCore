@@ -17,19 +17,19 @@ namespace RCore.Editor
 		{
 			mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, false, false);
 
-			GUILayout.Space(10);
+			EditorHelper.SeperatorBox();
 			DrawGameObjectUtilities();
 
-			GUILayout.Space(10);
+			EditorHelper.SeperatorBox();
 			DrawRendererUtilities();
 
-			GUILayout.Space(10);
+			EditorHelper.SeperatorBox();
 			DrawUIUtilties();
 
-			GUILayout.Space(10);
+			EditorHelper.SeperatorBox();
 			DrawMathUtitlies();
 
-			GUILayout.Space(10);
+			EditorHelper.SeperatorBox();
 			DrawGenerators();
 
 			GUILayout.EndScrollView();
@@ -263,6 +263,465 @@ namespace RCore.Editor
 				}
 			}
 		}
+		//
+		public class SpriteReplace
+		{
+			public class Input
+			{
+				public List<Sprite> targets = new List<Sprite>();
+				public Sprite replace;
+			}
+			public List<Input> inputs = new List<Input>();
+		}
+		private SpriteReplace m_SpriteReplace;
+		private void SearchAndReplaceSprite()
+		{
+			var btn = new EditorButton()
+			{
+				color = Color.yellow,
+				onPressed = () => m_SpriteReplace.inputs.Add(new SpriteReplace.Input()),
+				label = "Add Targets And Replace",
+			};
+
+			if (EditorHelper.HeaderFoldout("Search And Replace Sprite", null, false, btn))
+			{
+				EditorGUILayout.BeginVertical("box");
+				{
+					if (m_SpriteReplace == null)
+						m_SpriteReplace = new SpriteReplace();
+
+					foreach (var target in m_SpriteReplace.inputs)
+					{
+						EditorGUILayout.BeginHorizontal();
+						{
+							EditorGUILayout.BeginVertical();
+							{
+								target.replace = (Sprite)EditorHelper.ObjectField<Sprite>(target.replace, "", 0, 60, showAsBox: true);
+								if (EditorHelper.ButtonColor("Remove", Color.red))
+								{
+									m_SpriteReplace.inputs.Remove(target);
+									break;
+								}
+								EditorHelper.TextField(target.replace != null ? target.replace.name : "", "");
+								EditorHelper.TextField(target.replace != null ? $"{target.replace.NativeSize().x},{target.replace.NativeSize().y}" : "", "");
+							}
+							EditorGUILayout.EndVertical();
+
+							if (EditorHelper.ButtonColor("+", Color.green, 23))
+								target.targets.Add(null);
+							for (int t = 0; t < target.targets.Count; t++)
+							{
+								EditorGUILayout.BeginVertical();
+								{
+									target.targets[t] = (Sprite)EditorHelper.ObjectField<Sprite>(target.targets[t], "", 0, 60, showAsBox: true);
+									if (EditorHelper.ButtonColor("Remove", Color.red))
+									{
+										target.targets.RemoveAt(t);
+										t--;
+									}
+									EditorHelper.TextField(target.targets[t] != null ? target.targets[t].name : "", "");
+									EditorHelper.TextField(target.targets[t] != null ? $"{target.targets[t].NativeSize().x},{target.targets[t].NativeSize().y}" : "", "");
+								}
+								EditorGUILayout.EndVertical();
+							}
+						}
+						EditorGUILayout.EndHorizontal();
+						EditorGUILayout.Separator();
+					}
+
+					if (EditorHelper.Button("Search and replace"))
+					{
+						int count = 0;
+						var objectsFound = new List<GameObject>();
+						var assetIds = AssetDatabase.FindAssets("t:prefab", new string[] { "Assets" });
+						foreach (var guid in assetIds)
+						{
+							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+							bool valid = false;
+
+							foreach (var target in m_SpriteReplace.inputs)
+							{
+								for (int t = target.targets.Count - 1; t >= 0; t--)
+									if (target.targets[t] == null)
+										target.targets.RemoveAt(t);
+							}
+
+							var images = obj.FindComponentsInChildren<Image>();
+							foreach (var com in images)
+							{
+								foreach (var target in m_SpriteReplace.inputs)
+									if (target.targets.Contains(com.sprite))
+									{
+										com.sprite = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+							var buttons = obj.FindComponentsInChildren<Components.JustButton>();
+							foreach (var com in buttons)
+							{
+								foreach (var target in m_SpriteReplace.inputs)
+								{
+									if (target.targets.Contains(com.mImgActive))
+									{
+										com.mImgActive = target.replace;
+										valid = true;
+									}
+									if (target.targets.Contains(com.mImgInactive))
+									{
+										com.mImgInactive = target.replace;
+										valid = true;
+										count++;
+									}
+								}
+							}
+							var sptRenderers = obj.FindComponentsInChildren<SpriteRenderer>();
+							foreach (var com in sptRenderers)
+							{
+								foreach (var target in m_SpriteReplace.inputs)
+									if (target.targets.Contains(com.sprite))
+									{
+										com.sprite = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+
+							if (valid && !objectsFound.Contains(obj))
+								objectsFound.Add(obj);
+						}
+
+						foreach (var g in objectsFound)
+							EditorUtility.SetDirty(g);
+
+						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.SaveAssets();
+
+						Debug.Log($"Replace {count} Objects");
+					}
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+		//
+		public class FontRepalce
+		{
+			public class Input
+			{
+				public List<Font> targets = new List<Font>();
+				public Font replace;
+			}
+			public List<Input> inputs = new List<Input>();
+		}
+		public FontRepalce m_FontReplace = new FontRepalce();
+		private void SearchAndReplaceFont()
+		{
+			var btn = new EditorButton()
+			{
+				color = Color.yellow,
+				onPressed = () => m_FontReplace.inputs.Add(new FontRepalce.Input()),
+				label = "Add Targets And Replace",
+			};
+
+			if (EditorHelper.HeaderFoldout("Search And Replace Font", null, false, btn))
+			{
+				EditorGUILayout.BeginVertical("box");
+				{
+					if (m_FontReplace == null)
+						m_FontReplace = new FontRepalce();
+
+					foreach (var target in m_FontReplace.inputs)
+					{
+						EditorGUILayout.BeginHorizontal();
+						{
+							EditorGUILayout.BeginVertical();
+							{
+								EditorGUILayout.BeginHorizontal();
+								{
+									target.replace = (Font)EditorHelper.ObjectField<Font>(target.replace, "");
+									if (EditorHelper.ButtonColor("x", Color.red, 23))
+									{
+										m_FontReplace.inputs.Remove(target);
+										break;
+									}
+								}
+								EditorGUILayout.EndHorizontal();
+							}
+							EditorGUILayout.EndVertical();
+
+							if (EditorHelper.ButtonColor("+", Color.green, 23))
+								target.targets.Add(null);
+							for (int t = 0; t < target.targets.Count; t++)
+							{
+								EditorGUILayout.BeginVertical();
+								{
+									EditorGUILayout.BeginHorizontal();
+									{
+										target.targets[t] = (Font)EditorHelper.ObjectField<Font>(target.targets[t], "");
+										if (EditorHelper.ButtonColor("x", Color.red, 23))
+										{
+											target.targets.RemoveAt(t);
+											t--;
+										}
+									}
+									EditorGUILayout.EndHorizontal();
+								}
+								EditorGUILayout.EndVertical();
+							}
+						}
+						EditorGUILayout.EndHorizontal();
+						EditorGUILayout.Separator();
+					}
+
+					if (EditorHelper.Button("Search and replace in Projects"))
+					{
+						int count = 0;
+						var objectsFound = new List<GameObject>();
+						var assetIds = AssetDatabase.FindAssets("t:prefab", new string[] { "Assets" });
+						foreach (var guid in assetIds)
+						{
+							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+							bool valid = false;
+
+							foreach (var target in m_FontReplace.inputs)
+							{
+								for (int t = target.targets.Count - 1; t >= 0; t--)
+									if (target.targets[t] == null)
+										target.targets.RemoveAt(t);
+							}
+
+							var images = obj.FindComponentsInChildren<Text>();
+							foreach (var com in images)
+							{
+								foreach (var target in m_FontReplace.inputs)
+									if (target.targets.Contains(com.font))
+									{
+										com.font = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+
+							if (valid && !objectsFound.Contains(obj))
+								objectsFound.Add(obj);
+						}
+
+						foreach (var g in objectsFound)
+							EditorUtility.SetDirty(g);
+
+						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.SaveAssets();
+
+						Debug.Log($"Replace {count} Objects");
+					}
+					if (EditorHelper.Button("Search and replace in Scene"))
+					{
+						GameObject[] objs = UnityEngine.Object.FindObjectsOfType<GameObject>();
+						int count = 0;
+						//var objs = Selection.gameObjects;
+						var objectsFound = new List<GameObject>();
+						for (int i = 0; i < objs.Length; i++)
+						{
+							bool valid = false;
+							var obj = objs[i];
+							var images = obj.FindComponentsInChildren<Text>();
+							foreach (var com in images)
+							{
+								foreach (var target in m_FontReplace.inputs)
+									if (target.targets.Contains(com.font))
+									{
+										com.font = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+
+							if (valid && !objectsFound.Contains(obj))
+								objectsFound.Add(obj);
+						}
+
+						foreach (var g in objectsFound)
+							EditorUtility.SetDirty(g);
+
+						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.SaveAssets();
+
+						Debug.Log($"Replace {count} Objects");
+					}
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+		//
+		public class TextMeshProFontReplace
+		{
+			public class Input
+			{
+				public List<TMP_FontAsset> targets = new List<TMP_FontAsset>();
+				public TMP_FontAsset replace;
+			}
+			public List<Input> inputs = new List<Input>();
+		}
+		public TextMeshProFontReplace m_TMPFontReplace = new TextMeshProFontReplace();
+		private void SearchAndReplaceTMPFont()
+		{
+			var btn = new EditorButton()
+			{
+				color = Color.yellow,
+				onPressed = () => m_TMPFontReplace.inputs.Add(new TextMeshProFontReplace.Input()),
+				label = "Add Targets And Replace",
+			};
+
+			if (EditorHelper.HeaderFoldout("Search And Replace TMP Font", null, false, btn))
+			{
+				EditorGUILayout.BeginVertical("box");
+				{
+					if (m_TMPFontReplace == null)
+						m_TMPFontReplace = new TextMeshProFontReplace();
+
+					foreach (var target in m_TMPFontReplace.inputs)
+					{
+						EditorGUILayout.BeginHorizontal();
+						{
+							EditorGUILayout.BeginVertical();
+							{
+								EditorGUILayout.BeginHorizontal();
+								{
+									target.replace = (TMP_FontAsset)EditorHelper.ObjectField<TMP_FontAsset>(target.replace, "");
+									if (EditorHelper.ButtonColor("x", Color.red, 23))
+									{
+										m_TMPFontReplace.inputs.Remove(target);
+										break;
+									}
+								}
+								EditorGUILayout.EndHorizontal();
+							}
+							EditorGUILayout.EndVertical();
+
+							if (EditorHelper.ButtonColor("+", Color.green, 23))
+								target.targets.Add(null);
+							for (int t = 0; t < target.targets.Count; t++)
+							{
+								EditorGUILayout.BeginVertical();
+								{
+									EditorGUILayout.BeginHorizontal();
+									{
+										target.targets[t] = (TMP_FontAsset)EditorHelper.ObjectField<TMP_FontAsset>(target.targets[t], "");
+										if (EditorHelper.ButtonColor("x", Color.red, 23))
+										{
+											target.targets.RemoveAt(t);
+											t--;
+										}
+									}
+									EditorGUILayout.EndHorizontal();
+								}
+								EditorGUILayout.EndVertical();
+							}
+						}
+						EditorGUILayout.EndHorizontal();
+						EditorGUILayout.Separator();
+					}
+
+					if (EditorHelper.Button("Search and replace in Projects"))
+					{
+						int count = 0;
+						var objectsFound = new List<GameObject>();
+						var assetIds = AssetDatabase.FindAssets("t:prefab", new string[] { "Assets" });
+						foreach (var guid in assetIds)
+						{
+							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+							bool valid = false;
+
+							foreach (var target in m_TMPFontReplace.inputs)
+							{
+								for (int t = target.targets.Count - 1; t >= 0; t--)
+									if (target.targets[t] == null)
+										target.targets.RemoveAt(t);
+							}
+
+							var txtsUI = obj.FindComponentsInChildren<TextMeshProUGUI>();
+							foreach (var com in txtsUI)
+							{
+								foreach (var target in m_TMPFontReplace.inputs)
+									if (target.targets.Contains(com.font))
+									{
+										com.font = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+							var txts = obj.FindComponentsInChildren<TextMeshPro>();
+							foreach (var com in txts)
+							{
+								foreach (var target in m_TMPFontReplace.inputs)
+									if (target.targets.Contains(com.font))
+									{
+										com.font = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+
+							if (valid && !objectsFound.Contains(obj))
+								objectsFound.Add(obj);
+						}
+
+						foreach (var g in objectsFound)
+							EditorUtility.SetDirty(g);
+
+						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.SaveAssets();
+
+						Debug.Log($"Replace {count} Objects");
+					}
+					if (EditorHelper.Button("Search and replace in Scene"))
+					{
+						GameObject[] objs = UnityEngine.Object.FindObjectsOfType<GameObject>();
+						int count = 0;
+						var objectsFound = new List<GameObject>();
+						for (int i = 0; i < objs.Length; i++)
+						{
+							bool valid = false;
+							var obj = objs[i];
+							var txtsUI = obj.FindComponentsInChildren<TextMeshProUGUI>();
+							foreach (var com in txtsUI)
+							{
+								foreach (var target in m_TMPFontReplace.inputs)
+									if (target.targets.Contains(com.font))
+									{
+										com.font = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+							var txts = obj.FindComponentsInChildren<TextMeshPro>();
+							foreach (var com in txts)
+							{
+								foreach (var target in m_TMPFontReplace.inputs)
+									if (target.targets.Contains(com.font))
+									{
+										com.font = target.replace;
+										valid = true;
+										count++;
+									}
+							}
+
+							if (valid && !objectsFound.Contains(obj))
+								objectsFound.Add(obj);
+						}
+
+						foreach (var g in objectsFound)
+							EditorUtility.SetDirty(g);
+
+						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.SaveAssets();
+
+						Debug.Log($"Replace {count} Objects");
+					}
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
 		#endregion
 		//===================================================================================================
 		#region UI Utilities
@@ -287,6 +746,9 @@ namespace RCore.Editor
 				ChangeTMPTextsFont();
 				RepalceTextByTextTMP();
 				PerfectRatioImages();
+				SearchAndReplaceSprite();
+				SearchAndReplaceFont();
+				SearchAndReplaceTMPFont();
 			});
 		}
 		private void FormatTexts()

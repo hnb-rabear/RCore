@@ -44,12 +44,11 @@ namespace RCore.Components
         [SerializeField] protected Image mImg;
         [SerializeField] protected Vector2 mInitialScale = Vector2.one;
         [SerializeField] protected PerfectRatio m_PerfectRatio = PerfectRatio.Height;
-        [SerializeField, HideInInspector] protected int m_PerferctSpriteId;
 
         [SerializeField] protected bool mGreyMatEnabled;
         [SerializeField] protected bool mImgSwapEnabled;
-        [SerializeField] protected Sprite mImgActive;
-        [SerializeField] protected Sprite mImgInactive;
+        [SerializeField] public Sprite mImgActive;
+        [SerializeField] public Sprite mImgInactive;
         [SerializeField] protected string m_SfxClip = "sfx_button_click";
 
         public Image img
@@ -74,6 +73,7 @@ namespace RCore.Components
         private PivotForScale mPrePivot;
         private Action mInactionStateAction;
         private bool mActive = true;
+        private int m_PerferctSpriteId;
 
         public virtual void SetEnable(bool pValue)
         {
