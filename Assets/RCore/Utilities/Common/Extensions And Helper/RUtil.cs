@@ -476,5 +476,35 @@ namespace RCore.Common
 		{
 			return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);
 		}
+
+		public static Vector3 ToVector3(this Vector3Int pVal)
+		{
+			return new Vector3(pVal.x, pVal.y, pVal.z);
+		}
+
+		public static Vector2 ToVector3(this Vector2Int pVal)
+		{
+			return new Vector3(pVal.x, pVal.y);
+		}
+
+		public static void SortByDistanceToPosition(this List<Vector3> pPositions, Vector3 pPOsition)
+		{
+			for (int i = 0; i < pPositions.Count - 1; i++)
+			{
+				var iSpawnPos = pPositions[i];
+				float iDistance = Vector3.Distance(pPOsition, iSpawnPos);
+				for (int j = i + 1; j < pPositions.Count; j++)
+				{
+					var jSpawnPos = pPositions[j];
+					float jDistance = Vector3.Distance(pPOsition, jSpawnPos);
+					if (iDistance > jDistance)
+					{
+						var temp = pPositions[i];
+						pPositions[i] = pPositions[j];
+						pPositions[j] = temp;
+					}
+				}
+			}
+		}
 	}
 }

@@ -331,6 +331,8 @@ namespace RCore.Service
 #else
 		public static void ShowSelectSaveGameUI(string uiTitle, Action<ISavedGameMetadata, SelectUIStatus> p) => p?.Invoke(null, SelectUIStatus.AuthenticationError);
 		public static void UploadSaveGame(string jsonData, float totalPlayTime, Action<bool> p) => p?.Invoke(false);
+		public static void UploadSaveGame(string pFileName, string pContent, float pTotalPlayTime, Action<bool> pCallback = null) => pCallback?.Invoke(false);
+		public static void DownloadSaveGame(string pFileName, Action<bool, string> pCallback = null) => pCallback?.Invoke(false, null);
 		public static void DownloadSaveGame(Action<bool, string> p) => p?.Invoke(false, null);
 		public static void DeleteSaveGame(ISavedGameMetadata data) { }
 		public static void DeleteSelectedSaveGame() { }

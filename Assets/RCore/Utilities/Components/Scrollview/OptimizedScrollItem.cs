@@ -8,11 +8,13 @@ namespace RCore.Components
 {
     public class OptimizedScrollItem : MonoBehaviour
     {
-        protected int mIndex = -1;
+        protected int m_Index = -1;
 
         public virtual void UpdateContent(int pIndex)
         {
-            mIndex = pIndex;
+            m_Index = pIndex;
         }
+
+        public void ResetIndex() => m_Index = -1;
     }
 }

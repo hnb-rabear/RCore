@@ -54,6 +54,16 @@ namespace RCore.Common
 			target.transform.SetParent(parent);
 		}
 
+		public static T FindComponentInParent<T>(this GameObject objRoot) where T : Component
+		{
+			objRoot.TryGetComponent(out T component);
+
+			if (component == null && objRoot.transform.parent != null)
+				component = objRoot.transform.parent.gameObject.FindComponentInParent<T>();
+
+			return component;
+		}
+
 		public static T FindComponentInChildren<T>(this GameObject objRoot) where T : Component
 		{
 			// if we don't find the component in this object 
@@ -199,7 +209,7 @@ namespace RCore.Common
 				int iNumChildren = trnsRoot.childCount;
 				for (int i = 0; i < iNumChildren; ++i)
 				{
-					obj = trnsRoot.GetChild(i).gameObject.FindChildObject(pName);
+					obj = trnsRoot.GetChild(i).gameObject.FindChildObject(pName, pContain);
 					if (obj != null)
 					{
 						return obj;

@@ -57,6 +57,9 @@ namespace RCore.Components
         public void Init(OptimizedScrollItem pPrefab, int pTotalItems, bool pForce)
         {
             prefab = pPrefab;
+            m_ListItem.Free();
+            for (int i = 0; i < m_ListItem.Count; i++)
+                m_ListItem[i].ResetIndex();
 
             Init(pTotalItems, pForce);
         }
@@ -66,6 +69,7 @@ namespace RCore.Components
             if (pTotalItems == total && !pForce)
                 return;
 
+            m_TotalBuffer = 2;
             m_ListItemRect = new List<RectTransform>();
 
             if (m_ListItem == null || m_ListItem.Count == 0)
@@ -89,7 +93,7 @@ namespace RCore.Components
                 m_PrefabSizeX = prefabScale.x;
             m_Pivot = rectZero.pivot;
 
-            container.sizeDelta = new Vector2(prefabScale.x * totalCellOnRow, m_PrefabSizeY * Mathf.CeilToInt(total * 1f / totalCellOnRow));
+            container.sizeDelta = new Vector2(m_PrefabSizeX * totalCellOnRow, m_PrefabSizeY * Mathf.CeilToInt(total * 1f / totalCellOnRow));
             m_HalftSizeContainer = container.rect.size.y * 0.5f;
 
             var scrollRect = scrollView.transform as RectTransform;
@@ -227,6 +231,11 @@ namespace RCore.Components
             if (!pTween)
             {
                 content.anchoredPosition = new Vector2(0, toY);
+
+                for (int i = 0; i < m_ListItem.Count; i++)
+                    m_ListItem[i].ResetIndex();
+
+                ScrollBarChanged(1 - (pIndex + 1f) / total);
             }
             else
             {

@@ -16,7 +16,7 @@ namespace RCore.Common
     ///
     /// This class is a minor variation on <http://www.willrmiller.com/?p=87>
     /// </summary>
-    public class EventDispatcher
+    public static class EventDispatcher
     {
         public delegate void EventDelegate<T>(T e) where T : BaseEvent;
         private delegate void EventDelegate(BaseEvent e);
@@ -104,5 +104,5 @@ namespace RCore.Common
         }
     }
 
-    public class BaseEvent { }
+    public interface BaseEvent { }
 }

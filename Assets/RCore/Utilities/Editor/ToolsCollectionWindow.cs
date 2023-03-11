@@ -1262,7 +1262,7 @@ namespace RCore.Editor
 		}
 		private void PerfectRatioImages()
 		{
-			if (EditorHelper.HeaderFoldout("Perfect Ratio Buttons"))
+			if (EditorHelper.HeaderFoldout("Perfect Ratio Images"))
 			{
 				if (!SelectedObject())
 					return;

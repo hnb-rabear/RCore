@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System;
 using RCore.Common;
 using Debug = RCore.Common.Debug;
-using RCore.Framework.Data;
 using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -98,19 +97,28 @@ namespace RCore.Framework.Data
 					g.Reload();
 		}
 
-		public void Save(bool pNow = false)
+		public virtual void Save(bool pNow = false)
 		{
 			if (m_SaveCoroutine != null)
 				StopCoroutine(m_SaveCoroutine);
-			m_SaveCoroutine = StartCoroutine(SaveAsync(pNow ? 0 : MIN_TIME_BETWEEN_SAVES));
+
+			if (pNow)
+				SaveNow();
+			else
+				m_SaveCoroutine = StartCoroutine(SaveWithDelay(pNow ? 0 : MIN_TIME_BETWEEN_SAVES));
 		}
 
-		private IEnumerator SaveAsync(float pDelay)
+		private IEnumerator SaveWithDelay(float pDelay)
 		{
 			if (!m_EnabledAutoSave)
 				yield break;
 
 			yield return new WaitForSeconds(pDelay);
+			SaveNow();
+		}
+
+		private void SaveNow()
+		{
 			var groups = new List<DataGroup>();
 			foreach (var item in mMainGroups)
 				foreach (var g in item.Value)

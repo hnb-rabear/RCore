@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,8 +14,15 @@ namespace RCore.Framework.Data
 		int Quantity { get; set; }
 	}
 
-	[System.Serializable]
-	public class InventoryItem : IInventoryItem
+	public enum InvSort
+	{
+		Level,
+		Rarity,
+		Slot
+	}
+
+	[Serializable]
+	public abstract class InventoryItem : IInventoryItem
 	{
 		[JsonProperty] [SerializeField] protected int b;
 		[JsonProperty] [SerializeField] protected int id;
@@ -30,6 +36,22 @@ namespace RCore.Framework.Data
 		[JsonIgnore] public int Level { get { return l; } set { l = value; } }
 		[JsonIgnore] public int Quantity { get { return q; } set { q = value; } }
 
+		/// <summary>
+		/// Example:
+		/// Slot: Armor (Light, Medium, Heavy)
+		/// Slot: Weapon (Handgun, Assault Rifle, Shotgun, ...)
+		/// </summa>
+		public abstract int ItemType();
+		public abstract string SkillId();
+		public abstract List<Mod> GetMods(int pLevel = 0, int pRarity = 0);
+		public abstract int EquipSlot();
+		public abstract bool IsEquipped();
+		public abstract bool RankUp();
+		public bool CanRankUp() => CanRankUp(out string reason);
+		public abstract bool CanRankUp(out string pReason);
+		public abstract bool LevelUp();
+		public bool CanLevelUp() => CanLevelUp(out string reason);
+		public abstract bool CanLevelUp(out string pReason);
 		public int CompareTo(IInventoryItem pOther)
 		{
 			if (Id == pOther.Id)
@@ -42,9 +64,11 @@ namespace RCore.Framework.Data
 			else
 				return Id.CompareTo(pOther.Id);
 		}
+		public abstract int MaxLevel();
+		public bool Maxed() => Level >= MaxLevel();
 	}
 
-	public class InventoryData<T> : DataGroup where T : IInventoryItem
+	public class InventoryData<T> : DataGroup where T : InventoryItem
 	{
 		protected ListData<T> m_Items;
 		protected IntegerData m_LastItemId;
@@ -328,6 +352,62 @@ namespace RCore.Framework.Data
 					list.Add(m_Items[i].Id);
 			}
 			return list;
+		}
+
+		public void Sort(InvSort pSort)
+		{
+			for (int i = 0; i < m_Items.Count - 1; ++i)
+			{
+				var iSlot = m_Items[i].EquipSlot();
+				int iLevel = m_Items[i].Level; //Levels sort descending
+				int iRarity = m_Items[i].Rarity; //Rarities sort descending
+				bool iEquipped = m_Items[i].IsEquipped();
+				for (int j = i + 1; j < m_Items.Count; ++j)
+				{
+					var jSlot = m_Items[j].EquipSlot();
+					int jLevel = m_Items[j].Level;
+					int jRarity = m_Items[j].Rarity;
+					bool jEquipped = m_Items[j].IsEquipped();
+					switch (pSort)
+					{
+						case InvSort.Level:
+							if (!iEquipped && jEquipped
+								|| (iEquipped == jEquipped && iLevel < jLevel)
+								|| (iEquipped == jEquipped && iLevel == jLevel && iRarity < jRarity)
+								|| (iEquipped == jEquipped && iLevel == jLevel && iRarity == jRarity && iSlot > jSlot))
+							{
+								var temp = m_Items[i];
+								m_Items[i] = m_Items[j];
+								m_Items[j] = temp;
+							}
+							break;
+
+						case InvSort.Rarity:
+							if (!iEquipped && jEquipped
+								|| (iEquipped == jEquipped && iRarity < jRarity)
+								|| (iEquipped == jEquipped && iRarity == jRarity && iLevel < jLevel)
+								|| (iEquipped == jEquipped && iRarity == jRarity && iLevel == jLevel && iSlot > jSlot))
+							{
+								var temp = m_Items[i];
+								m_Items[i] = m_Items[j];
+								m_Items[j] = temp;
+							}
+							break;
+
+						case InvSort.Slot:
+							if (!iEquipped && jEquipped
+								|| (iEquipped == jEquipped && iSlot > jSlot)
+								|| (iEquipped == jEquipped && iSlot == jSlot && iRarity < jRarity)
+								|| (iEquipped == jEquipped && iSlot == jSlot && iRarity == jRarity && iLevel < jLevel))
+							{
+								var temp = m_Items[i];
+								m_Items[i] = m_Items[j];
+								m_Items[j] = temp;
+							}
+							break;
+					}
+				}
+			}
 		}
 	}
 }

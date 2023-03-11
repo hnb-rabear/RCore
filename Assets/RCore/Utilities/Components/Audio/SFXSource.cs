@@ -3,6 +3,7 @@ using RCore.Common;
 using Random = UnityEngine.Random;
 using UnityEngine.Events;
 using RCore.Inspector;
+using Debug = RCore.Common.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Events;
@@ -46,6 +47,12 @@ namespace RCore.Components
 		{
 			if (m_Initialized)
 				return;
+
+			if (AudioManager.Instance == null)
+			{
+				Debug.LogError("Not found Audio Manager!");
+				return;
+			}
 
 			m_Indexs = new int[mClips.Length];
 			for (int i = 0; i < mClips.Length; i++)
