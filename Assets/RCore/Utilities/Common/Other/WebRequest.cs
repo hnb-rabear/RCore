@@ -77,7 +77,7 @@ namespace RCore.Common
 
         public void Post(string pUrl, List<KeyValue> pKeyValueList, Action<RequestResult> pOnResponsed, bool pEncryptIn = true, bool pEncryptOut = false)
         {
-            string url = string.Format("{0}/{1}/{2}", pUrl, pEncryptIn ? 1 : 0, pEncryptOut ? 1 : 0);
+            string url = $"{pUrl}/{(pEncryptIn ? 1 : 0)}/{(pEncryptOut ? 1 : 0)}";
 
             WWWForm form = new WWWForm();
 
@@ -112,7 +112,7 @@ namespace RCore.Common
                 {
                     res.breakPoint = BreakPoint.NetworkError;
                     res.error = true;
-                    res.errorMessage = string.Format("ERROR: {0}\n{1}", pRequest.responseCode, pRequest.error);
+                    res.errorMessage = $"ERROR: {pRequest.responseCode}\n{pRequest.error}";
                     res.text = pRequest.downloadHandler.text.Replace("<meta charset=\"utf-8\">", "").Trim();
 #if UNITY_EDITOR
                     Debug.LogError(res.errorMessage);
@@ -153,7 +153,7 @@ namespace RCore.Common
                     {
                         res.breakPoint = BreakPoint.NetworkError;
                         res.error = true;
-                        res.errorMessage = string.Format("ERROR: {0}\n{1}", pRequest.responseCode, pRequest.error);
+                        res.errorMessage = $"ERROR: {pRequest.responseCode}\n{pRequest.error}";
 #if UNITY_EDITOR
                         Debug.LogError(res.errorMessage);
 #endif

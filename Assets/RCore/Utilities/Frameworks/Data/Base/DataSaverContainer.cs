@@ -90,7 +90,7 @@ namespace RCore.Framework.Data
                 Data.BinarySaver.SaveBinary(pData, pSaverKey);
             }
 #if UNITY_EDITOR
-            Debug.Log(string.Format("Saved Key: {0}\nData: {1}", pSaverKey, pData));
+            Debug.Log($"Saved Key: {pSaverKey}\nData: {pData}");
 #endif
         }
 
@@ -158,7 +158,7 @@ namespace RCore.Framework.Data
                     if (USE_BINARY)
                         Data.BinarySaver.SaveBinary(brand.Value, brand.Key);
 #if UNITY_EDITOR
-                    Debug.Log(string.Format("Restored {0}\n{1}", brand.Key, brand.Value));
+                    Debug.Log($"Restored {brand.Key}\n{brand.Value}");
 #endif
                     var saver = GetSaver(brand.Key);
                     if (saver != null)
@@ -183,7 +183,7 @@ namespace RCore.Framework.Data
                     continue;
 
                 hasData = true;
-                Debug.Log(string.Format("Key {0}: {1}", k, GetData(k)));
+                Debug.Log($"Key {k}: {GetData(k)}");
             }
             if (!hasData)
                 Debug.Log("No Data");

@@ -17,19 +17,19 @@ namespace RCore.Editor
 		{
 			mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, false, false);
 
-			EditorHelper.SeperatorBox();
+			EditorHelper.SeparatorBox();
 			DrawGameObjectUtilities();
 
-			EditorHelper.SeperatorBox();
+			EditorHelper.SeparatorBox();
 			DrawRendererUtilities();
 
-			EditorHelper.SeperatorBox();
+			EditorHelper.SeparatorBox();
 			DrawUIUtilties();
 
-			EditorHelper.SeperatorBox();
+			EditorHelper.SeparatorBox();
 			DrawMathUtitlies();
 
-			EditorHelper.SeperatorBox();
+			EditorHelper.SeparatorBox();
 			DrawGenerators();
 
 			GUILayout.EndScrollView();
@@ -58,7 +58,7 @@ namespace RCore.Editor
 					EditorHelper.ListObjects("Prefabs", ref m_Prefabs, null, false);
 
 					if (GUILayout.Button("Replace"))
-						EditorHelper.ReplaceGameobjectsInScene(ref m_ReplacableGameObjects, m_Prefabs);
+						EditorHelper.ReplaceGameObjectsInScene(ref m_ReplacableGameObjects, m_Prefabs);
 				}, Color.white, true);
 		}
 		private bool m_AlsoChildren;
@@ -1062,7 +1062,7 @@ namespace RCore.Editor
 						AssetDatabase.SaveAssets();
 					}
 
-					EditorHelper.Seperator();
+					EditorHelper.Separator();
 					foreach (var buttons in m_Buttons)
 						EditorGUILayout.LabelField($"{buttons.Key.name} has {buttons.Value.Count} buttons.");
 				}
@@ -1113,7 +1113,7 @@ namespace RCore.Editor
 						AssetDatabase.SaveAssets();
 					}
 
-					EditorHelper.Seperator();
+					EditorHelper.Separator();
 					foreach (var buttons in m_Buttons)
 						EditorGUILayout.LabelField($"{buttons.Key.name} has {buttons.Value.Count} buttons.");
 				}
@@ -1159,7 +1159,7 @@ namespace RCore.Editor
 						AssetDatabase.SaveAssets();
 					}
 
-					EditorHelper.Seperator();
+					EditorHelper.Separator();
 					foreach (var texts in m_Texts)
 						EditorGUILayout.LabelField($"{texts.Key.name} has {texts.Value.Count} texts.");
 				}
@@ -1205,7 +1205,7 @@ namespace RCore.Editor
 						AssetDatabase.SaveAssets();
 					}
 
-					EditorHelper.Seperator();
+					EditorHelper.Separator();
 					foreach (var texts in m_TMPTexts)
 						EditorGUILayout.LabelField($"{texts.Key.name} has {texts.Value.Count} texts.");
 				}

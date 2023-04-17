@@ -63,7 +63,7 @@ namespace RCore.Framework.Data
 
             public override string ToString()
             {
-                return string.Format("{0}:{1}:{2}", x, y, z);
+                return $"{x}:{y}:{z}";
             }
         }
 

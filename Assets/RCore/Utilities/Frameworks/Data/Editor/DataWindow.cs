@@ -6,6 +6,7 @@ using RCore.Common;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using EditorPrefs = UnityEditor.EditorPrefs;
 
 namespace RCore.Framework.Data
 {
@@ -39,7 +40,7 @@ namespace RCore.Framework.Data
                     label = "Clear",
                     onPressed = () =>
                     {
-                        EditorHelper.ConfimPopup(() =>
+                        EditorHelper.ConfirmPopup(() =>
                         {
                             DataSaverContainer.DeleteAll();
                             mDictKeyValues = DataSaverContainer.GetAllDataKeyValues();

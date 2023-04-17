@@ -153,7 +153,7 @@ namespace RCore.Components
             if (isPercent)
             {
                 if (mMax > 0 && txtProgessValue != null)
-                    txtProgessValue.text = string.Format("{0}%", Mathf.RoundToInt(mValue / mMax * 100));
+                    txtProgessValue.text = $"{Mathf.RoundToInt(mValue / mMax * 100)}%";
             }
             else if (isTimeCountdown)
             {
@@ -163,7 +163,7 @@ namespace RCore.Components
             else
             {
                 if (mMax >= 0 && txtProgessValue != null)
-                    txtProgessValue.text = string.Format("{0}/{1}", mValue, mMax);
+                    txtProgessValue.text = $"{mValue}/{mMax}";
             }
         }
 

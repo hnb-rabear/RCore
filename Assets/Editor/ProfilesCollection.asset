@@ -1,0 +1,155 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bc051753de86a14c95f0eaa9b8a489b, type: 3}
+  m_Name: ProfilesCollection
+  m_EditorClassIdentifier: 
+  profiles:
+  - name: Development
+    enableLog: 0
+    enableDraw: 0
+    showFPS: 0
+    defines:
+    - name: DEVELOPMENT
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: UNITY_IAP
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: UNITY_MONETIZATION
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: USE_DOTWEEN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ADDRESSABLES
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_ANALYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_CRASHLYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_REMOTE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_MESSAGING
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_FIRESTORE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_AUTH
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_DATABASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ACTIVE_FIREBASE_STORAGE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: GPGS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: MIRROR
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_17_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_18_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_24_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_26_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_27_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_28_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_29_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_30_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_30_5_2_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_32_1_2_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_32_1_4_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_35_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_35_1_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_37_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_38_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_39_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_40_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_41_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_42_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_43_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_44_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_46_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_47_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_53_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_55_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_57_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_58_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_65_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MIRROR_66_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1

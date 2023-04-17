@@ -43,7 +43,7 @@ namespace RCore.Common
                     return s;
             }
 
-            Debug.LogError(string.Format("Not found {0} with name {1}", typeof(T).Name, pSpriteName));
+            Debug.LogError($"Not found {typeof(T).Name} with name {pSpriteName}");
             return defaultAsset;
         }
 
@@ -51,7 +51,7 @@ namespace RCore.Common
         {
             if (pIndex < 0 || pIndex >= source.Count)
             {
-                Debug.LogError(string.Format("Index {0} {1} is invalid!", pIndex, typeof(T).Name));
+                Debug.LogError($"Index {pIndex} {typeof(T).Name} is invalid!");
                 return defaultAsset;
             }
             return source[pIndex];
@@ -64,7 +64,7 @@ namespace RCore.Common
                 if (source[i].name == pSpriteName)
                     return i;
             }
-            Debug.LogError(string.Format("Not found {0} with name {1}", typeof(T).Name, pSpriteName));
+            Debug.LogError($"Not found {typeof(T).Name} with name {pSpriteName}");
             return -1;
         }
 
@@ -78,7 +78,7 @@ namespace RCore.Common
                 label = "Default",
             };
             if (EditorHelper.ListObjects(pDisplayName, ref source, labels, showBox, @readonly, new IDraw[] { draw }))
-                defaultAsset = (T)draw.outputValue;
+                defaultAsset = (T)draw.OutputValue;
         }
 #endif
     }
@@ -110,7 +110,7 @@ namespace RCore.Common
                 if (s != null && pSpriteName != null && s.name.ToLower() == pSpriteName.ToLower())
                     return s;
 
-            Debug.LogError(string.Format("Not found {0} with name {1}", typeof(T).Name, pSpriteName));
+            Debug.LogError($"Not found {typeof(T).Name} with name {pSpriteName}");
             return defaultAsset;
         }
 
@@ -118,7 +118,7 @@ namespace RCore.Common
         {
             if (pIndex < 0 || pIndex >= source.Length)
             {
-                Debug.LogError(string.Format("Index {0} {1} is invalid!", pIndex, typeof(T).Name));
+                Debug.LogError($"Index {pIndex} {typeof(T).Name} is invalid!");
                 return defaultAsset;
             }
             return source[pIndex];
@@ -131,7 +131,7 @@ namespace RCore.Common
                 if (source[i].name == pSpriteName)
                     return i;
             }
-            Debug.LogError(string.Format("Not found {0} with name {1}", typeof(T).Name, pSpriteName));
+            Debug.LogError($"Not found {typeof(T).Name} with name {pSpriteName}");
             return -1;
         }
     }

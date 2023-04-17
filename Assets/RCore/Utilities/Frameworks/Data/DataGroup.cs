@@ -295,7 +295,7 @@ namespace RCore.Framework.Data
             {
                 if (mChildren[i].Id == pId)
                 {
-                    Debug.LogError(string.Format("ID {0} is aldready exited!", pId));
+                    Debug.LogError($"ID {pId} is aldready exited!");
                     return true;
                 }
             }

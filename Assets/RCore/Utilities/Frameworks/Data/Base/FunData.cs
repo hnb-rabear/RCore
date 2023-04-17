@@ -62,7 +62,7 @@ namespace RCore.Framework.Data
 			Debug.Assert(pSaverIdString != null, "Data saver cannot be null!");
 
 			if (!string.IsNullOrEmpty(pBaseKey))
-				m_Key = string.Format("{0}.{1}", pBaseKey, m_Id);
+				m_Key = $"{pBaseKey}.{m_Id}";
 			else
 				m_Key = m_Id.ToString();
 			m_SaverIdString = pSaverIdString;

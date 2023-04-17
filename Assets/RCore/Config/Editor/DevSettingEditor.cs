@@ -12,6 +12,7 @@ using UnityEngine;
 using RCore.Common;
 using RCore.Editor;
 using Debug = UnityEngine.Debug;
+using EditorPrefs = UnityEditor.EditorPrefs;
 
 [CustomEditor(typeof(DevSetting))]
 public class DevSettingEditor : Editor
@@ -173,7 +174,7 @@ public class DevSettingEditor : Editor
         {
             if (EditorHelper.HeaderFoldout("General", pProfile.name + "General"))
             {
-                EditorGUILayout.LabelField(pProfile.name, GUIStyleHelper.HeaderTitle);
+                EditorGUILayout.LabelField(pProfile.name, GUIStyleHelper.headerTitle);
                 EditorGUILayout.LabelField("- Test Settings", EditorStyles.boldLabel);
                 pProfile.enableLog = EditorHelper.Toggle(pProfile.enableLog, "Show Log", 120, 280);
                 pProfile.enableDraw = EditorHelper.Toggle(pProfile.enableDraw, "Enable Draw", 120, 280);
@@ -314,9 +315,9 @@ public class DevSettingEditor : Editor
                 }, ColorHelper.LightAzure, true);
             }
             if (i < profiles.Count - 1)
-                EditorHelper.Seperator();
+                EditorHelper.Separator();
         }
-        EditorHelper.Seperator();
+        EditorHelper.Separator();
         if (EditorHelper.ButtonColor("Back", Color.yellow))
             mPreviewingProfiles = false;
     }

@@ -5,6 +5,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -37,14 +38,12 @@ namespace RCore.Common
 				EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
 			}
 
-			if (value == null)
-				value = default(Color);
-
 			Color color;
 			if (valueWidth == 0)
 				color = EditorGUILayout.ColorField(value, GUILayout.Height(16), GUILayout.MinWidth(40));
 			else
-				color = EditorGUILayout.ColorField(value, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				color = EditorGUILayout.ColorField(value, GUILayout.Height(20), GUILayout.MinWidth(40),
+					GUILayout.Width(valueWidth));
 			outputValue = color;
 
 			if (!string.IsNullOrEmpty(label))
@@ -58,26 +57,29 @@ namespace RCore.Common
 		public Color color;
 		public int width;
 		public Action onPressed;
-		public bool isPressed { get; private set; }
+		public bool IsPressed { get; private set; }
 
-		public EditorButton() { }
+		public EditorButton()
+		{
+		}
+
 		public EditorButton(string pLabel, Action pOnPressed, Color pColor = default(Color))
 		{
 			label = pLabel;
 			onPressed = pOnPressed;
 			color = pColor;
 		}
+
 		public void Draw(GUIStyle style = null)
 		{
 			var defaultColor = GUI.backgroundColor;
-			if (style == null)
-				style = new GUIStyle("Button");
+			style ??= new GUIStyle("Button");
 			if (width > 0)
 				style.fixedWidth = width;
 			if (color != default(Color))
 				GUI.backgroundColor = color;
-			isPressed = GUILayout.Button(label, style);
-			if (isPressed && onPressed != null)
+			IsPressed = GUILayout.Button(label, style);
+			if (IsPressed && onPressed != null)
 				onPressed();
 			GUI.backgroundColor = defaultColor;
 		}
@@ -89,8 +91,9 @@ namespace RCore.Common
 		public int labelWidth = 80;
 		public int valueWidth;
 		public string value;
-		public string outputValue { get; private set; }
+		public string OutputValue { get; private set; }
 		public bool readOnly;
+
 		public void Draw(GUIStyle style = null)
 		{
 			if (!string.IsNullOrEmpty(label))
@@ -99,15 +102,16 @@ namespace RCore.Common
 				EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
 			}
 
-			if (value == null)
-				value = "";
+			value ??= "";
 
 			if (style == null)
 			{
-				style = new GUIStyle(EditorStyles.textField);
-				style.alignment = TextAnchor.MiddleLeft;
-				style.margin = new RectOffset(0, 0, 4, 4);
-				Color normalColor = style.normal.textColor;
+				style = new GUIStyle(EditorStyles.textField)
+				{
+					alignment = TextAnchor.MiddleLeft,
+					margin = new RectOffset(0, 0, 4, 4)
+				};
+				var normalColor = style.normal.textColor;
 				normalColor.a = readOnly ? 0.5f : 1;
 				style.normal.textColor = normalColor;
 			}
@@ -116,12 +120,13 @@ namespace RCore.Common
 			if (valueWidth == 0)
 				str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
 			else
-				str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40),
+					GUILayout.Width(valueWidth));
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
 
-			outputValue = str;
+			OutputValue = str;
 		}
 	}
 
@@ -132,13 +137,13 @@ namespace RCore.Common
 		public string[] selections;
 		public string value;
 		public int valueWidth;
-		public string outputValue { get; private set; }
+		public string OutputValue { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
 			if (selections.Length == 0)
 			{
-				outputValue = "";
+				OutputValue = "";
 				return;
 			}
 
@@ -164,7 +169,7 @@ namespace RCore.Common
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
 
-			outputValue = selections[index] == null ? "" : selections[index];
+			OutputValue = selections[index] == null ? "" : selections[index];
 		}
 	}
 
@@ -175,13 +180,13 @@ namespace RCore.Common
 		public int[] selections;
 		public int value;
 		public int valueWidth;
-		public int outputValue { get; private set; }
+		public int OutputValue { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
 			if (selections.Length == 0)
 			{
-				outputValue = -1;
+				OutputValue = -1;
 				return;
 			}
 
@@ -193,23 +198,23 @@ namespace RCore.Common
 
 			int index = 0;
 
-			string[] selectsionsStr = new string[selections.Length];
+			string[] selectionsStr = new string[selections.Length];
 			for (int i = 0; i < selections.Length; i++)
 			{
 				if (value == selections[i])
 					index = i;
-				selectsionsStr[i] = selections[i].ToString();
+				selectionsStr[i] = selections[i].ToString();
 			}
 
 			if (valueWidth != 0)
-				index = EditorGUILayout.Popup(index, selectsionsStr, GUILayout.Width(valueWidth));
+				index = EditorGUILayout.Popup(index, selectionsStr, GUILayout.Width(valueWidth));
 			else
-				index = EditorGUILayout.Popup(index, selectsionsStr);
+				index = EditorGUILayout.Popup(index, selectionsStr);
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
 
-			outputValue = selections[index];
+			OutputValue = selections[index];
 		}
 	}
 
@@ -219,7 +224,7 @@ namespace RCore.Common
 		public int labelWidth;
 		public T value;
 		public int valueWidth;
-		public T outputValue { get; private set; }
+		public T OutputValue { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
@@ -263,13 +268,14 @@ namespace RCore.Common
 			{
 				if (i == index)
 				{
-					outputValue = item;
+					OutputValue = item;
 					return;
 				}
+
 				i++;
 			}
 
-			outputValue = default(T);
+			OutputValue = default(T);
 		}
 	}
 
@@ -281,7 +287,7 @@ namespace RCore.Common
 		public int valueWidth;
 		public bool readOnly;
 		public Color color;
-		public bool outputValue { get; private set; }
+		public bool OutputValue { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
@@ -290,6 +296,7 @@ namespace RCore.Common
 				EditorGUILayout.BeginHorizontal();
 				EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
 			}
+
 			bool result;
 
 			var defaultColor = GUI.color;
@@ -298,10 +305,12 @@ namespace RCore.Common
 
 			if (style == null)
 			{
-				style = new GUIStyle(EditorStyles.toggle);
-				style.alignment = TextAnchor.MiddleCenter;
-				style.fixedWidth = 20;
-				style.fixedHeight = 20;
+				style = new GUIStyle(EditorStyles.toggle)
+				{
+					alignment = TextAnchor.MiddleCenter,
+					fixedWidth = 20,
+					fixedHeight = 20
+				};
 				Color normalColor = style.normal.textColor;
 				normalColor.a = readOnly ? 0.5f : 1;
 				style.normal.textColor = normalColor;
@@ -310,7 +319,8 @@ namespace RCore.Common
 			if (valueWidth == 0)
 				result = EditorGUILayout.Toggle(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
 			else
-				result = EditorGUILayout.Toggle(value, style, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				result = EditorGUILayout.Toggle(value, style, GUILayout.Height(20), GUILayout.MinWidth(40),
+					GUILayout.Width(valueWidth));
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
@@ -318,7 +328,7 @@ namespace RCore.Common
 			if (color != default(Color))
 				GUI.color = defaultColor;
 
-			outputValue = result;
+			OutputValue = result;
 		}
 	}
 
@@ -326,16 +336,16 @@ namespace RCore.Common
 	{
 		public string label;
 		public Action onFoldout;
-		internal bool isFoldout { get; private set; }
+		internal bool IsFoldout { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
-			isFoldout = EditorPrefs.GetBool(label + "foldout", false);
-			isFoldout = EditorGUILayout.Foldout(isFoldout, label);
-			if (isFoldout && onFoldout != null)
+			IsFoldout = UnityEditor.EditorPrefs.GetBool(label + "foldout", false);
+			IsFoldout = EditorGUILayout.Foldout(IsFoldout, label);
+			if (IsFoldout && onFoldout != null)
 				onFoldout();
 			if (GUI.changed)
-				EditorPrefs.SetBool(label + "foldout", isFoldout);
+				UnityEditor.EditorPrefs.SetBool(label + "foldout", IsFoldout);
 		}
 	}
 
@@ -343,34 +353,41 @@ namespace RCore.Common
 	{
 		public string key;
 		public string[] tabsName;
-		public string currentTab { get; private set; }
+		public string CurrentTab { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
-			currentTab = EditorPrefs.GetString(string.Format("{0}_current_tab", key), tabsName[0]);
+			CurrentTab = UnityEditor.EditorPrefs.GetString($"{key}_current_tab", tabsName[0]);
 
 			GUILayout.Space(5);
 			GUILayout.BeginHorizontal();
 			foreach (var tabName in tabsName)
 			{
-				var buttonStyle = new GUIStyle(EditorStyles.toolbarButton);
-				buttonStyle.fixedHeight = 0;
-				buttonStyle.padding = new RectOffset(4, 4, 4, 4);
-				buttonStyle.normal.textColor = Color.white;
-				buttonStyle.fontStyle = FontStyle.Bold;
-				buttonStyle.fontSize = 13;
+				var buttonStyle = new GUIStyle(EditorStyles.toolbarButton)
+				{
+					fixedHeight = 0,
+					padding = new RectOffset(4, 4, 4, 4),
+					normal =
+					{
+						textColor = Color.white
+					},
+					fontStyle = FontStyle.Bold,
+					fontSize = 13
+				};
 
 				var preColor = GUI.color;
-				var color = currentTab == tabName ? Color.yellow : new Color(0.5f, 0.5f, 0.5f);
+				var color = CurrentTab == tabName ? Color.yellow : new Color(0.5f, 0.5f, 0.5f);
 				GUI.color = color;
 
 				if (GUILayout.Button(tabName, buttonStyle))
 				{
-					currentTab = tabName;
-					EditorPrefs.SetString(string.Format("{0}_current_tab", key), currentTab);
+					CurrentTab = tabName;
+					UnityEditor.EditorPrefs.SetString($"{key}_current_tab", CurrentTab);
 				}
+
 				GUI.color = preColor;
 			}
+
 			GUILayout.EndHorizontal();
 		}
 	}
@@ -378,56 +395,60 @@ namespace RCore.Common
 	public class EditorHeaderFoldout : IDraw
 	{
 		public string key;
-		public bool minimalistic = false;
+		public bool minimalistic;
 		public string label;
-		public bool isFoldout { get; private set; }
+		public bool IsFoldout { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
-			isFoldout = EditorPrefs.GetBool(key, false);
+			IsFoldout = UnityEditor.EditorPrefs.GetBool(key, false);
 
 			if (!minimalistic) GUILayout.Space(3f);
-			if (!isFoldout) GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f);
+			if (!IsFoldout) GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f);
 			GUILayout.BeginHorizontal();
 			GUI.changed = false;
 
 			if (minimalistic)
 			{
-				if (isFoldout) label = "\u25BC" + (char)0x200a + label;
+				if (IsFoldout) label = "\u25BC" + (char)0x200a + label;
 				else label = "\u25BA" + (char)0x200a + label;
 
-				if (style == null)
-					style = new GUIStyle("PreToolbar2");
+				style ??= new GUIStyle("PreToolbar2");
 
 				GUILayout.BeginHorizontal();
-				GUI.contentColor = EditorGUIUtility.isProSkin ? new Color(1f, 1f, 1f, 0.7f) : new Color(0f, 0f, 0f, 0.7f);
+				GUI.contentColor = EditorGUIUtility.isProSkin
+					? new Color(1f, 1f, 1f, 0.7f)
+					: new Color(0f, 0f, 0f, 0.7f);
 				if (!GUILayout.Toggle(true, label, style, GUILayout.MinWidth(20f)))
-					isFoldout = !isFoldout;
+					IsFoldout = !IsFoldout;
 				GUI.contentColor = Color.white;
 				GUILayout.EndHorizontal();
 			}
 			else
 			{
-				if (isFoldout) label = "\u25BC " + label;
+				if (IsFoldout) label = "\u25BC " + label;
 				else label = "\u25BA " + label;
 				if (style == null)
 				{
-					string styleString = isFoldout ? "Button" : "DropDownButton";
-					style = new GUIStyle(styleString);
-					style.alignment = TextAnchor.MiddleLeft;
-					style.fontSize = 11;
-					style.fontStyle = isFoldout ? FontStyle.Bold : FontStyle.Normal;
+					string styleString = IsFoldout ? "Button" : "DropDownButton";
+					style = new GUIStyle(styleString)
+					{
+						alignment = TextAnchor.MiddleLeft,
+						fontSize = 11,
+						fontStyle = IsFoldout ? FontStyle.Bold : FontStyle.Normal
+					};
 				}
+
 				if (!GUILayout.Toggle(true, label, style, GUILayout.MinWidth(20f)))
-					isFoldout = !isFoldout;
+					IsFoldout = !IsFoldout;
 			}
 
-			if (GUI.changed) EditorPrefs.SetBool(key, isFoldout);
+			if (GUI.changed) UnityEditor.EditorPrefs.SetBool(key, IsFoldout);
 
 			if (!minimalistic) GUILayout.Space(2f);
 			GUILayout.EndHorizontal();
 			GUI.backgroundColor = Color.white;
-			if (!isFoldout) GUILayout.Space(3f);
+			if (!IsFoldout) GUILayout.Space(3f);
 		}
 	}
 
@@ -438,7 +459,7 @@ namespace RCore.Common
 		public int labelWidth = 80;
 		public int valueWidth;
 		public bool showAsBox;
-		public Object outputValue { get; private set; }
+		public Object OutputValue { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
@@ -454,7 +475,8 @@ namespace RCore.Common
 			Object result;
 
 			if (showAsBox)
-				result = EditorGUILayout.ObjectField(value, typeof(T), true, GUILayout.Width(valueWidth), GUILayout.Height(valueWidth));
+				result = EditorGUILayout.ObjectField(value, typeof(T), true, GUILayout.Width(valueWidth),
+					GUILayout.Height(valueWidth));
 			else
 			{
 				if (valueWidth == 0)
@@ -466,7 +488,7 @@ namespace RCore.Common
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
 
-			outputValue = result;
+			OutputValue = result;
 		}
 	}
 
@@ -477,7 +499,7 @@ namespace RCore.Common
 		public int valueWidth;
 		public int value;
 		public bool readOnly;
-		public int outputValue { get; private set; }
+		public int OutputValue { get; private set; }
 
 		public void Draw(GUIStyle style = null)
 		{
@@ -489,23 +511,27 @@ namespace RCore.Common
 
 			if (style == null)
 			{
-				style = new GUIStyle(EditorStyles.textField);
-				style.alignment = TextAnchor.MiddleLeft;
-				style.margin = new RectOffset(0, 0, 4, 4);
-				Color normalColor = style.normal.textColor;
+				style = new GUIStyle(EditorStyles.textField)
+				{
+					alignment = TextAnchor.MiddleLeft,
+					margin = new RectOffset(0, 0, 4, 4)
+				};
+				var normalColor = style.normal.textColor;
 				normalColor.a = readOnly ? 0.5f : 1;
 				style.normal.textColor = normalColor;
 			}
+
 			int result;
 			if (valueWidth == 0)
 				result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
 			else
-				result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40),
+					GUILayout.Width(valueWidth));
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
 
-			outputValue = result;
+			OutputValue = result;
 		}
 	}
 
@@ -513,7 +539,8 @@ namespace RCore.Common
 	{
 		#region File Utilities
 
-		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt")
+		public static string SaveFilePanel(string mainDirectory, string defaultName, string content,
+			string extension = "json,txt")
 		{
 			if (string.IsNullOrEmpty(mainDirectory))
 				mainDirectory = Application.dataPath;
@@ -592,25 +619,24 @@ namespace RCore.Common
 				pOutput = JsonUtility.FromJson<T>(File.ReadAllText(pPath));
 				return true;
 			}
+
 			return false;
 		}
 
 		public static void SaveXMLFile<T>(string pPath, T pObj)
 		{
 			XmlSerializer serializer = new XmlSerializer(typeof(T));
-			using (TextWriter writer = new StreamWriter(pPath))
-			{
-				if (File.Exists(pPath))
-					File.Delete(pPath);
-				serializer.Serialize(writer, pObj);
-			}
+			using TextWriter writer = new StreamWriter(pPath);
+			if (File.Exists(pPath))
+				File.Delete(pPath);
+			serializer.Serialize(writer, pObj);
 		}
 
 		public static void LoadXMLFile<T>(string pPath, ref T pObj)
 		{
-			XmlSerializer serializer = new XmlSerializer(typeof(T));
-			using (TextReader reader = new StreamReader(pPath))
-				pObj = (T)serializer.Deserialize(reader);
+			var serializer = new XmlSerializer(typeof(T));
+			using TextReader reader = new StreamReader(pPath);
+			pObj = (T)serializer.Deserialize(reader);
 		}
 
 		#endregion
@@ -626,16 +652,18 @@ namespace RCore.Common
 		{
 			T[] comps = Resources.FindObjectsOfTypeAll(typeof(T)) as T[];
 
-			List<T> list = new List<T>();
+			var list = new List<T>();
 
-			foreach (T comp in comps)
-			{
-				if (comp.gameObject.hideFlags == 0)
+			if (comps != null)
+				foreach (T comp in comps)
 				{
-					string path = AssetDatabase.GetAssetPath(comp.gameObject);
-					if (string.IsNullOrEmpty(path)) list.Add(comp);
+					if (comp.gameObject.hideFlags == 0)
+					{
+						string path = AssetDatabase.GetAssetPath(comp.gameObject);
+						if (string.IsNullOrEmpty(path)) list.Add(comp);
+					}
 				}
-			}
+
 			return list;
 		}
 
@@ -651,7 +679,8 @@ namespace RCore.Common
 
 			var directoryPath = Path.GetDirectoryName(path);
 			if (!Directory.Exists(directoryPath))
-				Directory.CreateDirectory(directoryPath);
+				if (directoryPath != null)
+					Directory.CreateDirectory(directoryPath);
 
 			AssetDatabase.CreateAsset(asset, path);
 			AssetDatabase.SaveAssets();
@@ -679,7 +708,7 @@ namespace RCore.Common
 		/// </summary>
 		public static T LoadAsset<T>(string path) where T : Object
 		{
-			Object obj = LoadAsset(path);
+			var obj = LoadAsset(path);
 			if (obj == null) return null;
 
 			T val = obj as T;
@@ -687,19 +716,20 @@ namespace RCore.Common
 
 			if (typeof(T).IsSubclassOf(typeof(Component)))
 			{
-				if (obj.GetType() == typeof(GameObject))
+				if (obj is GameObject)
 				{
 					GameObject go = obj as GameObject;
 					return go.GetComponent(typeof(T)) as T;
 				}
 			}
+
 			return null;
 		}
 
 		/// <summary>
 		/// Get the specified object's GUID.
 		/// </summary>
-		public static string ObjectToGUID(Object obj)
+		public static string ObjectToGuid(Object obj)
 		{
 			string path = AssetDatabase.GetAssetPath(obj);
 			return (!string.IsNullOrEmpty(path)) ? AssetDatabase.AssetPathToGUID(path) : null;
@@ -711,13 +741,13 @@ namespace RCore.Common
 
 		#region Layout
 
-		private static Dictionary<int, Color> m_BoxColours = new Dictionary<int, Color>();
+		private static readonly Dictionary<int, Color> BoxColours = new Dictionary<int, Color>();
 
-		public static void BoxVerticalOpen(int id, Color color = default(Color), bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
+		public static void BoxVerticalOpen(int id, Color color = default(Color), bool isBox = false,
+			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			var defaultColor = GUI.backgroundColor;
-			if (!m_BoxColours.ContainsKey(id))
-				m_BoxColours.Add(id, defaultColor);
+			BoxColours.TryAdd(id, defaultColor);
 
 			if (color != default(Color))
 				GUI.backgroundColor = color;
@@ -740,11 +770,12 @@ namespace RCore.Common
 
 		public static void BoxVerticalClose(int id)
 		{
-			GUI.backgroundColor = m_BoxColours[id];
+			GUI.backgroundColor = BoxColours[id];
 			EditorGUILayout.EndVertical();
 		}
 
-		public static Rect BoxVertical(Action doSomthing, Color color = default(Color), bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
+		public static Rect BoxVertical(Action doSomething, Color color = default(Color), bool isBox = false,
+			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
@@ -766,7 +797,7 @@ namespace RCore.Common
 				rect = EditorGUILayout.BeginVertical(style);
 			}
 
-			doSomthing();
+			doSomething();
 
 			EditorGUILayout.EndVertical();
 			if (color != default(Color))
@@ -775,7 +806,8 @@ namespace RCore.Common
 			return rect;
 		}
 
-		public static Rect BoxVertical(string pTitle, Action doSomthing, Color color = default(Color), bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
+		public static Rect BoxVertical(string pTitle, Action doSomething, Color color = default(Color),
+			bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
@@ -800,7 +832,7 @@ namespace RCore.Common
 			if (!string.IsNullOrEmpty(pTitle))
 				DrawHeaderTitle(pTitle);
 
-			doSomthing();
+			doSomething();
 
 			EditorGUILayout.EndVertical();
 			if (color != default(Color))
@@ -809,7 +841,8 @@ namespace RCore.Common
 			return rect;
 		}
 
-		public static Rect BoxHorizontal(Action doSomthing, Color color = default(Color), bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
+		public static Rect BoxHorizontal(Action doSomething, Color color = default(Color), bool isBox = false,
+			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
@@ -831,7 +864,7 @@ namespace RCore.Common
 				rect = EditorGUILayout.BeginHorizontal(style);
 			}
 
-			doSomthing();
+			doSomething();
 
 			EditorGUILayout.EndHorizontal();
 
@@ -840,7 +873,8 @@ namespace RCore.Common
 			return rect;
 		}
 
-		public static Rect BoxHorizontal(string pTitle, Action doSomthing, Color color = default(Color), bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
+		public static Rect BoxHorizontal(string pTitle, Action doSomething, Color color = default(Color),
+			bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
@@ -868,7 +902,7 @@ namespace RCore.Common
 				rect = EditorGUILayout.BeginHorizontal(style);
 			}
 
-			doSomthing();
+			doSomething();
 
 			EditorGUILayout.EndHorizontal();
 
@@ -899,7 +933,7 @@ namespace RCore.Common
 			}
 		}
 
-		public static void Seperator()
+		public static void Separator()
 		{
 			EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 		}
@@ -907,7 +941,7 @@ namespace RCore.Common
 		/// <summary>
 		/// Draw a visible separator in addition to adding some padding.
 		/// </summary>
-		public static void SeperatorBox()
+		public static void SeparatorBox()
 		{
 			GUILayout.Space(10);
 
@@ -948,7 +982,7 @@ namespace RCore.Common
 				width = pWidth
 			};
 			button.Draw();
-			return button.isPressed;
+			return button.IsPressed;
 		}
 
 		public static void Button(string pLabel, Action pOnPressed, int pWidth = 0)
@@ -971,7 +1005,7 @@ namespace RCore.Common
 				color = pColor,
 			};
 			button.Draw();
-			return button.isPressed;
+			return button.IsPressed;
 		}
 
 		public static void ButtonColor(string pLabel, Action pOnPressed, Color pColor = default(Color), int pWidth = 0)
@@ -993,17 +1027,17 @@ namespace RCore.Common
 				label = pLabel,
 			};
 			button.Draw(pStyle);
-			return button.isPressed;
+			return button.IsPressed;
 		}
 
-		public static string FolderSelector(string label, string pSavingKey, string mDefaultPath = null, bool pFormatToUnityPath = true)
+		public static string FolderSelector(string label, string pSavingKey, string defaultPath = null,
+			bool pFormatToUnityPath = true)
 		{
-			if (mDefaultPath == null)
-				mDefaultPath = Application.dataPath;
+			defaultPath ??= Application.dataPath;
 			if (pFormatToUnityPath)
-				mDefaultPath = FormatPathToUnityPath(mDefaultPath).Replace("Assets", "");
+				defaultPath = FormatPathToUnityPath(defaultPath).Replace("Assets", "");
 			string saveKey = label + pSavingKey + Application.productName;
-			string savedPath = EditorPrefs.GetString(saveKey, mDefaultPath);
+			string savedPath = UnityEditor.EditorPrefs.GetString(saveKey, defaultPath);
 			var text = new EditorText()
 			{
 				label = label,
@@ -1021,7 +1055,7 @@ namespace RCore.Common
 					{
 						if (pFormatToUnityPath)
 							path = FormatPathToUnityPath(path).Replace("Assets", "");
-						EditorPrefs.SetString(saveKey, path);
+						UnityEditor.EditorPrefs.SetString(saveKey, path);
 						savedPath = path;
 					}
 				}
@@ -1035,9 +1069,10 @@ namespace RCore.Common
 			return savedPath;
 		}
 
-		public static string FileSelector(string label, string pSavingKey, string extension, bool pFormatToUnityPath = true)
+		public static string FileSelector(string label, string pSavingKey, string extension,
+			bool pFormatToUnityPath = true)
 		{
-			string savedPath = EditorPrefs.GetString(label + pSavingKey);
+			string savedPath = UnityEditor.EditorPrefs.GetString(label + pSavingKey);
 			var text = new EditorText()
 			{
 				label = label,
@@ -1055,7 +1090,7 @@ namespace RCore.Common
 					{
 						if (pFormatToUnityPath)
 							path = FormatPathToUnityPath(path).Replace("Assets", "");
-						EditorPrefs.SetString(label + pSavingKey, path);
+						UnityEditor.EditorPrefs.SetString(label + pSavingKey, path);
 						savedPath = path;
 					}
 				}
@@ -1076,13 +1111,14 @@ namespace RCore.Common
 				label = label,
 			};
 			foldout.Draw();
-			return foldout.isFoldout;
+			return foldout.IsFoldout;
 		}
 
 		/// <summary>
 		/// Draw a distinctly different looking header label
 		/// </summary>
-		public static bool HeaderFoldout(string label, string key = "", bool minimalistic = false, params IDraw[] pHorizontalDraws)
+		public static bool HeaderFoldout(string label, string key = "", bool minimalistic = false,
+			params IDraw[] pHorizontalDraws)
 		{
 			var headerFoldout = new EditorHeaderFoldout()
 			{
@@ -1095,14 +1131,14 @@ namespace RCore.Common
 
 			headerFoldout.Draw();
 
-			if (pHorizontalDraws != null && headerFoldout.isFoldout)
+			if (pHorizontalDraws != null && headerFoldout.IsFoldout)
 				foreach (var d in pHorizontalDraws)
 					d.Draw();
 
 			if (pHorizontalDraws != null)
 				GUILayout.EndHorizontal();
 
-			return headerFoldout.isFoldout;
+			return headerFoldout.IsFoldout;
 		}
 
 		public static void HeaderFoldout(string label, string key, Action pOnFoldOut, params IDraw[] pHorizontalDraws)
@@ -1117,35 +1153,40 @@ namespace RCore.Common
 
 			headerFoldout.Draw();
 
-			if (pHorizontalDraws != null && headerFoldout.isFoldout)
+			if (pHorizontalDraws != null && headerFoldout.IsFoldout)
 				foreach (var d in pHorizontalDraws)
 					d.Draw();
 
 			if (pHorizontalDraws != null)
 				GUILayout.EndHorizontal();
 
-			if (headerFoldout.isFoldout)
+			if (headerFoldout.IsFoldout)
 			{
-				var style = new GUIStyle("box");
-				style.margin = new RectOffset(10, 0, 0, 0);
-				style.padding = new RectOffset();
+				var style = new GUIStyle("box")
+				{
+					margin = new RectOffset(10, 0, 0, 0),
+					padding = new RectOffset()
+				};
 				GUILayout.BeginVertical(style);
 				pOnFoldOut();
 				GUILayout.EndVertical();
 			}
 		}
 
-		public static void ConfimPopup(Action pOnYes, Action pOnNo = null, string pMessage = null)
+		public static void ConfirmPopup(Action pOnYes, Action pOnNo = null, string pMessage = null)
 		{
 			if (string.IsNullOrEmpty(pMessage))
 				pMessage = "Are you sure you want to do this";
 			if (EditorUtility.DisplayDialog("Confirm your action", pMessage, "Yes", "No"))
 				pOnYes();
 			else
-				if (pOnNo != null) pOnNo();
+			{
+				pOnNo?.Invoke();
+			}
 		}
 
-		public static void ListReadonlyObjects<T>(string pName, List<T> pList, List<string> pLabels = null, bool pShowObjectBox = true) where T : UnityEngine.Object
+		public static void ListReadonlyObjects<T>(string pName, List<T> pList, List<string> pLabels = null,
+			bool pShowObjectBox = true) where T : Object
 		{
 			ListObjects(pName, ref pList, pLabels, pShowObjectBox, true);
 		}
@@ -1175,7 +1216,8 @@ namespace RCore.Common
 		//    return list;
 		//}
 
-		public static bool ListObjects<T>(string pName, ref List<T> pObjects, List<string> pLabels, bool pShowObjectBox = true, bool pReadOnly = false, IDraw[] pAdditionalDraws = null) where T : Object
+		public static bool ListObjects<T>(string pName, ref List<T> pObjects, List<string> pLabels,
+			bool pShowObjectBox = true, bool pReadOnly = false, IDraw[] pAdditionalDraws = null) where T : Object
 		{
 			GUILayout.Space(3);
 
@@ -1183,10 +1225,10 @@ namespace RCore.Common
 			GUI.backgroundColor = new Color(1, 1, 0.5f);
 
 			var list = pObjects;
-			var show = HeaderFoldout(string.Format("{0} ({1})", pName, pObjects.Count), pName);
+			var show = HeaderFoldout($"{pName} ({pObjects.Count})", pName);
 			if (show)
 			{
-				int page = EditorPrefs.GetInt(pName + "_page", 0);
+				int page = UnityEditor.EditorPrefs.GetInt(pName + "_page", 0);
 				int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
 				if (totalPages == 0)
 					totalPages = 1;
@@ -1204,20 +1246,69 @@ namespace RCore.Common
 					int boxSize = 34;
 					if (pShowObjectBox)
 					{
-						boxSize = EditorPrefs.GetInt(pName + "_Slider", 34);
+						boxSize = UnityEditor.EditorPrefs.GetInt(pName + "_Slider", 34);
 						int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
 						if (boxSize != boxSizeNew)
 						{
-							EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
+							UnityEditor.EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
 							boxSize = boxSizeNew;
 						}
 					}
 
 					if (!pReadOnly)
 					{
-						DragDropBox<T>(pName, (objs) =>
+						DragDropBox<T>(pName, (objs) => { list.AddRange(objs); });
+					}
+
+					if (totalPages > 1)
+					{
+						EditorGUILayout.BeginHorizontal();
+						if (Button("<Prev<"))
 						{
-							list.AddRange(objs);
+							if (page > 0)
+								page--;
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+						}
+
+						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
+						if (Button(">Next>"))
+						{
+							if (page < totalPages - 1)
+								page++;
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+						}
+
+						EditorGUILayout.EndHorizontal();
+					}
+
+					for (int i = from; i <= to; i++)
+					{
+						var i1 = i;
+						BoxHorizontal(() =>
+						{
+							if (pShowObjectBox)
+								list[i1] = (T)ObjectField<T>(list[i1], "", 0, boxSize, true);
+							EditorGUILayout.LabelField((i1 + 1).ToString(), GUILayout.Width(25));
+							if (pLabels != null && i1 < pLabels.Count)
+								LabelField(pLabels[i1], (int)Mathf.Max(pLabels[i1].Length * 9f, 100), false);
+							list[i1] = (T)ObjectField<T>(list[i1], "");
+							if (!pReadOnly)
+							{
+								if (Button("▲", 23) && i1 > 0)
+								{
+									(list[i1], list[i1 - 1]) = (list[i1 - 1], list[i1]);
+								}
+
+								if (Button("▼", 23) && i1 < list.Count - 1)
+								{
+									(list[i1], list[i1 + 1]) = (list[i1 + 1], list[i1]);
+								}
+
+								if (ButtonColor("x", Color.red, 23))
+									list.RemoveAt(i1);
+								if (ButtonColor("+", Color.green, 23))
+									list.Insert(i1 + 1, null);
+							}
 						});
 					}
 
@@ -1228,66 +1319,20 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
-						EditorGUILayout.LabelField(string.Format("{0}-{1} ({2})", from + 1, to + 1, list.Count));
+
+						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
 						if (Button(">Next>"))
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
+
 						EditorGUILayout.EndHorizontal();
 					}
-					for (int i = from; i <= to; i++)
-					{
-						BoxHorizontal(() =>
-						{
-							if (pShowObjectBox)
-								list[i] = (T)ObjectField<T>(list[i], "", 0, boxSize, true);
-							EditorGUILayout.LabelField((i + 1).ToString(), GUILayout.Width(25));
-							if (pLabels != null && i < pLabels.Count)
-								LabelField(pLabels[i], (int)Mathf.Max(pLabels[i].Length * 9f, 100), false);
-							list[i] = (T)ObjectField<T>(list[i], "");
-							if (!pReadOnly)
-							{
-								if (Button("▲", 23) && i > 0)
-								{
-									var temp = list[i];
-									list[i] = list[i - 1];
-									list[i - 1] = temp;
-								}
-								if (Button("▼", 23) && i < list.Count - 1)
-								{
-									var temp = list[i];
-									list[i] = list[i + 1];
-									list[i + 1] = temp;
-								}
-								if (ButtonColor("x", Color.red, 23))
-									list.RemoveAt(i);
-								if (ButtonColor("+", Color.green, 23))
-									list.Insert(i + 1, null);
-							}
-						});
-					}
-					if (totalPages > 1)
-					{
-						EditorGUILayout.BeginHorizontal();
-						if (Button("<Prev<"))
-						{
-							if (page > 0)
-								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
-						}
-						EditorGUILayout.LabelField(string.Format("{0}-{1} ({2})", from + 1, to + 1, list.Count));
-						if (Button(">Next>"))
-						{
-							if (page < totalPages - 1)
-								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
-						}
-						EditorGUILayout.EndHorizontal();
-					}
+
 					if (!pReadOnly)
 					{
 						BoxHorizontal(() =>
@@ -1296,8 +1341,9 @@ namespace RCore.Common
 							{
 								list.Add(null);
 								page = totalPages - 1;
-								EditorPrefs.SetInt(pName + "_page", page);
+								UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 							}
+
 							if (Button("Sort By Name"))
 								list = list.OrderBy(m => m.name).ToList();
 							if (Button("Remove Duplicate"))
@@ -1316,28 +1362,29 @@ namespace RCore.Common
 										}
 									}
 								}
+
 								for (int j = list.Count - 1; j >= 0; j--)
 								{
 									if (duplicate.Contains(j))
 										list.Remove(list[j]);
 								}
 							}
-							if (ButtonColor("Clear", Color.red, 50))
-								ConfimPopup(() => { list = new List<T>(); });
-						});
 
+							if (ButtonColor("Clear", Color.red, 50))
+								ConfirmPopup(() => { list = new List<T>(); });
+						});
 					}
 
 					if (pAdditionalDraws != null)
 						foreach (var draw in pAdditionalDraws)
 							draw.Draw();
-
 				}, default(Color), true);
 			}
+
 			pObjects = list;
 
 			if (GUI.changed)
-				EditorPrefs.SetBool(pName, show);
+				UnityEditor.EditorPrefs.SetBool(pName, show);
 
 			GUI.backgroundColor = prevColor;
 
@@ -1351,7 +1398,7 @@ namespace RCore.Common
 			var prevColor = GUI.color;
 			GUI.backgroundColor = new Color(1, 1, 0.5f);
 
-			int page = EditorPrefs.GetInt(pName + "_page", 0);
+			int page = UnityEditor.EditorPrefs.GetInt(pName + "_page", 0);
 			int totalPages = Mathf.CeilToInt(pCount * 1f / 20f);
 			if (totalPages == 0)
 				totalPages = 1;
@@ -1373,21 +1420,25 @@ namespace RCore.Common
 					{
 						if (page > 0)
 							page--;
-						EditorPrefs.SetInt(pName + "_page", page);
+						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 					}
-					EditorGUILayout.LabelField(string.Format("{0}-{1} ({2})", from + 1, to + 1, pCount));
+
+					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
 					if (Button(">Next>"))
 					{
 						if (page < totalPages - 1)
 							page++;
-						EditorPrefs.SetInt(pName + "_page", page);
+						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 					}
+
 					EditorGUILayout.EndHorizontal();
 				}
+
 				for (int i = from; i <= to; i++)
 				{
 					pOnDraw?.Invoke(i);
 				}
+
 				if (totalPages > 1)
 				{
 					EditorGUILayout.BeginHorizontal();
@@ -1395,15 +1446,17 @@ namespace RCore.Common
 					{
 						if (page > 0)
 							page--;
-						EditorPrefs.SetInt(pName + "_page", page);
+						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 					}
-					EditorGUILayout.LabelField(string.Format("{0}-{1} ({2})", from + 1, to + 1, pCount));
+
+					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
 					if (Button(">Next>"))
 					{
 						if (page < totalPages - 1)
 							page++;
-						EditorPrefs.SetInt(pName + "_page", page);
+						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 					}
+
 					EditorGUILayout.EndHorizontal();
 				}
 			}, default(Color), true);
@@ -1411,7 +1464,8 @@ namespace RCore.Common
 			GUI.backgroundColor = prevColor;
 		}
 
-		public static void ListObjectsWithSearch<T>(ref List<T> pList, string pName, bool pShowObjectBox = true) where T : UnityEngine.Object
+		public static void ListObjectsWithSearch<T>(ref List<T> pList, string pName, bool pShowObjectBox = true)
+			where T : Object
 		{
 			var prevColor = GUI.color;
 			GUI.backgroundColor = new Color(1, 1, 0.5f);
@@ -1423,11 +1477,11 @@ namespace RCore.Common
 			//show = EditorGUILayout.Foldout(show, content, style);
 
 			var list = pList;
-			string search = EditorPrefs.GetString(pName + "_search");
-			var show = HeaderFoldout(string.Format("{0} ({1})", pName, pList.Count), pName);
+			string search = UnityEditor.EditorPrefs.GetString(pName + "_search");
+			var show = HeaderFoldout($"{pName} ({pList.Count})", pName);
 			if (show)
 			{
-				int page = EditorPrefs.GetInt(pName + "_page", 0);
+				int page = UnityEditor.EditorPrefs.GetInt(pName + "_page", 0);
 				int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
 				if (totalPages == 0)
 					totalPages = 1;
@@ -1445,19 +1499,16 @@ namespace RCore.Common
 					int boxSize = 34;
 					if (pShowObjectBox)
 					{
-						boxSize = EditorPrefs.GetInt(pName + "_Slider", 34);
+						boxSize = UnityEditor.EditorPrefs.GetInt(pName + "_Slider", 34);
 						int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
 						if (boxSize != boxSizeNew)
 						{
-							EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
+							UnityEditor.EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
 							boxSize = boxSizeNew;
 						}
 					}
 
-					DragDropBox<T>(pName, (objs) =>
-					{
-						list.AddRange(objs);
-					});
+					DragDropBox<T>(pName, (objs) => { list.AddRange(objs); });
 
 					if (totalPages > 1)
 					{
@@ -1466,15 +1517,17 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
-						EditorGUILayout.LabelField(string.Format("{0}-{1} ({2})", from + 1, to + 1, list.Count));
+
+						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
 						if (Button("<Next<"))
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
+
 						EditorGUILayout.EndHorizontal();
 					}
 
@@ -1486,29 +1539,28 @@ namespace RCore.Common
 						if (searching && !list[i].name.Contains(search))
 							continue;
 
+						var i1 = i;
 						BoxHorizontal(() =>
 						{
 							if (pShowObjectBox)
-								list[i] = (T)ObjectField<T>(list[i], "", 0, boxSize, true);
-							EditorGUILayout.LabelField((i + 1).ToString(), GUILayout.Width(25));
-							list[i] = (T)ObjectField<T>(list[i], "");
-							if (Button("▲", 23) && i > 0)
+								list[i1] = (T)ObjectField<T>(list[i1], "", 0, boxSize, true);
+							EditorGUILayout.LabelField((i1 + 1).ToString(), GUILayout.Width(25));
+							list[i1] = (T)ObjectField<T>(list[i1], "");
+							if (Button("▲", 23) && i1 > 0)
 							{
-								var temp = list[i];
-								list[i] = list[i - 1];
-								list[i - 1] = temp;
+								(list[i1], list[i1 - 1]) = (list[i1 - 1], list[i1]);
 							}
-							if (Button("▼", 23) && i < list.Count - 1)
-							{
-								var temp = list[i];
-								list[i] = list[i + 1];
-								list[i + 1] = temp;
-							}
-							if (ButtonColor("x", Color.red, 23))
-								list.RemoveAt(i);
-						});
 
+							if (Button("▼", 23) && i1 < list.Count - 1)
+							{
+								(list[i1], list[i1 + 1]) = (list[i1 + 1], list[i1]);
+							}
+
+							if (ButtonColor("x", Color.red, 23))
+								list.RemoveAt(i1);
+						});
 					}
+
 					if (totalPages > 1)
 					{
 						EditorGUILayout.BeginHorizontal();
@@ -1516,15 +1568,17 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
-						EditorGUILayout.LabelField(string.Format("{0}-{1} ({2})", from + 1, to + 1, list.Count));
+
+						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
 						if (Button(">Next>"))
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
+
 						EditorGUILayout.EndHorizontal();
 					}
 
@@ -1534,19 +1588,20 @@ namespace RCore.Common
 						{
 							list.Add(null);
 							page = totalPages - 1;
-							EditorPrefs.SetInt(pName + "_page", page);
+							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
 						}
+
 						if (Button("Sort By Name"))
 							list = list.OrderBy(m => m.name).ToList();
 						if (Button("Remove Duplicate"))
 						{
-							List<int> duplicate = new List<int>();
-							for (int i = 0; i < list.Count; i++)
+							var duplicate = new List<int>();
+							foreach (var item in list)
 							{
 								int count = 0;
 								for (int j = list.Count - 1; j >= 0; j--)
 								{
-									if (list[j] == list[i])
+									if (list[j] == item)
 									{
 										count++;
 										if (count > 1)
@@ -1554,24 +1609,26 @@ namespace RCore.Common
 									}
 								}
 							}
+
 							for (int j = list.Count - 1; j >= 0; j--)
 							{
 								if (duplicate.Contains(j))
 									list.Remove(list[j]);
 							}
 						}
-						if (ButtonColor("Clear", Color.red, 50))
-							ConfimPopup(() => { list = new List<T>(); });
-					});
 
+						if (ButtonColor("Clear", Color.red, 50))
+							ConfirmPopup(() => { list = new List<T>(); });
+					});
 				}, default(Color), true);
 			}
+
 			pList = list;
 
 			if (GUI.changed)
 			{
-				EditorPrefs.SetBool(pName, show);
-				EditorPrefs.SetString(pName + "_search", search);
+				UnityEditor.EditorPrefs.SetBool(pName, show);
+				UnityEditor.EditorPrefs.SetString(pName + "_search", search);
 			}
 
 			GUI.backgroundColor = prevColor;
@@ -1585,21 +1642,28 @@ namespace RCore.Common
 				tabsName = pTabsName,
 			};
 			tabs.Draw();
-			return tabs.currentTab;
+			return tabs.CurrentTab;
 		}
 
 		private static void DrawHeaderTitle(string pHeader)
 		{
 			Color prevColor = GUI.color;
 
-			var boxStyle = new GUIStyle(EditorStyles.toolbar);
-			boxStyle.fixedHeight = 0;
-			boxStyle.padding = new RectOffset(5, 5, 5, 5);
+			var boxStyle = new GUIStyle(EditorStyles.toolbar)
+			{
+				fixedHeight = 0,
+				padding = new RectOffset(5, 5, 5, 5)
+			};
 
-			var titleStyle = new GUIStyle(EditorStyles.largeLabel);
-			titleStyle.fontStyle = FontStyle.Bold;
-			titleStyle.normal.textColor = Color.white;
-			titleStyle.alignment = TextAnchor.MiddleCenter;
+			var titleStyle = new GUIStyle(EditorStyles.largeLabel)
+			{
+				fontStyle = FontStyle.Bold,
+				normal =
+				{
+					textColor = Color.white
+				},
+				alignment = TextAnchor.MiddleCenter
+			};
 
 			GUI.color = new Color(0.5f, 0.5f, 0.5f);
 			EditorGUILayout.BeginHorizontal(boxStyle, GUILayout.Height(20));
@@ -1614,14 +1678,14 @@ namespace RCore.Common
 		{
 			Event evt = Event.current;
 			var style = new GUIStyle("Toolbar");
-			Rect drop_area = GUILayoutUtility.GetRect(0.0f, 30, style, GUILayout.ExpandWidth(true));
-			GUI.Box(drop_area, "Drag drop " + pName);
+			Rect dropArea = GUILayoutUtility.GetRect(0.0f, 30, style, GUILayout.ExpandWidth(true));
+			GUI.Box(dropArea, "Drag drop " + pName);
 
 			switch (evt.type)
 			{
 				case EventType.DragUpdated:
 				case EventType.DragPerform:
-					if (!drop_area.Contains(evt.mousePosition))
+					if (!dropArea.Contains(evt.mousePosition))
 						return;
 
 					DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
@@ -1648,8 +1712,10 @@ namespace RCore.Common
 									objs.Add(s);
 							}
 						}
+
 						pOnDrop(objs.ToArray());
 					}
+
 					break;
 			}
 		}
@@ -1673,10 +1739,7 @@ namespace RCore.Common
 			};
 			reorderableList.elementHeight = 17f;
 			reorderableList.headerHeight = 17f;
-			reorderableList.drawHeaderCallback += (rect) =>
-			{
-				EditorGUI.LabelField(rect, pName);
-			};
+			reorderableList.drawHeaderCallback += (rect) => { EditorGUI.LabelField(rect, pName); };
 			return reorderableList;
 		}
 
@@ -1689,18 +1752,15 @@ namespace RCore.Common
 			};
 			reorderableList.elementHeight = 17f;
 			reorderableList.headerHeight = 17f;
-			reorderableList.drawHeaderCallback += (rect) =>
-			{
-				EditorGUI.LabelField(rect, pName);
-			};
+			reorderableList.drawHeaderCallback += (rect) => { EditorGUI.LabelField(rect, pName); };
 			return reorderableList;
 		}
 
-		public static void ReplaceGameobjectsInScene(ref List<GameObject> selections, List<GameObject> prefabs)
+		public static void ReplaceGameObjectsInScene(ref List<GameObject> selections, List<GameObject> prefabs)
 		{
 			for (var i = selections.Count - 1; i >= 0; --i)
 			{
-				GameObject newObject = null;
+				GameObject newObject;
 				var selected = selections[i];
 				var prefab = prefabs[UnityEngine.Random.Range(0, prefabs.Count)];
 				if (prefab.IsPrefab())
@@ -1709,9 +1769,10 @@ namespace RCore.Common
 				}
 				else
 				{
-					newObject = GameObject.Instantiate(prefab);
+					newObject = Object.Instantiate(prefab);
 					newObject.name = prefab.name;
 				}
+
 				if (newObject == null)
 				{
 					Debug.LogError("Error instantiating prefab");
@@ -1735,10 +1796,10 @@ namespace RCore.Common
 
 		#region Input Fields
 
-		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false)
+		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0,
+			bool readOnly = false)
 		{
-			Color defaultColor = GUI.color;
-			EditorText text = new EditorText()
+			var text = new EditorText()
 			{
 				value = value,
 				label = label,
@@ -1747,10 +1808,11 @@ namespace RCore.Common
 				readOnly = readOnly,
 			};
 			text.Draw();
-			return text.outputValue;
+			return text.OutputValue;
 		}
 
-		public static string DropdownList(string value, string label, string[] selections, int labelWidth = 80, int valueWidth = 0)
+		public static string DropdownList(string value, string label, string[] selections, int labelWidth = 80,
+			int valueWidth = 0)
 		{
 			var dropdownList = new EditorDropdownListString()
 			{
@@ -1761,10 +1823,11 @@ namespace RCore.Common
 				valueWidth = valueWidth,
 			};
 			dropdownList.Draw();
-			return dropdownList.outputValue;
+			return dropdownList.OutputValue;
 		}
 
-		public static int DropdownList(int value, string label, int[] selections, int labelWidth = 80, int valueWidth = 0)
+		public static int DropdownList(int value, string label, int[] selections, int labelWidth = 80,
+			int valueWidth = 0)
 		{
 			var dropdownList = new EditorDropdownListInt()
 			{
@@ -1775,10 +1838,11 @@ namespace RCore.Common
 				selections = selections
 			};
 			dropdownList.Draw();
-			return dropdownList.outputValue;
+			return dropdownList.OutputValue;
 		}
 
-		public static T DropdownListEnum<T>(T value, string label, int labelWidth = 80, int valueWidth = 0) where T : struct, IConvertible
+		public static T DropdownListEnum<T>(T value, string label, int labelWidth = 80, int valueWidth = 0)
+			where T : struct, IConvertible
 		{
 			var dropdownList = new EditorDropdownListEnum<T>()
 			{
@@ -1788,10 +1852,10 @@ namespace RCore.Common
 				valueWidth = valueWidth,
 			};
 			dropdownList.Draw();
-			return dropdownList.outputValue;
+			return dropdownList.OutputValue;
 		}
 
-		public static T DropdownList<T>(T selectedObj, string label, List<T> pOptions) where T : UnityEngine.Object
+		public static T DropdownList<T>(T selectedObj, string label, List<T> pOptions) where T : Object
 		{
 			string selectedName = selectedObj == null ? "None" : selectedObj.name;
 			string[] options = new string[pOptions.Count + 1];
@@ -1808,21 +1872,24 @@ namespace RCore.Common
 			if (selectedName != selected)
 			{
 				selectedName = selected;
-				for (int i = 0; i < pOptions.Count; i++)
+				foreach (var o in pOptions)
 				{
-					if (pOptions[i].name == selectedName)
+					if (o.name == selectedName)
 					{
-						selectedObj = pOptions[i];
+						selectedObj = o;
 						break;
 					}
 				}
+
 				if (selectedName == "None")
 					selectedObj = null;
 			}
+
 			return selectedObj;
 		}
 
-		public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0, Color color = default(Color))
+		public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0,
+			Color color = default(Color))
 		{
 			var toggle = new EditorToggle()
 			{
@@ -1833,10 +1900,11 @@ namespace RCore.Common
 				color = color,
 			};
 			toggle.Draw();
-			return toggle.outputValue;
+			return toggle.OutputValue;
 		}
 
-		public static int IntField(int value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false)
+		public static int IntField(int value, string label, int labelWidth = 80, int valueWidth = 0,
+			bool readOnly = false)
 		{
 			var intField = new EditorInt()
 			{
@@ -1847,7 +1915,7 @@ namespace RCore.Common
 				readOnly = readOnly,
 			};
 			intField.Draw();
-			return intField.outputValue;
+			return intField.OutputValue;
 		}
 
 		public static float FloatField(float value, string label, int labelWidth = 80, int valueWidth = 0)
@@ -1870,7 +1938,8 @@ namespace RCore.Common
 			return result;
 		}
 
-		public static Object ObjectField<T>(Object value, string label, int labelWidth = 80, int valueWidth = 0, bool showAsBox = false)
+		public static Object ObjectField<T>(Object value, string label, int labelWidth = 80, int valueWidth = 0,
+			bool showAsBox = false)
 		{
 			var obj = new EditorObject<T>()
 			{
@@ -1881,14 +1950,17 @@ namespace RCore.Common
 				showAsBox = showAsBox
 			};
 			obj.Draw();
-			return obj.outputValue;
+			return obj.OutputValue;
 		}
 
-		public static void LabelField(string label, int width = 0, bool isBold = true, TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default(Color))
+		public static void LabelField(string label, int width = 0, bool isBold = true,
+			TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default(Color))
 		{
-			var style = new GUIStyle(isBold ? EditorStyles.boldLabel : EditorStyles.label);
-			style.alignment = pTextAnchor;
-			style.margin = new RectOffset(0, 0, 0, 0);
+			var style = new GUIStyle(isBold ? EditorStyles.boldLabel : EditorStyles.label)
+			{
+				alignment = pTextAnchor,
+				margin = new RectOffset(0, 0, 0, 0)
+			};
 			if (pTextColor != default(Color))
 				style.normal.textColor = pTextColor;
 			if (width > 0)
@@ -1922,7 +1994,8 @@ namespace RCore.Common
 			if (valueWidth == 0)
 				result = EditorGUILayout.Vector2Field("", value, GUILayout.Height(20), GUILayout.MinWidth(40));
 			else
-				result = EditorGUILayout.Vector2Field("", value, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				result = EditorGUILayout.Vector2Field("", value, GUILayout.Height(20), GUILayout.MinWidth(40),
+					GUILayout.Width(valueWidth));
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
@@ -1942,7 +2015,8 @@ namespace RCore.Common
 			if (valueWidth == 0)
 				result = EditorGUILayout.Vector3Field("", value, GUILayout.Height(20), GUILayout.MinWidth(40));
 			else
-				result = EditorGUILayout.Vector3Field("", value, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				result = EditorGUILayout.Vector3Field("", value, GUILayout.Height(20), GUILayout.MinWidth(40),
+					GUILayout.Width(valueWidth));
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
@@ -1950,7 +2024,8 @@ namespace RCore.Common
 			return result;
 		}
 
-		public static float[] ArrayField(float[] values, string label, bool showHorizontal = true, int labelWidth = 80, int valueWidth = 0)
+		public static float[] ArrayField(float[] values, string label, bool showHorizontal = true, int labelWidth = 80,
+			int valueWidth = 0)
 		{
 			if (!string.IsNullOrEmpty(label))
 			{
@@ -1973,6 +2048,7 @@ namespace RCore.Common
 
 				results[i] = result;
 			}
+
 			if (showHorizontal)
 				EditorGUILayout.EndHorizontal();
 			else
@@ -1986,23 +2062,24 @@ namespace RCore.Common
 
 		public static void SerializeFields(SerializedProperty pProperty, params string[] properties)
 		{
-			for (int i = 0; i < properties.Length; i++)
+			foreach (var p in properties)
 			{
-				var item = pProperty.FindPropertyRelative(properties[i]);
+				var item = pProperty.FindPropertyRelative(p);
 				EditorGUILayout.PropertyField(item, true);
 			}
 		}
 
 		public static void SerializeFields(SerializedObject pObj, params string[] properties)
 		{
-			for (int i = 0; i < properties.Length; i++)
+			foreach (var p in properties)
 			{
-				var item = pObj.FindProperty(properties[i]);
+				var item = pObj.FindProperty(p);
 				EditorGUILayout.PropertyField(item, true);
 			}
 		}
 
-		public static SerializedProperty SerializeField(SerializedObject pObj, string pPropertyName, string pDisplayName = null, params GUILayoutOption[] options)
+		public static SerializedProperty SerializeField(SerializedObject pObj, string pPropertyName,
+			string pDisplayName = null, params GUILayoutOption[] options)
 		{
 			SerializedProperty property = pObj.FindProperty(pPropertyName);
 			if (property == null)
@@ -2013,7 +2090,8 @@ namespace RCore.Common
 
 			if (!property.isArray)
 			{
-				EditorGUILayout.PropertyField(property, new GUIContent(string.IsNullOrEmpty(pDisplayName) ? property.displayName : pDisplayName));
+				EditorGUILayout.PropertyField(property,
+					new GUIContent(string.IsNullOrEmpty(pDisplayName) ? property.displayName : pDisplayName));
 				return property;
 			}
 			else
@@ -2037,8 +2115,9 @@ namespace RCore.Common
 			{
 				if (element.Contains("["))
 				{
-					var elementName = element.Substring(0, element.IndexOf("["));
-					var index = System.Convert.ToInt32(element.Substring(element.IndexOf("[")).Replace("[", "").Replace("]", ""));
+					var elementName = element.Substring(0, element.IndexOf("[", StringComparison.Ordinal));
+					var index = Convert.ToInt32(element.Substring(element.IndexOf("[", StringComparison.Ordinal)).Replace("[", "")
+						.Replace("]", ""));
 					obj = GetValue_Imp(obj, elementName, index);
 				}
 				else
@@ -2046,6 +2125,7 @@ namespace RCore.Common
 					obj = GetValue_Imp(obj, element);
 				}
 			}
+
 			return obj;
 		}
 
@@ -2061,12 +2141,14 @@ namespace RCore.Common
 				if (f != null)
 					return f.GetValue(source);
 
-				var p = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+				var p = type.GetProperty(name,
+					BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 				if (p != null)
 					return p.GetValue(source, null);
 
 				type = type.BaseType;
 			}
+
 			return null;
 		}
 
@@ -2083,6 +2165,7 @@ namespace RCore.Common
 			{
 				if (!enm.MoveNext()) return null;
 			}
+
 			return enm.Current;
 		}
 
@@ -2094,75 +2177,88 @@ namespace RCore.Common
 
 		public static void RemoveDirective(string pSymbol, BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
-			var taget = pTarget == BuildTargetGroup.Unknown ? EditorUserBuildSettings.selectedBuildTargetGroup : pTarget;
-			string directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(taget);
+			var target = pTarget == BuildTargetGroup.Unknown
+				? EditorUserBuildSettings.selectedBuildTargetGroup
+				: pTarget;
+			string directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
 			directives = directives.Replace(pSymbol, "");
-			if (directives.Length > 1 && directives[directives.Length - 1] == ';')
+			if (directives.Length > 1 && directives[^1] == ';')
 				directives = directives.Remove(directives.Length - 1, 1);
-			PlayerSettings.SetScriptingDefineSymbolsForGroup(taget, directives);
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directives);
 		}
 
 		public static void RemoveDirective(List<string> pSymbols, BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
-			var taget = pTarget == BuildTargetGroup.Unknown ? EditorUserBuildSettings.selectedBuildTargetGroup : pTarget;
-			string directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(taget);
-			for (int i = 0; i < pSymbols.Count; i++)
+			var target = pTarget == BuildTargetGroup.Unknown
+				? EditorUserBuildSettings.selectedBuildTargetGroup
+				: pTarget;
+			string directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
+			foreach (var s in pSymbols)
 			{
-				if (directives.Contains(pSymbols[i] + ";"))
-					directives = directives.Replace(pSymbols[i] + ";", "");
-				else if (directives.Contains(pSymbols[i]))
-					directives = directives.Replace(pSymbols[i], "");
+				if (directives.Contains(s + ";"))
+					directives = directives.Replace(s + ";", "");
+				else if (directives.Contains(s))
+					directives = directives.Replace(s, "");
 			}
-			if (directives.Length > 1 && directives[directives.Length - 1] == ';')
+
+			if (directives.Length > 1 && directives[^1] == ';')
 				directives = directives.Remove(directives.Length - 1, 1);
-			PlayerSettings.SetScriptingDefineSymbolsForGroup(taget, directives);
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directives);
 		}
 
 		public static void AddDirective(string pSymbol, BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
-			var taget = pTarget == BuildTargetGroup.Unknown ? EditorUserBuildSettings.selectedBuildTargetGroup : pTarget;
-			string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(taget);
+			var target = pTarget == BuildTargetGroup.Unknown
+				? EditorUserBuildSettings.selectedBuildTargetGroup
+				: pTarget;
+			string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
 			string[] directives = directivesStr.Split(';');
-			for (int j = 0; j < directives.Length; j++)
-				if (directives[j] == pSymbol)
+			foreach (var d in directives)
+				if (d == pSymbol)
 					return;
 
 			if (string.IsNullOrEmpty(directivesStr))
 				directivesStr += pSymbol;
 			else
 				directivesStr += ";" + pSymbol;
-			PlayerSettings.SetScriptingDefineSymbolsForGroup(taget, directivesStr);
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directivesStr);
 		}
 
 		public static void AddDirectives(List<string> pSymbols, BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
-			var taget = pTarget == BuildTargetGroup.Unknown ? EditorUserBuildSettings.selectedBuildTargetGroup : pTarget;
-			string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(taget);
+			var target = pTarget == BuildTargetGroup.Unknown
+				? EditorUserBuildSettings.selectedBuildTargetGroup
+				: pTarget;
+			string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
 			string[] directives = directivesStr.Split(';');
-			for (int i = 0; i < pSymbols.Count; i++)
+			foreach (var s in pSymbols)
 			{
 				bool existed = false;
-				for (int j = 0; j < directives.Length; j++)
-					if (directives[j] == pSymbols[i])
+				foreach (var d in directives)
+					if (d == s)
 					{
 						existed = true;
 						break;
 					}
+
 				if (existed)
 					continue;
 
 				if (string.IsNullOrEmpty(directivesStr))
-					directivesStr += pSymbols[i];
+					directivesStr += s;
 				else
-					directivesStr += ";" + pSymbols[i];
+					directivesStr += ";" + s;
 			}
-			PlayerSettings.SetScriptingDefineSymbolsForGroup(taget, directivesStr);
+
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directivesStr);
 		}
 
 		public static string[] GetDirectives(BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
-			var taget = pTarget == BuildTargetGroup.Unknown ? EditorUserBuildSettings.selectedBuildTargetGroup : pTarget;
-			string defineStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(taget);
+			var target = pTarget == BuildTargetGroup.Unknown
+				? EditorUserBuildSettings.selectedBuildTargetGroup
+				: pTarget;
+			string defineStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
 			string[] currentDefines = defineStr.Split(';');
 			for (int i = 0; i < currentDefines.Length; i++)
 				currentDefines[i] = currentDefines[i].Trim();
@@ -2184,8 +2280,10 @@ namespace RCore.Common
 			string[] scenes = new string[sceneCount];
 			for (int i = 0; i < sceneCount; i++)
 			{
-				scenes[i] = Path.GetFileNameWithoutExtension(UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i));
+				scenes[i] = Path.GetFileNameWithoutExtension(UnityEngine.SceneManagement.SceneUtility
+					.GetScenePathByBuildIndex(i));
 			}
+
 			return scenes;
 		}
 
@@ -2197,8 +2295,7 @@ namespace RCore.Common
 
 		public static string OpenFolderPanel(string pFolderPath = null)
 		{
-			if (pFolderPath == null)
-				pFolderPath = Application.dataPath;
+			pFolderPath ??= Application.dataPath;
 			string path = EditorUtility.OpenFolderPanel("Select Folder", pFolderPath, "");
 			return path;
 		}
@@ -2216,6 +2313,7 @@ namespace RCore.Common
 				{
 					startJoint = i;
 				}
+
 				if (startJoint != -1 && i >= startJoint)
 				{
 					if (i == paths.Length - 1)
@@ -2224,6 +2322,7 @@ namespace RCore.Common
 						realPath += paths[i] + "/";
 				}
 			}
+
 			return realPath;
 		}
 
@@ -2238,10 +2337,11 @@ namespace RCore.Common
 
 				return directories;
 			}
-			return new string[1] { FormatPathToUnityPath(path) };
+
+			return new[] { FormatPathToUnityPath(path) };
 		}
 
-		private static T Assign<T>(string pPath) where T : UnityEngine.Object
+		private static T Assign<T>(string pPath) where T : Object
 		{
 			return AssetDatabase.LoadAssetAtPath(pPath, typeof(T)) as T;
 		}
@@ -2250,30 +2350,31 @@ namespace RCore.Common
 		/// Example: GetObjects<AudioClip>(@"Assets\Game\Sounds\Musics", "t:AudioClip")
 		/// </summary>
 		/// <returns></returns>
-		public static List<T> GetObjects<T>(string pPath, string filter, bool getChild = true) where T : UnityEngine.Object
+		public static List<T> GetObjects<T>(string pPath, string filter, bool getChild = true)
+			where T : Object
 		{
 			var directories = GetDirectories(pPath);
 
-			List<T> list = new List<T>();
+			var list = new List<T>();
 
 			var resources = AssetDatabase.FindAssets(filter, directories);
 
-			for (int i = 0; i < resources.Length; i++)
+			foreach (var re in resources)
 			{
 				if (getChild)
 				{
-					var childAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(resources[i]));
-					for (int j = 0; j < childAssets.Length; j++)
+					var childAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(re));
+					foreach (var child in childAssets)
 					{
-						if (childAssets[j] is T)
+						if (child is T)
 						{
-							list.Add(childAssets[j] as T);
+							list.Add(child as T);
 						}
 					}
 				}
 				else
 				{
-					list.Add(Assign<T>(AssetDatabase.GUIDToAssetPath(resources[i])));
+					list.Add(Assign<T>(AssetDatabase.GUIDToAssetPath(re)));
 				}
 			}
 
@@ -2284,9 +2385,9 @@ namespace RCore.Common
 		{
 			var list = new List<AnimationClip>();
 			var selections = Selection.objects;
-			for (int i = 0; i < selections.Length; i++)
+			foreach (var s in selections)
 			{
-				var path = AssetDatabase.GetAssetPath(selections[i]);
+				var path = AssetDatabase.GetAssetPath(s);
 				var representations = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
 				foreach (var asset in representations)
 				{
@@ -2295,6 +2396,7 @@ namespace RCore.Common
 						list.Add(clip);
 				}
 			}
+
 			return list;
 		}
 
@@ -2322,6 +2424,7 @@ namespace RCore.Common
 				if (clip != null && clip.name == pName)
 					return clip;
 			}
+
 			return null;
 		}
 
@@ -2332,136 +2435,154 @@ namespace RCore.Common
 	// Custom Editor PlayerPrefs
 	//===================================================================
 
-	public class EditorPrebs
+	public class EditorPrefs
 	{
-		protected string mMainKey;
-		protected int mSubKey;
-		protected string Key { get { return mMainKey + "_" + mSubKey; } }
-		public EditorPrebs(int pMainKey, int pSubKey = 0)
+		protected string mainKey;
+		protected int subKey;
+
+		protected string Key => mainKey + "_" + subKey;
+
+		public EditorPrefs(int pMainKey, int pSubKey = 0)
 		{
-			mMainKey = pMainKey + "_" + pSubKey;
+			mainKey = pMainKey + "_" + pSubKey;
 		}
-		public EditorPrebs(string pMainKey, int pSubKey = 0)
+
+		public EditorPrefs(string pMainKey, int pSubKey = 0)
 		{
-			mMainKey = pMainKey + "_" + pSubKey;
+			mainKey = pMainKey + "_" + pSubKey;
 		}
 	}
 
-	public class EditorPrefsBool : EditorPrebs
+	public class EditorPrefsBool : EditorPrefs
 	{
 		private bool mValue;
+
 		public EditorPrefsBool(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetBool(Key);
+			mValue = UnityEditor.EditorPrefs.GetBool(Key);
 		}
+
 		public EditorPrefsBool(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetBool(Key);
+			mValue = UnityEditor.EditorPrefs.GetBool(Key);
 		}
+
 		public bool Value
 		{
-			get { return mValue; }
+			get => mValue;
 			set
 			{
 				if (mValue != value)
 				{
 					mValue = value;
-					EditorPrefs.SetBool(Key, value);
+					UnityEditor.EditorPrefs.SetBool(Key, value);
 				}
 			}
 		}
+
 		public override string ToString()
 		{
 			return mValue.ToString();
 		}
 	}
 
-	public class EditorPrefsString : EditorPrebs
+	public class EditorPrefsString : EditorPrefs
 	{
 		private string mValue;
+
 		public EditorPrefsString(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetString(Key);
+			mValue = UnityEditor.EditorPrefs.GetString(Key);
 		}
+
 		public EditorPrefsString(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetString(Key);
+			mValue = UnityEditor.EditorPrefs.GetString(Key);
 		}
+
 		public string Value
 		{
-			get { return mValue; }
+			get => mValue;
 			set
 			{
 				if (mValue != value)
 				{
 					mValue = value;
-					EditorPrefs.SetString(Key, value);
+					UnityEditor.EditorPrefs.SetString(Key, value);
 				}
 			}
 		}
+
 		public override string ToString()
 		{
-			return mValue.ToString();
+			return mValue;
 		}
 	}
 
-	public class EditorPrefsVector : EditorPrebs
+	public class EditorPrefsVector : EditorPrefs
 	{
 		private Vector3 mValue;
+
 		public EditorPrefsVector(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			float x = EditorPrefs.GetFloat(Key + "x");
-			float y = EditorPrefs.GetFloat(Key + "y");
-			float z = EditorPrefs.GetFloat(Key + "z");
+			float x = UnityEditor.EditorPrefs.GetFloat(Key + "x");
+			float y = UnityEditor.EditorPrefs.GetFloat(Key + "y");
+			float z = UnityEditor.EditorPrefs.GetFloat(Key + "z");
 			mValue = new Vector3(x, y, z);
 		}
+
 		public EditorPrefsVector(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			float x = EditorPrefs.GetFloat(Key + "x");
-			float y = EditorPrefs.GetFloat(Key + "y");
-			float z = EditorPrefs.GetFloat(Key + "z");
+			float x = UnityEditor.EditorPrefs.GetFloat(Key + "x");
+			float y = UnityEditor.EditorPrefs.GetFloat(Key + "y");
+			float z = UnityEditor.EditorPrefs.GetFloat(Key + "z");
 			mValue = new Vector3(x, y, z);
 		}
+
 		public Vector3 Value
 		{
-			get { return mValue; }
+			get => mValue;
 			set
 			{
 				if (mValue != value)
 				{
 					mValue = value;
-					EditorPrefs.SetFloat(Key + "x", value.x);
-					EditorPrefs.SetFloat(Key + "y", value.y);
-					EditorPrefs.SetFloat(Key + "z", value.z);
+					UnityEditor.EditorPrefs.SetFloat(Key + "x", value.x);
+					UnityEditor.EditorPrefs.SetFloat(Key + "y", value.y);
+					UnityEditor.EditorPrefs.SetFloat(Key + "z", value.z);
 				}
 			}
 		}
+
 		public override string ToString()
 		{
 			return mValue.ToString();
 		}
 	}
 
-	public class EditorPrefsEnum<T> : EditorPrebs
+	public class EditorPrefsEnum<T> : EditorPrefs
 	{
 		private T mValue;
+
 		public EditorPrefsEnum(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			string strValue = EditorPrefs.GetString(Key);
+			string strValue = UnityEditor.EditorPrefs.GetString(Key);
 			foreach (T item in Enum.GetValues(typeof(T)))
 				if (item.ToString() == strValue)
 					mValue = item;
 		}
+
 		public EditorPrefsEnum(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			string strValue = EditorPrefs.GetString(Key);
+			string strValue = UnityEditor.EditorPrefs.GetString(Key);
 			foreach (T item in Enum.GetValues(typeof(T)))
 				if (item.ToString() == strValue)
 					mValue = item;
 		}
+
 		public T Value
 		{
-			get { return mValue; }
+			get => mValue;
 			set
 			{
 				if (!typeof(T).IsEnum)
@@ -2471,42 +2592,47 @@ namespace RCore.Common
 				if (strValue != inputValue)
 				{
 					mValue = value;
-					EditorPrefs.SetString(Key, inputValue);
+					UnityEditor.EditorPrefs.SetString(Key, inputValue);
 				}
 			}
 		}
+
 		public override string ToString()
 		{
 			return mValue.ToString();
 		}
 	}
 
-	public class EditorPrefsFloat : EditorPrebs
+	public class EditorPrefsFloat : EditorPrefs
 	{
 		private float mValue;
+
 		public EditorPrefsFloat(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetFloat(Key);
+			mValue = UnityEditor.EditorPrefs.GetFloat(Key);
 		}
+
 		public EditorPrefsFloat(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetFloat(Key);
+			mValue = UnityEditor.EditorPrefs.GetFloat(Key);
 		}
+
 		public float Value
 		{
-			get { return mValue; }
+			get => mValue;
 			set
 			{
 				if (mValue != value)
 				{
 					mValue = value;
-					EditorPrefs.SetFloat(Key, value);
+					UnityEditor.EditorPrefs.SetFloat(Key, value);
 				}
 			}
 		}
+
 		public override string ToString()
 		{
-			return mValue.ToString();
+			return mValue.ToString(CultureInfo.InvariantCulture);
 		}
 	}
 
@@ -2514,9 +2640,9 @@ namespace RCore.Common
 	// Custom GUIStyle
 	//===================================================================
 
-	public class GUIStyleHelper
+	public static class GUIStyleHelper
 	{
-		public static GUIStyle HeaderTitle = new GUIStyle(EditorStyles.boldLabel)
+		public static readonly GUIStyle headerTitle = new(EditorStyles.boldLabel)
 		{
 			fontSize = 15,
 			fontStyle = FontStyle.Bold,

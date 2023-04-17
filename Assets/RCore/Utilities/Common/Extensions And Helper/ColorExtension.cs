@@ -87,7 +87,7 @@ namespace RCore.Common
 
         public static string ToRGBAHexString(this Color color)
         {
-            return string.Format("{0:X2}{1:X2}{2:X2}{3:X2}", color.r, color.g, color.b, color.a);
+            return $"{color.r:X2}{color.g:X2}{color.b:X2}{color.a:X2}";
         }
 
         public static int ToRGBAHex(this Color color)

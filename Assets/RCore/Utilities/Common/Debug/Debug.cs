@@ -200,7 +200,7 @@ namespace RCore.Common
             {
                 StreamReader sr = new StreamReader(fileName);
                 StreamWriter sw = new StreamWriter(fileName, true);
-                sw.WriteLine(string.Format("{0:0.00} \t {1} \t {2}", Time.time, Time.frameCount, context));
+                sw.WriteLine($"{Time.time:0.00} \t {Time.frameCount} \t {context}");
                 sw.Close();
             }
         }

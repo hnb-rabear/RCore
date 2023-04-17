@@ -99,7 +99,7 @@ namespace RCore.Editor
                                 EditorHelper.TextField(profile.GetBuildName(), "Build Name", 120, 230);
                             else
                                 profile.buildName = EditorHelper.TextField(profile.buildName, "Build Name", 120, 230);
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             profile.customBuildName = EditorHelper.Toggle(profile.customBuildName, "Custom Build Name", 120, 20);
                             if (!profile.customBuildName)
                             {
@@ -111,7 +111,7 @@ namespace RCore.Editor
                                 profile.companyName = EditorHelper.TextField(profile.companyName, "Company Name", 120, 230);
                                 profile.productName = EditorHelper.TextField(profile.productName, "Product Name", 120, 230);
                             }
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             profile.enableHeadlessMode = EditorHelper.Toggle(profile.enableHeadlessMode, "Enable Headless Mode", 120, 20);
                             profile.customPackage = EditorHelper.Toggle(profile.customPackage, "Custom Package", 120, 20);
                             if (!profile.customPackage)
@@ -128,7 +128,7 @@ namespace RCore.Editor
                                 profile.bundleVersionCode = EditorHelper.IntField(profile.bundleVersionCode, "Bundle Version Code", 120, 230);
                                 profile.buildNumber = EditorHelper.TextField(profile.buildNumber, "Build Number", 120, 230);
                             }
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             profile.scriptBackend = EditorHelper.DropdownListEnum(profile.scriptBackend, "Script Backend", 120, 230);
                             if (profile.scriptBackend == ScriptingImplementation.IL2CPP)
                                 profile.arm64 = EditorHelper.Toggle(profile.arm64, "ARM64", 120, 230);
@@ -144,7 +144,7 @@ namespace RCore.Editor
                             }
                             else
                                 profile.developmentBuild = EditorHelper.Toggle(profile.developmentBuild, "Development Build", 120, 230);
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             //--- Draw Scene Section
                             var btnAddNewScene = new EditorButton();
                             btnAddNewScene.color = Color.green;
@@ -204,7 +204,7 @@ namespace RCore.Editor
                                 profile.reorderBuildScenes.DoLayoutList();
                                 GUILayout.EndVertical();
                             }
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             //--- Draw Build Target Section
                             var btnBuilTarget = new EditorButton();
                             btnBuilTarget.color = Color.green;
@@ -251,7 +251,7 @@ namespace RCore.Editor
                                 }
                                 GUILayout.EndVertical();
                             }
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             //--- Draw Directives Section
                             profile.customDirectives = EditorHelper.Toggle(profile.customDirectives, "Use Custom Directives", 150);
                             if (profile.customDirectives)
@@ -295,7 +295,7 @@ namespace RCore.Editor
                                     GUILayout.EndVertical();
                                 }
                             }
-                            EditorHelper.Seperator();
+                            EditorHelper.Separator();
                             EditorHelper.BoxHorizontal(() =>
                             {
                                 if (EditorHelper.ButtonColor("Overwrite Unity Build Settings", Color.yellow))
@@ -312,7 +312,7 @@ namespace RCore.Editor
                         }, default(Color), true);
                     }
                 }
-                EditorHelper.SeperatorBox();
+                EditorHelper.SeparatorBox();
                 EditorHelper.BoxHorizontal(() =>
                 {
                     if (EditorHelper.ButtonColor("Create New Profile", Color.green, 120))
@@ -332,7 +332,7 @@ namespace RCore.Editor
                     if (EditorHelper.ButtonColor("Player Settings", Color.white))
                         SettingsService.OpenProjectSettings("Project/Player");
                 }, default(Color), true);
-                EditorHelper.SeperatorBox();
+                EditorHelper.SeparatorBox();
                 EditorGUILayout.LabelField("Build By Command Line", EditorStyles.boldLabel);
                 EditorGUILayout.TextField(mCommandLine);
             });

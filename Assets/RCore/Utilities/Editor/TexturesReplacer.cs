@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
+using EditorPrefs = UnityEditor.EditorPrefs;
 
 namespace RCore.Editor
 {

@@ -83,15 +83,15 @@ namespace RCore.Service
                 string key = metaData.Key;
                 string value = metaData.Value;
                 if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
-                    build.Add(string.Format("{0}={1}", key, value));
+                    build.Add($"{key}={value}");
             }
             return string.Join("\\", build.ToArray());
         }
 
         public string GetStorageLocation(string pStorageBucket)
         {
-            string folder = string.Format("{0}/{1}", pStorageBucket, rootFolder);
-            return string.Format("{0}/{1}", folder, fileName);
+            string folder = $"{pStorageBucket}/{rootFolder}";
+            return $"{folder}/{fileName}";
         }
     }
 

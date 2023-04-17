@@ -160,9 +160,9 @@ namespace RCore.Components
                 if (mMax > 0)
                 {
                     if (txtProgessValueLayer1 != null)
-                        txtProgessValueLayer1.text = string.Format("{0}/{1}", mValue, mMax);
+                        txtProgessValueLayer1.text = $"{mValue}/{mMax}";
                     if (txtProgessValueLayer2 != null)
-                        txtProgessValueLayer2.text = string.Format("{0}/{1}", mValue, mMax);
+                        txtProgessValueLayer2.text = $"{mValue}/{mMax}";
                 }
             }
             else

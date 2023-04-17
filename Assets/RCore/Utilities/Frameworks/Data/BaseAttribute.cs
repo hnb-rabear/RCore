@@ -65,7 +65,7 @@ namespace RCore.Framework.Data
 			string text = "";
 			for (int i = 0; i < Attributes.Count; i++)
 			{
-				text += string.Format("Id:{0}, Value:{1}", Attributes[i].id, Attributes[i].value);
+				text += $"Id:{Attributes[i].id}, Value:{Attributes[i].value}";
 				if (i + 1 <= Attributes.Count - 1)
 					text += "/";
 			}
@@ -321,7 +321,8 @@ namespace RCore.Framework.Data
 			string text = "";
 			for (int i = 0; i < attributes.Count; i++)
 			{
-				text += string.Format("Id:{0}, Value:{1}, Increase:{2}, Max:{3}", attributes[i].id, attributes[i].value, attributes[i].increase, attributes[i].max);
+				text +=
+					$"Id:{attributes[i].id}, Value:{attributes[i].value}, Increase:{attributes[i].increase}, Max:{attributes[i].max}";
 				if (i + 1 <= attributes.Count - 1)
 					text += "\n";
 			}

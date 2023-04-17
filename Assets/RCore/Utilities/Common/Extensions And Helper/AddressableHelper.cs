@@ -2,8 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2020
  **/
 
-//#define ADDRESSABLES
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,605 +14,890 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.ResourceManagement.ResourceProviders;
-using static UnityEngine.AddressableAssets.Addressables;
 #endif
 using UnityEngine.SceneManagement;
 using UnityEngine.U2D;
 using Object = UnityEngine.Object;
+using Cysharp.Threading.Tasks;
 
 namespace RCore.Common
 {
 #if ADDRESSABLES
 
-    [Serializable]
-    public class ComponentRef<TComponent> : AssetReference where TComponent : Component
-    {
-        public ComponentRef(string guid) : base(guid) { }
+	[Serializable]
+	public class ComponentRef<TComponent> : AssetReference where TComponent : Component
+	{
+		public ComponentRef(string guid) : base(guid)
+		{
+		}
 
-        public new AsyncOperationHandle<TComponent> InstantiateAsync(Vector3 position, Quaternion rotation, Transform parent = null)
-        {
-            return ResourceManager.CreateChainOperation<TComponent, GameObject>(base.InstantiateAsync(position, Quaternion.identity, parent), GameObjectReady);
-        }
+		public override bool ValidateAsset(Object obj)
+		{
+			var go = obj as GameObject;
+			return go != null && go.GetComponent<TComponent>() != null;
+		}
 
-        public new AsyncOperationHandle<TComponent> InstantiateAsync(Transform parent = null, bool instantiateInWorldSpace = false)
-        {
-            return ResourceManager.CreateChainOperation<TComponent, GameObject>(base.InstantiateAsync(parent, instantiateInWorldSpace), GameObjectReady);
-        }
-
-        public AsyncOperationHandle<TComponent> LoadAssetAsync()
-        {
-            return ResourceManager.CreateChainOperation<TComponent, GameObject>(base.LoadAssetAsync<GameObject>(), GameObjectReady);
-        }
-
-        AsyncOperationHandle<TComponent> GameObjectReady(AsyncOperationHandle<GameObject> arg)
-        {
-            var comp = arg.Result.GetComponent<TComponent>();
-            return ResourceManager.CreateCompletedOperation<TComponent>(comp, string.Empty);
-        }
-
-        public override bool ValidateAsset(Object obj)
-        {
-            var go = obj as GameObject;
-            return go != null && go.GetComponent<TComponent>() != null;
-        }
-
-        public override bool ValidateAsset(string path)
-        {
+		public override bool ValidateAsset(string path)
+		{
 #if UNITY_EDITOR
-            //this load can be expensive...
-            var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            return go != null && go.GetComponent<TComponent>() != null;
+			//this load can be expensive...
+			var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+			return go != null && go.GetComponent<TComponent>() != null;
 #else
             return false;
 #endif
-        }
-    }
+		}
+	}
 
-    /// <summary>
-    /// Example generic asset reference
-    /// </summary>
-    [Serializable]
-    public class ComponentRef_SpriteRenderer : ComponentRef<SpriteRenderer>
-    {
-        public ComponentRef_SpriteRenderer(string guid) : base(guid) { }
-    }
+	/// <summary>
+	/// Example generic asset reference
+	/// </summary>
+	[Serializable]
+	public class ComponentRef_SpriteRenderer : ComponentRef<SpriteRenderer>
+	{
+		public ComponentRef_SpriteRenderer(string guid) : base(guid)
+		{
+		}
+	}
 
-    /// <summary>
-    /// Example generic asset reference
-    /// </summary>
-    [Serializable]
-    public class AssetRef_SpriteAtlas : AssetReferenceT<SpriteAtlas>
-    {
-        public AssetRef_SpriteAtlas(string guid) : base(guid) { }
-    }
+	/// <summary>
+	/// Example generic asset reference
+	/// </summary>
+	[Serializable]
+	public class AssetRef_SpriteAtlas : AssetReferenceT<SpriteAtlas>
+	{
+		public AssetRef_SpriteAtlas(string guid) : base(guid)
+		{
+		}
+	}
 
-    //================================================================================
+	//================================================================================
 
-    public static class AddressableUtil
-    {
-        //================ Basic
+	public static class AddressableUtil
+	{
+		public static AsyncOperationHandle<long> GetDownloadSizeAsync(object key, Action<long> pOnComplete)
+		{
+			var operation = Addressables.GetDownloadSizeAsync(key);
+			operation.Completed += (op) => { pOnComplete?.Invoke(op.Result); };
+			return operation;
+		}
 
-        public static AsyncOperationHandle<long> GetDownloadSizeAsync(object key, Action<long> pOnComplete)
-        {
-            var operation = Addressables.GetDownloadSizeAsync(key);
-            operation.Completed += (op) =>
-            {
-                pOnComplete?.Invoke(op.Result);
-            };
-            return operation;
-        }
+		public static async Task<long> GetDownloadSizeAsync(object key)
+		{
+			//Clear all cached AssetBundles
+			Addressables.ClearDependencyCacheAsync(key);
 
-        public static AsyncOperationHandle DownloadDependenciesAsync(object pKey, bool pAutoRelease, Action<float> pOnDownload = null, Action pOnComplete = null)
-        {
-            var operation = Addressables.DownloadDependenciesAsync(pKey, pAutoRelease);
-            WaitLoadTask(operation, pOnDownload, pOnComplete);
-            return operation;
-        }
+			//Check the download size
+			var operation = Addressables.GetDownloadSizeAsync(key);
+			await operation.Task;
+			return operation.Result;
+		}
 
-        public static AsyncOperationHandle DownloadDependenciesAsync(IList<IResourceLocation> locations, bool pAutoRelease, Action<float> pOnDownload = null, Action pOnComplete = null)
-        {
-            var operation = Addressables.DownloadDependenciesAsync(locations, pAutoRelease);
-            WaitLoadTask(operation, pOnDownload, pOnComplete);
-            return operation;
-        }
+		public static async Task<List<IResourceLocation>> LoadResourceLocationAsync(string pLabel)
+		{
+			var locations = new List<IResourceLocation>();
+			var operation = Addressables.LoadResourceLocationsAsync(pLabel);
+			await operation.Task;
+			foreach (var location in operation.Result)
+				locations.Add(location);
+			return locations;
+		}
 
-        public static AsyncOperationHandle DownloadDependenciesAsync(string pAddress, bool pAutoRelease, Action<float> pOnDownload = null, Action pOnComplete = null)
-        {
-            var operation = Addressables.DownloadDependenciesAsync(pAddress, pAutoRelease);
-            WaitLoadTask(operation, pOnDownload, pOnComplete);
-            return operation;
-        }
+		#region Download Dependencies
 
-        public static AsyncOperationHandle DownloadDependenciesAsync(AssetReference pReference, bool pAutoRelease, Action<float> pOnDownload = null, Action pOnComplete = null)
-        {
-            var operation = Addressables.DownloadDependenciesAsync(pReference, pAutoRelease);
-            WaitLoadTask(operation, pOnDownload, pOnComplete);
-            return operation;
-        }
+		public static AsyncOperationHandle DownloadDependenciesAsync(object pKey, bool pAutoRelease, Action pOnComplete,
+			Action<float> pProgress = null)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(pKey, pAutoRelease);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-        public static AsyncOperationHandle<SceneInstance> LoadSceneAsync(string pAddress, LoadSceneMode pMode, Action<float> pProgress = null, Action<SceneInstance> pOnCompleted = null)
-        {
-            var operation = Addressables.LoadSceneAsync(pAddress, pMode);
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static async UniTask DownloadDependenciesAsync(object pKey, bool pAutoRelease)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(pKey, pAutoRelease);
+			await operation;
+		}
 
-        public static AsyncOperationHandle<SceneInstance> UnloadSceneAsync(SceneInstance pScene, Action<float> pProgress = null, Action<bool> pOnCompleted = null)
-        {
-            var operation = Addressables.UnloadSceneAsync(pScene);
-            WaitUnloadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static AsyncOperationHandle DownloadDependenciesAsync(IList<IResourceLocation> locations,
+			bool pAutoRelease, Action pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(locations, pAutoRelease);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-        public static AsyncOperationHandle<TextAsset> LoadTextAssetAsync(string pAddress, Action<float> pProgress = null, Action<TextAsset> pOnCompleted = null)
-        {
-            var operation = Addressables.LoadAssetAsync<TextAsset>(pAddress);
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static async UniTask DownloadDependenciesAsync(IList<IResourceLocation> locations, bool pAutoRelease)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(locations, pAutoRelease);
+			await operation;
+		}
 
-        public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject>(string pAddress, Action<float> pProgress = null, Action<TObject> pOnCompleted = null) where TObject : Object
-        {
-            var operation = Addressables.LoadAssetAsync<TObject>(pAddress);
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static AsyncOperationHandle DownloadDependenciesAsync(string pAddress, bool pAutoRelease,
+			Action pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(pAddress, pAutoRelease);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-        public static AsyncOperationHandle<GameObject> InstantiateAsync(string pAddress, Action<float> pProgress = null, Action<GameObject> pOnCompleted = null)
-        {
-            var operation = Addressables.InstantiateAsync(pAddress);
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static async UniTask DownloadDependenciesAsync(string pAddress, bool pAutoRelease)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(pAddress, pAutoRelease);
+			await operation;
+		}
 
-        public static AsyncOperationHandle<GameObject> InstantiateAsync<TReference>(TReference pReference, Action<float> pProgress = null, Action<GameObject> pOnCompleted = null) where TReference : AssetReference
-        {
-            var operation = pReference.InstantiateAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static AsyncOperationHandle DownloadDependenciesAsync(AssetReference pReference, bool pAutoRelease,
+			Action pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(pReference, pAutoRelease);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-        public static AsyncOperationHandle<GameObject> InstantiateAsync<TComponent, TReference>(TReference pReference, Action<float> pProgress = null, Action<TComponent> pOnCompleted = null) where TComponent : Component where TReference : AssetReference
-        {
-            var operation = pReference.InstantiateAsync();
-            WaitLoadTask(operation, pProgress, (result) =>
-            {
-                result.TryGetComponent(out TComponent component);
-                pOnCompleted?.Invoke(component);
-            });
-            return operation;
-        }
+		public static async UniTask DownloadDependenciesAsync(AssetReference pReference, bool pAutoRelease)
+		{
+			var operation = Addressables.DownloadDependenciesAsync(pReference, pAutoRelease);
+			await operation;
+		}
 
-        //================ Asset Reference
+		#endregion
 
-        public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject, TReference>(TReference pAsset, Action<float> pProgress = null, Action<TObject> pOnCompleted = null) where TObject : Object where TReference : AssetReference
-        {
-            var operation = pAsset.LoadAssetAsync<TObject>();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		#region Load/Unload Scene
 
-        public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject>(AssetReferenceT<TObject> pReference, Action<float> pProgress = null, Action<TObject> pOnCompleted = null) where TObject : Object
-        {
-            var operation = pReference.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static AsyncOperationHandle<SceneInstance> LoadSceneAsync(string pAddress, LoadSceneMode pMode,
+			Action<SceneInstance> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = Addressables.LoadSceneAsync(pAddress, pMode);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-        public static void LoadPrefabAsync<TComponent>(AssetReference pReference, Action<float> pProgress = null, Action<TComponent> pOnCompleted = null) where TComponent : Component
-        {
-            var operation = pReference.LoadAssetAsync<GameObject>();
-            WaitLoadTask(operation, pProgress, (result) =>
-            {
-                result.TryGetComponent(out TComponent component);
-                pOnCompleted?.Invoke(component);
-            });
-        }
+		public static async UniTask<SceneInstance> LoadSceneAsync(string pAddress, LoadSceneMode pMode)
+		{
+			var operation = Addressables.LoadSceneAsync(pAddress, pMode);
+			var result = await operation;
+			return result;
+		}
 
-        public static void LoadPrefabAsync<TComponent>(ComponentRef<TComponent> pReference, Action<float> pProgress = null, Action<TComponent> pOnCompleted = null) where TComponent : Component
-        {
-            var operation = pReference.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, (result) =>
-            {
-                result.TryGetComponent(out TComponent component);
-                pOnCompleted?.Invoke(component);
-            });
-        }
+		public static AsyncOperationHandle<SceneInstance> UnloadSceneAsync(SceneInstance pScene,
+			Action<bool> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = Addressables.UnloadSceneAsync(pScene);
+			WaitUnloadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-        public static AsyncOperationHandle<Sprite> LoadSpriteAsync(AssetReferenceSprite pReference, Action<float> pProgress = null, Action<Sprite> pOnCompleted = null)
-        {
-            var operation = pReference.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static async UniTask<SceneInstance> UnloadSceneAsync(SceneInstance pScene)
+		{
+			var operation = Addressables.UnloadSceneAsync(pScene);
+			var result = await operation;
+			return result;
+		}
 
-        public static AsyncOperationHandle<IList<Sprite>> LoadSpritesAsync(AssetReference pReference, Action<float> pProgress = null, Action<IList<Sprite>> pOnCompleted = null)
-        {
-            var operation = pReference.LoadAssetAsync<IList<Sprite>>();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		#endregion
 
-        public static AsyncOperationHandle<GameObject> LoadGameObjectAsync(AssetReferenceGameObject pAsset, Action<float> pProgress = null, Action<GameObject> pOnCompleted = null)
-        {
-            var operation = pAsset.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		#region Load Assets Generic
 
-        public static AsyncOperationHandle<Texture> LoadTextureAsync(AssetReferenceTexture pReference, Action<float> pProgress = null, Action<Texture> pOnCompleted = null)
-        {
-            var operation = pReference.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static async UniTask<List<TObject>> LoadAssetsAsync<TObject>(List<string> pAddresses)
+			where TObject : Object
+		{
+			var tasks = new List<Task<TObject>>();
+			foreach (var address in pAddresses)
+			{
+				var operation = Addressables.LoadAssetAsync<TObject>(address);
+				tasks.Add(operation.Task);
+			}
 
-        public static AsyncOperationHandle<Texture2D> LoadTexture2DAsync(AssetReferenceTexture2D pReference, Action<float> pProgress = null, Action<Texture2D> pOnCompleted = null)
-        {
-            var operation = pReference.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+			await Task.WhenAll(tasks);
+			var results = new List<TObject>();
+			foreach (var task in tasks)
+				results.Add(task.Result);
+			return results;
+		}
 
-        public static AsyncOperationHandle<Texture3D> LoadTexture3DAsync(AssetReferenceTexture3D pReference, Action<float> pProgress = null, Action<Texture3D> pOnCompleted = null)
-        {
-            var operation = pReference.LoadAssetAsync();
-            WaitLoadTask(operation, pProgress, pOnCompleted);
-            return operation;
-        }
+		public static async UniTask<List<TObject>> LoadAssetsAsync<TObject>(List<AssetReference> pReferences)
+			where TObject : Object
+		{
+			var tasks = new List<Task<TObject>>();
+			foreach (var reference in pReferences)
+			{
+				var operation = reference.LoadAssetAsync<TObject>();
+				tasks.Add(operation.Task);
+			}
 
-        //=========================================================================================================================================
+			await Task.WhenAll(tasks);
+			var results = new List<TObject>();
+			foreach (var task in tasks)
+				results.Add(task.Result);
+			return results;
+		}
 
-        private static void WaitLoadTask(AsyncOperationHandle operation, Action<float> pProgress = null, Action pOnCompleted = null)
-        {
-            WaitUtil.Start(new WaitUtil.ConditionEvent()
-            {
-                triggerCondition = () => operation.IsDone,
-                onUpdate = () =>
-                {
-                    if (pProgress != null)
-                        pProgress(operation.PercentComplete);
-                },
-                onTrigger = () =>
-                {
-                    if (pOnCompleted != null)
-                        pOnCompleted();
+		public static async UniTask<List<TObject>> LoadAssetsAsync<TObject, TReference>(List<TReference> pReferences)
+			where TObject : Object where TReference : AssetReference
+		{
+			var tasks = new List<Task<TObject>>();
+			foreach (var r in pReferences)
+			{
+				var operation = r.LoadAssetAsync<TObject>();
+				tasks.Add(operation.Task);
+			}
 
-                    if (operation.Status == AsyncOperationStatus.Failed)
-                        Debug.LogError("Failed to load asset: " + operation.OperationException.ToString());
-                },
-            });
-        }
+			await Task.WhenAll();
+			var results = new List<TObject>();
+			foreach (var task in tasks)
+				results.Add(task.Result);
+			return results;
+		}
 
-        public static void WaitLoadTask<T>(AsyncOperationHandle<T> operation, Action<float> pProgress = null, Action<T> pOnCompleted = null)
-        {
-            WaitUtil.Start(new WaitUtil.ConditionEvent()
-            {
-                triggerCondition = () => operation.IsDone,
-                onUpdate = () =>
-                {
-                    if (pProgress != null)
-                        pProgress(operation.PercentComplete);
-                },
-                onTrigger = () =>
-                {
-                    try
-                    {
-                        if (pOnCompleted != null)
-                            pOnCompleted(operation.Result);
+		#endregion
 
-                        if (operation.Status == AsyncOperationStatus.Failed)
-                            Debug.LogError("Failed to load asset: " + operation.OperationException.ToString());
-                    }
-                    catch { }
-                },
-            });
-        }
+		#region Instantiate
 
-        private static void WaitUnloadTask<T>(AsyncOperationHandle<T> operation, Action<float> pProgress = null, Action<bool> pOnCompleted = null)
-        {
-            WaitUtil.Start(new WaitUtil.ConditionEvent()
-            {
-                triggerCondition = () => operation.IsDone,
-                onUpdate = () =>
-                {
-                    if (pProgress != null)
-                        pProgress(operation.PercentComplete);
-                },
-                onTrigger = () =>
-                {
-                    if (pOnCompleted != null)
-                        pOnCompleted(true);
+		public static AsyncOperationHandle<GameObject> InstantiateAsync<TReference>(TReference pReference,
+			Action<GameObject> pOnComplete, Action<float> pProgress = null) where TReference : AssetReference
+		{
+			var operation = pReference.InstantiateAsync();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
 
-                    if (operation.Status == AsyncOperationStatus.Failed)
-                        Debug.LogError("Failed to unload asset: " + operation.OperationException.ToString());
-                },
-            });
-        }
+		public static AsyncOperationHandle<GameObject> InstantiateAsync<TComponent, TReference>(TReference pReference,
+			Action<TComponent> pOnComplete, Action<float> pProgress = null) where TComponent : Component
+			where TReference : AssetReference
+		{
+			var operation = pReference.InstantiateAsync();
+			WaitLoadTask(operation, (result) =>
+			{
+				result.TryGetComponent(out TComponent component);
+				pOnComplete?.Invoke(component);
+			}, pProgress);
+			return operation;
+		}
 
-        //================ Wait Async
+		public static async UniTask<GameObject> InstantiateAsync<TReference>(TReference pReference, Transform pParent)
+			where TReference : AssetReference
+		{
+			if (pReference.OperationHandle.IsValid())
+				return pReference.OperationHandle.Convert<GameObject>().Result;
+			var operation = pReference.InstantiateAsync(pParent);
+			var result = await operation;
+			return result;
+		}
 
-        public static async Task<long> GetDownloadSizeAsync(object key)
-        {
-            //Clear all cached AssetBundles
-            ClearDependencyCacheAsync(key);
+		public static async UniTask<GameObject> InstantiateAsync(AssetReference pReference)
+		{
+			var operation = pReference.InstantiateAsync();
+			var result = await operation.Task;
+			return result;
+		}
 
-            //Check the download size
-            var operation = Addressables.GetDownloadSizeAsync(key);
-            await operation.Task;
-            return operation.Result;
-        }
+		public static async UniTask<TComponent> InstantiateAsync<TComponent, TReference>(TReference pReference)
+			where TComponent : Component where TReference : AssetReference
+		{
+			var operation = pReference.InstantiateAsync();
+			var result = await operation;
+			if (result != null && result.TryGetComponent(out TComponent com))
+				return com;
+			return null;
+		}
 
-        public static async Task<AsyncOperationHandle<TObject>> WaitLoadAssetAsync<TObject>(string pAddress) where TObject : Object
-        {
-            var operation = Addressables.LoadAssetAsync<TObject>(pAddress);
-            await operation.Task;
-            return operation;
-        }
+		public static async UniTask<List<GameObject>> InstantiateAsync(IList<IResourceLocation> pLocations)
+		{
+			var tasks = new List<Task<GameObject>>();
+			foreach (var location in pLocations)
+			{
+				var operation = Addressables.InstantiateAsync(location);
+				tasks.Add(operation.Task);
+			}
 
-        public static async Task<List<AsyncOperationHandle<TObject>>> WaitLoadAssetAsync<TObject>(List<string> pAddresses) where TObject : Object
-        {
-            var list = new List<AsyncOperationHandle<TObject>>();
-            foreach (var address in pAddresses)
-            {
-                var operation = Addressables.LoadAssetAsync<TObject>(address);
-                await operation.Task;
-                list.Add(operation);
-            }
-            return list;
-        }
+			await Task.WhenAll(tasks);
+			var results = new List<GameObject>();
+			foreach (var task in tasks)
+				results.Add(task.Result);
+			return results;
+		}
 
-        public static async Task<AsyncOperationHandle<GameObject>> WaitInstantiateAsync(string pAddress)
-        {
-            var operation = Addressables.InstantiateAsync(pAddress);
-            await operation.Task;
-            return operation;
-        }
+		public static async UniTask<List<GameObject>> InstantiateAsync(List<AssetReference> pReferences)
+		{
+			var tasks = new List<Task<GameObject>>();
+			foreach (var preference in pReferences)
+			{
+				var operation = preference.InstantiateAsync();
+				tasks.Add(operation.Task);
+			}
 
-        public static async Task<AsyncOperationHandle<GameObject>> WaitInstantiateAsync(AssetReference pReference)
-        {
-            var operation = pReference.InstantiateAsync();
-            await operation.Task;
-            return operation;
-        }
-        public static async Task<AsyncOperationHandle<GameObject>> WaitInstantiateAsync<M>(M pReference) where M : AssetReference
-        {
-            var operation = pReference.InstantiateAsync();
-            await operation.Task;
-            return operation;
-        }
+			await Task.WhenAll(tasks);
+			var results = new List<GameObject>();
+			foreach (var task in tasks)
+				results.Add(task.Result);
+			return results;
+		}
 
-        public static async Task<List<AsyncOperationHandle<GameObject>>> WaitInstantiateAsync(List<AssetReference> pReferences)
-        {
-            var list = new List<AsyncOperationHandle<GameObject>>();
-            foreach (var preference in pReferences)
-            {
-                var operation = preference.InstantiateAsync();
-                await operation.Task;
-                list.Add(operation);
-            }
-            return list;
-        }
-        public static async Task<List<AsyncOperationHandle<GameObject>>> WaitInstantiateAsync<M>(List<M> pReferences) where M : AssetReference
-        {
-            var list = new List<AsyncOperationHandle<GameObject>>();
-            foreach (var preference in pReferences)
-            {
-                var operation = preference.InstantiateAsync();
-                await operation.Task;
-                list.Add(operation);
-            }
-            return list;
-        }
+		public static async UniTask<List<GameObject>> InstantiateAsync<TReference>(List<TReference> pReferences)
+			where TReference : AssetReference
+		{
+			var tasks = new List<Task<GameObject>>();
+			foreach (var preference in pReferences)
+			{
+				var operation = preference.InstantiateAsync();
+				tasks.Add(operation.Task);
+			}
 
-        public static async Task<List<WrapPrefab<TComponent>>> WaitInstantiateAsync<TComponent>(List<AssetReference> pReferences) where TComponent : Component
-        {
-            var listWraps = new List<WrapPrefab<TComponent>>();
-            foreach (var preference in pReferences)
-            {
-                var operation = preference.InstantiateAsync();
-                await operation.Task;
-                operation.Result.TryGetComponent(out TComponent component);
-                listWraps.Add(new WrapPrefab<TComponent>()
-                {
-                    operation = operation,
-                    prefab = component
-                });
-            }
-            return listWraps;
-        }
-        public static async Task<List<WrapPrefab<TComponent>>> WaitInstantiateAsync<TComponent, M>(List<M> pReferences) where TComponent : Component where M : AssetReference
-        {
-            var listWraps = new List<WrapPrefab<TComponent>>();
-            foreach (var preference in pReferences)
-            {
-                var operation = preference.InstantiateAsync();
-                await operation.Task;
-                operation.Result.TryGetComponent(out TComponent component);
-                listWraps.Add(new WrapPrefab<TComponent>()
-                {
-                    operation = operation,
-                    prefab = component
-                });
-            }
-            return listWraps;
-        }
+			await Task.WhenAll(tasks);
+			var results = new List<GameObject>();
+			foreach (var task in tasks)
+				results.Add(task.Result);
+			return results;
+		}
 
-        public static async Task<WrapPrefab<TComponent>> WaitInstantiateAsync<TComponent>(AssetReference pReference) where TComponent : Component
-        {
-            var wrap = new WrapPrefab<TComponent>();
-            var operation = pReference.InstantiateAsync();
-            await operation.Task;
-            operation.Result.TryGetComponent(out TComponent component);
-            wrap.operation = operation;
-            wrap.prefab = component;
-            return wrap;
-        }
-        public static async Task<WrapPrefab<TComponent>> WaitInstantiateAsync<TComponent, M>(M pReference) where TComponent : Component where M : AssetReference
-        {
-            var wrap = new WrapPrefab<TComponent>();
-            var operation = pReference.InstantiateAsync();
-            await operation.Task;
-            operation.Result.TryGetComponent(out TComponent component);
-            wrap.operation = operation;
-            wrap.prefab = component;
-            return wrap;
-        }
+		#endregion
 
-        public static async Task<AsyncOperationHandle<TObject>> WaitLoadAssetAsync<TObject>(AssetReference pReference) where TObject : Object
-        {
-            var operation = pReference.LoadAssetAsync<TObject>();
-            await operation.Task;
-            return operation;
-        }
-        public static async Task<AsyncOperationHandle<TObject>> WaitLoadAssetAsync<TObject, M>(M pReference) where TObject : Object where M : AssetReference
-        {
-            var operation = pReference.LoadAssetAsync<TObject>();
-            await operation.Task;
-            return operation;
-        }
+		#region Wrap Prefab Handle
 
-        public static async Task<List<AsyncOperationHandle<TObject>>> WaitLoadAssetsAsync<TObject>(List<AssetReference> pReferences) where TObject : Object
-        {
-            var list = new List<AsyncOperationHandle<TObject>>();
-            foreach (var r in pReferences)
-            {
-                var operation = r.LoadAssetAsync<TObject>();
-                await operation.Task;
-                list.Add(operation);
-            }
-            return list;
-        }
-        public static async Task<List<AsyncOperationHandle<TObject>>> WaitLoadAssetsAsync<TObject, M>(List<M> pReferences) where TObject : Object where M : AssetReference
-        {
-            var list = new List<AsyncOperationHandle<TObject>>();
-            foreach (var r in pReferences)
-            {
-                var operation = r.LoadAssetAsync<TObject>();
-                await operation.Task;
-                list.Add(operation);
-            }
-            return list;
-        }
+		public static async UniTask<WrapPrefab<TComponent>>
+			InstantiateAsyncWrap<TComponent, TReference>(TReference pReference) where TComponent : Component
+			where TReference : AssetReference
+		{
+			var wrap = new WrapPrefab<TComponent>();
+			var operation = pReference.InstantiateAsync();
+			await operation.Task;
+			operation.Result.TryGetComponent(out TComponent component);
+			wrap.operation = operation;
+			wrap.prefab = component;
+			return wrap;
+		}
 
-        public static async Task<WrapPrefab<TComponent>> WaitLoadPrefabAsync<TComponent>(AssetReference pReference) where TComponent : Component
-        {
-            var wrap = new WrapPrefab<TComponent>();
-            var operation = pReference.LoadAssetAsync<GameObject>();
-            await operation.Task;
-            operation.Result.TryGetComponent(out TComponent component);
-            wrap.operation = operation;
-            wrap.prefab = component;
-            return wrap;
-        }
-        public static async Task<WrapPrefab<TComponent>> WaitLoadPrefabAsync<TComponent, TReference>(TReference pReference) where TComponent : Component where TReference : AssetReference
-        {
-            var wrap = new WrapPrefab<TComponent>();
-            var operation = pReference.LoadAssetAsync<GameObject>();
-            await operation.Task;
-            operation.Result.TryGetComponent(out TComponent component);
-            wrap.operation = operation;
-            wrap.prefab = component;
-            return wrap;
-        }
+		public static async UniTask<List<WrapPrefab<TComponent>>> InstantiateAsyncWrap<TComponent>(
+			IList<IResourceLocation> pLocations) where TComponent : Component
+		{
+			var tasks = new List<Task<GameObject>>();
+			var operations = new List<AsyncOperationHandle>();
+			foreach (var location in pLocations)
+			{
+				var operation = Addressables.InstantiateAsync(location);
+				tasks.Add(operation.Task);
+				operations.Add(operation);
+			}
 
-        public static async Task<List<WrapPrefab<TComponent>>> WaitLoadPrefabsAsync<TComponent>(List<AssetReference> pReferences) where TComponent : Component
-        {
-            var list = new List<WrapPrefab<TComponent>>();
-            foreach (var r in pReferences)
-            {
-                var operation = r.LoadAssetAsync<GameObject>();
-                await operation.Task;
-                operation.Result.TryGetComponent(out TComponent component);
-                list.Add(new WrapPrefab<TComponent>()
-                {
-                    operation = operation,
-                    prefab = component
-                });
-            }
-            return list;
-        }
-        public static async Task<List<WrapPrefab<TComponent>>> WaitLoadPrefabsAsync<TComponent, TReference>(List<TReference> pReferences) where TComponent : Component where TReference : AssetReference
-        {
-            var list = new List<WrapPrefab<TComponent>>();
-            foreach (var r in pReferences)
-            {
-                var operation = r.LoadAssetAsync<GameObject>();
-                await operation.Task;
-                operation.Result.TryGetComponent(out TComponent component);
-                list.Add(new WrapPrefab<TComponent>()
-                {
-                    operation = operation,
-                    prefab = component
-                });
-            }
-            return list;
-        }
+			await Task.WhenAll(tasks);
+			var list = new List<WrapPrefab<TComponent>>();
+			for (int i = 0; i < tasks.Count; i++)
+			{
+				tasks[i].Result.TryGetComponent(out TComponent component);
+				list.Add(new WrapPrefab<TComponent>()
+				{
+					operation = operations[i],
+					prefab = component
+				});
+			}
 
-        public static async Task<List<IResourceLocation>> WaitLoadResouceLocationAsync(string pLabel)
-        {
-            var localtions = new List<IResourceLocation>();
-            var operation = LoadResourceLocationsAsync(pLabel);
-            await operation.Task;
-            foreach (var localtion in operation.Result)
-                localtions.Add(localtion);
-            return localtions;
-        }
+			return list;
+		}
 
-        public static async Task<List<AsyncOperationHandle<GameObject>>> WaitInstantiateAsync(IList<IResourceLocation> pLocations)
-        {
-            var list = new List<AsyncOperationHandle<GameObject>>();
-            foreach (var location in pLocations)
-            {
-                var operation = Addressables.InstantiateAsync(location);
-                await operation.Task;
-                list.Add(operation);
-            }
-            return list;
-        }
+		public static async UniTask<List<WrapPrefab<TComponent>>> InstantiateAsyncWrap<TComponent>(
+			List<AssetReference> pReferences) where TComponent : Component
+		{
+			var tasks = new List<Task<GameObject>>();
+			var operations = new List<AsyncOperationHandle>();
+			foreach (var preference in pReferences)
+			{
+				var operation = preference.InstantiateAsync();
+				tasks.Add(operation.Task);
+				operations.Add(operation);
+			}
 
-        public static async Task<List<WrapPrefab<TComponent>>> WaitInstantiateAsync<TComponent>(IList<IResourceLocation> pLocations) where TComponent : Component
-        {
-            var list = new List<WrapPrefab<TComponent>>();
-            foreach (var location in pLocations)
-            {
-                var operation = Addressables.InstantiateAsync(location);
-                await operation.Task;
-                operation.Result.TryGetComponent(out TComponent component);
-                list.Add(new WrapPrefab<TComponent>()
-                {
-                    operation = operation,
-                    prefab = component
-                });
-            }
-            return list;
-        }
+			await Task.WhenAll(tasks);
+			var list = new List<WrapPrefab<TComponent>>();
+			for (int i = 0; i < tasks.Count; i++)
+			{
+				tasks[i].Result.TryGetComponent(out TComponent component);
+				list.Add(new WrapPrefab<TComponent>()
+				{
+					operation = operations[i],
+					prefab = component
+				});
+			}
 
-        public static List<TComponent> GetPrefabs<TComponent>(this List<WrapPrefab<TComponent>> wraps) where TComponent : Component
-        {
-            var list = new List<TComponent>();
-            foreach (var wrap in wraps)
-                list.Add(wrap.prefab);
-            return list;
-        }
+			return list;
+		}
 
-        public static List<TObject> GetObjects<TObject>(this List<AsyncOperationHandle<TObject>> operations) where TObject : Object
-        {
-            var list = new List<TObject>();
-            foreach (var operation in operations)
-                list.Add(operation.Result);
-            return list;
-        }
-    }
+		public static async UniTask<List<WrapPrefab<TComponent>>>
+			InstantiateAsyncWrap<TComponent, TReference>(List<TReference> pReferences) where TComponent : Component
+			where TReference : AssetReference
+		{
+			var tasks = new List<Task<GameObject>>();
+			var operations = new List<AsyncOperationHandle>();
+			foreach (var preference in pReferences)
+			{
+				var operation = preference.InstantiateAsync();
+				tasks.Add(operation.Task);
+				operations.Add(operation);
+			}
 
-    public class WrapPrefab<TComponent> where TComponent : Component
-    {
-        public TComponent prefab;
-        public AsyncOperationHandle operation;
-        public void Release()
-        {
-            Addressables.Release(operation);
-        }
-    }
+			await Task.WhenAll(tasks);
+			var list = new List<WrapPrefab<TComponent>>();
+			for (int i = 0; i < tasks.Count; i++)
+			{
+				tasks[i].Result.TryGetComponent(out TComponent component);
+				list.Add(new WrapPrefab<TComponent>()
+				{
+					operation = operations[i],
+					prefab = component
+				});
+			}
+
+			return list;
+		}
+
+		public static async UniTask<WrapPrefab<TComponent>> InstantiateAsyncWrap<TComponent>(AssetReference pReference)
+			where TComponent : Component
+		{
+			var wrap = new WrapPrefab<TComponent>();
+			var operation = pReference.InstantiateAsync();
+			await operation.Task;
+			operation.Result.TryGetComponent(out TComponent component);
+			wrap.operation = operation;
+			wrap.prefab = component;
+			return wrap;
+		}
+
+		public static async UniTask<WrapPrefab<TComponent>> LoadPrefabAsyncWrap<TComponent>(AssetReference pReference)
+			where TComponent : Component
+		{
+			var wrap = new WrapPrefab<TComponent>();
+			var operation = pReference.LoadAssetAsync<GameObject>();
+			await operation.Task;
+			operation.Result.TryGetComponent(out TComponent component);
+			wrap.operation = operation;
+			wrap.prefab = component;
+			return wrap;
+		}
+
+		public static async UniTask<WrapPrefab<TComponent>>
+			LoadPrefabAsyncWrap<TComponent, TReference>(TReference pReference) where TComponent : Component
+			where TReference : AssetReference
+		{
+			var wrap = new WrapPrefab<TComponent>();
+			var operation = pReference.LoadAssetAsync<GameObject>();
+			await operation.Task;
+			operation.Result.TryGetComponent(out TComponent component);
+			wrap.operation = operation;
+			wrap.prefab = component;
+			return wrap;
+		}
+
+		public static async UniTask<List<WrapPrefab<TComponent>>> LoadPrefabsAsyncWrap<TComponent>(
+			List<AssetReference> pReferences) where TComponent : Component
+		{
+			var tasks = new List<Task<GameObject>>();
+			var operations = new List<AsyncOperationHandle>();
+			foreach (var reference in pReferences)
+			{
+				var operation = reference.LoadAssetAsync<GameObject>();
+				tasks.Add(operation.Task);
+				operations.Add(operation);
+			}
+
+			await Task.WhenAll(tasks);
+			var list = new List<WrapPrefab<TComponent>>();
+			for (int i = 0; i < tasks.Count; i++)
+			{
+				tasks[i].Result.TryGetComponent(out TComponent component);
+				list.Add(new WrapPrefab<TComponent>()
+				{
+					operation = operations[i],
+					prefab = component
+				});
+			}
+
+			return list;
+		}
+
+		public static async UniTask<List<WrapPrefab<TComponent>>>
+			LoadPrefabsAsyncWrap<TComponent, TReference>(List<TReference> pReferences) where TComponent : Component
+			where TReference : AssetReference
+		{
+			var tasks = new List<Task<GameObject>>();
+			var operations = new List<AsyncOperationHandle>();
+			foreach (var reference in pReferences)
+			{
+				var operation = reference.LoadAssetAsync<GameObject>();
+				tasks.Add(operation.Task);
+				operations.Add(operation);
+			}
+
+			await Task.WhenAll(tasks);
+			var list = new List<WrapPrefab<TComponent>>();
+			for (int i = 0; i < tasks.Count; i++)
+			{
+				tasks[i].Result.TryGetComponent(out TComponent component);
+				list.Add(new WrapPrefab<TComponent>()
+				{
+					operation = operations[i],
+					prefab = component
+				});
+			}
+
+			return list;
+		}
+
+		#endregion
+
+		#region Load Asset Generic
+
+		public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject>(string pAddress,
+			Action<TObject> pOnComplete, Action<float> pProgress = null) where TObject : Object
+		{
+			var operation = Addressables.LoadAssetAsync<TObject>(pAddress);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<TObject> LoadAssetAsync<TObject>(string pAddress) where TObject : Object
+		{
+			var operation = Addressables.LoadAssetAsync<TObject>(pAddress);
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject, TReference>(TReference pAsset,
+			Action<TObject> pOnComplete, Action<float> pProgress = null)
+			where TObject : Object where TReference : AssetReference
+		{
+			var operation = pAsset.LoadAssetAsync<TObject>();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<TObject> LoadAssetAsync<TObject, TReference>(TReference pReference)
+			where TObject : Object where TReference : AssetReference
+		{
+			if (pReference.OperationHandle.IsValid())
+				return pReference.OperationHandle.Convert<TObject>().Result;
+
+			var operation = pReference.LoadAssetAsync<TObject>();
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject>(AssetReferenceT<TObject> pReference,
+			Action<TObject> pOnComplete, Action<float> pProgress = null) where TObject : Object
+		{
+			var operation = pReference.LoadAssetAsync();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<TObject> LoadAssetAsync<TObject>(AssetReferenceT<TObject> pReference)
+			where TObject : Object
+		{
+			if (pReference.OperationHandle.IsValid())
+				return pReference.OperationHandle.Convert<TObject>().Result;
+
+			var operation = pReference.LoadAssetAsync();
+			var result = await operation;
+			return result;
+		}
+
+		public static async UniTask<TObject> LoadAssetAsync<TObject>(AssetReference pReference) where TObject : Object
+		{
+			if (pReference.OperationHandle.IsValid())
+				return pReference.OperationHandle.Convert<TObject>().Result;
+
+			var operation = pReference.LoadAssetAsync<TObject>();
+			var result = await operation.Task;
+			return result;
+		}
+
+		#endregion
+
+		#region Load Prefab
+
+		public static async UniTask<TComponent> LoadPrefabAsync<TComponent>(AssetReference pReference)
+			where TComponent : Component
+		{
+			if (pReference.OperationHandle.IsValid())
+			{
+				var result = pReference.OperationHandle.Convert<GameObject>().Result;
+				if (result != null && result.TryGetComponent(out TComponent component))
+					return component;
+			}
+			else
+			{
+				var operation = pReference.LoadAssetAsync<GameObject>();
+				var result = await operation;
+				if (result != null && result.TryGetComponent(out TComponent component))
+					return component;
+			}
+
+			return null;
+		}
+
+		public static async UniTask<TComponent> LoadPrefabAsync<TComponent>(ComponentRef<TComponent> pReference)
+			where TComponent : Component
+		{
+			if (pReference.OperationHandle.IsValid())
+			{
+				var result = pReference.OperationHandle.Convert<GameObject>().Result;
+				if (result != null && result.TryGetComponent(out TComponent component))
+					return component;
+			}
+			else
+			{
+				var operation = pReference.LoadAssetAsync<GameObject>();
+				var result = await operation;
+				if (result != null && result.TryGetComponent(out TComponent component))
+					return component;
+			}
+
+			return null;
+		}
+
+		public static async UniTask<GameObject> LoadGameObjectAsync(AssetReferenceGameObject pReference)
+		{
+			if (pReference.OperationHandle.IsValid())
+				return pReference.OperationHandle.Convert<GameObject>().Result;
+
+			var operation = pReference.LoadAssetAsync();
+			var result = await operation;
+			return result;
+		}
+
+		#endregion
+
+		#region Load Asset
+
+		public static AsyncOperationHandle<TextAsset> LoadTextAssetAsync(string pAddress, Action<TextAsset> pOnComplete,
+			Action<float> pProgress = null)
+		{
+			var operation = Addressables.LoadAssetAsync<TextAsset>(pAddress);
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<TextAsset> LoadTextAssetAsync(string pAddress)
+		{
+			var operation = Addressables.LoadAssetAsync<TextAsset>(pAddress);
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<Sprite> LoadSpriteAsync(AssetReferenceSprite pReference,
+			Action<Sprite> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = pReference.LoadAssetAsync();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<Sprite> LoadSpriteAsync(AssetReferenceSprite pReference)
+		{
+			var operation = pReference.LoadAssetAsync();
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<IList<Sprite>> LoadSpritesAsync(AssetReference pReference,
+			Action<IList<Sprite>> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = pReference.LoadAssetAsync<IList<Sprite>>();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<IList<Sprite>> LoadSpritesAsync(AssetReference pReference)
+		{
+			var operation = pReference.LoadAssetAsync<IList<Sprite>>();
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<Texture> LoadTextureAsync(AssetReferenceTexture pReference,
+			Action<Texture> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = pReference.LoadAssetAsync();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<Texture> LoadTextureAsync(AssetReferenceTexture pReference)
+		{
+			var operation = pReference.LoadAssetAsync();
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<Texture2D> LoadTexture2DAsync(AssetReferenceTexture2D pReference,
+			Action<Texture2D> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = pReference.LoadAssetAsync();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<Texture2D> LoadTexture2DAsync(AssetReferenceTexture2D pReference)
+		{
+			var operation = pReference.LoadAssetAsync();
+			var result = await operation;
+			return result;
+		}
+
+		public static AsyncOperationHandle<Texture3D> LoadTexture3DAsync(AssetReferenceTexture3D pReference,
+			Action<Texture3D> pOnComplete, Action<float> pProgress = null)
+		{
+			var operation = pReference.LoadAssetAsync();
+			WaitLoadTask(operation, pOnComplete, pProgress);
+			return operation;
+		}
+
+		public static async UniTask<Texture3D> LoadTexture3DAsync(AssetReferenceTexture3D pReference)
+		{
+			var operation = pReference.LoadAssetAsync();
+			var result = await operation;
+			return result;
+		}
+
+		#endregion
+
+		#region Tasks Handle
+
+		private static async UniTask WaitLoadTask(AsyncOperationHandle operation, Action pOnComplete)
+		{
+			await operation;
+			pOnComplete?.Invoke();
+
+			if (operation.Status == AsyncOperationStatus.Failed)
+				Debug.LogError("Failed to load asset: " + operation.OperationException);
+		}
+
+		private static void WaitLoadTask(AsyncOperationHandle operation, Action pOnComplete, Action<float> pProgress)
+		{
+			if (pProgress == null)
+			{
+				WaitLoadTask(operation, pOnComplete);
+				return;
+			}
+
+			WaitUtil.Start(new WaitUtil.ConditionEvent()
+			{
+				triggerCondition = () => operation.IsDone,
+				onUpdate = () => { pProgress(operation.PercentComplete); },
+				onTrigger = () =>
+				{
+					pOnComplete?.Invoke();
+
+					if (operation.Status == AsyncOperationStatus.Failed)
+						Debug.LogError("Failed to load asset: " + operation.OperationException);
+				},
+			});
+		}
+
+		private static async UniTask WaitLoadTask<T>(AsyncOperationHandle<T> operation, Action<T> pOnComplete)
+		{
+			var result = await operation;
+			pOnComplete?.Invoke(result);
+
+			if (operation.Status == AsyncOperationStatus.Failed)
+				Debug.LogError("Failed to load asset: " + operation.OperationException);
+		}
+
+		private static void WaitLoadTask<T>(AsyncOperationHandle<T> operation, Action<T> pOnComplete,
+			Action<float> pProgress)
+		{
+			if (pProgress == null)
+			{
+				WaitLoadTask(operation, pOnComplete);
+				return;
+			}
+
+			WaitUtil.Start(new WaitUtil.ConditionEvent()
+			{
+				triggerCondition = () => operation.IsDone,
+				onUpdate = () => { pProgress(operation.PercentComplete); },
+				onTrigger = () =>
+				{
+					try
+					{
+						pOnComplete?.Invoke(operation.Result);
+
+						if (operation.Status == AsyncOperationStatus.Failed)
+							Debug.LogError("Failed to load asset: " + operation.OperationException);
+					}
+					catch
+					{
+						// ignored
+					}
+				},
+			});
+		}
+
+		private static async UniTask WaitUnloadTask<T>(AsyncOperationHandle<T> operation, Action<bool> pOnComplete)
+		{
+			await operation;
+			pOnComplete?.Invoke(operation.Status == AsyncOperationStatus.Succeeded);
+
+			if (operation.Status == AsyncOperationStatus.Failed)
+				Debug.LogError("Failed to unload asset: " + operation.OperationException);
+		}
+
+		private static void WaitUnloadTask<T>(AsyncOperationHandle<T> operation, Action<bool> pOnComplete,
+			Action<float> pProgress)
+		{
+			if (pProgress == null)
+			{
+				WaitUnloadTask(operation, pOnComplete);
+				return;
+			}
+
+			WaitUtil.Start(new WaitUtil.ConditionEvent()
+			{
+				triggerCondition = () => operation.IsDone,
+				onUpdate = () => { pProgress(operation.PercentComplete); },
+				onTrigger = () =>
+				{
+					pOnComplete?.Invoke(operation.Status == AsyncOperationStatus.Succeeded);
+
+					if (operation.Status == AsyncOperationStatus.Failed)
+						Debug.LogError("Failed to unload asset: " + operation.OperationException);
+				},
+			});
+		}
+
+		#endregion
+
+		#region Extensions
+
+		public static List<TComponent> GetPrefabsWrap<TComponent>(this List<WrapPrefab<TComponent>> wraps)
+			where TComponent : Component
+		{
+			var list = new List<TComponent>();
+			foreach (var wrap in wraps)
+				list.Add(wrap.prefab);
+			return list;
+		}
+
+		public static List<TObject> GetObjects<TObject>(this List<AsyncOperationHandle<TObject>> operations)
+			where TObject : Object
+		{
+			var list = new List<TObject>();
+			foreach (var operation in operations)
+				list.Add(operation.Result);
+			return list;
+		}
+
+		#endregion
+	}
+
+	public class WrapPrefab<TComponent> where TComponent : Component
+	{
+		public TComponent prefab;
+		public AsyncOperationHandle operation;
+
+		public void Release()
+		{
+			Addressables.Release(operation);
+		}
+	}
 #endif
 }

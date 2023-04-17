@@ -276,7 +276,7 @@ namespace RCore.Common
 			if (m_Parent == null)
 			{
 				GameObject temp = new GameObject();
-				temp.name = string.Format("Pool_{0}", m_Name);
+				temp.name = $"Pool_{m_Name}";
 				m_Parent = temp.transform;
 			}
 

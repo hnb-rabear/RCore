@@ -21,7 +21,7 @@ namespace RCore.Framework.Data
         [MenuItem("RUtilities/Data/Clear PlayerPrefs")]
         private static void ClearPlayerPrefs()
         {
-            EditorHelper.ConfimPopup(() => { PlayerPrefs.DeleteAll(); });
+            EditorHelper.ConfirmPopup(() => { PlayerPrefs.DeleteAll(); });
         }
 
         /*

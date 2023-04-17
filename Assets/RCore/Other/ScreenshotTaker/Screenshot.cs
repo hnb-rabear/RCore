@@ -175,7 +175,7 @@ public class Screenshot : EditorWindow
 			string filename = ScreenShotName(resWidthN, resHeightN);
 
 			System.IO.File.WriteAllBytes(filename, bytes);
-			Debug.Log(string.Format("Took screenshot to: {0}", filename));
+			Debug.Log($"Took screenshot to: {filename}");
 			Application.OpenURL(filename);
 			takeHiResShot = false;
 		}
@@ -196,10 +196,7 @@ public class Screenshot : EditorWindow
 
 		string strPath = "";
 
-		strPath = string.Format("{0}/screen_{1}x{2}_{3}.png",
-							 path,
-							 width, height,
-									   System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
+		strPath = $"{path}/screen_{width}x{height}_{System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png";
 		lastScreenshot = strPath;
 
 		return strPath;

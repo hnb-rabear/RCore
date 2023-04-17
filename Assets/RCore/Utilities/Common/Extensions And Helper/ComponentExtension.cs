@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace RCore.Common
 {
@@ -46,7 +45,7 @@ namespace RCore.Common
 
 		public static List<T> SortByName<T>(this List<T> objects) where T : UnityEngine.Object
 		{
-			return objects = objects.OrderBy(m => m.name).ToList();
+			return objects.OrderBy(m => m.name).ToList();
 		}
 
 		public static void SetParent(this Component target, Transform parent)
@@ -196,7 +195,7 @@ namespace RCore.Common
 
 		public static GameObject FindChildObject(this GameObject objRoot, string pName, bool pContain = false)
 		{
-			GameObject obj = null;
+			GameObject obj;
 			bool found = !pContain ? (objRoot.name.ToLower() == pName.ToLower()) : (objRoot.name.ToLower().Contains(pName.ToLower()));
 			if (found)
 			{
@@ -302,7 +301,7 @@ namespace RCore.Common
 			}
 
 			GameObject temp = UnityEngine.Object.Instantiate(pool[0].gameObject, parent);
-			temp.name = name == null ? string.Format("{0}_{1}", pool[0].name, (pool.Count() + 1)) : name;
+			temp.name = name == null ? $"{pool[0].name}_{(pool.Count() + 1)}" : name;
 			temp.transform.localPosition = Vector3.zero;
 #if UNITY_2019_2_OR_NEWER
 			temp.TryGetComponent(out T t);

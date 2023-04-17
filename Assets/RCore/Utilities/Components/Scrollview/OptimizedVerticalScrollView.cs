@@ -293,7 +293,7 @@ namespace RCore.Components
             {
                 base.OnInspectorGUI();
 
-                EditorHelper.SeperatorBox();
+                EditorHelper.SeparatorBox();
                 mTestIndex = EditorHelper.IntField(mTestIndex, "Test Index");
 
                 if (EditorHelper.Button("Move To Top"))

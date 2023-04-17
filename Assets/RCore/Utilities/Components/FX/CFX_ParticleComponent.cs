@@ -652,7 +652,7 @@ namespace RCore.Components
 			{
 				base.OnInspectorGUI();
 
-				EditorHelper.Seperator();
+				EditorHelper.Separator();
 
 				EditorHelper.BoxHorizontal(() =>
 				{
