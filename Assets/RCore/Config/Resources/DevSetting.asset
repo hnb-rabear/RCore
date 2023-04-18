@@ -20,13 +20,13 @@ MonoBehaviour:
     defines:
     - name: DEVELOPMENT
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: UNITY_IAP
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: UNITY_MONETIZATION
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: USE_DOTWEEN
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
@@ -35,31 +35,31 @@ MonoBehaviour:
       enabled: 1
     - name: ACTIVE_FIREBASE_ANALYTICS
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_CRASHLYTICS
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_REMOTE
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_MESSAGING
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_FIRESTORE
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_AUTH
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_DATABASE
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: ACTIVE_FIREBASE_STORAGE
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
+      enabled: 0
     - name: GPGS
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
@@ -151,5 +151,14 @@ MonoBehaviour:
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
     - name: MIRROR_66_0_OR_NEWER
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ENABLE_VOXELBUSTERS_ESSENTIAL_KIT
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: UNITY_POST_PROCESSING_STACK_V2
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
