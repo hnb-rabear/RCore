@@ -1,11 +1,6 @@
 ﻿//#define USE_DOTWEEN
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
-using System;
-using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -25,7 +20,7 @@ namespace RCore.Components
         #region Members
 
         private static HybirdAudioManager mInstance;
-        public static HybirdAudioManager Instance { get { return mInstance; } }
+        public static HybirdAudioManager Instance => mInstance;
 
         #endregion
 
@@ -120,7 +115,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
 
         [CustomEditor(typeof(HybirdAudioManager))]
-        protected class HybirdAudioManagerEditor : BaseAudioManager.BaseAudioManagerEditor
+        protected class HybirdAudioManagerEditor : BaseAudioManagerEditor
         {
             public override void OnInspectorGUI()
             {

@@ -3,8 +3,6 @@
 *  Copyright (c) 2017 RedAntz. All rights reserved.
 */
 using System;
-using System.Runtime.InteropServices;
-using UnityEngine;
 
 namespace RCore.Common
 {
@@ -16,7 +14,7 @@ namespace RCore.Common
         {
             var ticks = System.Diagnostics.Stopwatch.GetTimestamp();
             var uptime = ((double)ticks) / System.Diagnostics.Stopwatch.Frequency;
-            var uptimeSpan = System.TimeSpan.FromSeconds(uptime);
+            var uptimeSpan = TimeSpan.FromSeconds(uptime);
             //
             double miliSeconds = uptimeSpan.TotalMilliseconds;
             //

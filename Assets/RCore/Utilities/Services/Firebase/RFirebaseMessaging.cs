@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 #if ACTIVE_FIREBASE_MESSAGING
 using Firebase.Messaging;
 #endif
-using System.Threading.Tasks;
-using RCore.Common;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Service
 {

@@ -40,10 +40,7 @@ namespace RCore.Common
                 scale.x = value;
                 mSprProgressBarValue.transform.localScale = scale;
             }
-            get
-            {
-                return mSprProgressBarValue.transform.localScale.x;
-            }
+            get => mSprProgressBarValue.transform.localScale.x;
         }
         public void SetActive(bool pValue)
         {
@@ -51,22 +48,17 @@ namespace RCore.Common
         }
         public Color bgColor
         {
-            get { return sprProgressBar.color; }
-            set { sprProgressBar.color = value; }
+            get => sprProgressBar.color;
+            set => sprProgressBar.color = value;
         }
         public Color valueColor
         {
-            get { return mSprProgressBarValue.color; }
-            set { mSprProgressBarValue.color = value; }
+            get => mSprProgressBarValue.color;
+            set => mSprProgressBarValue.color = value;
         }
-        public Transform transform
-        {
-            get { return sprProgressBar.transform; }
-        }
-        public GameObject gameObject
-        {
-            get { return sprProgressBar.gameObject; }
-        }
+        public Transform transform => sprProgressBar.transform;
+
+        public GameObject gameObject => sprProgressBar.gameObject;
     }
 
 #if UNITY_EDITOR

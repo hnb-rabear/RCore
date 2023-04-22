@@ -24,7 +24,7 @@ public class Screenshot : EditorWindow
 	public static void ShowWindow()
 	{
 		//Show existing window instance. If one doesn't exist, make one.
-		EditorWindow editorWindow = EditorWindow.GetWindow(typeof(Screenshot));
+		EditorWindow editorWindow = GetWindow(typeof(Screenshot));
 		editorWindow.autoRepaintOnSceneChange = true;
 		editorWindow.Show();
 		editorWindow.titleContent = new GUIContent("Screenshot");

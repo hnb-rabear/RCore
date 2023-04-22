@@ -3,8 +3,6 @@
  **/
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RCore.Common
@@ -18,7 +16,7 @@ namespace RCore.Common
             {
                 if (mInstance == null)
                 {
-                    mInstance = GameObject.FindObjectOfType<Benchmark>();
+                    mInstance = FindObjectOfType<Benchmark>();
                     if (mInstance == null)
                     {
                         var obj = new GameObject("Benchmark");

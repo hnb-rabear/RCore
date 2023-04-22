@@ -16,8 +16,8 @@ namespace RCore.Common
         public T defaultAsset;
         public T this[int index]
         {
-            get { return GetAsset(index); }
-            set { source[index] = value; }
+            get => GetAsset(index);
+            set => source[index] = value;
         }
 
         public AssetsList() { }

@@ -381,8 +381,8 @@ namespace RCore.Components
 #endif
                 }
             }
-            if (onFinish != null)
-                onFinish();
+
+            onFinish?.Invoke();
         }
 
         private IEnumerator IEArrangeChildren(List<Transform> pObjs, Vector3[] pChildrenPrePosition, Vector3[] pChildrenNewPosition, float pDuration)

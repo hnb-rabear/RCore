@@ -3,11 +3,6 @@ using Firebase;
 using Firebase.Database;
 #endif
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEngine;
-using RCore.Common;
 
 namespace RCore.Service
 {

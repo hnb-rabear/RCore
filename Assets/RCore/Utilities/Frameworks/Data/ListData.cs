@@ -31,17 +31,14 @@ namespace RCore.Framework.Data
             }
         }
 
-        public int Count
-        {
-            get { return mValues == null ? 0 : mValues.Count; }
-        }
+        public int Count => mValues == null ? 0 : mValues.Count;
 
         /// <summary>
         /// NOTE: use this carefully because we can not detect the change made in an element
         /// </summary>
         public T this[int index]
         {
-            get { return mValues[index]; }
+            get => mValues[index];
             set
             {
                 mValues[index] = value;

@@ -30,11 +30,21 @@ namespace RCore.Framework.Data
 		[JsonProperty] [SerializeField] protected int l;
 		[JsonProperty] [SerializeField] protected int q;
 
-		[JsonIgnore] public int Id { get { return id; } set { id = value; } }
-		[JsonIgnore] public int BaseId { get { return b; } set { b = value; } }
-		[JsonIgnore] public int Rarity { get { return r; } set { r = value; } }
-		[JsonIgnore] public int Level { get { return l; } set { l = value; } }
-		[JsonIgnore] public int Quantity { get { return q; } set { q = value; } }
+		[JsonIgnore] public int Id { get => id;
+			set => id = value;
+		}
+		[JsonIgnore] public int BaseId { get => b;
+			set => b = value;
+		}
+		[JsonIgnore] public int Rarity { get => r;
+			set => r = value;
+		}
+		[JsonIgnore] public int Level { get => l;
+			set => l = value;
+		}
+		[JsonIgnore] public int Quantity { get => q;
+			set => q = value;
+		}
 
 		/// <summary>
 		/// Example:
@@ -78,8 +88,8 @@ namespace RCore.Framework.Data
 		public int Count => m_Items.Count;
 		public T this[int index]
 		{
-			get { return m_Items[index]; }
-			set { m_Items[index] = value; }
+			get => m_Items[index];
+			set => m_Items[index] = value;
 		}
 
 		public InventoryData(int pId) : base(pId)
@@ -211,7 +221,7 @@ namespace RCore.Framework.Data
 					if (m_Items[i].Id == pId)
 						return m_Items[i];
 			}
-			return default(T);
+			return default;
 		}
 
 		public void RemoveBuzzId(int pId)

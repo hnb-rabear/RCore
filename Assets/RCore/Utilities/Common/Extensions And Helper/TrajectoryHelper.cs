@@ -38,7 +38,7 @@ namespace RCore.Common
         /// <param name="targetRelativePosition">Position of target relative to shooter</param>
         /// <param name="targetRelativeVelocity">Current velocity of target relative to shooter</param>
         /// <returns>First order intercept</returns>
-        public static float CalcInterceptTime(float shotSpeed, Vector3 targetRelativePosition, Vector3 targetRelativeVelocity = default(Vector3))
+        public static float CalcInterceptTime(float shotSpeed, Vector3 targetRelativePosition, Vector3 targetRelativeVelocity = default)
         {
             float velocitySquared = targetRelativeVelocity.sqrMagnitude;
             if (velocitySquared < 0.001f)

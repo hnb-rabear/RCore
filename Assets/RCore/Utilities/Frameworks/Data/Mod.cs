@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace RCore.Framework.Data
 {
@@ -12,8 +10,8 @@ namespace RCore.Framework.Data
 		public float[] values;
 		public float value
 		{
-			get { return values[0]; }
-			set { values[0] = value; }
+			get => values[0];
+			set => values[0] = value;
 		}
 		public Mod(Mod pOther)
 		{

@@ -210,18 +210,19 @@ namespace SimpleJSON
             private Type type;
             private Dictionary<string, JSONNode>.Enumerator m_Object;
             private List<JSONNode>.Enumerator m_Array;
-            public bool IsValid { get { return type != Type.None; } }
+            public bool IsValid => type != Type.None;
+
             public Enumerator(List<JSONNode>.Enumerator aArrayEnum)
             {
                 type = Type.Array;
-                m_Object = default(Dictionary<string, JSONNode>.Enumerator);
+                m_Object = default;
                 m_Array = aArrayEnum;
             }
             public Enumerator(Dictionary<string, JSONNode>.Enumerator aDictEnum)
             {
                 type = Type.Object;
                 m_Object = aDictEnum;
-                m_Array = default(List<JSONNode>.Enumerator);
+                m_Array = default;
             }
             public KeyValuePair<string, JSONNode> Current
             {
@@ -249,7 +250,7 @@ namespace SimpleJSON
             public ValueEnumerator(List<JSONNode>.Enumerator aArrayEnum) : this(new Enumerator(aArrayEnum)) { }
             public ValueEnumerator(Dictionary<string, JSONNode>.Enumerator aDictEnum) : this(new Enumerator(aDictEnum)) { }
             public ValueEnumerator(Enumerator aEnumerator) { m_Enumerator = aEnumerator; }
-            public JSONNode Current { get { return m_Enumerator.Current.Value; } }
+            public JSONNode Current => m_Enumerator.Current.Value;
             public bool MoveNext() { return m_Enumerator.MoveNext(); }
             public ValueEnumerator GetEnumerator() { return this; }
         }
@@ -259,7 +260,7 @@ namespace SimpleJSON
             public KeyEnumerator(List<JSONNode>.Enumerator aArrayEnum) : this(new Enumerator(aArrayEnum)) { }
             public KeyEnumerator(Dictionary<string, JSONNode>.Enumerator aDictEnum) : this(new Enumerator(aDictEnum)) { }
             public KeyEnumerator(Enumerator aEnumerator) { m_Enumerator = aEnumerator; }
-            public JSONNode Current { get { return m_Enumerator.Current.Key; } }
+            public JSONNode Current => m_Enumerator.Current.Key;
             public bool MoveNext() { return m_Enumerator.MoveNext(); }
             public KeyEnumerator GetEnumerator() { return this; }
         }
@@ -274,8 +275,8 @@ namespace SimpleJSON
                 if (m_Node != null)
                     m_Enumerator = m_Node.GetEnumerator();
             }
-            public KeyValuePair<string, JSONNode> Current { get { return m_Enumerator.Current; } }
-            object IEnumerator.Current { get { return m_Enumerator.Current; } }
+            public KeyValuePair<string, JSONNode> Current => m_Enumerator.Current;
+            object IEnumerator.Current => m_Enumerator.Current;
             public bool MoveNext() { return m_Enumerator.MoveNext(); }
 
             public void Dispose()
@@ -309,22 +310,26 @@ namespace SimpleJSON
 
         public abstract JSONNodeType Tag { get; }
 
-        public virtual JSONNode this[int aIndex] { get { return null; } set { } }
+        public virtual JSONNode this[int aIndex] { get => null;
+            set { } }
 
-        public virtual JSONNode this[string aKey] { get { return null; } set { } }
+        public virtual JSONNode this[string aKey] { get => null;
+            set { } }
 
-        public virtual string Value { get { return ""; } set { } }
+        public virtual string Value { get => "";
+            set { } }
 
-        public virtual int Count { get { return 0; } }
+        public virtual int Count => 0;
 
-        public virtual bool IsNumber { get { return false; } }
-        public virtual bool IsString { get { return false; } }
-        public virtual bool IsBoolean { get { return false; } }
-        public virtual bool IsNull { get { return false; } }
-        public virtual bool IsArray { get { return false; } }
-        public virtual bool IsObject { get { return false; } }
+        public virtual bool IsNumber => false;
+        public virtual bool IsString => false;
+        public virtual bool IsBoolean => false;
+        public virtual bool IsNull => false;
+        public virtual bool IsArray => false;
+        public virtual bool IsObject => false;
 
-        public virtual bool Inline { get { return false; } set { } }
+        public virtual bool Inline { get => false;
+            set { } }
 
         public virtual void Add(string aKey, JSONNode aItem)
         {
@@ -383,9 +388,9 @@ namespace SimpleJSON
         internal abstract void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode);
 
         public abstract Enumerator GetEnumerator();
-        public IEnumerable<KeyValuePair<string, JSONNode>> Linq { get { return new LinqEnumerator(this); } }
-        public KeyEnumerator Keys { get { return new KeyEnumerator(GetEnumerator()); } }
-        public ValueEnumerator Values { get { return new ValueEnumerator(GetEnumerator()); } }
+        public IEnumerable<KeyValuePair<string, JSONNode>> Linq => new LinqEnumerator(this);
+        public KeyEnumerator Keys => new(GetEnumerator());
+        public ValueEnumerator Values => new(GetEnumerator());
 
         #endregion common interface
 
@@ -401,22 +406,19 @@ namespace SimpleJSON
                     return v;
                 return 0.0;
             }
-            set
-            {
-                Value = value.ToString();
-            }
+            set => Value = value.ToString();
         }
 
         public virtual int AsInt
         {
-            get { return (int)AsDouble; }
-            set { AsDouble = value; }
+            get => (int)AsDouble;
+            set => AsDouble = value;
         }
 
         public virtual float AsFloat
         {
-            get { return (float)AsDouble; }
-            set { AsDouble = value; }
+            get => (float)AsDouble;
+            set => AsDouble = value;
         }
 
         public virtual bool AsBool
@@ -428,28 +430,12 @@ namespace SimpleJSON
                     return v;
                 return !string.IsNullOrEmpty(Value);
             }
-            set
-            {
-                Value = (value) ? "true" : "false";
-            }
+            set => Value = (value) ? "true" : "false";
         }
 
-        public virtual JSONArray AsArray
-        {
-            get
-            {
-                return this as JSONArray;
-            }
-        }
+        public virtual JSONArray AsArray => this as JSONArray;
 
-        public virtual JSONObject AsObject
-        {
-            get
-            {
-                return this as JSONObject;
-            }
-        }
-
+        public virtual JSONObject AsObject => this as JSONObject;
 
         #endregion typecasting properties
 
@@ -784,12 +770,12 @@ namespace SimpleJSON
         private bool inline = false;
         public override bool Inline
         {
-            get { return inline; }
-            set { inline = value; }
+            get => inline;
+            set => inline = value;
         }
 
-        public override JSONNodeType Tag { get { return JSONNodeType.Array; } }
-        public override bool IsArray { get { return true; } }
+        public override JSONNodeType Tag => JSONNodeType.Array;
+        public override bool IsArray => true;
         public override Enumerator GetEnumerator() { return new Enumerator(m_List.GetEnumerator()); }
 
         public override JSONNode this[int aIndex]
@@ -813,7 +799,7 @@ namespace SimpleJSON
 
         public override JSONNode this[string aKey]
         {
-            get { return new JSONLazyCreator(this); }
+            get => new JSONLazyCreator(this);
             set
             {
                 if (value == null)
@@ -822,10 +808,7 @@ namespace SimpleJSON
             }
         }
 
-        public override int Count
-        {
-            get { return m_List.Count; }
-        }
+        public override int Count => m_List.Count;
 
         public override void Add(string aKey, JSONNode aItem)
         {
@@ -890,12 +873,12 @@ namespace SimpleJSON
         private bool inline = false;
         public override bool Inline
         {
-            get { return inline; }
-            set { inline = value; }
+            get => inline;
+            set => inline = value;
         }
 
-        public override JSONNodeType Tag { get { return JSONNodeType.Object; } }
-        public override bool IsObject { get { return true; } }
+        public override JSONNodeType Tag => JSONNodeType.Object;
+        public override bool IsObject => true;
 
         public override Enumerator GetEnumerator() { return new Enumerator(m_Dict.GetEnumerator()); }
 
@@ -939,10 +922,7 @@ namespace SimpleJSON
             }
         }
 
-        public override int Count
-        {
-            get { return m_Dict.Count; }
-        }
+        public override int Count => m_Dict.Count;
 
         public override void Add(string aKey, JSONNode aItem)
         {
@@ -1035,19 +1015,16 @@ namespace SimpleJSON
     {
         private string m_Data;
 
-        public override JSONNodeType Tag { get { return JSONNodeType.String; } }
-        public override bool IsString { get { return true; } }
+        public override JSONNodeType Tag => JSONNodeType.String;
+        public override bool IsString => true;
 
         public override Enumerator GetEnumerator() { return new Enumerator(); }
 
 
         public override string Value
         {
-            get { return m_Data; }
-            set
-            {
-                m_Data = value;
-            }
+            get => m_Data;
+            set => m_Data = value;
         }
 
         public JSONString(string aData)
@@ -1082,13 +1059,13 @@ namespace SimpleJSON
     {
         private double m_Data;
 
-        public override JSONNodeType Tag { get { return JSONNodeType.Number; } }
-        public override bool IsNumber { get { return true; } }
+        public override JSONNodeType Tag => JSONNodeType.Number;
+        public override bool IsNumber => true;
         public override Enumerator GetEnumerator() { return new Enumerator(); }
 
         public override string Value
         {
-            get { return m_Data.ToString(); }
+            get => m_Data.ToString();
             set
             {
                 double v;
@@ -1099,8 +1076,8 @@ namespace SimpleJSON
 
         public override double AsDouble
         {
-            get { return m_Data; }
-            set { m_Data = value; }
+            get => m_Data;
+            set => m_Data = value;
         }
 
         public JSONNumber(double aData)
@@ -1150,13 +1127,13 @@ namespace SimpleJSON
     {
         private bool m_Data;
 
-        public override JSONNodeType Tag { get { return JSONNodeType.Boolean; } }
-        public override bool IsBoolean { get { return true; } }
+        public override JSONNodeType Tag => JSONNodeType.Boolean;
+        public override bool IsBoolean => true;
         public override Enumerator GetEnumerator() { return new Enumerator(); }
 
         public override string Value
         {
-            get { return m_Data.ToString(); }
+            get => m_Data.ToString();
             set
             {
                 bool v;
@@ -1166,8 +1143,8 @@ namespace SimpleJSON
         }
         public override bool AsBool
         {
-            get { return m_Data; }
-            set { m_Data = value; }
+            get => m_Data;
+            set => m_Data = value;
         }
 
         public JSONBool(bool aData)
@@ -1186,8 +1163,6 @@ namespace SimpleJSON
         }
         public override bool Equals(object obj)
         {
-            if (obj == null)
-                return false;
             if (obj is bool)
                 return m_Data == (bool)obj;
             return false;
@@ -1211,24 +1186,24 @@ namespace SimpleJSON
         }
         private JSONNull() { }
 
-        public override JSONNodeType Tag { get { return JSONNodeType.NullValue; } }
-        public override bool IsNull { get { return true; } }
+        public override JSONNodeType Tag => JSONNodeType.NullValue;
+        public override bool IsNull => true;
         public override Enumerator GetEnumerator() { return new Enumerator(); }
 
         public override string Value
         {
-            get { return "null"; }
+            get => "null";
             set { }
         }
         public override bool AsBool
         {
-            get { return false; }
+            get => false;
             set { }
         }
 
         public override bool Equals(object obj)
         {
-            if (object.ReferenceEquals(this, obj))
+            if (ReferenceEquals(this, obj))
                 return true;
             return (obj is JSONNull);
         }
@@ -1248,7 +1223,7 @@ namespace SimpleJSON
     {
         private JSONNode m_Node = null;
         private string m_Key = null;
-        public override JSONNodeType Tag { get { return JSONNodeType.None; } }
+        public override JSONNodeType Tag => JSONNodeType.None;
         public override Enumerator GetEnumerator() { return new Enumerator(); }
 
         public JSONLazyCreator(JSONNode aNode)
@@ -1278,10 +1253,7 @@ namespace SimpleJSON
 
         public override JSONNode this[int aIndex]
         {
-            get
-            {
-                return new JSONLazyCreator(this);
-            }
+            get => new JSONLazyCreator(this);
             set
             {
                 var tmp = new JSONArray();
@@ -1292,10 +1264,7 @@ namespace SimpleJSON
 
         public override JSONNode this[string aKey]
         {
-            get
-            {
-                return new JSONLazyCreator(this, aKey);
-            }
+            get => new JSONLazyCreator(this, aKey);
             set
             {
                 var tmp = new JSONObject();
@@ -1322,7 +1291,7 @@ namespace SimpleJSON
         {
             if (b == null)
                 return true;
-            return System.Object.ReferenceEquals(a, b);
+            return ReferenceEquals(a, b);
         }
 
         public static bool operator !=(JSONLazyCreator a, object b)
@@ -1334,7 +1303,7 @@ namespace SimpleJSON
         {
             if (obj == null)
                 return true;
-            return System.Object.ReferenceEquals(this, obj);
+            return ReferenceEquals(this, obj);
         }
 
         public override int GetHashCode()

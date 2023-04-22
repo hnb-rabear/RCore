@@ -156,7 +156,7 @@ namespace RCore.Components
 				}
 				if (m_TempAudioCollection == null)
 				{
-					var audioManager = GameObject.FindObjectOfType<BaseAudioManager>();
+					var audioManager = FindObjectOfType<BaseAudioManager>();
 					if (audioManager != null)
 					{
 						m_TempAudioCollection = audioManager.audioCollection;

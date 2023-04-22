@@ -2,10 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-using RCore.Common;
-using System.Collections.Generic;
-using UnityEngine;
-using Debug = RCore.Common.Debug;
 #if ACTIVE_FIREBASE_ANALYTICS
 using Firebase.Analytics;
 #endif

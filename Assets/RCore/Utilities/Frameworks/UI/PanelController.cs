@@ -98,9 +98,9 @@ namespace RCore.Framework.UI
             }
         }
 
-        internal bool Displayed { get { return mShowed || mIsShowing; } }
-        internal bool Transiting { get { return mIsShowing || mIsHiding; } }
-        internal bool IsLock { get { return mIsLock; } }
+        internal bool Displayed => mShowed || mIsShowing;
+        internal bool Transiting => mIsShowing || mIsHiding;
+        internal bool IsLock => mIsLock;
 
         #endregion
 
@@ -123,7 +123,7 @@ namespace RCore.Framework.UI
         {
             mIsHiding = true;
 
-            if (onWillHide != null) onWillHide();
+            onWillHide?.Invoke();
 
             BeforeHiding();
             LockWhileTransiting(true);
@@ -156,8 +156,8 @@ namespace RCore.Framework.UI
             if (useOnce)
                 Destroy(gameObject, 0.1f);
 
-            if (pOnDidHide != null) pOnDidHide();
-            if (onDidHide != null) onDidHide();
+            pOnDidHide?.Invoke();
+            onDidHide?.Invoke();
         }
 
         protected virtual IEnumerator IE_HideFX() { yield break; }
@@ -187,7 +187,7 @@ namespace RCore.Framework.UI
         {
             mIsShowing = true;
 
-            if (onWillShow != null) onWillShow();
+            onWillShow?.Invoke();
 
             BeforeShowing();
             LockWhileTransiting(true);
@@ -207,8 +207,8 @@ namespace RCore.Framework.UI
             LockWhileTransiting(false);
             AfterShowing();
 
-            if (pOnDidShow != null) pOnDidShow();
-            if (onDidShow != null) onDidShow();
+            pOnDidShow?.Invoke();
+            onDidShow?.Invoke();
         }
 
         protected virtual IEnumerator IE_ShowFX() { yield break; }

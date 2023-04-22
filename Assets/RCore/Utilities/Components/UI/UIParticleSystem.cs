@@ -4,7 +4,6 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(CanvasRenderer))]

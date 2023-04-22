@@ -69,10 +69,8 @@ namespace RCore.Framework.UI
         protected Dictionary<int, PanelController> mCachedOnceUsePanels = new Dictionary<int, PanelController>();
 
         protected PanelStack mParentPanel;
-        internal PanelStack ParentPanel
-        {
-            get { return mParentPanel; }
-        }
+        internal PanelStack ParentPanel => mParentPanel;
+
         /// <summary>
         /// Top child
         /// </summary>
@@ -122,7 +120,7 @@ namespace RCore.Framework.UI
         /// <summary>
         /// Total children panels
         /// </summary>
-        public int StackCount { get { return panelStack.Count; } }
+        public int StackCount => panelStack.Count;
 
         protected virtual void Awake()
         {
@@ -337,7 +335,7 @@ namespace RCore.Framework.UI
                 {
                     if (!actionSameTime)
                     {
-                        var newPanel = this.TopPanel;
+                        var newPanel = TopPanel;
                         if (newPanel != null && !newPanel.Displayed)
                         {
                             newPanel.Show();
@@ -350,7 +348,7 @@ namespace RCore.Framework.UI
 
                 if (actionSameTime)
                 {
-                    var newPanel = this.TopPanel;
+                    var newPanel = TopPanel;
                     if (newPanel != null && !newPanel.Displayed)
                     {
                         newPanel.Show();
@@ -360,7 +358,7 @@ namespace RCore.Framework.UI
             }
             else
             {
-                var newPanel = this.TopPanel;
+                var newPanel = TopPanel;
                 if (newPanel != null && !newPanel.Displayed)
                 {
                     newPanel.Show();
@@ -384,7 +382,7 @@ namespace RCore.Framework.UI
         /// </summary>
         internal virtual void PushPanelToTop(PanelController panel)
         {
-            if (this.TopPanel == panel)
+            if (TopPanel == panel)
                 return;
 
             panelStack.Push(panel);

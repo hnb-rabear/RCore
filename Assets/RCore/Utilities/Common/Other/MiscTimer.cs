@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Jobs;
 using UnityEngine;
 
 namespace RCore.Common
@@ -66,8 +61,7 @@ namespace RCore.Common
             mActive = false;
             mFinished = true;
 
-            if (onFinished != null)
-                onFinished();
+            onFinished?.Invoke();
         }
 
         internal void SetElapsedTime(float pValue)

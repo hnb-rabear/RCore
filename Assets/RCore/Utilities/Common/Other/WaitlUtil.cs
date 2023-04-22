@@ -24,10 +24,10 @@ namespace RCore.Common
             private float mElapsed;
             private float mElapsedOffset;
 
-            public float Elapsed { get { return mElapsed; } }
-            public float ElapsedOffset { get { return mElapsedOffset; } }
-            public bool IsTimeOut { get { return mElapsed >= waitTime; } }
-            public float Remain { get { return (waitTime - mElapsed > 0) ? (waitTime - mElapsed) : 0; } }
+            public float Elapsed => mElapsed;
+            public float ElapsedOffset => mElapsedOffset;
+            public bool IsTimeOut => mElapsed >= waitTime;
+            public float Remain => (waitTime - mElapsed > 0) ? (waitTime - mElapsed) : 0;
 
             public CountdownEvent(int pid = 0)
             {
@@ -104,7 +104,7 @@ namespace RCore.Common
 
         //=======================================================
 
-        private static CoroutineMediator mMediator { get { return CoroutineMediator.Instance; } }
+        private static CoroutineMediator mMediator => CoroutineMediator.Instance;
 
         /// <summary>
         /// This Wait uses Update to calcualate time
@@ -188,7 +188,7 @@ namespace RCore.Common
         private List<WaitUtil.CountdownEvent> mCountdownEvents = new List<WaitUtil.CountdownEvent>();
         private float mTimeBeforePause;
 
-        public bool IsEmpty { get { return mCountdownEvents.Count == 0; } }
+        public bool IsEmpty => mCountdownEvents.Count == 0;
 
         public void LateUpdate()
         {
@@ -283,7 +283,7 @@ namespace RCore.Common
     {
         private List<WaitUtil.ConditionEvent> mConditionEvents = new List<WaitUtil.ConditionEvent>();
 
-        public bool IsEmpty { get { return mConditionEvents.Count == 0; } }
+        public bool IsEmpty => mConditionEvents.Count == 0;
 
         public void LateUpdate()
         {
@@ -297,8 +297,10 @@ namespace RCore.Common
                         d.onTrigger();
                         mConditionEvents.Remove(d);
                     }
-                    else if (d.onUpdate != null)
-                        d.onUpdate();
+                    else
+                    {
+                        d.onUpdate?.Invoke();
+                    }
                 }
             }
         }

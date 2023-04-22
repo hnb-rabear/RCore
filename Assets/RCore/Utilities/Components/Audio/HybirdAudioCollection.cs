@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
@@ -17,7 +16,7 @@ namespace RCore.Components
     [CreateAssetMenu(fileName = "HybirdAudioCollection", menuName = "RUtilities/Hybird Audio Collection")]
     public class HybirdAudioCollection : ScriptableObject
     {
-        [System.Serializable]
+        [Serializable]
         public class Clip
         {
             public string fileName;

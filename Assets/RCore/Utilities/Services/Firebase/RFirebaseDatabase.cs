@@ -7,9 +7,6 @@ using Firebase;
 using Firebase.Database;
 #endif
 using System;
-using System.Collections;
-using System.Threading.Tasks;
-using RCore.Common;
 
 namespace RCore.Service
 {
@@ -254,7 +251,7 @@ namespace RCore.Service
     {
         private static bool m_Initialized;
 
-        public static bool Initialized { get { return m_Initialized; } }
+        public static bool Initialized => m_Initialized;
 #if ACTIVE_FIREBASE_DATABASE
         public static void Initialize()
         {
@@ -380,28 +377,23 @@ namespace RCore.Service
         public static void CheckOnline(Action pOnConnected) { }
         public static void GetData(object reference, Action<string, bool> pOnFinished)
         {
-            if (pOnFinished != null)
-                pOnFinished("", false);
+            pOnFinished?.Invoke("", false);
         }
         public static void GetDataWithCoroutine(object reference, Action<string, bool> pOnFinished)
         {
-            if (pOnFinished != null)
-                pOnFinished("", false);
+            pOnFinished?.Invoke("", false);
         }
         public static void SetData(object reference, string pUploadData, Action<bool> pOnFinished)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
         public static void SetDataWithCoroutine(object reference, string pUploadData, Action<bool> pOnFinished)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
         public static void RemoveData(object reference, Action<bool> pOnFinished)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
 #endif
     }

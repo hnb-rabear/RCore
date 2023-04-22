@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
-using RCore.Common;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,7 +20,7 @@ namespace RCore.Common
 		private bool m_Value;
 		public bool Value
 		{
-			get { return m_Value; }
+			get => m_Value;
 			set
 			{
 				if (m_Value == value)
@@ -47,7 +45,7 @@ namespace RCore.Common
 		private int m_Value;
 		public int Value
 		{
-			get { return m_Value; }
+			get => m_Value;
 			set
 			{
 				if (m_Value == value)
@@ -72,7 +70,7 @@ namespace RCore.Common
 		private float m_Value;
 		public float Value
 		{
-			get { return m_Value; }
+			get => m_Value;
 			set
 			{
 				if (m_Value == value)
@@ -97,7 +95,7 @@ namespace RCore.Common
 		private DateTime m_Value;
 		public DateTime Value
 		{
-			get { return m_Value; }
+			get => m_Value;
 			set
 			{
 				if (m_Value == value)
@@ -126,7 +124,7 @@ namespace RCore.Common
 		private string m_Value;
 		public string Value
 		{
-			get { return m_Value; }
+			get => m_Value;
 			set
 			{
 				if (m_Value == value)
@@ -160,14 +158,14 @@ namespace RCore.Common
 
 		public List<T> Values
 		{
-			get { return m_Values; }
-			set { m_Values = value; }
+			get => m_Values;
+			set => m_Values = value;
 		}
 
 		public T this[int index]
 		{
-			get { return m_Values[index]; }
-			set { m_Values[index] = value; }
+			get => m_Values[index];
+			set => m_Values[index] = value;
 		}
 
 		public void Add(T pValue)
@@ -216,7 +214,7 @@ namespace RCore.Common
 		private T m_Value;
 		public T Value
 		{
-			get { return m_Value; }
+			get => m_Value;
 			set
 			{
 				m_Value = value;

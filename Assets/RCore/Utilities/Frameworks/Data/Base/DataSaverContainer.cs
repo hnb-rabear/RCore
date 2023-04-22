@@ -87,7 +87,7 @@ namespace RCore.Framework.Data
             }
             if (USE_BINARY)
             {
-                Data.BinarySaver.SaveBinary(pData, pSaverKey);
+                BinarySaver.SaveBinary(pData, pSaverKey);
             }
 #if UNITY_EDITOR
             Debug.Log($"Saved Key: {pSaverKey}\nData: {pData}");
@@ -100,7 +100,7 @@ namespace RCore.Framework.Data
             if (USE_PLAYERPREFS)
                 dataStr = PlayerPrefs.GetString(pSaverKey, "");
             if (USE_BINARY)
-                dataStr = Data.BinarySaver.LoadBinary(pSaverKey);
+                dataStr = BinarySaver.LoadBinary(pSaverKey);
             return dataStr;
         }
 
@@ -139,7 +139,7 @@ namespace RCore.Framework.Data
                     if (USE_PLAYERPREFS)
                         PlayerPrefs.DeleteKey(saverKeys[i]);
                     if (USE_BINARY)
-                        Data.BinarySaver.DeleteFile(saverKeys[i]);
+                        BinarySaver.DeleteFile(saverKeys[i]);
                 }
             }
             if (USE_PLAYERPREFS)
@@ -156,7 +156,7 @@ namespace RCore.Framework.Data
                     if (USE_PLAYERPREFS)
                         PlayerPrefs.SetString(brand.Key, brand.Value);
                     if (USE_BINARY)
-                        Data.BinarySaver.SaveBinary(brand.Value, brand.Key);
+                        BinarySaver.SaveBinary(brand.Value, brand.Key);
 #if UNITY_EDITOR
                     Debug.Log($"Restored {brand.Key}\n{brand.Value}");
 #endif
@@ -226,7 +226,7 @@ namespace RCore.Framework.Data
         {
             string jsonData = GetAllData();
 #if UNITY_ANDROID
-            System.IO.File.WriteAllText(pFilePath, jsonData);
+            File.WriteAllText(pFilePath, jsonData);
 #else
             using (StreamWriter sw = new StreamWriter(pFilePath))
             {

@@ -1,7 +1,7 @@
 ﻿// Author - RadBear - nbhung71711@gmail.com - 2020
 
 //#define USE_DOTWEEN
-using System.Collections;
+
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;

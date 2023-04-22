@@ -3,7 +3,6 @@
  **/
 
 using UnityEngine;
-using System.Collections;
 
 namespace RCore.Inspector
 {
@@ -13,12 +12,12 @@ namespace RCore.Inspector
 
         public SeparatorAttribute()
         {
-            this.title = "";
+            title = "";
         }
 
         public SeparatorAttribute(string _title)
         {
-            this.title = _title;
+            title = _title;
         }
     }
 }

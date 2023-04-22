@@ -1,6 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -11,7 +9,7 @@ namespace RCore.Components
         [MenuItem("RUtilities/Audio/Add Audio Manager")]
         private static void AddAudioManager()
         {
-            var manager = GameObject.FindObjectOfType<AudioManager>();
+            var manager = FindObjectOfType<AudioManager>();
             if (manager == null)
             {
                 var obj = new GameObject("AudioManager");
@@ -22,7 +20,7 @@ namespace RCore.Components
         [MenuItem("RUtilities/Audio/Add Hybird Audio Manager")]
         private static void AddHybirdAudioManager()
         {
-            var manager = GameObject.FindObjectOfType<HybirdAudioManager>();
+            var manager = FindObjectOfType<HybirdAudioManager>();
             if (manager == null)
             {
                 var obj = new GameObject("HybirdAudioManager");

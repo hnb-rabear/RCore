@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-namespace RCore.Common
+﻿namespace RCore.Common
 {
     public interface IEncryption
     {

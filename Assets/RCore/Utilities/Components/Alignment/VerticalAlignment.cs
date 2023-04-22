@@ -172,8 +172,7 @@ namespace RCore.Components
             mCoroutine = StartCoroutine(IEArrangeChildren(mChildrenPrePosition, mChildrenNewPosition, tweenTime));
             yield return mCoroutine;
 #endif
-            if (onFinish != null)
-                onFinish();
+            onFinish?.Invoke();
         }
 
         private IEnumerator IEArrangeChildren(Vector3[] pChildrenPrePosition, Vector3[] pChildrenNewPosition, float pDuration)

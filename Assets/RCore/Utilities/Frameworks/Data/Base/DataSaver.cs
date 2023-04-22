@@ -10,16 +10,16 @@ using Debug = UnityEngine.Debug;
 
 namespace RCore.Framework.Data
 {
-    [System.Serializable]
+    [Serializable]
     public class KeyValue : IComparable<KeyValue>
     {
         [SerializeField] private string k;
         [SerializeField] private string v;
         [SerializeField] private string a;
 
-        public string Key { get { return k; } set { k = value; } }
-        public string Value { get { return v; } set { v = value; } }
-        public string Alias { get { return a; } set { a = value; } }
+        public string Key { get => k; set => k = value; }
+        public string Value { get => v; set => v = value; }
+        public string Alias { get => a; set => a = value; }
 
         public KeyValue(string pKey, string pValue, string pAlias = null)
         {
@@ -56,7 +56,7 @@ namespace RCore.Framework.Data
     {
         #region Constants
 
-        public static readonly bool ENCRYPT_KEY = false;
+        private static readonly bool ENCRYPT_KEY = false;
 
         #endregion
 

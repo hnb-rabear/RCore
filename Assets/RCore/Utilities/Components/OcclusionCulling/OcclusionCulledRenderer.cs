@@ -2,12 +2,8 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Components
 {

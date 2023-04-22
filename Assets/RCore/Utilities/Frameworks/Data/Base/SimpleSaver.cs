@@ -49,16 +49,16 @@ namespace RCore.Framework.Data
 
             public Vector3Parse(Vector3 v)
             {
-                this.x = v.x;
-                this.y = v.y;
-                this.z = v.z;
+                x = v.x;
+                y = v.y;
+                z = v.z;
             }
 
             public Vector3Parse(Vector2 v)
             {
-                this.x = v.x;
-                this.y = v.y;
-                this.z = 0;
+                x = v.x;
+                y = v.y;
+                z = 0;
             }
 
             public override string ToString()
@@ -406,7 +406,7 @@ namespace RCore.Framework.Data
     {
         private const string EXTENSION = ".sav";
 
-        [System.Serializable]
+        [Serializable]
         public class DataWrap
         {
             public string text;

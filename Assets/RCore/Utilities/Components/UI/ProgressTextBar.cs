@@ -52,7 +52,7 @@ namespace RCore.Components
 
         public virtual float FillAmount
         {
-            get { return mValue / mMax; }
+            get => mValue / mMax;
             set
             {
                 float fill = maxFillRatio * value;
@@ -64,7 +64,7 @@ namespace RCore.Components
         }
         public virtual float Value
         {
-            get { return mValue; }
+            get => mValue;
             set
             {
                 if (mValue != value)
@@ -78,7 +78,7 @@ namespace RCore.Components
         }
         public virtual float Max
         {
-            get { return mMax; }
+            get => mMax;
             set
             {
                 if (mMax != value)
@@ -92,7 +92,7 @@ namespace RCore.Components
         }
         public virtual int Rank
         {
-            get { return mRank; }
+            get => mRank;
             set
             {
                 if (mRank != value)

@@ -13,11 +13,11 @@ namespace RCore.Common
         private static readonly int MAX_READ_LENGTH = 12; //Max length of float is 38 but we dont care any number after this position
         private static readonly float MAX_READ_VALUE = float.Parse("999999999999"); //increase length of this nuber will increse the acurration
 
-        internal static BigNumberAlpha Zero { get { return new BigNumberAlpha(0); } }
-        internal static BigNumberAlpha One { get { return new BigNumberAlpha(1); } }
-        internal static BigNumberAlpha Two { get { return new BigNumberAlpha(2); } }
-        internal static BigNumberAlpha Ten { get { return new BigNumberAlpha(10); } }
-        internal static BigNumberAlpha OneHundred { get { return new BigNumberAlpha(100); } }
+        internal static BigNumberAlpha Zero => new(0);
+        internal static BigNumberAlpha One => new(1);
+        internal static BigNumberAlpha Two => new(2);
+        internal static BigNumberAlpha Ten => new(10);
+        internal static BigNumberAlpha OneHundred => new(100);
 
         public float readableValue;
         public int pow;

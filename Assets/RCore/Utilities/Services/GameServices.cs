@@ -5,7 +5,6 @@
 #pragma warning disable 0649
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SocialPlatforms;
 using RCore.Common;
@@ -60,7 +59,7 @@ namespace RCore.Service
     }
 #endif
 
-    [System.Serializable]
+    [Serializable]
     public class GameServicesItem
     {
         public string Name;
@@ -397,15 +396,13 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log("Failed to load friends: user is not logged in.");
-                if (callback != null)
-                    callback(new IUserProfile[0]);
+                callback?.Invoke(new IUserProfile[0]);
                 return;
             }
 
             if (Social.localUser.friends != null && Social.localUser.friends.Length > 0)
             {
-                if (callback != null)
-                    callback(Social.localUser.friends);
+                callback?.Invoke(Social.localUser.friends);
             }
             else
             {
@@ -413,13 +410,11 @@ namespace RCore.Service
                 {
                     if (success)
                     {
-                        if (callback != null)
-                            callback(Social.localUser.friends);
+                        callback?.Invoke(Social.localUser.friends);
                     }
                     else
                     {
-                        if (callback != null)
-                            callback(new IUserProfile[0]);
+                        callback?.Invoke(new IUserProfile[0]);
                     }
                 });
             }
@@ -435,8 +430,7 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log("Failed to load users: user is not logged in.");
-                if (callback != null)
-                    callback(new IUserProfile[0]);
+                callback?.Invoke(new IUserProfile[0]);
                 return;
             }
 
@@ -457,8 +451,7 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log($"Failed to load scores from leaderboard {leaderboardName}: user is not logged in.");
-                if (callback != null)
-                    callback(leaderboardName, new IScore[0]);
+                callback?.Invoke(leaderboardName, new IScore[0]);
                 return;
             }
 
@@ -467,8 +460,7 @@ namespace RCore.Service
             if (ldb == null)
             {
                 Debug.Log($"Failed to load scores: unknown leaderboard name {leaderboardName}");
-                if (callback != null)
-                    callback(leaderboardName, new IScore[0]);
+                callback?.Invoke(leaderboardName, new IScore[0]);
                 return;
             }
 
@@ -506,8 +498,7 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log($"Failed to load scores from leaderboard {leaderboardName}: user is not logged in.");
-                if (callback != null)
-                    callback(leaderboardName, new IScore[0]);
+                callback?.Invoke(leaderboardName, new IScore[0]);
                 return;
             }
 
@@ -516,8 +507,7 @@ namespace RCore.Service
             if (ldb == null)
             {
                 Debug.Log($"Failed to load scores: unknown leaderboard name {leaderboardName}.");
-                if (callback != null)
-                    callback(leaderboardName, new IScore[0]);
+                callback?.Invoke(leaderboardName, new IScore[0]);
                 return;
             }
 
@@ -551,8 +541,7 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log($"Failed to load local user's score from leaderboard {leaderboardName}: user is not logged in.");
-                if (callback != null)
-                    callback(leaderboardName, null);
+                callback?.Invoke(leaderboardName, null);
                 return;
             }
 
@@ -561,8 +550,7 @@ namespace RCore.Service
             if (ldb == null)
             {
                 Debug.Log($"Failed to load local user's score: unknown leaderboard name {leaderboardName}.");
-                if (callback != null)
-                    callback(leaderboardName, null);
+                callback?.Invoke(leaderboardName, null);
                 return;
             }
 
@@ -574,13 +562,11 @@ namespace RCore.Service
             {
                 if (scores != null)
                 {
-                    if (callback != null)
-                        callback(ldbName, scores[0]);
+                    callback?.Invoke(ldbName, scores[0]);
                 }
                 else
                 {
-                    if (callback != null)
-                        callback(ldbName, null);
+                    callback?.Invoke(ldbName, null);
                 }
             };
             request.useLeaderboardDefault = false;
@@ -743,8 +729,7 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log($"Failed to report score to leaderboard {leaderboardId}: user is not logged in.");
-                if (callback != null)
-                    callback(false);
+                callback?.Invoke(false);
                 return;
             }
 
@@ -753,8 +738,7 @@ namespace RCore.Service
                 leaderboardId,
                 (bool success) =>
                 {
-                    if (callback != null)
-                        callback(success);
+                    callback?.Invoke(success);
                 }
             );
         }
@@ -766,8 +750,7 @@ namespace RCore.Service
             if (!IsInitialized())
             {
                 Debug.Log($"Failed to report progress for achievement {achievementId}: user is not logged in.");
-                if (callback != null)
-                    callback(false);
+                callback?.Invoke(false);
                 return;
             }
 
@@ -776,8 +759,7 @@ namespace RCore.Service
                 progress,
                 (bool success) =>
                 {
-                    if (callback != null)
-                        callback(success);
+                    callback?.Invoke(success);
                 }
             );
         }
@@ -810,8 +792,7 @@ namespace RCore.Service
                 // On Android, we'll use LoadScores directly from Social.
                 Social.LoadScores(ldb.id, (IScore[] scores) =>
                 {
-                    if (request.callback != null)
-                        request.callback(request.leaderboardName, scores);
+                    request.callback?.Invoke(request.leaderboardName, scores);
 
                     // Load next request
                     isLoadingScore = false;
@@ -847,13 +828,11 @@ namespace RCore.Service
                     {
                         IScore[] returnScores = new IScore[] { ldb.localUserScore };
 
-                        if (request.callback != null)
-                            request.callback(request.leaderboardName, returnScores);
+                        request.callback?.Invoke(request.leaderboardName, returnScores);
                     }
                     else
                     {
-                        if (request.callback != null)
-                            request.callback(request.leaderboardName, ldb.scores);
+                        request.callback?.Invoke(request.leaderboardName, ldb.scores);
                     }
 
                     // Load next request

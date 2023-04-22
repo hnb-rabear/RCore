@@ -5,9 +5,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 using RCore.Common;
-using System;
 
 namespace RCore.Components
 {

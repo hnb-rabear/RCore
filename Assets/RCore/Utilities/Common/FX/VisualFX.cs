@@ -26,8 +26,8 @@ namespace RCore.Common
 	{
 		public Action onHidden;
 
-		internal GameObject container { get { return m_Container; } }
-		internal Transform transform { get { return m_Container.transform; } }
+		internal GameObject container => m_Container;
+		internal Transform transform => m_Container.transform;
 		internal bool available { get; set; }
 
 		[SerializeField]
@@ -48,7 +48,7 @@ namespace RCore.Common
 
 		public bool enabled
 		{
-			get { return m_Enable; }
+			get => m_Enable;
 			set
 			{
 				m_Enable = value;
@@ -103,7 +103,7 @@ namespace RCore.Common
 			Clear();
 			Stop();
 			enabled = false;
-			if (onHidden != null) onHidden();
+			onHidden?.Invoke();
 		}
 
 		public virtual void SetSortingOrder(int pValue)
@@ -121,7 +121,7 @@ namespace RCore.Common
 
 	//===============================================
 
-	[System.Serializable]
+	[Serializable]
 	public class VFX_UAnimation : VFXBase
 	{
 		public Animator animator;
@@ -141,7 +141,7 @@ namespace RCore.Common
 					m_WaitForDeactive = new WaitForSeconds(m_LifeTime);
 				}
 			}
-			get { return m_TriggerValue; }
+			get => m_TriggerValue;
 		}
 
 		public VFX_UAnimation(GameObject pObj) : base(pObj)
@@ -256,7 +256,7 @@ namespace RCore.Common
 
 	//===============================================
 
-	[System.Serializable]
+	[Serializable]
 	public class VFX_Particle : VFXBase
 	{
 		public Action onFinishedMovement;
@@ -425,7 +425,7 @@ namespace RCore.Common
 					yield return null;
 			}
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 
 		public VFX_Particle(GameObject pObj) : base(pObj)
@@ -534,7 +534,7 @@ namespace RCore.Common
 					break;
 			}
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 #endif
 
@@ -565,7 +565,7 @@ namespace RCore.Common
 
 			yield return new WaitUntil(() => !process);
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 
 #if USE_LEANTWEEN
@@ -686,7 +686,7 @@ namespace RCore.Common
 				try
 				{
 					m_Particles[pIndex].startColor = Color.clear;
-					if (onFinishedMovementSeparately != null) onFinishedMovementSeparately();
+					onFinishedMovementSeparately?.Invoke();
 				}
 				catch (Exception ex)
 				{

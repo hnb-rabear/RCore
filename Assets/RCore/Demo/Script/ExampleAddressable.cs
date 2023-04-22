@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 #endif
 using RCore.Common;
-using Cysharp.Threading.Tasks;
 
 namespace RCore.Demo
 {
@@ -43,7 +42,8 @@ namespace RCore.Demo
 		{
 			var uniTask = AddressableUtil.InstantiateAsync(prefabReferences);
 			yield return uniTask;
-			foreach (var obj in uniTask.GetAwaiter().GetResult())
+			objects = uniTask.GetAwaiter().GetResult();
+			foreach (var obj in objects)
 				obj.transform.position = new Vector2(Random.Range(-10, 10), Random.Range(-10, 10));
 		}
 

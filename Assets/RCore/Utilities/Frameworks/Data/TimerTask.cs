@@ -4,7 +4,6 @@
  */
 
 using System;
-using RCore.Common;
 
 namespace RCore.Framework.Data
 {
@@ -18,10 +17,10 @@ namespace RCore.Framework.Data
         private LongData m_ServerSeconds;
         private LongData m_TaskDurationSeconds;
 
-        public long RemainSeconds { get { return m_RemainSeconds.Value; } }
-        public long Seconds { get { return m_LocalSeconds.Value; } }
-        public long TaskDurationSeconds { get { return m_TaskDurationSeconds.Value; } }
-        public bool IsRunning { get { return m_RemainSeconds.Value > 0; } }
+        public long RemainSeconds => m_RemainSeconds.Value;
+        public long Seconds => m_LocalSeconds.Value;
+        public long TaskDurationSeconds => m_TaskDurationSeconds.Value;
+        public bool IsRunning => m_RemainSeconds.Value > 0;
 
         public TimerTask(int pId) : base(pId)
         {
@@ -51,8 +50,7 @@ namespace RCore.Framework.Data
 
             Stop();
 
-            if (m_OnCompleted != null)
-                m_OnCompleted(this, remainSeconds);
+            m_OnCompleted?.Invoke(this, remainSeconds);
         }
 
         public void Stop()

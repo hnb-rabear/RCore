@@ -5,13 +5,12 @@
 using UnityEngine;
 using System.Collections;
 using System;
-using System.Collections.Generic;
 
 namespace RCore.Common
 {
     public class CoroutineUtil
     {
-        private static CoroutineMediator mMediator { get { return CoroutineMediator.Instance; } }
+        private static CoroutineMediator mMediator => CoroutineMediator.Instance;
 
         public static Coroutine StartCoroutine(IEnumerator pCoroutine)
         {
@@ -66,8 +65,7 @@ namespace RCore.Common
             {
                 isWorking = true;
 
-                if (onFirstUpdate != null)
-                    onFirstUpdate();
+                onFirstUpdate?.Invoke();
 
                 progress = 0;
 
@@ -76,7 +74,7 @@ namespace RCore.Common
                 {
                     if (breakCondition != null && breakCondition())
                     {
-                        if (onBreak != null) onBreak();
+                        onBreak?.Invoke();
                         Kill();
                     }
 
@@ -93,8 +91,7 @@ namespace RCore.Common
 
                 progress = 1f;
 
-                if (onLateUpdate != null)
-                    onLateUpdate();
+                onLateUpdate?.Invoke();
             }
         }
 
@@ -137,8 +134,7 @@ namespace RCore.Common
         {
             isRunning = true;
 
-            if (onStart != null)
-                onStart();
+            onStart?.Invoke();
 
             remainTime = waitTime - offsetTime;
             while (true)
@@ -155,8 +151,7 @@ namespace RCore.Common
 
             isRunning = false;
 
-            if (onComplete != null)
-                onComplete();
+            onComplete?.Invoke();
         }
 
         public float GetProgress()

@@ -1,7 +1,5 @@
 using RCore.Common;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RCore.Framework.Data

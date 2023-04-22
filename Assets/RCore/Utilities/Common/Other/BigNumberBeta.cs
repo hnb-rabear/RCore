@@ -4,7 +4,6 @@
 
 using System;
 using System.Text;
-using UnityEngine;
 
 namespace RCore.Common
 {
@@ -14,10 +13,10 @@ namespace RCore.Common
         private static readonly decimal MAX_READ_VALUE = decimal.Parse("999999999999999"); //increase length of this nuber will increse the acurration
 
         //internal static BigNumberAlpha Zero { get { return new BigNumberAlpha(0); } }
-        internal static BigNumberBeta One { get { return new BigNumberBeta(1); } }
-        internal static BigNumberBeta Two { get { return new BigNumberBeta(2); } }
-        internal static BigNumberBeta Ten { get { return new BigNumberBeta(10); } }
-        internal static BigNumberBeta OneHundred { get { return new BigNumberBeta(100); } }
+        internal static BigNumberBeta One => new(1);
+        internal static BigNumberBeta Two => new(2);
+        internal static BigNumberBeta Ten => new(10);
+        internal static BigNumberBeta OneHundred => new(100);
 
         public decimal readableValue;
         public int pow;
@@ -722,7 +721,7 @@ namespace RCore.Common
             else if (pUnit.Length > 1)
             {
                 int unitSize = pUnit.Length;
-                int unitTypeInt = (int)pUnit[0] - 65;
+                int unitTypeInt = pUnit[0] - 65;
                 int length = (unitSize - 2) * (3 * 26) + 15 + (unitTypeInt * 3);
                 pow = length - 1;
             }

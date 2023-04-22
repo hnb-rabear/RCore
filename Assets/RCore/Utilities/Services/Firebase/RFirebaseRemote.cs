@@ -1,15 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
-using RCore.Common;
 #if ACTIVE_FIREBASE_REMOTE
 using Firebase;
 using Firebase.RemoteConfig;
 using Firebase.Extensions;
 #endif
 using System;
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Service
 {

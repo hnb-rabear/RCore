@@ -386,7 +386,7 @@ namespace RCore.Components
                 EditorHelper.SerializeField(serializedObject, "tweenTime");
 
                 if (mToggle.txtLabel != null)
-                    mToggle.txtLabel.text = UnityEditor.EditorGUILayout.TextField("Label", mToggle.txtLabel.text);
+                    mToggle.txtLabel.text = EditorGUILayout.TextField("Label", mToggle.txtLabel.text);
 
                 serializedObject.ApplyModifiedProperties();
             }

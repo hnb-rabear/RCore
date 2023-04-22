@@ -13,7 +13,6 @@ using RCore.Inspector;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Components
 {

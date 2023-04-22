@@ -3,10 +3,7 @@
  **/
 #pragma warning disable 0649
 
-using System;
-using System.Collections;
 using UnityEngine;
-using RCore.Common;
 
 namespace RCore.Components
 {
@@ -27,7 +24,7 @@ namespace RCore.Components
                     lifeTime = info.length;
                 }
             }
-            get { return mTriggerValue; }
+            get => mTriggerValue;
         }
 
         public void Play(int pTriggerValue, bool pAutoDeactive)

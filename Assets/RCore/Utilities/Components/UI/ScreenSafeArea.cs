@@ -1,7 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using RCore.Inspector;
 
 namespace RCore.Components
 {

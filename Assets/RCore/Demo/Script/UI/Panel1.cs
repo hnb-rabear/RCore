@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using RCore.Components;
 using RCore.Framework.UI;
@@ -14,8 +13,8 @@ namespace RCore.Demo
         [SerializeField] private Panel1B mPanel1B;
         [SerializeField] public Animator mAnimator;
 
-        public Panel1A Panel1A { get { return GetCachedPanel(mPanel1A); } }
-        public Panel1B Panel1B { get { return GetCachedPanel(mPanel1B); } }
+        public Panel1A Panel1A => GetCachedPanel(mPanel1A);
+        public Panel1B Panel1B => GetCachedPanel(mPanel1B);
 
         private void Start()
         {

@@ -7,14 +7,9 @@ using Firebase;
 using Firebase.Storage;
 #endif
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using RCore.Common;
 using Debug = UnityEngine.Debug;
 
 namespace RCore.Service
@@ -903,49 +898,42 @@ namespace RCore.Service
 
         #endregion
 #else
-        public static bool Initialized { get { return false; } }
+        public static bool Initialized => false;
         public static void Initialize() { }
         public static void CancelOperation() { }
         public static void Delete(Action<bool> pOnFinished, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
         public static void DeleteWithCoroutine(Action<bool> pOnFinished, SavedFileDefinition pStoDef) { }
         public static void UploadStream(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
         public static void UploadStreamWithCoroutine(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef) { }
         public static void DownloadStream(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(Task.FromResult(0), "");
+            pOnFinished?.Invoke(Task.FromResult(0), "");
         }
         public static void DownloadStreamWithCoroutine(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef) { }
         public static void UploadFromFile(Action<bool> pOnFinished, string pOriginalFilePath, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
         public static void UploadFromFileWithCoroutine(Action<bool> pOnFinished, string pOriginalFilePath, SavedFileDefinition pStoDef) { }
         public static void DownloadToFile(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(Task.FromResult(0), "");
+            pOnFinished?.Invoke(Task.FromResult(0), "");
         }
         public static void DownloadToFileWithCoroutine(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef) { }
         public static void UploadBytesWithCoroutine(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef) { }
         public static void UploadBytes(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(false);
+            pOnFinished?.Invoke(false);
         }
         public static void DownloadBytes(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
         {
-            if (pOnFinished != null)
-                pOnFinished(Task.FromResult(0), "");
+            pOnFinished?.Invoke(Task.FromResult(0), "");
         }
         public static void DownloadBytesWithCoroutine(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef) { }
         public static void DownloadFile(SavedFileDefinition pStoDef, Action<string> pFoundFile, Action pNotFoundFile, Action pFailed)

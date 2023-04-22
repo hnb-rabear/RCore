@@ -1,9 +1,8 @@
 ﻿/**
  * Author RadBear - nbhung71711 @gmail.com - 2020
  **/
-using System.Collections;
+
 using System.Collections.Generic;
-using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 using System;

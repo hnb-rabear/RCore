@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 using RCore.Common;
-using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -62,13 +61,10 @@ namespace RCore.Components
         }
         public Material imgMaterial
         {
-            get { return img.material; }
-            set { img.material = value; }
+            get => img.material;
+            set => img.material = value;
         }
-        public RectTransform rectTransform
-        {
-            get { return image != null ? image.rectTransform : null; }
-        }
+        public RectTransform rectTransform => image != null ? image.rectTransform : null;
 
         private PivotForScale mPrePivot;
         private Action mInactionStateAction;

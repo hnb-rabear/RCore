@@ -2,8 +2,6 @@
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
-using System;
-using System.Collections;
 using UnityEngine;
 
 namespace RCore.Components

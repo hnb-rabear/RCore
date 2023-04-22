@@ -6,9 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Inspector;
 using RCore.Common;
-using Debug = RCore.Common.Debug;
 #if USE_DOTWEEN
 using DG.Tweening;
 #endif
@@ -531,8 +529,7 @@ namespace RCore.Components
                 time += Time.deltaTime;
             }
 
-            if (pOnCompleted != null)
-                pOnCompleted();
+            pOnCompleted?.Invoke();
         }
     }
 }

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Common
 {
@@ -26,12 +25,7 @@ namespace RCore.Common
 		{
 			if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
 			for (int i = 0; i < points.Length; i++)
-			{
-				if (i < points.Length - 1)
-					UnityEngine.Debug.DrawLine(points[i], points[i + 1], color, duration);
-				else
-					UnityEngine.Debug.DrawLine(points[i], points[0], color, duration);
-			}
+				UnityEngine.Debug.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0], color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -41,12 +35,7 @@ namespace RCore.Common
 			Color colorTemp = Gizmos.color;
 			Gizmos.color = color;
 			for (int i = 0; i < points.Length; i++)
-			{
-				if (i < points.Length - 1)
-					Gizmos.DrawLine(points[i], points[i + 1]);
-				else
-					Gizmos.DrawLine(points[i], points[0]);
-			}
+				Gizmos.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0]);
 			Gizmos.color = colorTemp;
 		}
 
@@ -58,10 +47,7 @@ namespace RCore.Common
 			Gizmos.color = color;
 			for (int i = 0; i < points.Length; i++)
 			{
-				if (i < points.Length - 1)
-					Gizmos.DrawLine(points[i].position, points[i + 1].position);
-				else
-					Gizmos.DrawLine(points[i].position, points[0].position);
+				Gizmos.DrawLine(points[i].position, i < points.Length - 1 ? points[i + 1].position : points[0].position);
 			}
 			Gizmos.color = colorTemp;
 		}
@@ -169,11 +155,10 @@ namespace RCore.Common
 			if (!DevSetting.Instance.EnableDraw) return;
 			int steps = 100;
 			float interval = 2 * width / steps;
-			Vector3 previousPoint = Vector3.zero;
 			Vector3 currentPoint = Vector3.zero;
 			for (int i = 0; i <= steps; i++)
 			{
-				previousPoint = currentPoint;
+				var previousPoint = currentPoint;
 				float x = -width + interval * i;
 				float y = Mathf.Sqrt(1 - (x * x) / (width * width)) * height;
 				currentPoint = new Vector2(x, y);
@@ -187,11 +172,11 @@ namespace RCore.Common
 		public static List<Vector3> DrawGridLinesGizmos(Vector3 rootPos, int width, int length, float pTileSize = 1, float pHeight = 0)
 		{
 			var points = new List<Vector3>();
-			var from = rootPos;
-			var to = rootPos;
+			Vector3 from;
+			Vector3 to;
 			for (int i = 0; i <= width; i++)
 			{
-				//Draw verticle line
+				//Draw vertical line
 				from = rootPos;
 				from.x += i * pTileSize;
 				to = rootPos;
@@ -227,11 +212,11 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawGridLinesGizmos(Vector2 rootPos, float width, float length, Vector2 cellSize, float rootCellSize = 0, float centerCellSize = 0)
 		{
-			Vector2 from = new Vector2();
-			Vector2 to = new Vector2();
+			Vector2 from;
+			Vector2 to;
 			for (int i = 0; i <= width; i++)
 			{
-				//Draw verticle line
+				//Draw vertical line
 				from = rootPos;
 				from.x += i * cellSize.x;
 				to = rootPos;
@@ -323,7 +308,7 @@ namespace RCore.Common
 		{
 			for (int i = 0; i < width; i++)
 			{
-				//Draw verticle line
+				//Draw vertical line
 				var from = rootPos;
 				from.x += i * pTileSize;
 				var to = rootPos;
@@ -347,8 +332,8 @@ namespace RCore.Common
 		public static void DrawGridNodesGizmos(Vector3 rootPos, int width, int length, float tileSize, float pNodeSize)
 		{
 			var nodes = BuildGridNodes(rootPos, width, length, tileSize);
-			for (int i = 0; i < nodes.Count; i++)
-				Gizmos.DrawCube(nodes[i], Vector3.one * pNodeSize);
+			foreach (var node in nodes)
+				Gizmos.DrawCube(node, Vector3.one * pNodeSize);
 		}
 
 		public static void DrawPathGizmos(List<Vector3> pPath, Color? colour = null, bool pLoop = false)
@@ -364,8 +349,8 @@ namespace RCore.Common
 				}
 				if (pLoop && pPath.Count > 2)
 				{
-					Gizmos.DrawCube(pPath[pPath.Count - 1], Vector3.one * 0.1f);
-					Gizmos.DrawLine(pPath[0], pPath[pPath.Count - 1]);
+					Gizmos.DrawCube(pPath[^1], Vector3.one * 0.1f);
+					Gizmos.DrawLine(pPath[0], pPath[^1]);
 				}
 			}
 		}
@@ -383,8 +368,8 @@ namespace RCore.Common
 				}
 				if (pLoop && pPath.Length > 2)
 				{
-					Gizmos.DrawCube(pPath[pPath.Length - 1], Vector3.one * 0.1f);
-					Gizmos.DrawLine(pPath[0], pPath[pPath.Length - 1]);
+					Gizmos.DrawCube(pPath[^1], Vector3.one * 0.1f);
+					Gizmos.DrawLine(pPath[0], pPath[^1]);
 				}
 			}
 		}
@@ -435,8 +420,7 @@ namespace RCore.Common
 				var dir = MathHelper.DirOfYAngle(angle);
 				var point = rootPosition + dir * pFovInfo.range;
 
-				RaycastHit hit;
-				if (Physics.Raycast(rootPosition, dir, out hit, pFovInfo.range, pFovInfo.obstacleLayer))
+				if (Physics.Raycast(rootPosition, dir, out var hit, pFovInfo.range, pFovInfo.obstacleLayer))
 					point = hit.point;
 
 				if (pFovInfo.usingGizmos)
@@ -450,9 +434,9 @@ namespace RCore.Common
 
 		private static Vector3 RoundVector(Vector3 pVector, int pDecimal)
 		{
-			pVector.Set((float)System.Math.Round(pVector.x, pDecimal),
-		(float)System.Math.Round(pVector.y, pDecimal),
-		(float)System.Math.Round(pVector.z, pDecimal));
+			pVector.Set(MathHelper.Round(pVector.x, pDecimal),
+			MathHelper.Round(pVector.y, pDecimal),
+			MathHelper.Round(pVector.z, pDecimal));
 			return pVector;
 		}
 
@@ -674,19 +658,18 @@ namespace RCore.Common
 			Vector3 _forward = Vector3.Slerp(_up, -_up, 0.5f);
 			Vector3 _right = Vector3.Cross(_up, _forward).normalized * radius;
 
-			Matrix4x4 matrix = new Matrix4x4();
-
-			matrix[0] = _right.x;
-			matrix[1] = _right.y;
-			matrix[2] = _right.z;
-
-			matrix[4] = _up.x;
-			matrix[5] = _up.y;
-			matrix[6] = _up.z;
-
-			matrix[8] = _forward.x;
-			matrix[9] = _forward.y;
-			matrix[10] = _forward.z;
+			Matrix4x4 matrix = new Matrix4x4
+			{
+				[0] = _right.x,
+				[1] = _right.y,
+				[2] = _right.z,
+				[4] = _up.x,
+				[5] = _up.y,
+				[6] = _up.z,
+				[8] = _forward.x,
+				[9] = _forward.y,
+				[10] = _forward.z
+			};
 
 			Vector3 _lastPoint = position + matrix.MultiplyPoint3x4(new Vector3(Mathf.Cos(0), 0, Mathf.Sin(0)));
 			Vector3 _nextPoint = Vector3.zero;
@@ -752,16 +735,11 @@ namespace RCore.Common
 			Vector3 y = new Vector3(position.x + radius * Mathf.Cos(0), position.y, position.z + radius * Mathf.Sin(0));
 			Vector3 z = new Vector3(position.x + radius * Mathf.Cos(0), position.y + radius * Mathf.Sin(0), position.z);
 
-			Vector3 new_x;
-			Vector3 new_y;
-			Vector3 new_z;
-
 			for (int i = 1; i < 37; i++)
 			{
-
-				new_x = new Vector3(position.x, position.y + radius * Mathf.Sin(angle * i * Mathf.Deg2Rad), position.z + radius * Mathf.Cos(angle * i * Mathf.Deg2Rad));
-				new_y = new Vector3(position.x + radius * Mathf.Cos(angle * i * Mathf.Deg2Rad), position.y, position.z + radius * Mathf.Sin(angle * i * Mathf.Deg2Rad));
-				new_z = new Vector3(position.x + radius * Mathf.Cos(angle * i * Mathf.Deg2Rad), position.y + radius * Mathf.Sin(angle * i * Mathf.Deg2Rad), position.z);
+				var new_x = new Vector3(position.x, position.y + radius * Mathf.Sin(angle * i * Mathf.Deg2Rad), position.z + radius * Mathf.Cos(angle * i * Mathf.Deg2Rad));
+				var new_y = new Vector3(position.x + radius * Mathf.Cos(angle * i * Mathf.Deg2Rad), position.y, position.z + radius * Mathf.Sin(angle * i * Mathf.Deg2Rad));
+				var new_z = new Vector3(position.x + radius * Mathf.Cos(angle * i * Mathf.Deg2Rad), position.y + radius * Mathf.Sin(angle * i * Mathf.Deg2Rad), position.z);
 
 				UnityEngine.Debug.DrawLine(x, new_x, color, duration, depthTest);
 				UnityEngine.Debug.DrawLine(y, new_y, color, duration, depthTest);
@@ -847,11 +825,10 @@ namespace RCore.Common
 
 			Vector3 slerpedVector = Vector3.Slerp(_forward, _up, angle / 90.0f);
 
-			float dist;
 			var farPlane = new Plane(-direction, position + _forward);
 			var distRay = new Ray(position, slerpedVector);
 
-			farPlane.Raycast(distRay, out dist);
+			farPlane.Raycast(distRay, out var dist);
 
 			UnityEngine.Debug.DrawRay(position, slerpedVector.normalized * dist, color);
 			UnityEngine.Debug.DrawRay(position, Vector3.Slerp(_forward, -_up, angle / 90.0f).normalized * dist, color, duration, depthTest);
@@ -949,7 +926,6 @@ namespace RCore.Common
 
 			for (int i = 1; i < 26; i++)
 			{
-
 				//Start endcap
 				UnityEngine.Debug.DrawLine(Vector3.Slerp(right, -up, i / 25.0f) + start, Vector3.Slerp(right, -up, (i - 1) / 25.0f) + start, color, duration, depthTest);
 				UnityEngine.Debug.DrawLine(Vector3.Slerp(-right, -up, i / 25.0f) + start, Vector3.Slerp(-right, -up, (i - 1) / 25.0f) + start, color, duration, depthTest);
@@ -1004,11 +980,12 @@ namespace RCore.Common
 		}
 
 		/// <summary>Draws an axis-aligned bounding box.</summary>
+		/// <param name="root"></param>
 		/// <param name='bounds'>The bounds to draw.</param>
 		/// <param name='color'>The color of the bounds.</param>
-		public static void DrawGizmosBounds(Vector3 pRoot, Bounds bounds, Color color)
+		public static void DrawGizmosBounds(Vector3 root, Bounds bounds, Color color)
 		{
-			Vector3 center = bounds.center + pRoot;
+			Vector3 center = bounds.center + root;
 
 			float x = bounds.extents.x;
 			float y = bounds.extents.y;
@@ -1046,10 +1023,11 @@ namespace RCore.Common
 		}
 
 		/// <summary>Draws an axis-aligned bounding box.</summary>
+		/// <param name="root"></param>
 		/// <param name='bounds'>The bounds to draw.</param>
-		public static void DrawGizmosBounds(Vector3 pRoot, Bounds bounds)
+		public static void DrawGizmosBounds(Vector3 root, Bounds bounds)
 		{
-			DrawGizmosBounds(pRoot, bounds, Color.white);
+			DrawGizmosBounds(root, bounds, Color.white);
 		}
 
 		/// <summary>Draws a local cube.</summary>
@@ -1161,19 +1139,18 @@ namespace RCore.Common
 			Vector3 _forward = Vector3.Slerp(up, -up, 0.5f);
 			Vector3 _right = Vector3.Cross(up, _forward).normalized * radius;
 
-			Matrix4x4 matrix = new Matrix4x4();
-
-			matrix[0] = _right.x;
-			matrix[1] = _right.y;
-			matrix[2] = _right.z;
-
-			matrix[4] = up.x;
-			matrix[5] = up.y;
-			matrix[6] = up.z;
-
-			matrix[8] = _forward.x;
-			matrix[9] = _forward.y;
-			matrix[10] = _forward.z;
+			Matrix4x4 matrix = new Matrix4x4
+			{
+				[0] = _right.x,
+				[1] = _right.y,
+				[2] = _right.z,
+				[4] = up.x,
+				[5] = up.y,
+				[6] = up.z,
+				[8] = _forward.x,
+				[9] = _forward.y,
+				[10] = _forward.z
+			};
 
 			Vector3 _lastPoint = position + matrix.MultiplyPoint3x4(new Vector3(Mathf.Cos(0), 0, Mathf.Sin(0)));
 			Vector3 _nextPoint = Vector3.zero;
@@ -1222,7 +1199,7 @@ namespace RCore.Common
 			DrawGizmosCircle(position, Vector3.up, Color.white, radius);
 		}
 
-		//Wiresphere already exists
+		//Wire sphere already exists
 
 		/// <summary>Draws a cylinder.</summary>
 		/// <param name='start'>The position of one end of the cylinder.</param>
@@ -1287,11 +1264,10 @@ namespace RCore.Common
 
 			Vector3 slerpedVector = Vector3.Slerp(_forward, _up, angle / 90.0f);
 
-			float dist;
 			var farPlane = new Plane(-direction, position + _forward);
 			var distRay = new Ray(position, slerpedVector);
 
-			farPlane.Raycast(distRay, out dist);
+			farPlane.Raycast(distRay, out var dist);
 
 			Color oldColor = Gizmos.color;
 			Gizmos.color = color;
@@ -1428,16 +1404,15 @@ namespace RCore.Common
 		{
 			string methods = "";
 			MethodInfo[] methodInfos = obj.GetType().GetMethods();
-			for (int i = 0; i < methodInfos.Length; i++)
+			foreach (var t in methodInfos)
 			{
 				if (includeInfo)
 				{
-					methods += methodInfos[i] + "\n";
+					methods += t + "\n";
 				}
-
 				else
 				{
-					methods += methodInfos[i].Name + "\n";
+					methods += t.Name + "\n";
 				}
 			}
 
@@ -1452,16 +1427,15 @@ namespace RCore.Common
 		{
 			string methods = "";
 			MethodInfo[] methodInfos = type.GetMethods();
-			for (var i = 0; i < methodInfos.Length; i++)
+			foreach (var t in methodInfos)
 			{
 				if (includeInfo)
 				{
-					methods += methodInfos[i] + "\n";
+					methods += t + "\n";
 				}
-
 				else
 				{
-					methods += methodInfos[i].Name + "\n";
+					methods += t.Name + "\n";
 				}
 			}
 

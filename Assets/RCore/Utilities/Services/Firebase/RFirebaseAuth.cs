@@ -2,10 +2,7 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using RCore.Common;
 #if ACTIVE_FIREBASE_AUTH
 using Firebase;
 using Firebase.Auth;
@@ -324,7 +321,7 @@ namespace RCore.Service
         }
 #else
         public static bool initialized { get; private set; }
-        public static bool logged { get { return false; } }
+        public static bool logged => false;
         public static void Initialize() { }
         public static void LogUserInfo() { }
         public static void SignOut() { }

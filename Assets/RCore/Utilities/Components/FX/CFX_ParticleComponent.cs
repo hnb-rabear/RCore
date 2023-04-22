@@ -155,7 +155,7 @@ namespace RCore.Components
 					yield return null;
 			}
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 
 		public void StopMovement()
@@ -273,7 +273,7 @@ namespace RCore.Components
 					break;
 			}
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 #endif
 
@@ -304,7 +304,7 @@ namespace RCore.Components
 
 			yield return new WaitUntil(() => !process);
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 
 #if USE_LEANTWEEN
@@ -425,7 +425,7 @@ namespace RCore.Components
 				try
 				{
 					mParticles[pIndex].startColor = Color.clear;
-					if (onFinishedMovementSeparately != null) onFinishedMovementSeparately();
+					onFinishedMovementSeparately?.Invoke();
 				}
 				catch (Exception ex)
 				{

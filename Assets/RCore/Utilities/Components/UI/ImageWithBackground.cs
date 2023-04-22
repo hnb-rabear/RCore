@@ -7,10 +7,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using RCore.Common;
-using RCore.Inspector;
 #if UNITY_EDITOR
-using UnityEditor;
 #endif
 
 namespace RCore.Components

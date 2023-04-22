@@ -34,7 +34,7 @@ namespace RCore.Inspector
 
         public void CopyFrom(IDictionary<TKey, TValue> dict)
         {
-            this.Clear();
+            Clear();
             foreach (var kvp in dict)
             {
                 this[kvp.Key] = kvp.Value;
@@ -45,7 +45,7 @@ namespace RCore.Inspector
         {
             if (mKeys != null && mValues != null && mKeys.Length == mValues.Length)
             {
-                this.Clear();
+                Clear();
                 int n = mKeys.Length;
                 for (int i = 0; i < n; ++i)
                 {
@@ -60,7 +60,7 @@ namespace RCore.Inspector
 
         public void OnBeforeSerialize()
         {
-            int n = this.Count;
+            int n = Count;
             mKeys = new TKey[n];
             mValues = new TValue[n];
 

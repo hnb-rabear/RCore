@@ -4,7 +4,6 @@
 
 #pragma warning disable 0649
 
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using RCore.Common;
@@ -46,7 +45,7 @@ namespace RCore.Components
 		public RectTransform rectTransform => transform as RectTransform;
 		public Sprite sprite
 		{
-			get { return image.sprite; }
+			get => image.sprite;
 			set
 			{
 				if (m_Img.sprite != value)
@@ -55,8 +54,8 @@ namespace RCore.Components
 		}
 		public string text
 		{
-			get { return label.text; }
-			set { label.text = value; }
+			get => label.text;
+			set => label.text = value;
 		}
 
 		public void SetSprite(Sprite pSprite)

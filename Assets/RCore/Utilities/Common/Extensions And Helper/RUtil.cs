@@ -3,7 +3,6 @@
  **/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace RCore.Common
@@ -163,7 +163,7 @@ namespace RCore.Common
 				combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
 				pMeshobjects[i].gameObject.SetActive(false);
 				if (pDetroyOrginal)
-					GameObject.DestroyImmediate(pMeshobjects[i].gameObject);
+					Object.DestroyImmediate(pMeshobjects[i].gameObject);
 			}
 
 			m_CombinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh = new Mesh();
@@ -214,32 +214,32 @@ namespace RCore.Common
 
 		public static void Raise(this Action pAction)
 		{
-			if (pAction != null) pAction();
+			pAction?.Invoke();
 		}
 
 		public static void Raise(this UnityAction pAction)
 		{
-			if (pAction != null) pAction();
+			pAction?.Invoke();
 		}
 
 		public static void Raise<T>(this Action<T> pAction, T pParam)
 		{
-			if (pAction != null) pAction(pParam);
+			pAction?.Invoke(pParam);
 		}
 
 		public static void Raise<T>(this UnityAction<T> pAction, T pParam)
 		{
-			if (pAction != null) pAction(pParam);
+			pAction?.Invoke(pParam);
 		}
 
 		public static void Raise<T, M>(this Action<T, M> pAction, T pParam1, M pParam2)
 		{
-			if (pAction != null) pAction(pParam1, pParam2);
+			pAction?.Invoke(pParam1, pParam2);
 		}
 
 		public static void Raise<T, M>(this UnityAction<T, M> pAction, T pParam1, M pParam2)
 		{
-			if (pAction != null) pAction(pParam1, pParam2);
+			pAction?.Invoke(pParam1, pParam2);
 		}
 
 		public static List<T> ToList<T>(this T[] pArray)
@@ -445,7 +445,7 @@ namespace RCore.Common
 					keys.Add(item.Key);
 			}
 			if (keys.Count == 0)
-				return default(T1);
+				return default;
 			return keys[Random.Range(0, keys.Count)];
 		}
 

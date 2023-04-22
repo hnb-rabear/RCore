@@ -15,7 +15,7 @@ namespace RCore.Framework.Data
 
         public long Value
         {
-            get { return mValue; }
+            get => mValue;
             set
             {
                 if (value != mValue)

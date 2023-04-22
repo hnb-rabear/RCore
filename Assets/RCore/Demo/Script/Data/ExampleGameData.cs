@@ -17,7 +17,7 @@ namespace RCore.Demo
         private static readonly Encryption FILE_ENRYPTION = new Encryption();
 
         public static ExampleGameData mInstance;
-        public static ExampleGameData Instance { get { return mInstance; } }
+        public static ExampleGameData Instance => mInstance;
 
         public DemoGroup1 exampleGroup;
         public DemoGroup3 demoGroup;

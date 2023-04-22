@@ -1,12 +1,6 @@
 ﻿#if ACTIVE_FIREBASE_FIRESTORE
 using Firebase.Firestore;
 #endif
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEngine;
-
 namespace RCore.Service
 {
     public class RFirebaseFireStore

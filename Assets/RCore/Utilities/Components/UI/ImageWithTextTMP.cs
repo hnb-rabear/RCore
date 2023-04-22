@@ -46,7 +46,7 @@ namespace RCore.Components
         public RectTransform rectTransform => transform as RectTransform;
         public Sprite sprite
         {
-            get { return image.sprite; }
+            get => image.sprite;
             set
             {
                 if (mImg.sprite != value)
@@ -55,8 +55,8 @@ namespace RCore.Components
         }
         public string text
         {
-            get { return label.text; }
-            set { label.text = value; }
+            get => label.text;
+            set => label.text = value;
         }
 
         public void SetSprite(Sprite pSprite)

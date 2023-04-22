@@ -226,8 +226,12 @@ namespace RCore.Common
 		public T Prefab => m_Prefab;
 		public Transform Parent => m_Parent;
 		public string Name => m_Name;
-		public bool pushToLastSibling { get { return m_PushToLastSibling; } set { m_PushToLastSibling = value; } }
-		public int limitNumber { get { return m_LimitNumber; } set { m_LimitNumber = value; } }
+		public bool pushToLastSibling { get => m_PushToLastSibling;
+			set => m_PushToLastSibling = value;
+		}
+		public int limitNumber { get => m_LimitNumber;
+			set => m_LimitNumber = value;
+		}
 		protected bool m_Initialized;
 		protected int m_InitialCount;
 
@@ -336,8 +340,7 @@ namespace RCore.Common
 					item.transform.localPosition = position;
 				Active(item, true, m_InactiveList.Count - 1);
 
-				if (onSpawn != null)
-					onSpawn(item);
+				onSpawn?.Invoke(item);
 
 				if (m_PushToLastSibling)
 					item.transform.SetAsLastSibling();
@@ -385,8 +388,7 @@ namespace RCore.Common
 				Active(item, true, m_InactiveList.Count - 1);
 				pReused = true;
 
-				if (onSpawn != null)
-					onSpawn(item);
+				onSpawn?.Invoke(item);
 
 				if (m_PushToLastSibling)
 					item.transform.SetAsLastSibling();

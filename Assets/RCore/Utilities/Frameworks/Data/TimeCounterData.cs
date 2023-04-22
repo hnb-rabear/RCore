@@ -90,8 +90,7 @@ namespace RCore.Framework.Data
             if (m_Counter != null)
                 WaitUtil.RemoveCountdownEvent(m_Counter);
 
-            if (m_OnFinished != null)
-                m_OnFinished(GetRemainSeconds());
+            m_OnFinished?.Invoke(GetRemainSeconds());
         }
 
         private void Register()
@@ -105,8 +104,7 @@ namespace RCore.Framework.Data
                 unscaledTime = true,
                 doSomething = (pass) =>
                 {
-                    if (m_OnFinished != null)
-                        m_OnFinished(GetRemainSeconds());
+                    m_OnFinished?.Invoke(GetRemainSeconds());
                 }
             });
         }

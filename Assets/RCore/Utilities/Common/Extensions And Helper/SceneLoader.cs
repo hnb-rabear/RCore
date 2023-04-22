@@ -5,10 +5,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using RCore.Common;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Common
 {

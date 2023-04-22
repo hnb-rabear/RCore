@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 
 namespace RCore.Common
 {
-    [System.Serializable]
+    [Serializable]
     public class KeyValue
     {
         public string key;
@@ -27,7 +27,7 @@ namespace RCore.Common
     {
         #region Internal Class
 
-        [System.Serializable]
+        [Serializable]
         public class RequestResult
         {
             public string text;
@@ -169,8 +169,7 @@ namespace RCore.Common
 #endif
             }
 
-            if (pOnResponsed != null)
-                pOnResponsed(res);
+            pOnResponsed?.Invoke(res);
         }
 
         #endregion

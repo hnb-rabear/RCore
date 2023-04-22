@@ -2,8 +2,6 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
-using System;
-
 namespace RCore.Framework.Data
 {
     public class StringData : FunData
@@ -14,7 +12,7 @@ namespace RCore.Framework.Data
 
         public string Value
         {
-            get { return mValue; }
+            get => mValue;
             set
             {
                 if (value != mValue)

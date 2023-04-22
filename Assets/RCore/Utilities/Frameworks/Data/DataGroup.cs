@@ -5,8 +5,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
 using RCore.Common;
 using Debug = UnityEngine.Debug;
 
@@ -56,7 +54,7 @@ namespace RCore.Framework.Data
                 if (mChildren[i].Id == pId)
                     return mChildren[i] as T;
             }
-            return default(T);
+            return default;
         }
 
         public T GetDataByIndex<T>(int pIndex) where T : FunData
@@ -191,8 +189,7 @@ namespace RCore.Framework.Data
             {
                 DataSaver.Save(false);
 
-                if (pOnCompleted != null)
-                    pOnCompleted();
+                pOnCompleted?.Invoke();
             });
         }
 
@@ -283,8 +280,8 @@ namespace RCore.Framework.Data
                 pListData[i].Stage();
                 yield return null;
             }
-            if (pOnCompleted != null)
-                pOnCompleted();
+
+            pOnCompleted?.Invoke();
 
             mIsStagging = false;
         }

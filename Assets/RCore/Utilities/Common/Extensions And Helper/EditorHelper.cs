@@ -63,7 +63,7 @@ namespace RCore.Common
 		{
 		}
 
-		public EditorButton(string pLabel, Action pOnPressed, Color pColor = default(Color))
+		public EditorButton(string pLabel, Action pOnPressed, Color pColor = default)
 		{
 			label = pLabel;
 			onPressed = pOnPressed;
@@ -76,7 +76,7 @@ namespace RCore.Common
 			style ??= new GUIStyle("Button");
 			if (width > 0)
 				style.fixedWidth = width;
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = color;
 			IsPressed = GUILayout.Button(label, style);
 			if (IsPressed && onPressed != null)
@@ -275,7 +275,7 @@ namespace RCore.Common
 				i++;
 			}
 
-			OutputValue = default(T);
+			OutputValue = default;
 		}
 	}
 
@@ -300,7 +300,7 @@ namespace RCore.Common
 			bool result;
 
 			var defaultColor = GUI.color;
-			if (color != default(Color))
+			if (color != default)
 				GUI.color = color;
 
 			if (style == null)
@@ -325,7 +325,7 @@ namespace RCore.Common
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
 
-			if (color != default(Color))
+			if (color != default)
 				GUI.color = defaultColor;
 
 			OutputValue = result;
@@ -743,13 +743,13 @@ namespace RCore.Common
 
 		private static readonly Dictionary<int, Color> BoxColours = new Dictionary<int, Color>();
 
-		public static void BoxVerticalOpen(int id, Color color = default(Color), bool isBox = false,
+		public static void BoxVerticalOpen(int id, Color color = default, bool isBox = false,
 			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			var defaultColor = GUI.backgroundColor;
 			BoxColours.TryAdd(id, defaultColor);
 
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = color;
 
 			if (!isBox)
@@ -774,12 +774,12 @@ namespace RCore.Common
 			EditorGUILayout.EndVertical();
 		}
 
-		public static Rect BoxVertical(Action doSomething, Color color = default(Color), bool isBox = false,
+		public static Rect BoxVertical(Action doSomething, Color color = default, bool isBox = false,
 			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = color;
 
 			if (!isBox)
@@ -800,18 +800,18 @@ namespace RCore.Common
 			doSomething();
 
 			EditorGUILayout.EndVertical();
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = defaultColor;
 
 			return rect;
 		}
 
-		public static Rect BoxVertical(string pTitle, Action doSomething, Color color = default(Color),
+		public static Rect BoxVertical(string pTitle, Action doSomething, Color color = default,
 			bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = color;
 
 			if (!isBox)
@@ -835,18 +835,18 @@ namespace RCore.Common
 			doSomething();
 
 			EditorGUILayout.EndVertical();
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = defaultColor;
 
 			return rect;
 		}
 
-		public static Rect BoxHorizontal(Action doSomething, Color color = default(Color), bool isBox = false,
+		public static Rect BoxHorizontal(Action doSomething, Color color = default, bool isBox = false,
 			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = color;
 
 			if (!isBox)
@@ -868,17 +868,17 @@ namespace RCore.Common
 
 			EditorGUILayout.EndHorizontal();
 
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = defaultColor;
 			return rect;
 		}
 
-		public static Rect BoxHorizontal(string pTitle, Action doSomething, Color color = default(Color),
+		public static Rect BoxHorizontal(string pTitle, Action doSomething, Color color = default,
 			bool isBox = false, float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			Rect rect;
 			var defaultColor = GUI.backgroundColor;
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = color;
 
 			if (!string.IsNullOrEmpty(pTitle))
@@ -909,7 +909,7 @@ namespace RCore.Common
 			if (!string.IsNullOrEmpty(pTitle))
 				EditorGUILayout.EndVertical();
 
-			if (color != default(Color))
+			if (color != default)
 				GUI.backgroundColor = defaultColor;
 
 			return rect;
@@ -996,7 +996,7 @@ namespace RCore.Common
 			button.Draw();
 		}
 
-		public static bool ButtonColor(string pLabel, Color pColor = default(Color), int pWidth = 0)
+		public static bool ButtonColor(string pLabel, Color pColor = default, int pWidth = 0)
 		{
 			var button = new EditorButton()
 			{
@@ -1008,7 +1008,7 @@ namespace RCore.Common
 			return button.IsPressed;
 		}
 
-		public static void ButtonColor(string pLabel, Action pOnPressed, Color pColor = default(Color), int pWidth = 0)
+		public static void ButtonColor(string pLabel, Action pOnPressed, Color pColor = default, int pWidth = 0)
 		{
 			var button = new EditorButton()
 			{
@@ -1378,7 +1378,7 @@ namespace RCore.Common
 					if (pAdditionalDraws != null)
 						foreach (var draw in pAdditionalDraws)
 							draw.Draw();
-				}, default(Color), true);
+				}, default, true);
 			}
 
 			pObjects = list;
@@ -1459,7 +1459,7 @@ namespace RCore.Common
 
 					EditorGUILayout.EndHorizontal();
 				}
-			}, default(Color), true);
+			}, default, true);
 
 			GUI.backgroundColor = prevColor;
 		}
@@ -1620,7 +1620,7 @@ namespace RCore.Common
 						if (ButtonColor("Clear", Color.red, 50))
 							ConfirmPopup(() => { list = new List<T>(); });
 					});
-				}, default(Color), true);
+				}, default, true);
 			}
 
 			pList = list;
@@ -1889,7 +1889,7 @@ namespace RCore.Common
 		}
 
 		public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0,
-			Color color = default(Color))
+			Color color = default)
 		{
 			var toggle = new EditorToggle()
 			{
@@ -1954,14 +1954,14 @@ namespace RCore.Common
 		}
 
 		public static void LabelField(string label, int width = 0, bool isBold = true,
-			TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default(Color))
+			TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default)
 		{
 			var style = new GUIStyle(isBold ? EditorStyles.boldLabel : EditorStyles.label)
 			{
 				alignment = pTextAnchor,
 				margin = new RectOffset(0, 0, 0, 0)
 			};
-			if (pTextColor != default(Color))
+			if (pTextColor != default)
 				style.normal.textColor = pTextColor;
 			if (width > 0)
 				EditorGUILayout.LabelField(label, style, GUILayout.MinWidth(width), GUILayout.MaxWidth(width));

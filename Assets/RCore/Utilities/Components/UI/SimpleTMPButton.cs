@@ -112,10 +112,10 @@ namespace RCore.Components
                 serializedObject.ApplyModifiedProperties();
         }
 
-        [UnityEditor.MenuItem("RUtilities/UI/Replace Button By SimpleTMPButton")]
+        [MenuItem("RUtilities/UI/Replace Button By SimpleTMPButton")]
         private static void ReplaceButton()
         {
-            var gameobjects = UnityEditor.Selection.gameObjects;
+            var gameobjects = Selection.gameObjects;
             for (int i = 0; i < gameobjects.Length; i++)
             {
                 var btns = gameobjects[i].FindComponentsInChildren<Button>();

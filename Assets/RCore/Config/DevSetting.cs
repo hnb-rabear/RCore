@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Inspector;
-using Debug = UnityEngine.Debug;
 using RCore.Common;
 
 [CreateAssetMenu(fileName = "DevSetting", menuName = "RUtilities/Dev Setting")]
@@ -10,7 +9,7 @@ public class DevSetting : ScriptableObject
 {
     #region Internal Class
 
-    [System.Serializable]
+    [Serializable]
     public class Profile
     {
         [ReadOnly]
@@ -25,7 +24,7 @@ public class DevSetting : ScriptableObject
         public List<Directive> defines;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Directive
     {
         public Directive()
@@ -70,7 +69,7 @@ public class DevSetting : ScriptableObject
 
     public bool EnableLog
     {
-        get { return profile.enableLog || enableLogSystem.Value; }
+        get => profile.enableLog || enableLogSystem.Value;
         set
         {
             profile.enableLog = value;
@@ -79,7 +78,7 @@ public class DevSetting : ScriptableObject
     }
     public bool EnableDraw
     {
-        get { return profile.enableDraw; }
+        get => profile.enableDraw;
         set
         {
             profile.enableDraw = value;
@@ -88,7 +87,7 @@ public class DevSetting : ScriptableObject
     }
     public bool ShowFPS
     {
-        get { return profile.showFPS; }
+        get => profile.showFPS;
         set
         {
             profile.showFPS = value;

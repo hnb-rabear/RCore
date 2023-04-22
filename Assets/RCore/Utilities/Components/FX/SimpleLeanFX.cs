@@ -8,7 +8,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -26,7 +25,7 @@ namespace RCore.Components
     public class SimpleLeanFX : MonoBehaviour
     {
         private static SimpleLeanFX mInstance;
-        public static SimpleLeanFX instance { get { return mInstance; } }
+        public static SimpleLeanFX instance => mInstance;
 
         [SerializeField] AnimationCurve mBubbleAnim;
         [SerializeField] AnimationCurve mFadeInAndOutAnim;
@@ -48,7 +47,7 @@ namespace RCore.Components
             return SimulateBubble(pTarget, defaultScale, 0, 1, instance.mBubbleAnim, time, pOnFinished);
         }
 
-        public int SingleHightLight(Image pTarget, float time = 0.5f, System.Action pOnFinished = null)
+        public int SingleHightLight(Image pTarget, float time = 0.5f, Action pOnFinished = null)
         {
             var defaultAlpha = Color.white.a;
             int id = 0;
@@ -273,7 +272,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(SimpleLeanFX), true)]
-    public class SimpleLeanFXEditor : UnityEditor.Editor
+    public class SimpleLeanFXEditor : Editor
     {
         private SimpleLeanFX mObj;
 

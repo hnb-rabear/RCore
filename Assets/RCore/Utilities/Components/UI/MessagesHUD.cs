@@ -2,21 +2,17 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 //#define NEW_INPUT
-using System.Collections;
+
 using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 using UnityEngine;
-using UnityEngine.UI;
 using RCore.Common;
 using RCore.Inspector;
-using RCore.Framework.UI;
 #if NEW_INPUT
 using UnityEngine.InputSystem;
 #endif
-using System;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Components
 {

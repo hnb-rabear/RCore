@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using RCore.Framework.UI;
 using RCore.Components;
 using RCore.Common;

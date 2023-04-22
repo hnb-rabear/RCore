@@ -3,7 +3,6 @@
  **/
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -34,7 +33,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
+                TimeSpan t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -79,7 +78,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
+                TimeSpan t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -124,7 +123,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
+                TimeSpan t = TimeSpan.FromSeconds(seconds);
 
                 //I keep below code as a result to provide that StringBuilder is much faster than string.format
                 //StringBuilder create gabrage lesser than string.Format about 65%
@@ -200,7 +199,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
+                TimeSpan t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Days > 0)
                 {
@@ -245,7 +244,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
+                TimeSpan t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -286,7 +285,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
+                TimeSpan t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {

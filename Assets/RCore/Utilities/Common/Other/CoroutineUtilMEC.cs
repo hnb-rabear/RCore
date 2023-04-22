@@ -4,11 +4,6 @@
 
 //#define USE_MEC
 
-using UnityEngine;
-using System.Collections;
-using System;
-using System.Collections.Generic;
-
 #if USE_MEC
 using MEC;
 #endif

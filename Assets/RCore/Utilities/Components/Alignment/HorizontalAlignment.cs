@@ -14,137 +14,137 @@ using DG.Tweening;
 
 namespace RCore.Components
 {
-    public class HorizontalAlignment : MyAlignment
-    {
-        public enum Alignment
-        {
-            Left,
-            Right,
-            Center,
-        }
+	public class HorizontalAlignment : MyAlignment
+	{
+		public enum Alignment
+		{
+			Left,
+			Right,
+			Center,
+		}
 
-        public float maxContainerWidth;
-        public Alignment alignmentType;
-        public float cellDistance;
-        public float tweenTime = 0.25f;
-        public bool autoWhenStart;
-        [Range(0, 1f)] public float lerp;
-        public bool moveFromRoot;
-        public AnimationCurve animCurve;
+		public float maxContainerWidth;
+		public Alignment alignmentType;
+		public float cellDistance;
+		public float tweenTime = 0.25f;
+		public bool autoWhenStart;
+		[Range(0, 1f)] public float lerp;
+		public bool moveFromRoot;
+		public AnimationCurve animCurve;
 
-        [Header("Optional")]
-        public float yOffset;
+		[Header("Optional")] 
+		public float yOffset;
 
-        private Transform[] mChildren;
-        private Vector3[] mChildrenNewPosition;
-        private Vector3[] mChildrenPrePosition;
+		private Transform[] mChildren;
+		private Vector3[] mChildrenNewPosition;
+		private Vector3[] mChildrenPrePosition;
 #if USE_DOTWEEN
         private Tweener mTweener;
 #else
-        private Coroutine mCoroutine;
+		private Coroutine mCoroutine;
 #endif
-        private void Start()
-        {
-            if (autoWhenStart)
-                Align();
-        }
+		private void Start()
+		{
+			if (autoWhenStart)
+				Align();
+		}
 
-        private void OnValidate()
-        {
-            if (Application.isPlaying)
-                return;
+		private void OnValidate()
+		{
+			if (Application.isPlaying)
+				return;
 
-            Init();
-            RefreshPositions();
+			Init();
+			RefreshPositions();
 
-            float t = lerp;
-            if (animCurve.length > 1)
-                t = animCurve.Evaluate(lerp);
-            for (int j = 0; j < mChildren.Length; j++)
-            {
-                var pos = Vector3.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
-                mChildren[j].localPosition = pos;
-            }
-        }
+			float t = lerp;
+			if (animCurve.length > 1)
+				t = animCurve.Evaluate(lerp);
+			for (int j = 0; j < mChildren.Length; j++)
+			{
+				var pos = Vector3.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
+				mChildren[j].localPosition = pos;
+			}
+		}
 
-        private void Init()
-        {
-            var list = new List<Transform>();
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                var child = transform.GetChild(i);
-                if (child.gameObject.activeSelf)
-                    list.Add(transform.GetChild(i));
-            }
-            mChildren = list.ToArray();
-        }
+		private void Init()
+		{
+			var list = new List<Transform>();
+			for (int i = 0; i < transform.childCount; i++)
+			{
+				var child = transform.GetChild(i);
+				if (child.gameObject.activeSelf)
+					list.Add(transform.GetChild(i));
+			}
+			mChildren = list.ToArray();
+		}
 
-        private void RefreshPositions()
-        {
-            if (Math.Abs(mChildren.Length * cellDistance) > maxContainerWidth && maxContainerWidth > 0)
-                cellDistance *= maxContainerWidth / (Math.Abs(mChildren.Length * cellDistance));
+		private void RefreshPositions()
+		{
+			if (Math.Abs(mChildren.Length * cellDistance) > maxContainerWidth && maxContainerWidth > 0)
+				cellDistance *= maxContainerWidth / (Math.Abs(mChildren.Length * cellDistance));
 
-            mChildrenPrePosition = new Vector3[mChildren.Length];
-            mChildrenNewPosition = new Vector3[mChildren.Length];
-            switch (alignmentType)
-            {
-                case Alignment.Left:
-                    for (int i = 0; i < mChildren.Length; i++)
-                    {
-                        if (!moveFromRoot)
-                            mChildrenPrePosition[i] = mChildren[i].localPosition;
-                        mChildrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
-                    }
-                    break;
+			mChildrenPrePosition = new Vector3[mChildren.Length];
+			mChildrenNewPosition = new Vector3[mChildren.Length];
+			switch (alignmentType)
+			{
+				case Alignment.Left:
+					for (int i = 0; i < mChildren.Length; i++)
+					{
+						if (!moveFromRoot)
+							mChildrenPrePosition[i] = mChildren[i].localPosition;
+						mChildrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
+					}
+					break;
 
-                case Alignment.Right:
-                    for (int i = 0; i < mChildren.Length; i++)
-                    {
-                        if (!moveFromRoot)
-                            mChildrenPrePosition[i] = mChildren[i].localPosition;
-                        mChildrenNewPosition[i] = new Vector3(cellDistance, yOffset, 0) * ((mChildren.Length - 1 - i) * -1);
-                    }
-                    break;
+				case Alignment.Right:
+					for (int i = 0; i < mChildren.Length; i++)
+					{
+						if (!moveFromRoot)
+							mChildrenPrePosition[i] = mChildren[i].localPosition;
+						mChildrenNewPosition[i] = new Vector3(cellDistance, yOffset, 0) * ((mChildren.Length - 1 - i) * -1);
+					}
+					break;
 
-                case Alignment.Center:
-                    for (int i = 0; i < mChildren.Length; i++)
-                    {
-                        if (!moveFromRoot)
-                            mChildrenPrePosition[i] = mChildren[i].localPosition;
-                        mChildrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
-                    }
-                    for (int i = 0; i < mChildren.Length; i++)
-                    {
-                        mChildrenNewPosition[i] = new Vector3(
-                            mChildrenNewPosition[i].x - mChildrenNewPosition[mChildren.Length - 1].x / 2,
-                            mChildrenNewPosition[i].y + yOffset,
-                            mChildrenNewPosition[i].z);
-                    }
-                    break;
-            }
-        }
+				case Alignment.Center:
+					for (int i = 0; i < mChildren.Length; i++)
+					{
+						if (!moveFromRoot)
+							mChildrenPrePosition[i] = mChildren[i].localPosition;
+						mChildrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
+					}
+					for (int i = 0; i < mChildren.Length; i++)
+					{
+						mChildrenNewPosition[i] = new Vector3(
+						mChildrenNewPosition[i].x - mChildrenNewPosition[mChildren.Length - 1].x / 2,
+						mChildrenNewPosition[i].y + yOffset,
+						mChildrenNewPosition[i].z);
+					}
+					break;
+			}
+		}
 
-        public override void Align()
-        {
-            Init();
-            RefreshPositions();
-            lerp = 1;
+		public override void Align()
+		{
+			Init();
+			RefreshPositions();
+			lerp = 1;
 
-            for (int i = 0; i < mChildren.Length; i++)
-                mChildren[i].localPosition = mChildrenNewPosition[i];
-        }
+			for (int i = 0; i < mChildren.Length; i++)
+				mChildren[i].localPosition = mChildrenNewPosition[i];
+		}
 
-        public override void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
-        {
-            StartCoroutine(IEAlignByTweener(onFinish, pCurve));
-        }
+		public override void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		{
+			StartCoroutine(IEAlignByTweener(onFinish, pCurve));
+		}
 
-        private IEnumerator IEAlignByTweener(Action onFinish, AnimationCurve pCurve = null)
-        {
-            Init();
-            RefreshPositions();
-            if (pCurve != null)
-                animCurve = pCurve;
+		private IEnumerator IEAlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		{
+			Init();
+			RefreshPositions();
+			if (pCurve != null)
+				animCurve = pCurve;
 #if USE_DOTWEEN
             bool waiting = true;
             lerp = 0;
@@ -171,36 +171,35 @@ namespace RCore.Components
             while (waiting)
                 yield return null;
 #else
-            if (mCoroutine != null)
-                StopCoroutine(mCoroutine);
-            mCoroutine = StartCoroutine(IEArrangeChildren(mChildrenPrePosition, mChildrenNewPosition, tweenTime));
-            yield return mCoroutine;
+			if (mCoroutine != null)
+				StopCoroutine(mCoroutine);
+			mCoroutine = StartCoroutine(IEArrangeChildren(mChildrenPrePosition, mChildrenNewPosition, tweenTime));
+			yield return mCoroutine;
 #endif
-            if (onFinish != null)
-                onFinish();
-        }
+			onFinish?.Invoke();
+		}
 
-        private IEnumerator IEArrangeChildren(Vector3[] pChildrenPrePosition, Vector3[] pChildrenNewPosition, float pDuration)
-        {
-            float time = 0;
-            while (true)
-            {
-                if (time >= pDuration)
-                    time = pDuration;
-                lerp = time / pDuration;
-                float t = lerp;
-                if (animCurve.length > 1)
-                    t = animCurve.Evaluate(lerp);
-                for (int j = 0; j < mChildren.Length; j++)
-                {
-                    var pos = Vector3.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);
-                    mChildren[j].localPosition = pos;
-                }
-                if (lerp >= 1)
-                    break;
-                yield return null;
-                time += Time.deltaTime;
-            }
-        }
-    }
+		private IEnumerator IEArrangeChildren(Vector3[] pChildrenPrePosition, Vector3[] pChildrenNewPosition, float pDuration)
+		{
+			float time = 0;
+			while (true)
+			{
+				if (time >= pDuration)
+					time = pDuration;
+				lerp = time / pDuration;
+				float t = lerp;
+				if (animCurve.length > 1)
+					t = animCurve.Evaluate(lerp);
+				for (int j = 0; j < mChildren.Length; j++)
+				{
+					var pos = Vector3.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);
+					mChildren[j].localPosition = pos;
+				}
+				if (lerp >= 1)
+					break;
+				yield return null;
+				time += Time.deltaTime;
+			}
+		}
+	}
 }

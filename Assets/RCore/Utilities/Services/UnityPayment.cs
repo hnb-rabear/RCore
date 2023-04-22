@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System;
-using Unity.Services.Core;
-using Unity.Services.Core.Environments;
 
 #if UNITY_IAP
 using UnityEngine.Purchasing;

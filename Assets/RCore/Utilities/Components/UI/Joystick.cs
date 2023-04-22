@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace RCore.Components
 {
@@ -28,8 +25,7 @@ namespace RCore.Components
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (onDragBegin != null)
-                onDragBegin();
+            onDragBegin?.Invoke();
         }
 
         private void OnDisable()

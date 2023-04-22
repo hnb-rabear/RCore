@@ -23,7 +23,7 @@ namespace RCore.Framework.Data
 
 		public T Value
 		{
-			get { return m_Value != null ? m_Value : m_DefaultValue; }
+			get => m_Value != null ? m_Value : m_DefaultValue;
 			set
 			{
 				if ((m_Value != null && value == null) || (m_Value == null && value != null) || m_Value.CompareTo(value) != 0)
@@ -85,8 +85,8 @@ namespace RCore.Framework.Data
 				throw new ArgumentException("The type must be serializable.", "source");
 
 			// Don't serialize a null object, simply return the default for that object
-			if (System.Object.ReferenceEquals(source, null))
-				return default(T);
+			if (ReferenceEquals(source, null))
+				return default;
 
 			IFormatter formatter = new BinaryFormatter();
 			Stream stream = new MemoryStream();

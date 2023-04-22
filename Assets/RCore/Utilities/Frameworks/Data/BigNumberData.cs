@@ -2,11 +2,6 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using RCore.Framework.Data;
-
 namespace RCore.Framework.Data
 {
     public class BigNumberData : DataGroup
@@ -16,7 +11,7 @@ namespace RCore.Framework.Data
 
         public Common.BigNumberAlpha Value
         {
-            get { return new Common.BigNumberAlpha(mReadable.Value, mPow.Value); }
+            get => new(mReadable.Value, mPow.Value);
             set
             {
                 mReadable.Value = value.readableValue;

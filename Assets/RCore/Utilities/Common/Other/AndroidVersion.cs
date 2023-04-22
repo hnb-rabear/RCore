@@ -9,14 +9,15 @@ namespace RCore.Common
         {
             buildVersion = new AndroidJavaClass("android.os.Build$VERSION");
         }
-        public static string BASE_OS { get { return buildVersion.GetStatic<string>("BASE_OS"); } }
-        public static string CODENAME { get { return buildVersion.GetStatic<string>("CODENAME"); } }
-        public static string INCREMENTAL { get { return buildVersion.GetStatic<string>("INCREMENTAL"); } }
-        public static int PREVIEW_SDK_INT { get { return buildVersion.GetStatic<int>("PREVIEW_SDK_INT"); } }
-        public static string RELEASE { get { return buildVersion.GetStatic<string>("RELEASE"); } }
-        public static string SDK { get { return buildVersion.GetStatic<string>("SDK"); } }
-        public static int SDK_INT { get { return buildVersion.GetStatic<int>("SDK_INT"); } }
-        public static string SECURITY_PATCH { get { return buildVersion.GetStatic<string>("SECURITY_PATCH"); } }
+        public static string BASE_OS => buildVersion.GetStatic<string>("BASE_OS");
+        public static string CODENAME => buildVersion.GetStatic<string>("CODENAME");
+        public static string INCREMENTAL => buildVersion.GetStatic<string>("INCREMENTAL");
+        public static int PREVIEW_SDK_INT => buildVersion.GetStatic<int>("PREVIEW_SDK_INT");
+        public static string RELEASE => buildVersion.GetStatic<string>("RELEASE");
+        public static string SDK => buildVersion.GetStatic<string>("SDK");
+        public static int SDK_INT => buildVersion.GetStatic<int>("SDK_INT");
+        public static string SECURITY_PATCH => buildVersion.GetStatic<string>("SECURITY_PATCH");
+
         public static string ALL_VERSION
         {
             get

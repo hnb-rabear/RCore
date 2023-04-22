@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Service
 {

@@ -89,7 +89,7 @@ namespace RCore.Common
         /// The count of delegate lookups. The delegate lookups will increase by
         /// one for each unique AddListener. Useful for debugging and not much else.
         /// </summary>
-        public static int DelegateLookupCount { get { return delegateLookup.Count; } }
+        public static int DelegateLookupCount => delegateLookup.Count;
 
         /// <summary>
         /// Raise the event to all the listeners

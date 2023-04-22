@@ -33,12 +33,12 @@ namespace RCore.Framework.Data
 		/// </summary>
 		protected string m_SaverIdString;
 
-		public string Key { get { return m_Key; } }
-		public int Id { get { return m_Id; } }
-		public int Index { get { return m_Index; } }
-		public DataSaver DataSaver { get { return DataSaverContainer.GetSaver(m_SaverIdString); } }
+		public string Key => m_Key;
+		public int Id => m_Id;
+		public int Index => m_Index;
+		public DataSaver DataSaver => DataSaverContainer.GetSaver(m_SaverIdString);
 
-		public virtual List<FunData> Children { get { return null; } }
+		public virtual List<FunData> Children => null;
 
 		#endregion
 

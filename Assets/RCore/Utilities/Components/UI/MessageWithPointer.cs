@@ -4,7 +4,6 @@
 #pragma warning disable 0649
 
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using RCore.Common;

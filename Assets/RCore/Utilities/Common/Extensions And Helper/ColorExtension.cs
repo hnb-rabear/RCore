@@ -2,7 +2,6 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
-using System;
 using UnityEngine;
 
 namespace RCore.Common

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 // Add script to lighting source
 // Updates toon shadows for toon shader
@@ -11,11 +9,11 @@ public class ToonLight : MonoBehaviour
 
     private void OnEnable()
     {
-        light = this.GetComponent<Light>();
+        light = GetComponent<Light>();
     }
 
     void Update()
     {
-        Shader.SetGlobalVector("_ToonLightDirection", -this.transform.forward);
+        Shader.SetGlobalVector("_ToonLightDirection", -transform.forward);
     }
 }
