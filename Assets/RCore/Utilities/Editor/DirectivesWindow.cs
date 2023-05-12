@@ -89,16 +89,17 @@ namespace RCore.Common
 
                 for (int i = 0; i < mDirectives.Count; i++)
                 {
+                    int i1 = i;
                     EditorHelper.BoxHorizontal(() =>
                     {
-                        mDirectives[i].name = EditorHelper.TextField(mDirectives[i].name, "", 0, (int)w1);
-                        mDirectives[i].enabled = EditorHelper.Toggle(mDirectives[i].enabled, "", 0, (int)w2);
-                        mDirectives[i].@fixed = EditorHelper.Toggle(mDirectives[i].@fixed, "", 0, (int)w3);
-                        if (!mDirectives[i].@fixed)
+                        mDirectives[i1].name = EditorHelper.TextField(mDirectives[i1].name, "", 0, (int)w1);
+                        mDirectives[i1].enabled = EditorHelper.Toggle(mDirectives[i1].enabled, "", 0, (int)w2);
+                        mDirectives[i1].@fixed = EditorHelper.Toggle(mDirectives[i1].@fixed, "", 0, (int)w3);
+                        if (!mDirectives[i1].@fixed)
                         {
                             EditorHelper.ButtonColor("X", () =>
                             {
-                                mDirectives.RemoveAt(i);
+                                mDirectives.RemoveAt(i1);
                             }, Color.red, (int)w4);
                         }
                         else

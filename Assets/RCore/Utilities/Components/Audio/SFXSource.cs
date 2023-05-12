@@ -91,7 +91,8 @@ namespace RCore.Components
 				int index = m_Indexs[Random.Range(0, mClips.Length)];
 				if (m_AudioSource == null)
 				{
-					AudioManager.Instance?.PlaySFX(index, m_Limit, mIsLoop, m_PitchRandomMultiplier);
+					if (AudioManager.Instance != null)
+						AudioManager.Instance.PlaySFX(index, m_Limit, mIsLoop, m_PitchRandomMultiplier);
 				}
 				else
 				{
@@ -190,13 +191,14 @@ namespace RCore.Components
 					{
 						for (int i = 0; i < m_Script.mClips.Length; i++)
 						{
+							int i1 = i;
 							EditorHelper.BoxHorizontal(() =>
 							{
-								EditorHelper.TextField(m_Script.mClips[i], "");
+								EditorHelper.TextField(m_Script.mClips[i1], "");
 								if (EditorHelper.ButtonColor("x", Color.red, 24))
 								{
 									var list = m_Script.mClips.ToList();
-									list.Remove(m_Script.mClips[i]);
+									list.Remove(m_Script.mClips[i1]);
 									m_Script.mClips = list.ToArray();
 								}
 							});
@@ -241,7 +243,7 @@ namespace RCore.Components
 				{
 					if (EditorHelper.ButtonColor("Add to OnClick event"))
 					{
-						UnityAction action = new UnityAction(m_Script.PlaySFX);
+						UnityAction action = m_Script.PlaySFX;
 						UnityEventTools.AddVoidPersistentListener(m_Button.onClick, action);
 					}
 				}

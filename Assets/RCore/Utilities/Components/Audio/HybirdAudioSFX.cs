@@ -60,7 +60,10 @@ namespace RCore.Components
             {
                 var index = mIndexs[Random.Range(0, mIndexs.Length)];
                 if (m_AudioSource == null)
-                    HybirdAudioManager.Instance?.PlaySFXByIndex(index, mIsLoop, mPitchRandomMultiplier);
+                {
+                    if (HybirdAudioManager.Instance != null)
+                        HybirdAudioManager.Instance.PlaySFXByIndex(index, mIsLoop, mPitchRandomMultiplier);
+                }
                 else
                 {
                     if (!HybirdAudioManager.Instance.EnabledSFX)
@@ -108,8 +111,7 @@ namespace RCore.Components
             {
                 mScript = target as HybirdAudioSFX;
 
-                if (mScript.mIdStrings == null)
-                    mScript.mIdStrings = new string[0] { };
+                mScript.mIdStrings ??= new string[] { };
 
                 mButton = mScript.GetComponent<UnityEngine.UI.Button>();
             }
@@ -121,9 +123,9 @@ namespace RCore.Components
                 if (HybirdAudioCollection.Instance == null)
                 {
                     if (HybirdAudioCollection.Instance == null)
-                        EditorGUILayout.HelpBox("HybirdAudioSFX require HybirdAudioCollection. " +
-                            "To create HybirdAudioCollection,select Resources folder then from Create Menu " +
-                            "select RUtilities/Create Hybird Audio Collection", MessageType.Error);
+                        EditorGUILayout.HelpBox("HybridAudioSFX require HybridAudioCollection. " +
+                            "To create HybridAudioCollection,select Resources folder then from Create Menu " +
+                            "select RUtilities/Create Hybrid Audio Collection", MessageType.Error);
                     return;
                 }
 
@@ -132,13 +134,14 @@ namespace RCore.Components
                     {
                         for (int i = 0; i < mScript.mIdStrings.Length; i++)
                         {
+                            int i1 = i;
                             EditorHelper.BoxHorizontal(() =>
                             {
-                                EditorHelper.TextField(mScript.mIdStrings[i], "SoundId");
+                                EditorHelper.TextField(mScript.mIdStrings[i1], "SoundId");
                                 if (EditorHelper.ButtonColor("x", Color.red, 24))
                                 {
                                     var list = mScript.mIdStrings.ToList();
-                                    list.Remove(mScript.mIdStrings[i]);
+                                    list.Remove(mScript.mIdStrings[i1]);
                                     mScript.mIdStrings = list.ToArray();
                                 }
                             });
@@ -153,16 +156,16 @@ namespace RCore.Components
                         var clips = HybirdAudioCollection.Instance.SFXClips;
                         if (clips != null && clips.Count > 0)
                         {
-                            for (int i = 0; i < clips.Count; i++)
+                            foreach (var clip in clips)
                             {
-                                if (clips[i].fileName.ToLower().Contains(mSearch.ToLower()))
+                                if (clip.fileName.ToLower().Contains(mSearch.ToLower()))
                                 {
-                                    if (GUILayout.Button(clips[i].fileName))
+                                    if (GUILayout.Button(clip.fileName))
                                     {
                                         var list = mScript.mIdStrings.ToList();
-                                        if (!list.Contains(clips[i].fileName))
+                                        if (!list.Contains(clip.fileName))
                                         {
-                                            list.Add(clips[i].fileName);
+                                            list.Add(clip.fileName);
                                             mScript.mIdStrings = list.ToArray();
                                             mSearch = "";
                                             EditorGUI.FocusTextInControl(null);
@@ -180,7 +183,7 @@ namespace RCore.Components
                 {
                     if (EditorHelper.ButtonColor("Add to OnClick event"))
                     {
-                        UnityAction action = new UnityAction(mScript.PlaySFX);
+                        UnityAction action = mScript.PlaySFX;
                         UnityEventTools.AddVoidPersistentListener(mButton.onClick, action);
                     }
                 }

@@ -38,6 +38,7 @@ namespace RCore.Editor
                     var profile = mBuildProfilesCollection.profiles[i];
                     bool show = true;
 
+                    int i1 = i;
                     EditorHelper.BoxHorizontal(() =>
                     {
                         profile.selected = EditorGUILayout.Toggle(profile.selected, GUILayout.Height(20), GUILayout.Width(20));
@@ -46,11 +47,11 @@ namespace RCore.Editor
                         string prefix = "";
                         if (!string.IsNullOrEmpty(profile.bundleVersion))
                             prefix = $"[{profile.bundleVersion}|{profile.bundleVersionCode}] ";
-                        show = EditorHelper.HeaderFoldout(prefix + profile.GetBuildName() + surfix, "BuilderWindow" + i);
+                        show = EditorHelper.HeaderFoldout(prefix + profile.GetBuildName() + surfix, "BuilderWindow" + i1);
 
-                        if (mToggleOptions == i)
+                        if (mToggleOptions == i1)
                         {
-                            if (mRemovingIndex == i)
+                            if (mRemovingIndex == i1)
                             {
                                 EditorHelper.BoxHorizontal(() =>
                                 {
@@ -64,7 +65,7 @@ namespace RCore.Editor
                                 });
                             }
                             else if (EditorHelper.ButtonColor("x", Color.red, 24))
-                                mRemovingIndex = i;
+                                mRemovingIndex = i1;
                             else if (EditorHelper.ButtonColor("copy", Color.yellow, 50))
                             {
                                 var copiedProfile = new BuildProfile(profile);
@@ -74,10 +75,11 @@ namespace RCore.Editor
                                 mToggleOptions = -1;
                         }
                         else if (EditorHelper.ButtonColor("Show", Color.cyan, 50))
-                            mToggleOptions = i;
+                            mToggleOptions = i1;
                     });
                     if (show)
                     {
+                        int i2 = i;
                         EditorHelper.BoxVertical(() =>
                         {
                             EditorHelper.BoxHorizontal(() =>
@@ -176,7 +178,7 @@ namespace RCore.Editor
                             };
                             btnAddActiveScene.color = Color.green;
                             btnAddActiveScene.width = 120;
-                            if (EditorHelper.HeaderFoldout("Scenes", "Scenes" + i, false, btnAddNewScene, btnAddCurrentScenes, btnAddActiveScene))
+                            if (EditorHelper.HeaderFoldout("Scenes", "Scenes" + i2, false, btnAddNewScene, btnAddCurrentScenes, btnAddActiveScene))
                             {
                                 GUILayout.BeginVertical("box");
                                 EditorHelper.DragDropBox<SceneAsset>("Drag Drop Scene", (objs) =>
@@ -214,39 +216,40 @@ namespace RCore.Editor
                             {
                                 profile.targets.Add(CustomBuldTarget.NoTarget);
                             };
-                            if (EditorHelper.HeaderFoldout("Build Targets", "Build Targets" + i, false, btnBuilTarget))
+                            if (EditorHelper.HeaderFoldout("Build Targets", "Build Targets" + i2, false, btnBuilTarget))
                             {
                                 GUILayout.BeginVertical("box");
                                 for (int j = 0; j < profile.targets.Count; j++)
                                 {
+                                    int j1 = j;
                                     EditorHelper.BoxHorizontal(() =>
                                     {
-                                        if (profile.targets[j] != CustomBuldTarget.NoTarget)
+                                        if (profile.targets[j1] != CustomBuldTarget.NoTarget)
                                         {
-                                            var icon = BuilderUtil.FindIcon(BuilderUtil.GroupForTarget((BuildTarget)profile.targets[j]));
+                                            var icon = BuilderUtil.FindIcon(BuilderUtil.GroupForTarget((BuildTarget)profile.targets[j1]));
                                             EditorHelper.DrawTextureIcon(icon, new Vector2(20, 20));
                                         }
                                         if (EditorHelper.ButtonColor("▲", Color.white, 24))
                                         {
-                                            if (j > 0)
+                                            if (j1 > 0)
                                             {
-                                                var temp = profile.targets[j];
-                                                profile.targets[j] = profile.targets[j - 1];
-                                                profile.targets[j - 1] = temp;
+                                                var temp = profile.targets[j1];
+                                                profile.targets[j1] = profile.targets[j1 - 1];
+                                                profile.targets[j1 - 1] = temp;
                                             }
                                         }
                                         if (EditorHelper.ButtonColor("▼", Color.white, 24))
                                         {
-                                            if (j < profile.targets.Count - 1)
+                                            if (j1 < profile.targets.Count - 1)
                                             {
-                                                var temp = profile.targets[j];
-                                                profile.targets[j] = profile.targets[j + 1];
-                                                profile.targets[j + 1] = temp;
+                                                var temp = profile.targets[j1];
+                                                profile.targets[j1] = profile.targets[j1 + 1];
+                                                profile.targets[j1 + 1] = temp;
                                             }
                                         }
-                                        profile.targets[j] = EditorHelper.DropdownListEnum(profile.targets[j], "");
+                                        profile.targets[j1] = EditorHelper.DropdownListEnum(profile.targets[j1], "");
                                         if (EditorHelper.ButtonColor("X", Color.red, 24))
-                                            profile.targets.RemoveAt(j);
+                                            profile.targets.RemoveAt(j1);
                                     });
                                 }
                                 GUILayout.EndVertical();
@@ -278,7 +281,7 @@ namespace RCore.Editor
                                     },
                                     color = Color.yellow
                                 };
-                                if (EditorHelper.HeaderFoldout("Directives", "Directives" + i, false, btn1, btn2))
+                                if (EditorHelper.HeaderFoldout("Directives", "Directives" + i2, false, btn1, btn2))
                                 {
                                     GUILayout.BeginVertical("box");
                                     if (profile.reorderDirectives == null)
@@ -304,7 +307,7 @@ namespace RCore.Editor
                                     EditorApplication.delayCall += () => { Build(profile); };
                                 if (EditorHelper.ButtonColor("Copy CLI", Color.cyan, 100))
                                 {
-                                    string cli = mCommandLine.Replace("[index]", i.ToString()).Replace("[path]", profile.outputFolder);
+                                    string cli = mCommandLine.Replace("[index]", i2.ToString()).Replace("[path]", profile.outputFolder);
                                     UniClipboard.SetText(cli);
                                     Debug.Log(cli);
                                 }

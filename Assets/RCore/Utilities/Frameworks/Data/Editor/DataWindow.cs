@@ -150,12 +150,13 @@ namespace RCore.Framework.Data
                     });
                     for (int i = from; i <= to; i++)
                     {
+                        int i1 = i;
                         EditorHelper.BoxHorizontal(() =>
                         {
-                            EditorHelper.LabelField((i + 1).ToString(), 40);
-                            list[i].Key = EditorHelper.TextField(list[i].Key, "", 0, 100);
-                            list[i].Alias = EditorHelper.TextField(list[i].Alias, "", 0, 100);
-                            list[i].Value = EditorHelper.TextField(list[i].Value, "", 0, 200);
+                            EditorHelper.LabelField((i1 + 1).ToString(), 40);
+                            list[i1].Key = EditorHelper.TextField(list[i1].Key, "", 0, 100);
+                            list[i1].Alias = EditorHelper.TextField(list[i1].Alias, "", 0, 100);
+                            list[i1].Value = EditorHelper.TextField(list[i1].Value, "", 0, 200);
                         });
                     }
                     if (totalPages > 0)

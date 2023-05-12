@@ -53,17 +53,17 @@ namespace RCore.Components
 
         [ReadOnly] public bool isLocked;
 
-        public Action OnClickOnLock;
+        public Action onClickOnLock;
 
-        private CustomToggleGroup mCustomToggleGroup;
-        private bool mIsOn;
+        private CustomToggleGroup m_CustomToggleGroup;
+        private bool m_IsOn;
 
         protected override void Start()
         {
             base.Start();
 
-            mCustomToggleGroup = group as CustomToggleGroup;
-            mIsOn = isOn;
+            m_CustomToggleGroup = group as CustomToggleGroup;
+            m_IsOn = isOn;
         }
 
 #if UNITY_EDITOR
@@ -134,7 +134,7 @@ namespace RCore.Components
         {
             if (isLocked)
             {
-                OnClickOnLock?.Invoke();
+                onClickOnLock?.Invoke();
                 return;
             }
 
@@ -180,8 +180,8 @@ namespace RCore.Components
                         label.fontSize = isOn ? fontSizeActive : fontSizeInactive;
             }
 
-            if (mCustomToggleGroup != null && isOn)
-                mCustomToggleGroup.SetTarget(transform as RectTransform, tweenTime);
+            if (m_CustomToggleGroup != null && isOn)
+                m_CustomToggleGroup.SetTarget(transform as RectTransform, tweenTime);
         }
 
         private void RefreshByTween()
@@ -289,10 +289,10 @@ namespace RCore.Components
 #endif
         }
 
-        private void OnValueChanged(bool pIson)
+        private void OnValueChanged(bool pIsOn)
         {
-            if (pIson)
-                AudioManager.Instance?.PlaySFX(sfxClip, 0);
+            if (pIsOn && AudioManager.Instance)
+                AudioManager.Instance.PlaySFX(sfxClip, 0);
 #if USE_DOTWEEN
             if (Application.isPlaying && tweenTime > 0)
             {

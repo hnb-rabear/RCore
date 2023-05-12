@@ -47,8 +47,8 @@ namespace RCore.Components
 
         private void OnValueChanged(bool pIsOn)
         {
-            if (pIsOn)
-                AudioManager.Instance?.PlaySFX(sfxClip, 0);
+            if (pIsOn && AudioManager.Instance)
+                AudioManager.Instance.PlaySFX(sfxClip, 0);
 
             Refresh();
         }

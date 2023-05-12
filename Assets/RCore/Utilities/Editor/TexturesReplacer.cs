@@ -267,9 +267,10 @@ namespace RCore.Editor
 						for (int i = from; i <= to; i++)
 						{
 							var spriteToSprite = mSave.spritesToSprites[i];
+							int i1 = i;
 							EditorHelper.BoxHorizontal(() =>
 							{
-								EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i + 1}, {spriteToSprite.left.name}", 150, 40, true);
+								EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i1 + 1}, {spriteToSprite.left.name}", 150, 40, true);
 								string leftName = spriteToSprite.left == null ? "" : spriteToSprite.left.name;
 								string rightName = spriteToSprite.right == null ? "" : spriteToSprite.right.name;
 								int leftId = spriteToSprite.left == null ? 0 : spriteToSprite.left.GetInstanceID();
@@ -315,9 +316,10 @@ namespace RCore.Editor
 						for (int i = 0; i < mSave.spritesToSprites.Count; i++)
 						{
 							var spriteToSprite = mSave.spritesToSprites[i];
+							int i1 = i;
 							EditorHelper.BoxHorizontal(() =>
 							{
-								EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i + 1}", 20, 200);
+								EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i1 + 1}", 20, 200);
 								string leftName = spriteToSprite.left == null ? "" : spriteToSprite.left.name;
 								string rightName = spriteToSprite.right == null ? "" : spriteToSprite.right.name;
 								int leftId = spriteToSprite.left == null ? 0 : spriteToSprite.left.GetInstanceID();

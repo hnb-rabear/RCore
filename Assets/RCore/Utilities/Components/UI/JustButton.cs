@@ -18,7 +18,7 @@ namespace RCore.Components
     [AddComponentMenu("Utitlies/UI/JustButton")]
     public class JustButton : Button
     {
-        public enum PivotForScale
+        protected enum PivotForScale
         {
             Bot,
             Top,
@@ -29,7 +29,7 @@ namespace RCore.Components
             Center,
         }
 
-        public enum PerfectRatio
+        protected enum PerfectRatio
         {
             None,
             Width,
@@ -170,8 +170,8 @@ namespace RCore.Components
             if (mActive)
             {
                 base.OnPointerDown(eventData);
-                if (!string.IsNullOrEmpty(m_SfxClip))
-                    AudioManager.Instance?.PlaySFX(m_SfxClip, 0);
+                if (!string.IsNullOrEmpty(m_SfxClip) && AudioManager.Instance)
+                    AudioManager.Instance.PlaySFX(m_SfxClip, 0);
             }
 
             if (mEnabledFX)

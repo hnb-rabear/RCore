@@ -309,9 +309,10 @@ public class DevSettingEditor : Editor
         {
             if (EditorHelper.HeaderFoldout(profiles[i].name, "PreviewProfile" + i))
             {
+                int i1 = i;
                 EditorHelper.BoxVertical(() =>
                 {
-                    DrawSettingsProfile(profiles[i]);
+                    DrawSettingsProfile(profiles[i1]);
                 }, ColorHelper.LightAzure, true);
             }
             if (i < profiles.Count - 1)
