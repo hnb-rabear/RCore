@@ -1,10 +1,8 @@
 ﻿using RCore.Common;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.U2D;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 using EditorPrefs = UnityEditor.EditorPrefs;
@@ -74,29 +72,28 @@ namespace RCore.Editor
 
 		private void DrawAtlasTab(List<AtlasTexture> pAtlasTextures)
 		{
-			using (var scrollView = new EditorGUILayout.ScrollViewScope(mScrollPositionAtlasTab))
+			using var scrollView = new EditorGUILayout.ScrollViewScope(mScrollPositionAtlasTab);
+			mScrollPositionAtlasTab = scrollView.scrollPosition;
+
+			if (EditorHelper.Button("Add AtlasTexture"))
+				pAtlasTextures.Add(new AtlasTexture());
+
+			for (int i = 0; i < pAtlasTextures.Count; i++)
 			{
-				mScrollPositionAtlasTab = scrollView.scrollPosition;
-
-				if (EditorHelper.Button("Add AtlasTexture"))
-					pAtlasTextures.Add(new AtlasTexture());
-
-				for (int i = 0; i < pAtlasTextures.Count; i++)
+				EditorGUILayout.BeginHorizontal();
+				int index = i;
+				pAtlasTextures[index] = DisplaySpritesOfAtlas(pAtlasTextures[index]);
+				if (EditorHelper.ButtonColor("X", Color.red, 23))
 				{
-					EditorGUILayout.BeginHorizontal();
-					int index = i;
-					pAtlasTextures[index] = DisplaySpritesOfAtlas(pAtlasTextures[index]);
-					if (EditorHelper.ButtonColor("X", Color.red, 23))
-					{
-						pAtlasTextures.RemoveAt(i);
-						i--;
-					}
-					EditorGUILayout.EndHorizontal();
+					pAtlasTextures.RemoveAt(i);
+					i--;
 				}
+				EditorGUILayout.EndHorizontal();
 			}
+
 		}
 
-		private void DrawScanSpriteButton(List<Sprite> pOutput)
+		private static void DrawScanSpriteButton(List<Sprite> pOutput)
 		{
 			var scanImageButton = new EditorButton()
 			{
@@ -132,7 +129,7 @@ namespace RCore.Editor
 			scanImageButton.Draw();
 		}
 
-		private void DrawDragDropAreas(List<Sprite> pOutput)
+		private static void DrawDragDropAreas(List<Sprite> pOutput)
 		{
 			EditorHelper.DragDropBox<GameObject>("Prefabs", objs =>
 			{
@@ -155,9 +152,8 @@ namespace RCore.Editor
 				{
 					if (obj is Texture2D)
 					{
-						var tex = obj as Texture2D;
 						string path = AssetDatabase.GetAssetPath(obj);
-						Sprite[] ss = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
+						var ss = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
 						foreach (var s in ss)
 							if (!pOutput.Contains(s))
 								pOutput.Add(s);
@@ -224,122 +220,122 @@ namespace RCore.Editor
 				matchButton.Draw();
 				mShowResultsAsBoxes = EditorHelper.Toggle(mShowResultsAsBoxes, "Show Box");
 			});
-			using (var scrollView = new EditorGUILayout.ScrollViewScope(mScrollPositionCompareTab))
+
+			using var scrollView = new EditorGUILayout.ScrollViewScope(mScrollPositionCompareTab);
+			mScrollPositionCompareTab = scrollView.scrollPosition;
+			if (mSave.spritesToSprites != null)
 			{
-				mScrollPositionCompareTab = scrollView.scrollPosition;
-				if (mSave.spritesToSprites != null)
+				if (mShowResultsAsBoxes)
 				{
-					if (mShowResultsAsBoxes)
+					int spritesPerPage = 30;
+					int page = EditorPrefs.GetInt("TexturesReplacer_page", 0);
+					int totalPages = Mathf.CeilToInt(mSave.spritesToSprites.Count * 1f / spritesPerPage);
+					if (totalPages == 0)
+						totalPages = 1;
+					if (page < 0)
+						page = 0;
+					if (page >= totalPages)
+						page = totalPages - 1;
+					int from = page * spritesPerPage;
+					int to = page * spritesPerPage + spritesPerPage - 1;
+					if (to > mSave.spritesToSprites.Count - 1)
+						to = mSave.spritesToSprites.Count - 1;
+
+					if (totalPages > 1)
 					{
-						int spritesPerPage = 30;
-						int page = EditorPrefs.GetInt("TexturesReplacer_page", 0);
-						int totalPages = Mathf.CeilToInt(mSave.spritesToSprites.Count * 1f / spritesPerPage);
-						if (totalPages == 0)
-							totalPages = 1;
-						if (page < 0)
-							page = 0;
-						if (page >= totalPages)
-							page = totalPages - 1;
-						int from = page * spritesPerPage;
-						int to = page * spritesPerPage + spritesPerPage - 1;
-						if (to > mSave.spritesToSprites.Count - 1)
-							to = mSave.spritesToSprites.Count - 1;
-
-						if (totalPages > 1)
+						EditorGUILayout.BeginHorizontal();
+						if (EditorHelper.Button("<Prev<", 80))
 						{
-							EditorGUILayout.BeginHorizontal();
-							if (EditorHelper.Button("<Prev<", 80))
-							{
-								if (page > 0) page--;
-								EditorPrefs.SetInt("TexturesReplacer_page", page);
-							}
-							EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({mSave.spritesToSprites.Count})", GUILayout.Width(100));
-							if (EditorHelper.Button(">Next>", 80))
-							{
-								if (page < totalPages - 1) page++;
-								EditorPrefs.SetInt("TexturesReplacer_page", page);
-							}
-							EditorGUILayout.EndHorizontal();
+							if (page > 0) page--;
+							EditorPrefs.SetInt("TexturesReplacer_page", page);
 						}
-
-						GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
-						style.alignment = TextAnchor.MiddleCenter;
-						for (int i = from; i <= to; i++)
+						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({mSave.spritesToSprites.Count})", GUILayout.Width(100));
+						if (EditorHelper.Button(">Next>", 80))
 						{
-							var spriteToSprite = mSave.spritesToSprites[i];
-							int i1 = i;
-							EditorHelper.BoxHorizontal(() =>
-							{
-								EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i1 + 1}, {spriteToSprite.left.name}", 150, 40, true);
-								string leftName = spriteToSprite.left == null ? "" : spriteToSprite.left.name;
-								string rightName = spriteToSprite.right == null ? "" : spriteToSprite.right.name;
-								int leftId = spriteToSprite.left == null ? 0 : spriteToSprite.left.GetInstanceID();
-								int rightId = spriteToSprite.right == null ? 0 : spriteToSprite.right.GetInstanceID();
-								if (leftName != rightName || leftId != rightId)
-								{
-									style.normal.textColor = Color.red;
-									EditorGUILayout.LabelField("!=", style, GUILayout.Width(23));
-								}
-								else
-								{
-									style.normal.textColor = Color.green;
-									EditorGUILayout.LabelField("==", style, GUILayout.Width(23));
-								}
-								if (spriteToSprite.right != null)
-									spriteToSprite.right = (Sprite)EditorHelper.ObjectField<Sprite>(spriteToSprite.right, $"{spriteToSprite.right.name}", 130, 40, true);
-								else
-									spriteToSprite.right = (Sprite)EditorHelper.ObjectField<Sprite>(spriteToSprite.right, "NULL", 130, 40, true);
-							});
+							if (page < totalPages - 1) page++;
+							EditorPrefs.SetInt("TexturesReplacer_page", page);
 						}
-
-						if (totalPages > 1)
-						{
-							EditorGUILayout.BeginHorizontal();
-							if (EditorHelper.Button("<Prev<", 80))
-							{
-								if (page > 0) page--;
-								EditorPrefs.SetInt("TexturesReplacer_page", page);
-							}
-							EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({mSave.spritesToSprites.Count})", GUILayout.Width(100));
-							if (EditorHelper.Button(">Next>", 80))
-							{
-								if (page < totalPages - 1) page++;
-								EditorPrefs.SetInt("TexturesReplacer_page", page);
-							}
-							EditorGUILayout.EndHorizontal();
-						}
+						EditorGUILayout.EndHorizontal();
 					}
-					else
+
+					var style = new GUIStyle(EditorStyles.boldLabel);
+					style.alignment = TextAnchor.MiddleCenter;
+					for (int i = from; i <= to; i++)
 					{
-						GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
-						style.alignment = TextAnchor.MiddleCenter;
-						for (int i = 0; i < mSave.spritesToSprites.Count; i++)
+						var spriteToSprite = mSave.spritesToSprites[i];
+						int i1 = i;
+						EditorHelper.BoxHorizontal(() =>
 						{
-							var spriteToSprite = mSave.spritesToSprites[i];
-							int i1 = i;
-							EditorHelper.BoxHorizontal(() =>
+							EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i1 + 1}, {spriteToSprite.left.name}", 150, 40, true);
+							string leftName = spriteToSprite.left == null ? "" : spriteToSprite.left.name;
+							string rightName = spriteToSprite.right == null ? "" : spriteToSprite.right.name;
+							int leftId = spriteToSprite.left == null ? 0 : spriteToSprite.left.GetInstanceID();
+							int rightId = spriteToSprite.right == null ? 0 : spriteToSprite.right.GetInstanceID();
+							if (leftName != rightName || leftId != rightId)
 							{
-								EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i1 + 1}", 20, 200);
-								string leftName = spriteToSprite.left == null ? "" : spriteToSprite.left.name;
-								string rightName = spriteToSprite.right == null ? "" : spriteToSprite.right.name;
-								int leftId = spriteToSprite.left == null ? 0 : spriteToSprite.left.GetInstanceID();
-								int rightId = spriteToSprite.right == null ? 0 : spriteToSprite.right.GetInstanceID();
-								if (leftName != rightName || leftId != rightId)
-								{
-									style.normal.textColor = Color.red;
-									EditorGUILayout.LabelField("!=", style, GUILayout.Width(23));
-								}
-								else
-								{
-									style.normal.textColor = Color.green;
-									EditorGUILayout.LabelField("==", style, GUILayout.Width(23));
-								}
-								spriteToSprite.right = (Sprite)EditorHelper.ObjectField<Sprite>(spriteToSprite.right, $"", 200);
-							});
+								style.normal.textColor = Color.red;
+								EditorGUILayout.LabelField("!=", style, GUILayout.Width(23));
+							}
+							else
+							{
+								style.normal.textColor = Color.green;
+								EditorGUILayout.LabelField("==", style, GUILayout.Width(23));
+							}
+							if (spriteToSprite.right != null)
+								spriteToSprite.right = (Sprite)EditorHelper.ObjectField<Sprite>(spriteToSprite.right, $"{spriteToSprite.right.name}", 130, 40, true);
+							else
+								spriteToSprite.right = (Sprite)EditorHelper.ObjectField<Sprite>(spriteToSprite.right, "NULL", 130, 40, true);
+						});
+					}
+
+					if (totalPages > 1)
+					{
+						EditorGUILayout.BeginHorizontal();
+						if (EditorHelper.Button("<Prev<", 80))
+						{
+							if (page > 0) page--;
+							EditorPrefs.SetInt("TexturesReplacer_page", page);
 						}
+						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({mSave.spritesToSprites.Count})", GUILayout.Width(100));
+						if (EditorHelper.Button(">Next>", 80))
+						{
+							if (page < totalPages - 1) page++;
+							EditorPrefs.SetInt("TexturesReplacer_page", page);
+						}
+						EditorGUILayout.EndHorizontal();
+					}
+				}
+				else
+				{
+					var style = new GUIStyle(EditorStyles.boldLabel);
+					style.alignment = TextAnchor.MiddleCenter;
+					for (int i = 0; i < mSave.spritesToSprites.Count; i++)
+					{
+						var spriteToSprite = mSave.spritesToSprites[i];
+						int i1 = i;
+						EditorHelper.BoxHorizontal(() =>
+						{
+							EditorHelper.ObjectField<Sprite>(spriteToSprite.left, $"{i1 + 1}", 20, 200);
+							string leftName = spriteToSprite.left == null ? "" : spriteToSprite.left.name;
+							string rightName = spriteToSprite.right == null ? "" : spriteToSprite.right.name;
+							int leftId = spriteToSprite.left == null ? 0 : spriteToSprite.left.GetInstanceID();
+							int rightId = spriteToSprite.right == null ? 0 : spriteToSprite.right.GetInstanceID();
+							if (leftName != rightName || leftId != rightId)
+							{
+								style.normal.textColor = Color.red;
+								EditorGUILayout.LabelField("!=", style, GUILayout.Width(23));
+							}
+							else
+							{
+								style.normal.textColor = Color.green;
+								EditorGUILayout.LabelField("==", style, GUILayout.Width(23));
+							}
+							spriteToSprite.right = (Sprite)EditorHelper.ObjectField<Sprite>(spriteToSprite.right, $"", 200);
+						});
 					}
 				}
 			}
+
 		}
 
 		private void DrawReplaceTab()
@@ -382,138 +378,137 @@ namespace RCore.Editor
 				}
 			};
 			scanButton.Draw();
-			using (var scrollView = new EditorGUILayout.ScrollViewScope(mScrollPositionReplaceTab))
+			using var scrollView = new EditorGUILayout.ScrollViewScope(mScrollPositionReplaceTab);
+			mScrollPositionReplaceTab = scrollView.scrollPosition;
+			EditorHelper.BoxVertical(() =>
 			{
-				mScrollPositionReplaceTab = scrollView.scrollPosition;
-				EditorHelper.BoxVertical(() =>
+				if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
 				{
-					if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
+					EditorGUILayout.HelpBox("Select at least one GameObject to see how it work", MessageType.Info);
+					return;
+				}
+
+				//Draw images
+				if (mImages != null && mImages.Count > 0)
+				{
+					EditorHelper.BoxHorizontal(() =>
 					{
-						EditorGUILayout.HelpBox("Select at least one GameObject to see how it work", MessageType.Info);
-						return;
-					}
-
-					//Draw images
-					if (mImages != null && mImages.Count > 0)
-					{
-						EditorHelper.BoxHorizontal(() =>
+						EditorHelper.LabelField("#", 40);
+						EditorHelper.LabelField("Sprite", 150);
+						mSelectAll = EditorHelper.Toggle(mSelectAll, "", 0, 30, mSelectAll ? Color.cyan : ColorHelper.DarkCyan);
+						if (EditorHelper.ButtonColor("1st", mSelectedImages.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
 						{
-							EditorHelper.LabelField("#", 40);
-							EditorHelper.LabelField("Sprite", 150);
-							mSelectAll = EditorHelper.Toggle(mSelectAll, "", 0, 30, mSelectAll ? Color.cyan : ColorHelper.DarkCyan);
-							if (EditorHelper.ButtonColor("1st", mSelectedImages.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
-							{
-								for (int i = 0; i < mSelectedImages.Count; i++)
-									if (mSelectAll || (!mSelectAll && mSelectedImages[i]))
-										ReplaceByLeft(mImages[i]);
-							}
-							if (EditorHelper.ButtonColor("2nd", mSelectedImages.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
-							{
-								for (int i = 0; i < mSelectedImages.Count; i++)
-									if (mSelectAll || (!mSelectAll && mSelectedImages[i]))
-										ReplaceByRight(mImages[i]);
-							}
-						});
-
-						for (int i = 0; i < mImages.Count; i++)
-						{
-							GUILayout.BeginHorizontal();
-							var img = mImages[i];
-							if (img == null)
-								continue;
-							EditorHelper.LabelField(i.ToString(), 40);
-							EditorHelper.ObjectField<Sprite>(img.sprite, "", 0, 150);
-							if (!mSelectAll)
-								mSelectedImages[i] = EditorHelper.Toggle(mSelectedImages[i], "", 0, 30, mSelectedImages[i] ? Color.cyan : ColorHelper.DarkCyan);
-							else
-								EditorHelper.Toggle(true, "", 0, 30, Color.cyan);
-							if (EditorHelper.Button($"{img.name}"))
-								Selection.activeObject = img;
-
-							bool hasLeftSpt = IsLeft(img.sprite, out int leftIndex);
-							bool hasRightSpt = IsRight(img.sprite, out int rightIndex);
-
-							if (hasLeftSpt != hasRightSpt)
-							{
-								if (EditorHelper.ButtonColor("1st", hasLeftSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
-								{
-									if (hasLeftSpt) return;
-									ReplaceByLeft(img, rightIndex);
-								}
-
-								if (EditorHelper.ButtonColor("2nd", hasRightSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
-								{
-									if (hasRightSpt) return;
-									ReplaceByRight(img, leftIndex);
-								}
-							}
-							GUILayout.EndHorizontal();
+							for (int i = 0; i < mSelectedImages.Count; i++)
+								if (mSelectAll || (!mSelectAll && mSelectedImages[i]))
+									ReplaceByLeft(mImages[i]);
 						}
-					}
-
-					//Draw Sprite Renderers
-					if (mSpriteRenderers != null && mSpriteRenderers.Count > 0)
-					{
-						EditorHelper.BoxHorizontal(() =>
+						if (EditorHelper.ButtonColor("2nd", mSelectedImages.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
 						{
-							EditorHelper.LabelField("#", 40);
-							EditorHelper.LabelField("Sprite", 150);
-							mSelectAll = EditorHelper.Toggle(mSelectAll, "", 0, 30, mSelectAll ? Color.cyan : ColorHelper.DarkCyan);
-							if (EditorHelper.ButtonColor("1st", mSelectedSpriteRenderers.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
-							{
-								for (int i = 0; i < mSelectedSpriteRenderers.Count; i++)
-									if (mSelectAll || (!mSelectAll && mSelectedSpriteRenderers[i]))
-										ReplaceByLeft(mSpriteRenderers[i]);
-							}
-							if (EditorHelper.ButtonColor("2nd", mSelectedSpriteRenderers.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
-							{
-								for (int i = 0; i < mSelectedSpriteRenderers.Count; i++)
-									if (mSelectAll || (!mSelectAll && mSelectedSpriteRenderers[i]))
-										ReplaceByRight(mSpriteRenderers[i]);
-							}
-						});
-
-						for (int i = 0; i < mSpriteRenderers.Count; i++)
-						{
-							GUILayout.BeginHorizontal();
-							var img = mSpriteRenderers[i];
-							if (img == null)
-								continue;
-							EditorHelper.LabelField(i.ToString(), 40);
-							EditorHelper.ObjectField<Sprite>(img.sprite, "", 0, 150);
-							if (!mSelectAll)
-								mSelectedSpriteRenderers[i] = EditorHelper.Toggle(mSelectedSpriteRenderers[i], "", 0, 30, mSelectedSpriteRenderers[i] ? Color.cyan : ColorHelper.DarkCyan);
-							else
-								EditorHelper.Toggle(true, "", 0, 30, Color.cyan);
-							if (EditorHelper.Button($"{img.name}"))
-								Selection.activeObject = img;
-
-							bool hasLeftSpt = IsLeft(img.sprite, out int leftIndex);
-							bool hasRightSpt = IsRight(img.sprite, out int rightIndex);
-
-							if (hasLeftSpt != hasRightSpt)
-							{
-								if (EditorHelper.ButtonColor("1st", hasLeftSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
-								{
-									if (hasLeftSpt) return;
-									ReplaceByLeft(img, rightIndex);
-								}
-
-								if (EditorHelper.ButtonColor("2nd", hasRightSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
-								{
-									if (hasRightSpt) return;
-									ReplaceByRight(img, leftIndex);
-								}
-							}
-							GUILayout.EndHorizontal();
+							for (int i = 0; i < mSelectedImages.Count; i++)
+								if (mSelectAll || (!mSelectAll && mSelectedImages[i]))
+									ReplaceByRight(mImages[i]);
 						}
+					});
 
-						if ((mSelectedImages == null || mSelectedImages.Count == 0) && (mSelectedSpriteRenderers == null || mSelectedSpriteRenderers.Count == 0))
-							EditorGUILayout.HelpBox("Not found any image have sprite from left or right list!", MessageType.Info);
+					for (int i = 0; i < mImages.Count; i++)
+					{
+						GUILayout.BeginHorizontal();
+						var img = mImages[i];
+						if (img == null)
+							continue;
+						EditorHelper.LabelField(i.ToString(), 40);
+						EditorHelper.ObjectField<Sprite>(img.sprite, "", 0, 150);
+						if (!mSelectAll)
+							mSelectedImages[i] = EditorHelper.Toggle(mSelectedImages[i], "", 0, 30, mSelectedImages[i] ? Color.cyan : ColorHelper.DarkCyan);
+						else
+							EditorHelper.Toggle(true, "", 0, 30, Color.cyan);
+						if (EditorHelper.Button($"{img.name}"))
+							Selection.activeObject = img;
+
+						bool hasLeftSpt = IsLeft(img.sprite, out int leftIndex);
+						bool hasRightSpt = IsRight(img.sprite, out int rightIndex);
+
+						if (hasLeftSpt != hasRightSpt)
+						{
+							if (EditorHelper.ButtonColor("1st", hasLeftSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
+							{
+								if (hasLeftSpt) return;
+								ReplaceByLeft(img, rightIndex);
+							}
+
+							if (EditorHelper.ButtonColor("2nd", hasRightSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
+							{
+								if (hasRightSpt) return;
+								ReplaceByRight(img, leftIndex);
+							}
+						}
+						GUILayout.EndHorizontal();
+					}
+				}
+
+				//Draw Sprite Renderers
+				if (mSpriteRenderers != null && mSpriteRenderers.Count > 0)
+				{
+					EditorHelper.BoxHorizontal(() =>
+					{
+						EditorHelper.LabelField("#", 40);
+						EditorHelper.LabelField("Sprite", 150);
+						mSelectAll = EditorHelper.Toggle(mSelectAll, "", 0, 30, mSelectAll ? Color.cyan : ColorHelper.DarkCyan);
+						if (EditorHelper.ButtonColor("1st", mSelectedSpriteRenderers.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
+						{
+							for (int i = 0; i < mSelectedSpriteRenderers.Count; i++)
+								if (mSelectAll || (!mSelectAll && mSelectedSpriteRenderers[i]))
+									ReplaceByLeft(mSpriteRenderers[i]);
+						}
+						if (EditorHelper.ButtonColor("2nd", mSelectedSpriteRenderers.Count > 0 ? Color.cyan : ColorHelper.DarkCyan, 33))
+						{
+							for (int i = 0; i < mSelectedSpriteRenderers.Count; i++)
+								if (mSelectAll || (!mSelectAll && mSelectedSpriteRenderers[i]))
+									ReplaceByRight(mSpriteRenderers[i]);
+						}
+					});
+
+					for (int i = 0; i < mSpriteRenderers.Count; i++)
+					{
+						GUILayout.BeginHorizontal();
+						var img = mSpriteRenderers[i];
+						if (img == null)
+							continue;
+						EditorHelper.LabelField(i.ToString(), 40);
+						EditorHelper.ObjectField<Sprite>(img.sprite, "", 0, 150);
+						if (!mSelectAll)
+							mSelectedSpriteRenderers[i] = EditorHelper.Toggle(mSelectedSpriteRenderers[i], "", 0, 30, mSelectedSpriteRenderers[i] ? Color.cyan : ColorHelper.DarkCyan);
+						else
+							EditorHelper.Toggle(true, "", 0, 30, Color.cyan);
+						if (EditorHelper.Button($"{img.name}"))
+							Selection.activeObject = img;
+
+						bool hasLeftSpt = IsLeft(img.sprite, out int leftIndex);
+						bool hasRightSpt = IsRight(img.sprite, out int rightIndex);
+
+						if (hasLeftSpt != hasRightSpt)
+						{
+							if (EditorHelper.ButtonColor("1st", hasLeftSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
+							{
+								if (hasLeftSpt) return;
+								ReplaceByLeft(img, rightIndex);
+							}
+
+							if (EditorHelper.ButtonColor("2nd", hasRightSpt ? ColorHelper.DarkCyan : Color.cyan, 33))
+							{
+								if (hasRightSpt) return;
+								ReplaceByRight(img, leftIndex);
+							}
+						}
+						GUILayout.EndHorizontal();
 					}
 
-				}, Color.yellow, true);
-			}
+					if ((mSelectedImages == null || mSelectedImages.Count == 0) && (mSelectedSpriteRenderers == null || mSelectedSpriteRenderers.Count == 0))
+						EditorGUILayout.HelpBox("Not found any image have sprite from left or right list!", MessageType.Info);
+				}
+
+			}, Color.yellow, true);
+
 		}
 
 		private Sprite FindLeft(string pName)
@@ -530,11 +525,7 @@ namespace RCore.Editor
 
 		private void ReplaceByLeft(SpriteRenderer img, int pIndex = -1)
 		{
-			Sprite spr = null;
-			if (pIndex == -1)
-				spr = FindLeft(img.sprite.name);
-			else
-				spr = mSave.spritesToSprites[pIndex].left;
+			var spr = pIndex == -1 ? FindLeft(img.sprite.name) : mSave.spritesToSprites[pIndex].left;
 			if (spr != null)
 			{
 				img.sprite = spr;
@@ -547,11 +538,7 @@ namespace RCore.Editor
 
 		private void ReplaceByLeft(Image img, int pIndex = -1)
 		{
-			Sprite spr = null;
-			if (pIndex == -1)
-				spr = FindLeft(img.sprite.name);
-			else
-				spr = mSave.spritesToSprites[pIndex].left;
+			var spr = pIndex == -1 ? FindLeft(img.sprite.name) : mSave.spritesToSprites[pIndex].left;
 			if (spr != null)
 			{
 				img.sprite = spr;
@@ -576,11 +563,7 @@ namespace RCore.Editor
 
 		private void ReplaceByRight(SpriteRenderer img, int pIndex = -1)
 		{
-			Sprite spr = null;
-			if (pIndex == -1)
-				spr = FindRight(img.sprite.name);
-			else
-				spr = mSave.spritesToSprites[pIndex].right;
+			var spr = pIndex == -1 ? FindRight(img.sprite.name) : mSave.spritesToSprites[pIndex].right;
 			if (spr != null)
 			{
 				img.sprite = spr;
@@ -592,11 +575,7 @@ namespace RCore.Editor
 
 		private void ReplaceByRight(Image img, int pIndex = -1)
 		{
-			Sprite spr = null;
-			if (pIndex == -1)
-				spr = FindRight(img.sprite.name);
-			else
-				spr = mSave.spritesToSprites[pIndex].right;
+			var spr = pIndex == -1 ? FindRight(img.sprite.name) : mSave.spritesToSprites[pIndex].right;
 			if (spr != null)
 			{
 				img.sprite = spr;
@@ -646,10 +625,9 @@ namespace RCore.Editor
 			return false;
 		}
 
-		private AtlasTexture DisplaySpritesOfAtlas(AtlasTexture pSource)
+		private static AtlasTexture DisplaySpritesOfAtlas(AtlasTexture pSource)
 		{
-			if (pSource == null)
-				pSource = new AtlasTexture();
+			pSource ??= new AtlasTexture();
 
 			var atlas = (Texture)EditorHelper.ObjectField<Texture>(pSource.Atlas, "", 0, 60, true);
 			if (atlas != pSource.Atlas)

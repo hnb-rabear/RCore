@@ -154,7 +154,7 @@ namespace RCore.Common
 			mStrBuilder.Remove(0, mStrBuilder.Length);
 			mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
 			int i = 0;
-			foreach (KeyValuePair<TKey, TValue> pair in dict)
+			foreach (var pair in dict)
 			{
 				i++;
 				mStrBuilder.Append("{" + pair.Key + ":" + pair.Value + "}");
@@ -211,8 +211,8 @@ namespace RCore.Common
 		{
 			if (DevSetting.Instance.EnableLog && Application.isEditor)
 			{
-				StreamReader sr = new StreamReader(fileName);
-				StreamWriter sw = new StreamWriter(fileName, true);
+				var sr = new StreamReader(fileName);
+				var sw = new StreamWriter(fileName, true);
 				sw.WriteLine($"{Time.time:0.00} \t {Time.frameCount} \t {context}");
 				sw.Close();
 			}

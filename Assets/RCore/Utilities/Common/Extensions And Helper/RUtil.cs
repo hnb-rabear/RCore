@@ -3,6 +3,7 @@
  **/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,15 +12,20 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace RCore.Common
 {
 	public delegate void VoidDelegate();
+
 	public delegate void IntDelegate(int value);
+
 	public delegate void BoolDelegate(bool value);
+
 	public delegate void FloatDelegate(float value);
+
 	public delegate bool ConditionalDelegate();
 
 	public static class RUtil
@@ -34,15 +40,15 @@ namespace RCore.Common
 			pStringPart = pStr.Replace(pNumberPart, "");
 		}
 
-		public static string JoinString(string seperator, params string[] strs)
+		public static string JoinString(string separator, params string[] strs)
 		{
-			List<string> list = new List<string>();
-			for (int i = 0; i < strs.Length; i++)
+			var list = new List<string>();
+			foreach (var str in strs)
 			{
-				if (!string.IsNullOrEmpty(strs[i]))
-					list.Add(strs[i]);
+				if (!string.IsNullOrEmpty(str))
+					list.Add(str);
 			}
-			return string.Join(seperator, list.ToArray());
+			return string.Join(separator, list.ToArray());
 		}
 
 		public static void Reverse(StringBuilder sb)
@@ -102,8 +108,7 @@ namespace RCore.Common
 
 		public static void CreateBackup(string pContent, string pFileName = null)
 		{
-			if (pFileName == null)
-				pFileName = $"{Application.productName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}";
+			pFileName ??= $"{Application.productName}_{DateTime.Now:yyyyMMdd_HHmm}";
 			pFileName = pFileName.RemoveSpecialCharacters();
 			string folder = Application.persistentDataPath + Path.DirectorySeparatorChar + "Backup" + Path.DirectorySeparatorChar;
 #if UNITY_EDITOR
@@ -127,48 +132,136 @@ namespace RCore.Common
 			}
 		}
 
-		public static T NullArgumentTest<T>(T value)
-		{
-			if (value == null)
-			{
-				throw new ArgumentNullException(typeof(T).ToString());
-			}
-
-			return value;
-		}
-
 		public static string DictToString(IDictionary<string, object> d)
 		{
-			return "{ " + d
-				.Select(kv => "(" + kv.Key + ", " + kv.Value + ")")
-				.Aggregate("", (current, next) => current + next + ", ")
-				+ "}";
+			return "{ " + d.Select(kv => "(" + kv.Key + ", " + kv.Value + ")").Aggregate("", (current, next) => current + next + ", ") + "}";
 		}
 
-		public static void CombineMeshs(List<Transform> pMeshobjects, Material pMat, ref GameObject m_CombinedMesh, bool pDetroyOrginal)
+		public static void CombineMeshes(List<Transform> pMeshObjects, Material pMat, ref GameObject combinedMesh, bool pDestroyOriginal)
 		{
-			if (m_CombinedMesh == null)
+			if (combinedMesh == null)
 			{
-				m_CombinedMesh = new GameObject();
-				m_CombinedMesh.GetOrAddComponent<MeshRenderer>();
-				m_CombinedMesh.GetOrAddComponent<MeshFilter>();
+				combinedMesh = new GameObject();
+				combinedMesh.GetOrAddComponent<MeshRenderer>();
+				combinedMesh.GetOrAddComponent<MeshFilter>();
 			}
 
-			var meshFilters = new MeshFilter[pMeshobjects.Count];
+			var meshFilters = new MeshFilter[pMeshObjects.Count];
 			var combine = new CombineInstance[meshFilters.Length];
-			for (int i = 0; i < pMeshobjects.Count; i++)
+			for (int i = 0; i < pMeshObjects.Count; i++)
 			{
-				meshFilters[i] = pMeshobjects[i].GetComponent<MeshFilter>();
+				meshFilters[i] = pMeshObjects[i].GetComponent<MeshFilter>();
 				combine[i].mesh = meshFilters[i].sharedMesh;
 				combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-				pMeshobjects[i].gameObject.SetActive(false);
-				if (pDetroyOrginal)
-					Object.DestroyImmediate(pMeshobjects[i].gameObject);
+				pMeshObjects[i].gameObject.SetActive(false);
+				if (pDestroyOriginal)
+					Object.DestroyImmediate(pMeshObjects[i].gameObject);
 			}
 
-			m_CombinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh = new Mesh();
-			m_CombinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh.CombineMeshes(combine);
-			m_CombinedMesh.GetComponent<MeshRenderer>().sharedMaterial = pMat;
+			combinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh = new Mesh();
+			combinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh.CombineMeshes(combine);
+			combinedMesh.GetComponent<MeshRenderer>().sharedMaterial = pMat;
+		}
+
+		public static IEnumerator SendWebRequest(string url, WWWForm form, Action<string> pCallback = null)
+		{
+			using var w = form == null ? UnityWebRequest.Get(url) : UnityWebRequest.Post(url, form);
+			yield return w.SendWebRequest();
+			while (w.isDone == false)
+				yield return null;
+			pCallback?.Invoke(w.result == UnityWebRequest.Result.Success ? w.downloadHandler.text : null);
+		}
+
+		public static int CompareVersionNames(string currentVersion, string remoteVersion)
+		{
+			int res = 0;
+
+			string[] oldNumbers = currentVersion.Split('.');
+			string[] newNumbers = remoteVersion.Split('.');
+
+			// To avoid IndexOutOfBounds
+			int maxIndex = Mathf.Min(oldNumbers.Length, newNumbers.Length);
+
+			for (int i = 0; i < maxIndex; i++)
+			{
+				int oldVersionPart = int.Parse(oldNumbers[i]);
+				int newVersionPart = int.Parse(newNumbers[i]);
+
+				if (oldVersionPart < newVersionPart)
+				{
+					res = -1;
+					break;
+				}
+				if (oldVersionPart > newVersionPart)
+				{
+					res = 1;
+					break;
+				}
+			}
+
+			// If versions are the same so far, but they have different length...
+			if (res == 0 && oldNumbers.Length != newNumbers.Length)
+			{
+				res = (oldNumbers.Length > newNumbers.Length) ? 1 : -1;
+			}
+
+			return res;
+		}
+
+		public static void PerfectRatioImagesByWidth(params GameObject[] gameObjects)
+		{
+			foreach (var g in gameObjects)
+			{
+				var images = g.FindComponentsInChildren<UnityEngine.UI.Image>();
+				foreach (var image in images)
+					PerfectRatioImagesWidth(image);
+			}
+		}
+
+		public static void PerfectRatioImagesWidth(UnityEngine.UI.Image image)
+		{
+			if (image != null && image.sprite != null && image.type == UnityEngine.UI.Image.Type.Sliced)
+			{
+				var nativeSize = image.sprite.NativeSize();
+				var rectSize = image.rectTransform.sizeDelta;
+				if (rectSize.x > 0 && rectSize.x < nativeSize.x)
+				{
+					var ratio = nativeSize.x * 1f / rectSize.x;
+					image.pixelsPerUnitMultiplier = ratio;
+				}
+				else
+					image.pixelsPerUnitMultiplier = 1;
+
+				Debug.Log($"Perfect ratio {image.name}");
+			}
+		}
+
+		public static void PerfectRatioImagesByHeight(params GameObject[] gameObjects)
+		{
+			foreach (var g in gameObjects)
+			{
+				var images = g.FindComponentsInChildren<UnityEngine.UI.Image>();
+				foreach (var image in images)
+					PerfectRatioImageByHeight(image);
+			}
+		}
+
+		public static void PerfectRatioImageByHeight(UnityEngine.UI.Image image)
+		{
+			if (image != null && image.sprite != null && image.type == UnityEngine.UI.Image.Type.Sliced)
+			{
+				var nativeSize = image.sprite.NativeSize();
+				var rectSize = image.rectTransform.sizeDelta;
+				if (rectSize.y > 0 && rectSize.y < nativeSize.y)
+				{
+					var ratio = nativeSize.y * 1f / rectSize.y;
+					image.pixelsPerUnitMultiplier = ratio;
+				}
+				else
+					image.pixelsPerUnitMultiplier = 1;
+
+				Debug.Log($"Perfect ratio {image.name}");
+			}
 		}
 	}
 
@@ -187,7 +280,7 @@ namespace RCore.Common
 		public static string ToCapitalizeEachWord(this string pString)
 		{
 			// Creates a TextInfo based on the "en-US" culture.
-			TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+			var textInfo = new CultureInfo("en-US", false).TextInfo;
 			return textInfo.ToTitleCase(pString);
 		}
 
@@ -328,9 +421,9 @@ namespace RCore.Common
 			return pList;
 		}
 
-		public static List<T> RemoveDupplicate<T>(this List<T> pList) where T : UnityEngine.Object
+		public static List<T> RemoveDuplicate<T>(this List<T> pList) where T : Object
 		{
-			List<int> duplicate = new List<int>();
+			var duplicate = new List<int>();
 			for (int i = 0; i < pList.Count; i++)
 			{
 				int count = 0;
@@ -365,7 +458,7 @@ namespace RCore.Common
 			return pSource;
 		}
 
-		public static Dictionary<int, int> Remove(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+		public static Dictionary<int, int> MinusAndRemove(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
 		{
 			var removedKeys = new List<int>();
 			foreach (var item in pDict)
@@ -421,7 +514,7 @@ namespace RCore.Common
 
 		public static T1 RandomKeyHasLowestValue<T1, T2>(this Dictionary<T1, T2> pSource) where T2 : IComparable<T2>
 		{
-			T2 minValue = default(T2);
+			var minValue = default(T2);
 			var keys = new List<T1>();
 			foreach (var item in pSource)
 			{
@@ -487,16 +580,16 @@ namespace RCore.Common
 			return new Vector3(pVal.x, pVal.y);
 		}
 
-		public static void SortByDistanceToPosition(this List<Vector3> pPositions, Vector3 pPOsition)
+		public static void SortByDistanceToPosition(this List<Vector3> pPositions, Vector3 pPosition)
 		{
 			for (int i = 0; i < pPositions.Count - 1; i++)
 			{
 				var iSpawnPos = pPositions[i];
-				float iDistance = Vector3.Distance(pPOsition, iSpawnPos);
+				float iDistance = Vector3.Distance(pPosition, iSpawnPos);
 				for (int j = i + 1; j < pPositions.Count; j++)
 				{
 					var jSpawnPos = pPositions[j];
-					float jDistance = Vector3.Distance(pPOsition, jSpawnPos);
+					float jDistance = Vector3.Distance(pPosition, jSpawnPos);
 					if (iDistance > jDistance)
 					{
 						var temp = pPositions[i];

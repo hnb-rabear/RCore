@@ -8,9 +8,7 @@ using System.IO;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using RCore.Common;
-using RCore.Inspector;
 
 namespace RCore.Editor
 {
@@ -30,7 +28,7 @@ namespace RCore.Editor
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class BuildProfile
     {
         public static string NAME_BUILD_PATERN = "#ProductName#Version#BundleCode#Time";

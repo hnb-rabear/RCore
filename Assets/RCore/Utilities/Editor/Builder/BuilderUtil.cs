@@ -8,7 +8,6 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
-using RCore.Common;
 using Debug = UnityEngine.Debug;
 
 /// <summary>
@@ -35,7 +34,7 @@ namespace RCore.Editor
         WebGL = BuildTarget.WebGL,
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Directive
     {
         public bool enable;
@@ -184,14 +183,14 @@ namespace RCore.Editor
                     scenes.Add(s.GetPath());
             playerOptions.scenes = scenes.ToArray();
 
-            playerOptions.locationPathName = Path.Combine(pProfile.outputFolder + "/" + ptarget.ToString(), pProfile.GetBuildName());
+            playerOptions.locationPathName = Path.Combine(pProfile.outputFolder + "/" + ptarget, pProfile.GetBuildName());
             if (ptarget == BuildTarget.StandaloneWindows || ptarget == BuildTarget.StandaloneWindows64)
                 playerOptions.locationPathName += ".exe";
             else if (ptarget == BuildTarget.Android)
                 playerOptions.locationPathName += ".apk";
             playerOptions.target = ptarget;
 
-            BuildOptions options = BuildOptions.None;
+            var options = BuildOptions.None;
             if (pProfile.developmentBuild)
             {
                 options |= BuildOptions.Development;

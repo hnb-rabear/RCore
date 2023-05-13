@@ -53,7 +53,7 @@ namespace RCore.Demo
             exampleGroup.intergerdata.Value = Random.Range(0, 100);
             exampleGroup.floatData.Value = Random.Range(0, 100) * 100;
             exampleGroup.longData.Value = Random.Range(0, 100) * 10000;
-            exampleGroup.stringData.Value = Random.Range(0, 100).ToString() + "asd";
+            exampleGroup.stringData.Value = Random.Range(0, 100) + "asd";
             exampleGroup.boolData.Value = Random.Range(0, 100) > 50;
             exampleGroup.dateTimeData.Value = DateTime.Now;
             exampleGroup.RandomizeData();

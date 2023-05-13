@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace RCore.Common
 {
-	public class MathHelper
+	public static class MathHelper
 	{
 		/// <summary>
 		/// Return the angle in degree of two vector
@@ -27,23 +27,28 @@ namespace RCore.Common
 			var angleDegree = angleRadian * 180 / Mathf.PI;
 			return angleDegree;
 		}
+
 		public static float CalcAngle(Vector2 direction)
 		{
 			float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 			return angle;
 		}
+
 		public static Vector3 CalcAngle360(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.forward, toDir - fromDir).eulerAngles;
 		}
+
 		public static float CalcAngle360X(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.right, toDir - fromDir).eulerAngles.z;
 		}
+
 		public static float CalcAngle360Z(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.up, toDir - fromDir).eulerAngles.z;
 		}
+
 		public static float CalcAngle360Y(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.forward, toDir - fromDir).eulerAngles.y;
@@ -74,19 +79,19 @@ namespace RCore.Common
 
 		public static Vector3 RandomPointOnCircleEdge_XZ(Vector3 pCenter, float pRadius)
 		{
-			var pos = UnityEngine.Random.insideUnitCircle.normalized * pRadius;
+			var pos = Random.insideUnitCircle.normalized * pRadius;
 			return new Vector3(pCenter.x + pos.x, pCenter.y, pCenter.z + pos.y);
 		}
 
 		public static Vector3 RandomPointOnCircle_XZ(Vector3 pCenter, float pRadius)
 		{
-			var pos = UnityEngine.Random.insideUnitCircle.normalized * UnityEngine.Random.Range(0, pRadius);
+			var pos = Random.insideUnitCircle.normalized * Random.Range(0, pRadius);
 			return new Vector3(pCenter.x + pos.x, pCenter.y, pCenter.z + pos.y);
 		}
 
 		public static Vector3 RandomPointOnCircleEdge_XY(Vector2 pCenter, float pRadius)
 		{
-			var pos = UnityEngine.Random.insideUnitCircle.normalized * pRadius;
+			var pos = Random.insideUnitCircle.normalized * pRadius;
 			return new Vector3(pCenter.x + pos.x, pCenter.y + pos.y);
 		}
 
@@ -173,9 +178,9 @@ namespace RCore.Common
 
 		public static bool IsBetween(Vector3 from, Vector3 to, Vector3 mid)
 		{
-			Vector2 a = Vector2.zero;
-			Vector2 b = Vector2.zero;
-			Vector2 c = Vector2.zero;
+			var a = Vector2.zero;
+			var b = Vector2.zero;
+			var c = Vector2.zero;
 
 			if (from.x == to.x && to.x == mid.x)
 			{
@@ -256,24 +261,24 @@ namespace RCore.Common
 			return pValue;
 		}
 
-		public static Vector3 LeftDirection(Vector3 pFoward, Vector3 pUp)
+		public static Vector3 LeftDirection(Vector3 pForward, Vector3 pUp)
 		{
-			return RightDirection(pFoward, pUp) * -1;
+			return RightDirection(pForward, pUp) * -1;
 		}
 
-		public static Vector3 RightDirection(Vector3 pFoward, Vector3 pUp)
+		public static Vector3 RightDirection(Vector3 pForward, Vector3 pUp)
 		{
-			return Vector3.Cross(pFoward, pUp);
+			return Vector3.Cross(pForward, pUp);
 		}
 
-		public static Vector3 LeftDirectionXZ(Vector3 pFoward)
+		public static Vector3 LeftDirectionXZ(Vector3 pForward)
 		{
-			return RightDirectionXZ(pFoward) * -1;
+			return RightDirectionXZ(pForward) * -1;
 		}
 
-		public static Vector3 RightDirectionXZ(Vector3 pFoward)
+		public static Vector3 RightDirectionXZ(Vector3 pForward)
 		{
-			return new Vector3(pFoward.z, pFoward.y, -pFoward.x);
+			return new Vector3(pForward.z, pForward.y, -pForward.x);
 		}
 
 		public static string IntToBinary(int val, int bits)
@@ -291,12 +296,18 @@ namespace RCore.Common
 		/// <summary>
 		/// Lerp function that doesn't clamp the 'factor' in 0-1 range.
 		/// </summary>
-		public static float Lerp(float from, float to, float factor) { return from * (1f - factor) + to * factor; }
+		public static float Lerp(float from, float to, float factor)
+		{
+			return from * (1f - factor) + to * factor;
+		}
 
 		/// <summary>
 		/// Clamp the specified integer to be between 0 and below 'max'.
 		/// </summary>
-		public static int ClampIndex(int val, int max) { return (val < 0) ? 0 : (val < max ? val : max - 1); }
+		public static int ClampIndex(int val, int max)
+		{
+			return (val < 0) ? 0 : (val < max ? val : max - 1);
+		}
 
 		/// <summary>
 		/// Wrap the index using repeating logic, so that for example +1 past the end means index of '1'.
@@ -396,14 +407,14 @@ namespace RCore.Common
 		/// <summary>
 		/// Determine the distance from the specified point to the line segment.
 		/// </summary>
-		static float DistancePointToLineSegment(Vector2 point, Vector2 a, Vector2 b)
+		private static float DistancePointToLineSegment(Vector2 point, Vector2 a, Vector2 b)
 		{
 			float l2 = (b - a).sqrMagnitude;
 			if (l2 == 0f) return (point - a).magnitude;
 			float t = Vector2.Dot(point - a, b - a) / l2;
 			if (t < 0f) return (point - a).magnitude;
 			else if (t > 1f) return (point - b).magnitude;
-			Vector2 projection = a + t * (b - a);
+			var projection = a + t * (b - a);
 			return (point - projection).magnitude;
 		}
 
@@ -453,7 +464,7 @@ namespace RCore.Common
 		/// </summary>
 		public static float DistanceToRectangle(Vector3[] worldPoints, Vector2 mousePos, Camera cam)
 		{
-			Vector2[] screenPoints = new Vector2[4];
+			var screenPoints = new Vector2[4];
 			for (int i = 0; i < 4; ++i)
 				screenPoints[i] = cam.WorldToScreenPoint(worldPoints[i]);
 			return DistanceToRectangle(screenPoints, mousePos);
@@ -502,40 +513,49 @@ namespace RCore.Common
 		{
 			return Mathf.Sin(pRadiant);
 		}
+
 		public static float CosRad(float pRadiant)
 		{
 			return Mathf.Cos(pRadiant);
 		}
+
 		public static float SinDeg(float pDegree)
 		{
 			return Mathf.Sin(Ded2Rad(pDegree));
 		}
+
 		public static float CosDeg(float pDegree)
 		{
 			return Mathf.Cos(Ded2Rad(pDegree));
 		}
+
 		public static float TanDeg(float pDegree)
 		{
 			return Mathf.Tan(Ded2Rad(pDegree));
 		}
+
 		public static float Ded2Rad(float pDegree)
 		{
 			//Tradition way
 			//pDegree *= Mathf.PI / 180;
 			return pDegree * Mathf.Deg2Rad;
 		}
+
 		public static float Tad2Deg(float pRadiant)
 		{
 			return pRadiant * Mathf.Rad2Deg;
 		}
+
 		public static float AngleDeg(Vector2 pFrom, Vector2 pTo)
 		{
 			return AtanDeg(pTo.y - pFrom.y, pTo.x - pFrom.x);
 		}
+
 		public static float AtanDeg(float dy, float dx)
 		{
 			return Tad2Deg(AtanRad(dy, dx));
 		}
+
 		public static float AtanRad(float dy, float dx)
 		{
 			return Mathf.Atan2(dy, dx);
@@ -555,7 +575,7 @@ namespace RCore.Common
 			for (int i = 0; i < chances.Count; i++)
 				totalRatios += chances[i];
 
-			float random = UnityEngine.Random.Range(0, totalRatios);
+			float random = Random.Range(0, totalRatios);
 			float temp2 = 0;
 			for (int i = 0; i < chances.Count; i++)
 			{
@@ -576,7 +596,7 @@ namespace RCore.Common
 			for (int i = 0; i < chances.Length; i++)
 				totalRatios += chances[i];
 
-			float random = UnityEngine.Random.Range(0, totalRatios);
+			float random = Random.Range(0, totalRatios);
 			float temp2 = 0;
 			for (int i = 0; i < chances.Length; i++)
 			{
@@ -597,7 +617,7 @@ namespace RCore.Common
 			for (int i = 0; i < chances.Length; i++)
 				totalRatios += chances[i];
 
-			float random = UnityEngine.Random.Range(0, totalRatios);
+			float random = Random.Range(0, totalRatios);
 			float temp2 = 0;
 			for (int i = 0; i < chances.Length; i++)
 			{
@@ -623,6 +643,7 @@ namespace RCore.Common
 		{
 			return IsPointInsideEllipse(pointToCheck, ellipsePos, ellipseSize.x, ellipseSize.y);
 		}
+
 		public static bool IsPointInsideEllipse(Vector2 pointToCheck, Vector2 ellipsePos, float ellipseWidth, float ellipseHeight)
 		{
 			if (ellipseWidth <= 0 || ellipseHeight <= 0)
@@ -641,6 +662,7 @@ namespace RCore.Common
 			}
 			return false;
 		}
+
 		public static bool CheckLineIntersect(Vector2 pLineStart, Vector2 pLineEnd, Rect pRect)
 		{
 			// check if the line has hit any of the rectangle's sides
@@ -666,6 +688,7 @@ namespace RCore.Common
 			}
 			return false;
 		}
+
 		public static bool LineLine(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
 		{
 			// calculate the direction of the lines
@@ -679,12 +702,14 @@ namespace RCore.Common
 			}
 			return false;
 		}
-		public const int Intersection_OUT_SIDE = 0;
-		public const int Intersection_IN_SIDE = 1;
-		public const int Intersection_CUT = 2;
+
+		private const int Intersection_OUT_SIDE = 0;
+		private const int Intersection_IN_SIDE = 1;
+		private const int Intersection_CUT = 2;
+
 		public static int IntersectEllipseLine(Vector2 center, float rx, float ry, Vector2 a1, Vector2 a2)
 		{
-			int result = 0;
+			int result;
 			var origin = a1;
 			var dir = a2 - a1;
 			var diff = origin - center;
@@ -733,6 +758,7 @@ namespace RCore.Common
 
 			return result;
 		}
+
 		public static bool IntersectEllipseRectangle(Vector2 c, float rx, float ry, Rect pRect)
 		{
 			var tL = new Vector2(pRect.x, pRect.y + pRect.height);
@@ -744,6 +770,7 @@ namespace RCore.Common
 				|| IntersectEllipseLine(c, rx, ry, bL, bR) == Intersection_CUT
 				|| IntersectEllipseLine(c, rx, ry, bR, tR) == Intersection_CUT;
 		}
+
 		public static bool RectInsideEllipse(Vector2 c, float rx, float ry, Rect pRect)
 		{
 			var tL = new Vector2(pRect.x, pRect.y + pRect.height);
@@ -755,11 +782,13 @@ namespace RCore.Common
 				&& IntersectEllipseLine(c, rx, ry, bL, bR) == Intersection_IN_SIDE
 				&& IntersectEllipseLine(c, rx, ry, bR, tR) == Intersection_IN_SIDE;
 		}
+
 		private static bool InAngle(Vector2 v1, Vector2 v2, float pFromDeg, float pToDeg)
 		{
 			float deg = AngleDeg(v1, v2);
 			return (deg >= pFromDeg && deg <= pToDeg) || (deg + 360 >= pFromDeg && deg + 360 <= pToDeg);
 		}
+
 		public static bool IntersectOrOverlapEllipseRectangle(Vector2 c, float rx, float ry, Rect pRect, float pFromAngle = 0, float pToAngle = 360, bool pRightSide = true, bool drawBox = false)
 		{
 			var tL = new Vector2(pRect.x, pRect.y + pRect.height);
@@ -780,12 +809,11 @@ namespace RCore.Common
 				// check if any angle from center to rect point in angle range
 				inAngleRange = (pRightSide ? pRect.xMax > c.x : pRect.xMin < c.x) &&
 					(InAngle(c, tL, pFromAngle, pToAngle)
-					|| InAngle(c, tR, pFromAngle, pToAngle)
-					|| InAngle(c, bL, pFromAngle, pToAngle)
-					|| InAngle(c, bR, pFromAngle, pToAngle));
+						|| InAngle(c, tR, pFromAngle, pToAngle)
+						|| InAngle(c, bL, pFromAngle, pToAngle)
+						|| InAngle(c, bR, pFromAngle, pToAngle));
 				if (inAngleRange == false)
 				{
-					inAngleRange = false;
 					result = inAngleRange;
 				}
 			}
@@ -842,8 +870,8 @@ namespace RCore.Common
 		{
 			int steps = 100;
 			float interval = 2 * width / steps;
-			Vector3 previousPoint = Vector3.zero;
-			Vector3 currentPoint = Vector3.zero;
+			var previousPoint = Vector3.zero;
+			var currentPoint = Vector3.zero;
 			for (int i = 0; i <= steps; i++)
 			{
 				previousPoint = currentPoint;
@@ -931,7 +959,7 @@ namespace RCore.Common
 		}
 
 		/// <summary>
-		/// Convert negative angle to postive
+		/// Convert negative angle to positive
 		/// </summary>
 		public static Vector3 ToPositiveAngle(this Vector3 pAngle)
 		{
@@ -945,7 +973,7 @@ namespace RCore.Common
 		}
 
 		/// <summary>
-		/// Convert negative angle to postive
+		/// Convert negative angle to positive
 		/// </summary>
 		public static float ToPositiveAngle(this float pAngle)
 		{
@@ -978,6 +1006,14 @@ namespace RCore.Common
 			bool ay = Mathf.Approximately(pValue.y, pRefValue.y);
 			bool az = Mathf.Approximately(pValue.z, pRefValue.z);
 			return ax && ay && az;
+		}
+
+		private static Vector3 RoundVector(this Vector3 pVector, int pDecimal)
+		{
+			pVector.Set(MathHelper.Round(pVector.x, pDecimal),
+				MathHelper.Round(pVector.y, pDecimal),
+				MathHelper.Round(pVector.z, pDecimal));
+			return pVector;
 		}
 	}
 }

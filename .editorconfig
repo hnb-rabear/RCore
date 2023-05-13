@@ -1,0 +1,25 @@
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_size = 4
+indent_style = space
+insert_final_newline = false
+max_line_length = 120
+tab_width = 4
+trim_trailing_whitespace = false
+ij_continuation_indent_size = 8
+ij_formatter_off_tag = @formatter:off
+ij_formatter_on_tag = @formatter:on
+ij_formatter_tags_enabled = true
+ij_smart_tabs = false
+ij_visual_guides = none
+ij_wrap_on_typing = false
+
+# ReSharper properties
+resharper_csharp_indent_style = tab
+resharper_csharp_max_line_length = 300
+
+[*.cs]
+indent_style = tab
+indent_size = tab
+tab_width = 4

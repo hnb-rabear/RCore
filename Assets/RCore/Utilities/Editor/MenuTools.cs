@@ -2,13 +2,8 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
-using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using RCore.Common;
-using RCore.Components;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Editor
 {

@@ -165,7 +165,7 @@ namespace RCore.Common
                 res.error = true;
                 res.errorMessage = ex.ToString();
 #if UNITY_EDITOR
-                Debug.LogError(pRequest.url + "\n" + ex.ToString());
+                Debug.LogError(pRequest.url + "\n" + ex);
 #endif
             }
 

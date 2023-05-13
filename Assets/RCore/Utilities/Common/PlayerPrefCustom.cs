@@ -140,7 +140,7 @@ namespace RCore.Common
 		}
 		public override string ToString()
 		{
-			return m_Value.ToString();
+			return m_Value;
 		}
 	}
 

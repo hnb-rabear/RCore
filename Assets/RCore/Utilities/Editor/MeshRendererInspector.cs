@@ -34,10 +34,10 @@ public class MeshRendererInspector : Editor
         System.Object[] objects = serializedObject.targetObjects;
 
         //Armazena valores iniciais
-        MeshRenderer first = objects[0] as MeshRenderer;
+        var first = objects[0] as MeshRenderer;
         sortingOrder = first.sortingOrder;
         string layerName = first.sortingLayerName;
-        sortingLayer = Mathf.Max(System.Array.IndexOf(sortingLayerNames, layerName), 0);
+        sortingLayer = Mathf.Max(Array.IndexOf(sortingLayerNames, layerName), 0);
 
         //Cast
         renderer = new MeshRenderer[objects.Length];
@@ -72,7 +72,7 @@ public class MeshRendererInspector : Editor
         //Aplicar modificacoes e igualar valores
         if (EditorGUI.EndChangeCheck())
         {
-            foreach (MeshRenderer r in renderer)
+            foreach (var r in renderer)
             {
                 r.sortingLayerName = sortingLayerNames[sortingLayer];
                 EditorUtility.SetDirty(r);
@@ -93,7 +93,7 @@ public class MeshRendererInspector : Editor
         //Aplicar modificacoes e igualar valores
         if (EditorGUI.EndChangeCheck())
         {
-            foreach (MeshRenderer r in renderer)
+            foreach (var r in renderer)
             {
                 r.sortingOrder = sortingOrder;
                 EditorUtility.SetDirty(r);
@@ -104,8 +104,8 @@ public class MeshRendererInspector : Editor
 
     public string[] GetSortingLayerNames()
     {
-        Type t = typeof(InternalEditorUtility);
-        PropertyInfo prop = t.GetProperty("sortingLayerNames", BindingFlags.Static | BindingFlags.NonPublic);
+        var t = typeof(InternalEditorUtility);
+        var prop = t.GetProperty("sortingLayerNames", BindingFlags.Static | BindingFlags.NonPublic);
         return (string[])prop.GetValue(null, null);
     }
 

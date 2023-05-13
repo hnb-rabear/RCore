@@ -5,7 +5,6 @@ using System.Linq;
 using System.Xml.Serialization;
 using UnityEditor;
 using UnityEngine;
-using RCore.Editor;
 
 namespace RCore.Common
 {
@@ -29,7 +28,7 @@ namespace RCore.Common
 
         private void OnEnable()
         {
-            using (StreamWriter sw = File.AppendText("Assets/Editor/DirectivesCollection.txt")) { }
+            using (var sw = File.AppendText("Assets/Editor/DirectivesCollection.txt")) { }
 
             mDirectives = LoadDirectives();
 
@@ -153,24 +152,23 @@ namespace RCore.Common
         {
             var directives = new List<Directive>();
 
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Directive>));
-            using (TextReader reader = new StreamReader("Assets/Editor/DirectivesCollection.txt"))
-            {
-                try
-                {
-                    directives = (List<Directive>)serializer.Deserialize(reader);
-                }
-                catch
-                {
-                    directives = new List<Directive>();
-                }
-            }
-            return directives;
+            var serializer = new XmlSerializer(typeof(List<Directive>));
+			using TextReader reader = new StreamReader("Assets/Editor/DirectivesCollection.txt");
+			try
+			{
+				directives = (List<Directive>)serializer.Deserialize(reader);
+			}
+			catch
+			{
+				directives = new List<Directive>();
+			}
+
+			return directives;
         }
 
         private void SaveDirectives(List<Directive> pPirectives)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Directive>));
+            var serializer = new XmlSerializer(typeof(List<Directive>));
             using (TextWriter writer = new StreamWriter("Assets/Editor/DirectivesCollection.txt"))
             {
                 serializer.Serialize(writer, mDirectives);
@@ -181,7 +179,7 @@ namespace RCore.Common
         private List<string> GetCurrentDefines()
         {
             string defineStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            List<string> currentDefines = defineStr.Split(';').ToList();
+            var currentDefines = defineStr.Split(';').ToList();
             for (int i = 0; i < currentDefines.Count; i++)
                 currentDefines[i] = currentDefines[i].Trim();
             return currentDefines;
@@ -203,7 +201,7 @@ namespace RCore.Common
         [MenuItem("RUtilities/Tools/Open Directives Window (obsolete)")]
         private static void OpenDirectivesEditorWindow()
         {
-            var window = EditorWindow.GetWindow<DirectivesWindow>("Directives Manager", true);
+            var window = GetWindow<DirectivesWindow>("Directives Manager", true);
             window.Show();
         }
     }

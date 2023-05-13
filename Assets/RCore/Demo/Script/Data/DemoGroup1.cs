@@ -34,7 +34,7 @@ namespace RCore.Demo
             subGroup.intergerdata.Value = Random.Range(0, 100);
             subGroup.floatData.Value = Random.Range(0, 100) * 100;
             subGroup.longData.Value = Random.Range(0, 100) * 10000;
-            subGroup.stringData.Value = Random.Range(0, 100).ToString() + "asd";
+            subGroup.stringData.Value = Random.Range(0, 100) + "asd";
             subGroup.boolData.Value = Random.Range(0, 100) > 50;
             subGroup.dateTimeData.Value = DateTime.Now;
         }
