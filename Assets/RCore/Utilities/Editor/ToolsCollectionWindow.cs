@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using System.Linq;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
 
@@ -1582,6 +1583,59 @@ namespace RCore.Editor
 #endregion
 
 		//===================================================================================================
+
+#region Remove Duplicate Characters
+
+		private static string m_CombinedTextsResult;
+		private static readonly List<TextAsset> m_TextFiles = new List<TextAsset>();
+		private static void DrawRemoveDuplicateCharacters()
+		{
+			if (EditorHelper.HeaderFoldout("Remove Duplicate Characters"))
+			{
+				if (EditorHelper.ButtonColor("Add Txt File", Color.green))
+					m_TextFiles.Add(null);
+				EditorHelper.DragDropBox<TextAsset>("TextAsset", objs =>
+				{
+					foreach (var obj in objs)
+						m_TextFiles.Add(obj);
+				});
+				for (int i = 0; i < m_TextFiles.Count; i++)
+				{
+					EditorGUILayout.BeginHorizontal();
+					m_TextFiles[i] = (TextAsset)EditorHelper.ObjectField<TextAsset>(m_TextFiles[i], null);
+					if (EditorHelper.ButtonColor("+", Color.green, 23))
+						m_TextFiles.Insert(i + 1, null);
+					if (EditorHelper.ButtonColor("x", Color.red, 23))
+						m_TextFiles.RemoveAt(i);
+					EditorGUILayout.EndHorizontal();
+				}
+				if (EditorHelper.Button("Remove Duplicate Characters"))
+				{
+					string combineStr = "";
+					foreach (var textAsset in m_TextFiles)
+					{
+						if (textAsset != null)
+							combineStr += textAsset.text;
+					}
+					
+					m_CombinedTextsResult = string.Empty;
+					var unique = new HashSet<char>(combineStr);
+					foreach (char c in unique)
+						m_CombinedTextsResult += c;
+					m_CombinedTextsResult = string.Concat(m_CombinedTextsResult.OrderBy(c => c));
+				}
+				m_CombinedTextsResult = EditorHelper.TextArea(m_CombinedTextsResult, null);
+				if (EditorHelper.Button("Save To File"))
+				{
+					EditorHelper.SaveFilePanel(null, "combined_text", m_CombinedTextsResult, "txt");
+				}
+			}
+		}
+
+#endregion
+		
+		//===================================================================================================
+		
 		private static bool SelectedObject()
 		{
 			if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)

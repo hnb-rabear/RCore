@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 using UnityEditor;
+using UnityEditor.AddressableAssets;
 using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -93,7 +94,8 @@ namespace RCore.Common
 		public string value;
 		public string OutputValue { get; private set; }
 		public bool readOnly;
-
+		public bool textArea;
+		
 		public void Draw(GUIStyle style = null)
 		{
 			if (!string.IsNullOrEmpty(label))
@@ -118,10 +120,19 @@ namespace RCore.Common
 
 			string str;
 			if (valueWidth == 0)
-				str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
+			{
+				if (textArea)
+					str = EditorGUILayout.TextArea(value, style, GUILayout.MinHeight(20), GUILayout.MinWidth(40));
+				else
+					str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
+			}
 			else
-				str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40),
-					GUILayout.Width(valueWidth));
+			{
+				if (textArea)
+					str = EditorGUILayout.TextArea(value, style, GUILayout.MinHeight(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				else
+					str = EditorGUILayout.TextField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+			}
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
@@ -311,7 +322,7 @@ namespace RCore.Common
 					fixedWidth = 20,
 					fixedHeight = 20
 				};
-				Color normalColor = style.normal.textColor;
+				var normalColor = style.normal.textColor;
 				normalColor.a = readOnly ? 0.5f : 1;
 				style.normal.textColor = normalColor;
 			}
@@ -625,7 +636,7 @@ namespace RCore.Common
 
 		public static void SaveXMLFile<T>(string pPath, T pObj)
 		{
-			XmlSerializer serializer = new XmlSerializer(typeof(T));
+			var serializer = new XmlSerializer(typeof(T));
 			using TextWriter writer = new StreamWriter(pPath);
 			if (File.Exists(pPath))
 				File.Delete(pPath);
@@ -650,12 +661,12 @@ namespace RCore.Common
 		/// </summary>
 		public static List<T> FindAll<T>() where T : Component
 		{
-			T[] comps = Resources.FindObjectsOfTypeAll(typeof(T)) as T[];
+			var comps = Resources.FindObjectsOfTypeAll(typeof(T)) as T[];
 
 			var list = new List<T>();
 
 			if (comps != null)
-				foreach (T comp in comps)
+				foreach (var comp in comps)
 				{
 					if (comp.gameObject.hideFlags == 0)
 					{
@@ -675,7 +686,7 @@ namespace RCore.Common
 
 		public static T CreateScriptableAsset<T>(string path) where T : ScriptableObject
 		{
-			T asset = ScriptableObject.CreateInstance<T>();
+			var asset = ScriptableObject.CreateInstance<T>();
 
 			var directoryPath = Path.GetDirectoryName(path);
 			if (!Directory.Exists(directoryPath))
@@ -711,14 +722,13 @@ namespace RCore.Common
 			var obj = LoadAsset(path);
 			if (obj == null) return null;
 
-			T val = obj as T;
+			var val = obj as T;
 			if (val != null) return val;
 
 			if (typeof(T).IsSubclassOf(typeof(Component)))
 			{
-				if (obj is GameObject)
+				if (obj is GameObject go)
 				{
-					GameObject go = obj as GameObject;
 					return go.GetComponent(typeof(T)) as T;
 				}
 			}
@@ -947,8 +957,8 @@ namespace RCore.Common
 
 			if (Event.current.type == EventType.Repaint)
 			{
-				Texture2D tex = EditorGUIUtility.whiteTexture;
-				Rect rect = GUILayoutUtility.GetLastRect();
+				var tex = EditorGUIUtility.whiteTexture;
+				var rect = GUILayoutUtility.GetLastRect();
 				GUI.color = new Color(0f, 0f, 0f, 0.25f);
 				GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 4f), tex);
 				GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 1f), tex);
@@ -1348,7 +1358,7 @@ namespace RCore.Common
 								list = list.OrderBy(m => m.name).ToList();
 							if (Button("Remove Duplicate"))
 							{
-								List<int> duplicate = new List<int>();
+								var duplicate = new List<int>();
 								for (int i = 0; i < list.Count; i++)
 								{
 									int count = 0;
@@ -1647,7 +1657,7 @@ namespace RCore.Common
 
 		private static void DrawHeaderTitle(string pHeader)
 		{
-			Color prevColor = GUI.color;
+			var prevColor = GUI.color;
 
 			var boxStyle = new GUIStyle(EditorStyles.toolbar)
 			{
@@ -1676,9 +1686,9 @@ namespace RCore.Common
 
 		public static void DragDropBox<T>(string pName, Action<T[]> pOnDrop) where T : Object
 		{
-			Event evt = Event.current;
+			var evt = Event.current;
 			var style = new GUIStyle("Toolbar");
-			Rect dropArea = GUILayoutUtility.GetRect(0.0f, 30, style, GUILayout.ExpandWidth(true));
+			var dropArea = GUILayoutUtility.GetRect(0.0f, 30, style, GUILayout.ExpandWidth(true));
 			GUI.Box(dropArea, "Drag drop " + pName);
 
 			switch (evt.type)
@@ -1694,14 +1704,14 @@ namespace RCore.Common
 					{
 						DragAndDrop.AcceptDrag();
 						var objs = new List<T>();
-						foreach (Object obj in DragAndDrop.objectReferences)
+						foreach (var obj in DragAndDrop.objectReferences)
 						{
 							if (obj == null)
 								continue;
 
-							if (obj is GameObject)
+							if (obj is GameObject gameObject)
 							{
-								var component = (obj as GameObject).GetComponent<T>();
+								var component = gameObject.GetComponent<T>();
 								if (component != null)
 									objs.Add(component);
 							}
@@ -1796,8 +1806,7 @@ namespace RCore.Common
 
 		#region Input Fields
 
-		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0,
-			bool readOnly = false)
+		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false)
 		{
 			var text = new EditorText()
 			{
@@ -1811,8 +1820,22 @@ namespace RCore.Common
 			return text.OutputValue;
 		}
 
-		public static string DropdownList(string value, string label, string[] selections, int labelWidth = 80,
-			int valueWidth = 0)
+		public static string TextArea(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false)
+		{
+			var text = new EditorText()
+			{
+				value = value,
+				label = label,
+				labelWidth = labelWidth,
+				valueWidth = valueWidth,
+				readOnly = readOnly,
+				textArea = true,
+			};
+			text.Draw();
+			return text.OutputValue;
+		}
+		
+		public static string DropdownList(string value, string label, string[] selections, int labelWidth = 80, int valueWidth = 0)
 		{
 			var dropdownList = new EditorDropdownListString()
 			{
@@ -1826,8 +1849,7 @@ namespace RCore.Common
 			return dropdownList.OutputValue;
 		}
 
-		public static int DropdownList(int value, string label, int[] selections, int labelWidth = 80,
-			int valueWidth = 0)
+		public static int DropdownList(int value, string label, int[] selections, int labelWidth = 80, int valueWidth = 0)
 		{
 			var dropdownList = new EditorDropdownListInt()
 			{
@@ -1841,8 +1863,7 @@ namespace RCore.Common
 			return dropdownList.OutputValue;
 		}
 
-		public static T DropdownListEnum<T>(T value, string label, int labelWidth = 80, int valueWidth = 0)
-			where T : struct, IConvertible
+		public static T DropdownListEnum<T>(T value, string label, int labelWidth = 80, int valueWidth = 0) where T : struct, IConvertible
 		{
 			var dropdownList = new EditorDropdownListEnum<T>()
 			{
@@ -2081,7 +2102,7 @@ namespace RCore.Common
 		public static SerializedProperty SerializeField(SerializedObject pObj, string pPropertyName,
 			string pDisplayName = null, params GUILayoutOption[] options)
 		{
-			SerializedProperty property = pObj.FindProperty(pPropertyName);
+			var property = pObj.FindProperty(pPropertyName);
 			if (property == null)
 			{
 				Debug.Log("Not found property " + pPropertyName);
@@ -2366,9 +2387,9 @@ namespace RCore.Common
 					var childAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(re));
 					foreach (var child in childAssets)
 					{
-						if (child is T)
+						if (child is T o)
 						{
-							list.Add(child as T);
+							list.Add(o);
 						}
 					}
 				}
@@ -2402,7 +2423,7 @@ namespace RCore.Common
 
 		public static ModelImporterClipAnimation[] GetAnimationsFromModel(string pPath)
 		{
-			ModelImporter mi = AssetImporter.GetAtPath(pPath) as ModelImporter;
+			var mi = AssetImporter.GetAtPath(pPath) as ModelImporter;
 			if (mi != null)
 				return mi.defaultClipAnimations;
 			return null;
@@ -2428,6 +2449,43 @@ namespace RCore.Common
 			return null;
 		}
 
+		public static string GetAddressablesAddress(this Object target, out string guid)
+		{
+			string path = AssetDatabase.GetAssetPath(target);
+			guid = AssetDatabase.AssetPathToGUID(path);
+#if ADDRESSABLES
+			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid);
+			if (assetEntry != null)
+				return assetEntry.address;
+			return "";
+#else
+			return guid;
+#endif
+		}
+
+		public static bool SetAddressablesAddress(string guid, string pAddress, params string[] pLabels)
+		{
+			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid);
+			if (assetEntry != null)
+			{
+				assetEntry.address = pAddress;
+				if (pLabels != null && pLabels.Length > 0)
+				{
+					assetEntry.labels.Clear();
+					foreach (var label in pLabels)
+					{
+						if (!string.IsNullOrEmpty(label))
+						{
+							AddressableAssetSettingsDefaultObject.Settings.AddLabel(label);
+							assetEntry.labels.Add(label);
+						}
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+		
 		#endregion
 	}
 
