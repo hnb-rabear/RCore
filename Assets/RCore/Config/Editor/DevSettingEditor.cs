@@ -20,36 +20,36 @@ public class DevSettingEditor : Editor
     //-- FIREBASE CONFIGURATION
     private static string FirebaseConfigPath1
     {
-        get { return EditorPrefs.GetString("FirebaseConfigPath1"); }
-        set { EditorPrefs.SetString("FirebaseConfigPath1", value); }
-    }
+        get => EditorPrefs.GetString("FirebaseConfigPath1");
+		set => EditorPrefs.SetString("FirebaseConfigPath1", value);
+	}
     private static string FirebaseConfigPath2
     {
-        get { return EditorPrefs.GetString("FirebaseConfigPath2"); }
-        set { EditorPrefs.SetString("FirebaseConfigPath2", value); }
-    }
+        get => EditorPrefs.GetString("FirebaseConfigPath2");
+		set => EditorPrefs.SetString("FirebaseConfigPath2", value);
+	}
     public static string FirebaseConfigOutputFolder
     {
-        get { return EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath); }
-        set { EditorPrefs.SetString("FirebaseConfigOutputFolder", value); }
-    }
+        get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath);
+		set => EditorPrefs.SetString("FirebaseConfigOutputFolder", value);
+	}
     private static string FirebaseConfig
     {
-        get { return EditorPrefs.GetString("firebase_config_" + Application.productName); }
-        set { EditorPrefs.SetString("firebase_config_" + Application.productName, value); }
-    }
+        get => EditorPrefs.GetString("firebase_config_" + Application.productName);
+		set => EditorPrefs.SetString("firebase_config_" + Application.productName, value);
+	}
     private static string FirebaseProjectNumber
     {
-        get { return EditorPrefs.GetString("project_number"); }
-        set { EditorPrefs.SetString("project_number", value); }
-    }
+        get => EditorPrefs.GetString("project_number");
+		set => EditorPrefs.SetString("project_number", value);
+	}
 
     private string mTypedProfileName;
     private string mSelectedProfile;
     private ProfilesCollection mProfileCollections;
     private bool mRemovingProfile;
     private bool mPreviewingProfiles;
-    private Dictionary<string, ReorderableList> mReorderDirectivesDict = new Dictionary<string, ReorderableList>();
+    private readonly Dictionary<string, ReorderableList> mReorderDirectivesDict = new Dictionary<string, ReorderableList>();
 
     private void OnEnable()
     {
@@ -95,10 +95,7 @@ public class DevSettingEditor : Editor
         GUILayout.Space(10);
         EditorHelper.BoxVertical(() =>
         {
-            EditorHelper.ButtonColor("Save", () =>
-            {
-                AssetDatabase.SaveAssets();
-            }, Color.green);
+            EditorHelper.ButtonColor("Save", AssetDatabase.SaveAssets, Color.green);
             EditorHelper.ButtonColor("Builder", () =>
             {
                 var window = EditorWindow.GetWindow<BuilderWindow>("Builder Settings", true);
@@ -125,7 +122,7 @@ public class DevSettingEditor : Editor
 
     //========= SETTINGS PROFILE
 
-    private void InitDirectives(List<DevSetting.Directive> defines)
+    private static void InitDirectives(List<DevSetting.Directive> defines)
     {
         string[] currentDefines = EditorHelper.GetDirectives();
         for (int i = 0; i < currentDefines.Length; i++)
@@ -183,8 +180,7 @@ public class DevSettingEditor : Editor
         {
             EditorHelper.BoxVertical(() =>
             {
-                bool directivesChanged = false;
-                var draws = new IDraw[2];
+				var draws = new IDraw[2];
                 var btnAdd = new EditorButton()
                 {
                     onPressed = () => { pProfile.defines.Add(new DevSetting.Directive()); },
@@ -209,69 +205,15 @@ public class DevSettingEditor : Editor
                     if (!ContainDirective(pProfile.defines, "UNITY_MONETIZATION"))
                         pProfile.defines.Insert(0, new DevSetting.Directive("UNITY_MONETIZATION", false));
 
-                    /*
-                    float width = EditorGUIUtility.currentViewWidth - 80;
-                    float w0 = width * 0.1f, w1 = width * 0.6f, w2 = width * 0.15f, w3 = width * 0.14f;
-                    EditorHelper.BoxHorizontal(() =>
-                    {
-                        GUILayout.Label("Sort", EditorStyles.boldLabel, GUILayout.Width(w0));
-                        GUILayout.Label("Definition", EditorStyles.boldLabel, GUILayout.Width(w1));
-                        GUILayout.Label("Enable", EditorStyles.boldLabel, GUILayout.Width(w2));
-                        GUILayout.Label("Remove", EditorStyles.boldLabel, GUILayout.Width(w3));
-                    }, default(Color), false, width);
-                    for (int i = 0; i < pProfile.defines.Count; i++)
-                    {
-                        var d = pProfile.defines[i];
-
-                        EditorHelper.BoxHorizontal(() =>
-                        {
-                            EditorHelper.Button("˄", () =>
-                            {
-                                if (i < pProfile.defines.Count - 1)
-                                {
-                                    var temp = pProfile.defines[i];
-                                    pProfile.defines[i] = pProfile.defines[i - 1];
-                                    pProfile.defines[i - 1] = temp;
-                                    directivesChanged = true;
-                                }
-                            });
-                            EditorHelper.Button("˅", () =>
-                            {
-                                if (i > 0)
-                                {
-                                    var temp = pProfile.defines[i];
-                                    pProfile.defines[i] = pProfile.defines[i + 1];
-                                    pProfile.defines[i + 1] = temp;
-                                    directivesChanged = true;
-                                }
-                            });
-
-                            d.name = EditorHelper.TextField(d.name, "", 0, (int)w1);
-                            d.enabled = EditorHelper.Toggle(d.enabled, "", 0, (int)w2);
-                            if (d.name != "DEVELOPMENT" && d.name != "UNITY_IAP" && d.name != "UNITY_MONETIZATION")
-                            {
-                                EditorHelper.ButtonColor("X", () =>
-                                {
-                                    directivesChanged = true;
-                                    pProfile.defines.Remove(d);
-                                }, Color.red, (int)w3);
-                            }
-                            else
-                                EditorHelper.ButtonColor("x", () => { return; }, Color.grey, (int)w3);
-                        }, default(Color), false, width);
-                    }
-                    */
-
-                    if (!mReorderDirectivesDict.ContainsKey(pProfile.name) || directivesChanged)
+                    if (!mReorderDirectivesDict.ContainsKey(pProfile.name))
                     {
                         var reorderList = new ReorderableList(pProfile.defines, typeof(DevSetting.Directive), true, true, true, true);
                         mReorderDirectivesDict.TryAdd(pProfile.name, reorderList);
-                        reorderList.drawElementCallback = (rect, index, isActive, isFocused) =>
+                        reorderList.drawElementCallback = (rect, index, _, _) =>
                         {
                             var define = pProfile.defines[index];
                             GUI.backgroundColor = define.color;
-                            var toggleStyle = new GUIStyle(EditorStyles.toggle);
-                            float widthTog = 20;
+							float widthTog = 20;
                             float widthColor = 60;
                             float widthName = rect.width - widthTog - widthColor - 10;
                             define.enabled = EditorGUI.Toggle(new Rect(rect.x, rect.y, widthTog, 20), define.enabled);
@@ -324,7 +266,7 @@ public class DevSettingEditor : Editor
     private static void ApplyDirectives(List<DevSetting.Directive> defines)
     {
         string symbols = string.Join(";", defines
-                        .Where(d => d.enabled == true)
+                        .Where(d => d.enabled)
                         .Select(d => d.name).ToArray());
         var target = EditorUserBuildSettings.selectedBuildTargetGroup;
         PlayerSettings.SetScriptingDefineSymbolsForGroup(target, symbols);
@@ -349,10 +291,9 @@ public class DevSettingEditor : Editor
     {
         EditorHelper.BoxVertical(() =>
         {
-            var profiles = mProfileCollections.profiles;
-            if (profiles == null) profiles = new List<DevSetting.Profile>();
+            var profiles = mProfileCollections.profiles ?? new List<DevSetting.Profile>();
 
-            EditorHelper.BoxHorizontal(() =>
+			EditorHelper.BoxHorizontal(() =>
             {
                 mTypedProfileName = EditorHelper.TextField(mTypedProfileName, "Profile Name");
                 if (EditorHelper.ButtonColor("Save Profile", Color.green))
@@ -435,7 +376,7 @@ public class DevSettingEditor : Editor
             }
     }
 
-    private DevSetting.Profile CloneProfile(DevSetting.Profile pProfile)
+    private static DevSetting.Profile CloneProfile(DevSetting.Profile pProfile)
     {
         var toJson = JsonUtility.ToJson(pProfile);
         var fromJson = JsonUtility.FromJson<DevSetting.Profile>(toJson);
@@ -444,7 +385,7 @@ public class DevSettingEditor : Editor
 
     //========== FIREBASE
 
-    private void DrawFirebaseConfiguration()
+    private static void DrawFirebaseConfiguration()
     {
         EditorHelper.BoxVertical("Firebase", () =>
         {
