@@ -17,4 +17,13 @@ MonoBehaviour:
     enableLog: 0
     enableDraw: 0
     showFPS: 0
-    defines: []
+    defines:
+    - name: UNITY_MONETIZATION
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: DEVELOPMENT
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: UNITY_IAP
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
