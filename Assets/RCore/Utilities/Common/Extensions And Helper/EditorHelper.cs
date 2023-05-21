@@ -11,7 +11,9 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 using UnityEditor;
+#if ADDRESSABLES
 using UnityEditor.AddressableAssets;
+#endif
 using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -2465,6 +2467,7 @@ namespace RCore.Common
 
 		public static bool SetAddressablesAddress(string guid, string pAddress, params string[] pLabels)
 		{
+#if ADDRESSABLES
 			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid);
 			if (assetEntry != null)
 			{
@@ -2483,6 +2486,7 @@ namespace RCore.Common
 				}
 				return true;
 			}
+#endif
 			return false;
 		}
 		

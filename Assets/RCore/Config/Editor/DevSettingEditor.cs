@@ -200,13 +200,14 @@ public class DevSettingEditor : Editor
                 };
                 draws[1] = btnApply;
                 if (EditorHelper.HeaderFoldout("Directives", pProfile.name + "Directives", false, draws))
-                {
+				{
+					pProfile.defines ??= new List<DevSetting.Directive>(); 
                     if (!ContainDirective(pProfile.defines, "DEVELOPMENT"))
                         pProfile.defines.Insert(0, new DevSetting.Directive("DEVELOPMENT", false));
                     if (!ContainDirective(pProfile.defines, "UNITY_IAP"))
-                        pProfile.defines.Insert(1, new DevSetting.Directive("UNITY_IAP", false));
+                        pProfile.defines.Insert(0, new DevSetting.Directive("UNITY_IAP", false));
                     if (!ContainDirective(pProfile.defines, "UNITY_MONETIZATION"))
-                        pProfile.defines.Insert(3, new DevSetting.Directive("UNITY_MONETIZATION", false));
+                        pProfile.defines.Insert(0, new DevSetting.Directive("UNITY_MONETIZATION", false));
 
                     /*
                     float width = EditorGUIUtility.currentViewWidth - 80;
