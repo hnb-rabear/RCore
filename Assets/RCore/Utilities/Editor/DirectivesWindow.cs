@@ -120,7 +120,7 @@ namespace RCore.Common
                         }
                         mDirectives.Add(newDirective);
                         return;
-                    }, default(Color));
+                    }, default);
                     //
                     EditorHelper.ButtonColor("Save", () =>
                     {
@@ -136,9 +136,9 @@ namespace RCore.Common
                     {
                         mDirectives = LoadDirectives();
                     }, Color.yellow);
-                }, default(Color));
+                }, default);
 
-            }, default(Color), true, windowWidth);
+            }, default, true, windowWidth);
         }
 
         private void ApplyDirectiveSymbols()

@@ -1,5 +1,5 @@
 {
-    "name": "com.zenstone.com.zenstone.rcore",
+    "name": "com.zenstone.rcore",
     "version": "1.0.0",
     "description": "This package provides a comprehensive game framework for Unity development. It includes modules for game data management, UI design, audio playback, localization support, and various utilities to enhance the quality of life for Unity developers",
     "repository": {
@@ -7,7 +7,7 @@
         "url": "https://github.com/nbhung100914/RCore.git"
     },
     "author": {
-        "name": "Radbear",
+        "name": "RadBear",
         "email": "nbhung71711@gmail.com",
         "url": "https://github.com/nbhung100914"
     },

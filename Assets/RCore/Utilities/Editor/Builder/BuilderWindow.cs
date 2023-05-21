@@ -311,7 +311,7 @@ namespace RCore.Editor
                                     Debug.Log(cli);
                                 }
                             });
-                        }, default(Color), true);
+                        }, default, true);
                     }
                 }
                 EditorHelper.SeparatorBox();
@@ -333,7 +333,7 @@ namespace RCore.Editor
                     else if (EditorHelper.ButtonColor("Build Selected Profiles", Color.grey)) { }
                     if (EditorHelper.ButtonColor("Player Settings", Color.white))
                         SettingsService.OpenProjectSettings("Project/Player");
-                }, default(Color), true);
+                }, default, true);
                 EditorHelper.SeparatorBox();
                 EditorGUILayout.LabelField("Build By Command Line", EditorStyles.boldLabel);
                 EditorGUILayout.TextField(mCommandLine);

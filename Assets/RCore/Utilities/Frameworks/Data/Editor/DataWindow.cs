@@ -191,7 +191,7 @@ namespace RCore.Framework.Data
                             mDictKeyValues = DataSaverContainer.GetAllDataKeyValues();
                         }
                     }
-                }, default(Color), true);
+                }, default, true);
             }
             pList = list;
 

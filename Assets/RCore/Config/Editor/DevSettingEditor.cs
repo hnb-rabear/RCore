@@ -20,28 +20,28 @@ public class DevSettingEditor : Editor
     //-- FIREBASE CONFIGURATION
     private static string FirebaseConfigPath1
     {
-        get => EditorPrefs.GetString("FirebaseConfigPath1");
-		set => EditorPrefs.SetString("FirebaseConfigPath1", value);
+        get => EditorPrefs.GetString(nameof(FirebaseConfigPath1));
+		set => EditorPrefs.SetString(nameof(FirebaseConfigPath1), value);
 	}
     private static string FirebaseConfigPath2
     {
-        get => EditorPrefs.GetString("FirebaseConfigPath2");
-		set => EditorPrefs.SetString("FirebaseConfigPath2", value);
+        get => EditorPrefs.GetString(nameof(FirebaseConfigPath2));
+		set => EditorPrefs.SetString(nameof(FirebaseConfigPath2), value);
 	}
     public static string FirebaseConfigOutputFolder
     {
-        get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath);
-		set => EditorPrefs.SetString("FirebaseConfigOutputFolder", value);
+        get => EditorPrefs.GetString(nameof(FirebaseConfigOutputFolder), Application.dataPath);
+		set => EditorPrefs.SetString(nameof(FirebaseConfigOutputFolder), value);
 	}
     private static string FirebaseConfig
     {
-        get => EditorPrefs.GetString("firebase_config_" + Application.productName);
-		set => EditorPrefs.SetString("firebase_config_" + Application.productName, value);
+        get => EditorPrefs.GetString(nameof(FirebaseConfig) + Application.productName);
+		set => EditorPrefs.SetString(nameof(FirebaseConfig) + Application.productName, value);
 	}
     private static string FirebaseProjectNumber
     {
-        get => EditorPrefs.GetString("project_number");
-		set => EditorPrefs.SetString("project_number", value);
+        get => EditorPrefs.GetString(nameof(FirebaseProjectNumber));
+		set => EditorPrefs.SetString(nameof(FirebaseProjectNumber), value);
 	}
 
     private string mTypedProfileName;
@@ -96,7 +96,7 @@ public class DevSettingEditor : Editor
         EditorHelper.BoxVertical(() =>
         {
             EditorHelper.ButtonColor("Save", AssetDatabase.SaveAssets, Color.green);
-            EditorHelper.ButtonColor("Builder", () =>
+            EditorHelper.ButtonColor(nameof(Builder), () =>
             {
                 var window = EditorWindow.GetWindow<BuilderWindow>("Builder Settings", true);
                 window.Show();
@@ -117,7 +117,7 @@ public class DevSettingEditor : Editor
             EditorGUI.indentLevel++;
             base.OnInspectorGUI();
             EditorGUI.indentLevel--;
-        }, default(Color), true);
+        }, default, true);
     }
 
     //========= SETTINGS PROFILE
@@ -389,9 +389,9 @@ public class DevSettingEditor : Editor
     {
         EditorHelper.BoxVertical("Firebase", () =>
         {
-            FirebaseConfigPath1 = EditorHelper.FileSelector("Config Firebase 1", "FirebaseConfigPath1", "json,txt");
-            FirebaseConfigPath2 = EditorHelper.FileSelector("Config Firebase 2", "FirebaseConfigPath2", "json,txt");
-            FirebaseConfigOutputFolder = EditorHelper.FolderSelector("Output Folder", "FirebaseConfigOutputFolder");
+            FirebaseConfigPath1 = EditorHelper.FileSelector("Config Firebase 1", nameof(FirebaseConfigPath1), "json,txt");
+            FirebaseConfigPath2 = EditorHelper.FileSelector("Config Firebase 2", nameof(FirebaseConfigPath2), "json,txt");
+            FirebaseConfigOutputFolder = EditorHelper.FolderSelector("Output Folder", nameof(FirebaseConfigOutputFolder));
 
             string testPath = Application.dataPath + FirebaseConfigPath1;
             string livePath = Application.dataPath + FirebaseConfigPath2;
@@ -408,16 +408,16 @@ public class DevSettingEditor : Editor
 						string content = reader.ReadToEnd();
 						var contentNode = SimpleJSON.JSON.Parse(content);
 						var projectNumberNode = contentNode["project_info"]["project_number"];
-						if (curProjectNumber != projectNumberNode)
-						{
-							curProjectNumber = projectNumberNode;
-							File.WriteAllText(destination, content);
-							FirebaseConfig = content;
-							FirebaseProjectNumber = curProjectNumber;
-							AssetDatabase.Refresh();
-							EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-							EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-						}
+						if (curProjectNumber == projectNumberNode)
+							return;
+
+						curProjectNumber = projectNumberNode;
+						File.WriteAllText(destination, content);
+						FirebaseConfig = content;
+						FirebaseProjectNumber = curProjectNumber;
+						AssetDatabase.Refresh();
+						EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+						EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
 
 					});
                 if (!string.IsNullOrEmpty(FirebaseConfigPath1))
@@ -428,16 +428,16 @@ public class DevSettingEditor : Editor
 						string content = reader.ReadToEnd();
 						var contentNode = SimpleJSON.JSON.Parse(content);
 						var projectNumberNode = contentNode["project_info"]["project_number"];
-						if (curProjectNumber != projectNumberNode)
-						{
-							curProjectNumber = projectNumberNode;
-							File.WriteAllText(destination, content);
-							FirebaseConfig = content;
-							FirebaseProjectNumber = curProjectNumber;
-							AssetDatabase.Refresh();
-							EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-							EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-						}
+						if (curProjectNumber == projectNumberNode)
+							return;
+
+						curProjectNumber = projectNumberNode;
+						File.WriteAllText(destination, content);
+						FirebaseConfig = content;
+						FirebaseProjectNumber = curProjectNumber;
+						AssetDatabase.Refresh();
+						EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+						EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
 
 					});
             });
@@ -461,7 +461,7 @@ public class DevSettingEditor : Editor
                 EditorGUILayout.LabelField("Preview...", EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(currentConfig, GUILayout.MaxHeight(600), GUILayout.MaxWidth(EditorGUIUtility.currentViewWidth - 50));
             }, Color.white, true);
-        }, default(Color), true);
+        }, default, true);
     }
 
     private static void CheckFirebaseConfigPaths()

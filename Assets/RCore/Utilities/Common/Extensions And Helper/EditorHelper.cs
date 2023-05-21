@@ -353,12 +353,12 @@ namespace RCore.Common
 
 		public void Draw(GUIStyle style = null)
 		{
-			IsFoldout = UnityEditor.EditorPrefs.GetBool(label + "foldout", false);
+			IsFoldout = EditorPrefs.GetBool(label + "foldout", false);
 			IsFoldout = EditorGUILayout.Foldout(IsFoldout, label);
 			if (IsFoldout && onFoldout != null)
 				onFoldout();
 			if (GUI.changed)
-				UnityEditor.EditorPrefs.SetBool(label + "foldout", IsFoldout);
+				EditorPrefs.SetBool(label + "foldout", IsFoldout);
 		}
 	}
 
@@ -370,7 +370,7 @@ namespace RCore.Common
 
 		public void Draw(GUIStyle style = null)
 		{
-			CurrentTab = UnityEditor.EditorPrefs.GetString($"{key}_current_tab", tabsName[0]);
+			CurrentTab = EditorPrefs.GetString($"{key}_current_tab", tabsName[0]);
 
 			GUILayout.Space(5);
 			GUILayout.BeginHorizontal();
@@ -395,7 +395,7 @@ namespace RCore.Common
 				if (GUILayout.Button(tabName, buttonStyle))
 				{
 					CurrentTab = tabName;
-					UnityEditor.EditorPrefs.SetString($"{key}_current_tab", CurrentTab);
+					EditorPrefs.SetString($"{key}_current_tab", CurrentTab);
 				}
 
 				GUI.color = preColor;
@@ -414,7 +414,7 @@ namespace RCore.Common
 
 		public void Draw(GUIStyle style = null)
 		{
-			IsFoldout = UnityEditor.EditorPrefs.GetBool(key, false);
+			IsFoldout = EditorPrefs.GetBool(key, false);
 
 			if (!minimalistic) GUILayout.Space(3f);
 			if (!IsFoldout) GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f);
@@ -456,7 +456,7 @@ namespace RCore.Common
 					IsFoldout = !IsFoldout;
 			}
 
-			if (GUI.changed) UnityEditor.EditorPrefs.SetBool(key, IsFoldout);
+			if (GUI.changed) EditorPrefs.SetBool(key, IsFoldout);
 
 			if (!minimalistic) GUILayout.Space(2f);
 			GUILayout.EndHorizontal();
@@ -609,8 +609,8 @@ namespace RCore.Common
 			string path = EditorUtility.OpenFilePanel("Open File", pMainDirectory, "json,txt");
 			if (string.IsNullOrEmpty(path))
 				return false;
-			else
-				return LoadJsonFromFile(path, ref pOutput);
+
+			return LoadJsonFromFile(path, ref pOutput);
 		}
 
 		public static string LoadFilePanel(string pMainDirectory)
@@ -621,8 +621,8 @@ namespace RCore.Common
 			string path = EditorUtility.OpenFilePanel("Open File", pMainDirectory, "json,txt");
 			if (string.IsNullOrEmpty(path))
 				return null;
-			else
-				return File.ReadAllText(path);
+
+			return File.ReadAllText(path);
 		}
 
 		public static bool LoadJsonFromFile<T>(string pPath, ref T pOutput)
@@ -1049,7 +1049,7 @@ namespace RCore.Common
 			if (pFormatToUnityPath)
 				defaultPath = FormatPathToUnityPath(defaultPath).Replace("Assets", "");
 			string saveKey = label + pSavingKey + Application.productName;
-			string savedPath = UnityEditor.EditorPrefs.GetString(saveKey, defaultPath);
+			string savedPath = EditorPrefs.GetString(saveKey, defaultPath);
 			var text = new EditorText()
 			{
 				label = label,
@@ -1067,7 +1067,7 @@ namespace RCore.Common
 					{
 						if (pFormatToUnityPath)
 							path = FormatPathToUnityPath(path).Replace("Assets", "");
-						UnityEditor.EditorPrefs.SetString(saveKey, path);
+						EditorPrefs.SetString(saveKey, path);
 						savedPath = path;
 					}
 				}
@@ -1084,7 +1084,7 @@ namespace RCore.Common
 		public static string FileSelector(string label, string pSavingKey, string extension,
 			bool pFormatToUnityPath = true)
 		{
-			string savedPath = UnityEditor.EditorPrefs.GetString(label + pSavingKey);
+			string savedPath = EditorPrefs.GetString(label + pSavingKey);
 			var text = new EditorText()
 			{
 				label = label,
@@ -1102,7 +1102,7 @@ namespace RCore.Common
 					{
 						if (pFormatToUnityPath)
 							path = FormatPathToUnityPath(path).Replace("Assets", "");
-						UnityEditor.EditorPrefs.SetString(label + pSavingKey, path);
+						EditorPrefs.SetString(label + pSavingKey, path);
 						savedPath = path;
 					}
 				}
@@ -1240,7 +1240,7 @@ namespace RCore.Common
 			var show = HeaderFoldout($"{pName} ({pObjects.Count})", pName);
 			if (show)
 			{
-				int page = UnityEditor.EditorPrefs.GetInt(pName + "_page", 0);
+				int page = EditorPrefs.GetInt(pName + "_page", 0);
 				int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
 				if (totalPages == 0)
 					totalPages = 1;
@@ -1258,11 +1258,11 @@ namespace RCore.Common
 					int boxSize = 34;
 					if (pShowObjectBox)
 					{
-						boxSize = UnityEditor.EditorPrefs.GetInt(pName + "_Slider", 34);
+						boxSize = EditorPrefs.GetInt(pName + "_Slider", 34);
 						int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
 						if (boxSize != boxSizeNew)
 						{
-							UnityEditor.EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
+							EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
 							boxSize = boxSizeNew;
 						}
 					}
@@ -1279,7 +1279,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1287,7 +1287,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1331,7 +1331,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1339,7 +1339,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1353,7 +1353,7 @@ namespace RCore.Common
 							{
 								list.Add(null);
 								page = totalPages - 1;
-								UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+								EditorPrefs.SetInt(pName + "_page", page);
 							}
 
 							if (Button("Sort By Name"))
@@ -1396,7 +1396,7 @@ namespace RCore.Common
 			pObjects = list;
 
 			if (GUI.changed)
-				UnityEditor.EditorPrefs.SetBool(pName, show);
+				EditorPrefs.SetBool(pName, show);
 
 			GUI.backgroundColor = prevColor;
 
@@ -1410,7 +1410,7 @@ namespace RCore.Common
 			var prevColor = GUI.color;
 			GUI.backgroundColor = new Color(1, 1, 0.5f);
 
-			int page = UnityEditor.EditorPrefs.GetInt(pName + "_page", 0);
+			int page = EditorPrefs.GetInt(pName + "_page", 0);
 			int totalPages = Mathf.CeilToInt(pCount * 1f / 20f);
 			if (totalPages == 0)
 				totalPages = 1;
@@ -1432,7 +1432,7 @@ namespace RCore.Common
 					{
 						if (page > 0)
 							page--;
-						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt(pName + "_page", page);
 					}
 
 					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
@@ -1440,7 +1440,7 @@ namespace RCore.Common
 					{
 						if (page < totalPages - 1)
 							page++;
-						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt(pName + "_page", page);
 					}
 
 					EditorGUILayout.EndHorizontal();
@@ -1458,7 +1458,7 @@ namespace RCore.Common
 					{
 						if (page > 0)
 							page--;
-						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt(pName + "_page", page);
 					}
 
 					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
@@ -1466,7 +1466,7 @@ namespace RCore.Common
 					{
 						if (page < totalPages - 1)
 							page++;
-						UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt(pName + "_page", page);
 					}
 
 					EditorGUILayout.EndHorizontal();
@@ -1489,11 +1489,11 @@ namespace RCore.Common
 			//show = EditorGUILayout.Foldout(show, content, style);
 
 			var list = pList;
-			string search = UnityEditor.EditorPrefs.GetString(pName + "_search");
+			string search = EditorPrefs.GetString(pName + "_search");
 			var show = HeaderFoldout($"{pName} ({pList.Count})", pName);
 			if (show)
 			{
-				int page = UnityEditor.EditorPrefs.GetInt(pName + "_page", 0);
+				int page = EditorPrefs.GetInt(pName + "_page", 0);
 				int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
 				if (totalPages == 0)
 					totalPages = 1;
@@ -1511,11 +1511,11 @@ namespace RCore.Common
 					int boxSize = 34;
 					if (pShowObjectBox)
 					{
-						boxSize = UnityEditor.EditorPrefs.GetInt(pName + "_Slider", 34);
+						boxSize = EditorPrefs.GetInt(pName + "_Slider", 34);
 						int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
 						if (boxSize != boxSizeNew)
 						{
-							UnityEditor.EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
+							EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
 							boxSize = boxSizeNew;
 						}
 					}
@@ -1529,7 +1529,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1537,7 +1537,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1580,7 +1580,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1588,7 +1588,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1600,7 +1600,7 @@ namespace RCore.Common
 						{
 							list.Add(null);
 							page = totalPages - 1;
-							UnityEditor.EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt(pName + "_page", page);
 						}
 
 						if (Button("Sort By Name"))
@@ -1639,8 +1639,8 @@ namespace RCore.Common
 
 			if (GUI.changed)
 			{
-				UnityEditor.EditorPrefs.SetBool(pName, show);
-				UnityEditor.EditorPrefs.SetString(pName + "_search", search);
+				EditorPrefs.SetBool(pName, show);
+				EditorPrefs.SetString(pName + "_search", search);
 			}
 
 			GUI.backgroundColor = prevColor;
@@ -1745,7 +1745,7 @@ namespace RCore.Common
 		public static ReorderableList CreateReorderableList<T>(T[] pObjects, string pName) where T : Object
 		{
 			var reorderableList = new ReorderableList(pObjects, typeof(T), true, false, true, true);
-			reorderableList.drawElementCallback += (rect, index, isActive, isFocused) =>
+			reorderableList.drawElementCallback += (rect, index, _, _) =>
 			{
 				pObjects[index] = (T)EditorGUI.ObjectField(rect, pObjects[index], typeof(T), true);
 			};
@@ -1758,7 +1758,7 @@ namespace RCore.Common
 		public static ReorderableList CreateReorderableList<T>(List<T> pObjects, string pName) where T : Object
 		{
 			var reorderableList = new ReorderableList(pObjects, typeof(T), true, false, true, true);
-			reorderableList.drawElementCallback += (rect, index, isActive, isFocused) =>
+			reorderableList.drawElementCallback += (rect, index, _, _) =>
 			{
 				pObjects[index] = (T)EditorGUI.ObjectField(rect, pObjects[index], typeof(T), true);
 			};
@@ -2117,14 +2117,12 @@ namespace RCore.Common
 					new GUIContent(string.IsNullOrEmpty(pDisplayName) ? property.displayName : pDisplayName));
 				return property;
 			}
+
+			if (property.isExpanded)
+				EditorGUILayout.PropertyField(property, true, options);
 			else
-			{
-				if (property.isExpanded)
-					EditorGUILayout.PropertyField(property, true, options);
-				else
-					EditorGUILayout.PropertyField(property, new GUIContent(property.displayName), options);
-				return property;
-			}
+				EditorGUILayout.PropertyField(property, new GUIContent(property.displayName), options);
+			return property;
 		}
 
 		public static object GetTargetObjectOfProperty(SerializedProperty prop)
@@ -2451,7 +2449,7 @@ namespace RCore.Common
 			return null;
 		}
 
-		public static string GetAddressablesAddress(this Object target, out string guid)
+		public static string GetAddressableAddress(this Object target, out string guid)
 		{
 			string path = AssetDatabase.GetAssetPath(target);
 			guid = AssetDatabase.AssetPathToGUID(path);
@@ -2465,7 +2463,7 @@ namespace RCore.Common
 #endif
 		}
 
-		public static bool SetAddressablesAddress(string guid, string pAddress, params string[] pLabels)
+		public static bool SetAddressableAddress(string guid, string pAddress, params string[] pLabels)
 		{
 #if ADDRESSABLES
 			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid);
@@ -2497,36 +2495,36 @@ namespace RCore.Common
 	// Custom Editor PlayerPrefs
 	//===================================================================
 
-	public class EditorPrefs
+	public class CustomEditorPrefs
 	{
 		protected string mainKey;
 		protected int subKey;
 
 		protected string Key => mainKey + "_" + subKey;
 
-		public EditorPrefs(int pMainKey, int pSubKey = 0)
+		public CustomEditorPrefs(int pMainKey, int pSubKey = 0)
 		{
 			mainKey = pMainKey + "_" + pSubKey;
 		}
 
-		public EditorPrefs(string pMainKey, int pSubKey = 0)
+		public CustomEditorPrefs(string pMainKey, int pSubKey = 0)
 		{
 			mainKey = pMainKey + "_" + pSubKey;
 		}
 	}
 
-	public class EditorPrefsBool : EditorPrefs
+	public class EditorPrefsBool : CustomEditorPrefs
 	{
 		private bool mValue;
 
 		public EditorPrefsBool(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = UnityEditor.EditorPrefs.GetBool(Key);
+			mValue = EditorPrefs.GetBool(Key);
 		}
 
 		public EditorPrefsBool(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = UnityEditor.EditorPrefs.GetBool(Key);
+			mValue = EditorPrefs.GetBool(Key);
 		}
 
 		public bool Value
@@ -2537,7 +2535,7 @@ namespace RCore.Common
 				if (mValue != value)
 				{
 					mValue = value;
-					UnityEditor.EditorPrefs.SetBool(Key, value);
+					EditorPrefs.SetBool(Key, value);
 				}
 			}
 		}
@@ -2548,18 +2546,18 @@ namespace RCore.Common
 		}
 	}
 
-	public class EditorPrefsString : EditorPrefs
+	public class EditorPrefsString : CustomEditorPrefs
 	{
 		private string mValue;
 
 		public EditorPrefsString(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = UnityEditor.EditorPrefs.GetString(Key);
+			mValue = EditorPrefs.GetString(Key);
 		}
 
 		public EditorPrefsString(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = UnityEditor.EditorPrefs.GetString(Key);
+			mValue = EditorPrefs.GetString(Key);
 		}
 
 		public string Value
@@ -2570,7 +2568,7 @@ namespace RCore.Common
 				if (mValue != value)
 				{
 					mValue = value;
-					UnityEditor.EditorPrefs.SetString(Key, value);
+					EditorPrefs.SetString(Key, value);
 				}
 			}
 		}
@@ -2581,23 +2579,23 @@ namespace RCore.Common
 		}
 	}
 
-	public class EditorPrefsVector : EditorPrefs
+	public class EditorPrefsVector : CustomEditorPrefs
 	{
 		private Vector3 mValue;
 
 		public EditorPrefsVector(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			float x = UnityEditor.EditorPrefs.GetFloat(Key + "x");
-			float y = UnityEditor.EditorPrefs.GetFloat(Key + "y");
-			float z = UnityEditor.EditorPrefs.GetFloat(Key + "z");
+			float x = EditorPrefs.GetFloat(Key + "x");
+			float y = EditorPrefs.GetFloat(Key + "y");
+			float z = EditorPrefs.GetFloat(Key + "z");
 			mValue = new Vector3(x, y, z);
 		}
 
 		public EditorPrefsVector(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			float x = UnityEditor.EditorPrefs.GetFloat(Key + "x");
-			float y = UnityEditor.EditorPrefs.GetFloat(Key + "y");
-			float z = UnityEditor.EditorPrefs.GetFloat(Key + "z");
+			float x = EditorPrefs.GetFloat(Key + "x");
+			float y = EditorPrefs.GetFloat(Key + "y");
+			float z = EditorPrefs.GetFloat(Key + "z");
 			mValue = new Vector3(x, y, z);
 		}
 
@@ -2609,9 +2607,9 @@ namespace RCore.Common
 				if (mValue != value)
 				{
 					mValue = value;
-					UnityEditor.EditorPrefs.SetFloat(Key + "x", value.x);
-					UnityEditor.EditorPrefs.SetFloat(Key + "y", value.y);
-					UnityEditor.EditorPrefs.SetFloat(Key + "z", value.z);
+					EditorPrefs.SetFloat(Key + "x", value.x);
+					EditorPrefs.SetFloat(Key + "y", value.y);
+					EditorPrefs.SetFloat(Key + "z", value.z);
 				}
 			}
 		}
@@ -2622,13 +2620,13 @@ namespace RCore.Common
 		}
 	}
 
-	public class EditorPrefsEnum<T> : EditorPrefs
+	public class EditorPrefsEnum<T> : CustomEditorPrefs
 	{
 		private T mValue;
 
 		public EditorPrefsEnum(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			string strValue = UnityEditor.EditorPrefs.GetString(Key);
+			string strValue = EditorPrefs.GetString(Key);
 			foreach (T item in Enum.GetValues(typeof(T)))
 				if (item.ToString() == strValue)
 					mValue = item;
@@ -2636,7 +2634,7 @@ namespace RCore.Common
 
 		public EditorPrefsEnum(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			string strValue = UnityEditor.EditorPrefs.GetString(Key);
+			string strValue = EditorPrefs.GetString(Key);
 			foreach (T item in Enum.GetValues(typeof(T)))
 				if (item.ToString() == strValue)
 					mValue = item;
@@ -2654,7 +2652,7 @@ namespace RCore.Common
 				if (strValue != inputValue)
 				{
 					mValue = value;
-					UnityEditor.EditorPrefs.SetString(Key, inputValue);
+					EditorPrefs.SetString(Key, inputValue);
 				}
 			}
 		}
@@ -2665,18 +2663,18 @@ namespace RCore.Common
 		}
 	}
 
-	public class EditorPrefsFloat : EditorPrefs
+	public class EditorPrefsFloat : CustomEditorPrefs
 	{
 		private float mValue;
 
 		public EditorPrefsFloat(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = UnityEditor.EditorPrefs.GetFloat(Key);
+			mValue = EditorPrefs.GetFloat(Key);
 		}
 
 		public EditorPrefsFloat(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = UnityEditor.EditorPrefs.GetFloat(Key);
+			mValue = EditorPrefs.GetFloat(Key);
 		}
 
 		public float Value
@@ -2687,7 +2685,7 @@ namespace RCore.Common
 				if (mValue != value)
 				{
 					mValue = value;
-					UnityEditor.EditorPrefs.SetFloat(Key, value);
+					EditorPrefs.SetFloat(Key, value);
 				}
 			}
 		}
