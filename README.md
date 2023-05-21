@@ -1,2 +1,1 @@
-# RCore
-Core and utilities for making Unity Game
+This package provides a comprehensive game framework for Unity development. It includes modules for game data management, UI design, audio playback, localization support, and various utilities to enhance the quality of life for Unity developers
