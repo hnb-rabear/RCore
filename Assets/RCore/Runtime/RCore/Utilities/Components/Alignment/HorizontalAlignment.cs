@@ -58,7 +58,7 @@ namespace RCore.Components
 			RefreshPositions();
 
 			float t = lerp;
-			if (animCurve.length > 1)
+			if (animCurve != null && animCurve.length > 1)
 				t = animCurve.Evaluate(lerp);
 			for (int j = 0; j < mChildren.Length; j++)
 			{
