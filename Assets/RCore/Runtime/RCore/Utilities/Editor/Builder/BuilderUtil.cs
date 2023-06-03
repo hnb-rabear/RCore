@@ -382,7 +382,7 @@ namespace RCore.Editor
             Build(profile);
         }
 
-        [MenuItem("RUtilities/Tools/Open Builder Window")]
+        [MenuItem("RCore/Tools/Open Builder Window")]
         private static void OpenDevEditorWindow()
         {
             var window = EditorWindow.GetWindow<BuilderWindow>("Builder Settings", true);
@@ -390,7 +390,7 @@ namespace RCore.Editor
         }
 
         /*
-        [MenuItem("RUtilities/Tools/Build Now")]
+        [MenuItem("RCore/Tools/Build Now")]
         static void BuildCurrent()
         {
             var profile = new BuildProfile();

@@ -1671,7 +1671,7 @@ namespace RCore.Editor
 			return allComponents;
 		}
 
-		[MenuItem("RUtilities/Tools/Tools Collection")]
+		[MenuItem("RCore/Tools/Tools Collection")]
 		private static void OpenEditorWindow()
 		{
 			var window = GetWindow<ToolsCollectionWindow>("Tools Collection", true);

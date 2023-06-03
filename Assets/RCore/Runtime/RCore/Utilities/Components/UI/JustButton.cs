@@ -36,7 +36,7 @@ namespace RCore.Components
             Height,
         }
 
-        private static Material mGreyMat;
+        private static Material m_GreyMat;
 
         [SerializeField] protected PivotForScale mPivotForFX;
         [SerializeField] protected bool mEnabledFX = true;
@@ -69,7 +69,7 @@ namespace RCore.Components
         private PivotForScale mPrePivot;
         private Action mInactionStateAction;
         private bool mActive = true;
-        private int m_PerferctSpriteId;
+        private int m_PerfectSpriteId;
 
         public virtual void SetEnable(bool pValue)
         {
@@ -255,10 +255,10 @@ namespace RCore.Components
 
         public Material GetGreyMat()
         {
-            if (mGreyMat == null)
+            if (m_GreyMat == null)
                 //mGreyMat = new Material(Shader.Find("NBCustom/Sprites/Greyscale"));
-                mGreyMat = Resources.Load<Material>("Greyscale");
-            return mGreyMat;
+                m_GreyMat = Resources.Load<Material>("Greyscale");
+            return m_GreyMat;
         }
 
         public void EnableGrey(bool pValue)
@@ -272,36 +272,36 @@ namespace RCore.Components
         {
             if (m_PerfectRatio == PerfectRatio.Width)
             {
-                var image = mImg;
-                if (image != null && image.sprite != null && image.type == Image.Type.Sliced)
+                var image1 = mImg;
+                if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_PerfectSpriteId != image1.sprite.GetInstanceID())
                 {
-                    var nativeSize = image.sprite.NativeSize();
+                    var nativeSize = image1.sprite.NativeSize();
                     var rectSize = rectTransform.sizeDelta;
                     if (rectSize.x > 0 && rectSize.x < nativeSize.x)
                     {
                         var ratio = nativeSize.x * 1f / rectSize.x;
-                        image.pixelsPerUnitMultiplier = ratio;
+                        image1.pixelsPerUnitMultiplier = ratio;
                     }
                     else
-                        image.pixelsPerUnitMultiplier = 1;
-                    m_PerferctSpriteId = image.sprite.GetInstanceID();
+                        image1.pixelsPerUnitMultiplier = 1;
+                    m_PerfectSpriteId = image1.sprite.GetInstanceID();
                 }
             }
             else if (m_PerfectRatio == PerfectRatio.Height)
             {
-                var image = mImg;
-                if (image != null && image.sprite != null && image.type == Image.Type.Sliced)
+                var image1 = mImg;
+                if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_PerfectSpriteId != image1.sprite.GetInstanceID())
                 {
-                    var nativeSize = image.sprite.NativeSize();
+                    var nativeSize = image1.sprite.NativeSize();
                     var rectSize = rectTransform.sizeDelta;
                     if (rectSize.y > 0 && rectSize.y < nativeSize.y)
                     {
                         var ratio = nativeSize.y * 1f / rectSize.y;
-                        image.pixelsPerUnitMultiplier = ratio;
+                        image1.pixelsPerUnitMultiplier = ratio;
                     }
                     else
-                        image.pixelsPerUnitMultiplier = 1;
-                    m_PerferctSpriteId = image.sprite.GetInstanceID();
+                        image1.pixelsPerUnitMultiplier = 1;
+                    m_PerfectSpriteId = image1.sprite.GetInstanceID();
                 }
             }
         }
@@ -310,7 +310,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
     [CanEditMultipleObjects]
     [CustomEditor(typeof(JustButton), true)]
-    class JustButtonEditor : ButtonEditor
+    internal class JustButtonEditor : ButtonEditor
     {
         public override void OnInspectorGUI()
         {
@@ -343,10 +343,10 @@ namespace RCore.Components
         [MenuItem("RCore/UI/Replace Button By JustButton")]
         private static void ReplaceButton()
         {
-            var gameobjects = Selection.gameObjects;
-            for (int i = 0; i < gameobjects.Length; i++)
+            var gameObjects = Selection.gameObjects;
+            for (int i = 0; i < gameObjects.Length; i++)
             {
-                var btns = gameobjects[i].FindComponentsInChildren<Button>();
+                var btns = gameObjects[i].FindComponentsInChildren<Button>();
                 for (int j = 0; j < btns.Count; j++)
                 {
                     var btn = btns[j];

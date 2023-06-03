@@ -198,7 +198,7 @@ namespace RCore.Common
             return false;
         }
 
-        [MenuItem("RUtilities/Tools/Open Directives Window (obsolete)")]
+        [MenuItem("RCore/Tools/Open Directives Window (obsolete)")]
         private static void OpenDirectivesEditorWindow()
         {
             var window = GetWindow<DirectivesWindow>("Directives Manager", true);

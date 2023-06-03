@@ -13,7 +13,7 @@ namespace RCore.Editor
         private const string SHIFT = "#";
         private const string CTRL = "%";
 
-        [MenuItem("RUtilities/Save Assets " + SHIFT + "_1", priority = 1)]
+        [MenuItem("RCore/Save Assets " + SHIFT + "_1", priority = 1)]
         private static void SaveAssets()
         {
             var objs = Selection.objects;
@@ -26,7 +26,7 @@ namespace RCore.Editor
 
         //==========================================================
 
-        [MenuItem("RUtilities/Group Scene Objects " + ALT + "_F1", priority = 31)]
+        [MenuItem("RCore/Group Scene Objects " + ALT + "_F1", priority = 31)]
         private static void GroupSceneObjects()
         {
             var objs = Selection.gameObjects;
@@ -41,7 +41,7 @@ namespace RCore.Editor
             }
         }
 
-        [MenuItem("RUtilities/Ungroup Scene Objects " + ALT + "_F2", priority = 32)]
+        [MenuItem("RCore/Ungroup Scene Objects " + ALT + "_F2", priority = 32)]
         private static void UngroupSceneObjects()
         {
             var objs = Selection.gameObjects;
@@ -54,19 +54,19 @@ namespace RCore.Editor
 
         //==========================================================
 
-        [MenuItem("RUtilities/Run _F5", priority = 61)]
+        [MenuItem("RCore/Run _F5", priority = 61)]
         private static void Run()
         {
             EditorApplication.isPlaying = true;
         }
 
-        [MenuItem("RUtilities/Stop #_F5", priority = 62)]
+        [MenuItem("RCore/Stop #_F5", priority = 62)]
         private static void Stop()
         {
             EditorApplication.isPlaying = false;
         }
 
-        //[MenuItem("RUtilities/Just Crash", priority = 63)]
+        //[MenuItem("RCore/Just Crash", priority = 63)]
         //private static void JustCrash()
         //{
         //    //It used to test game behaviour if crashing happen

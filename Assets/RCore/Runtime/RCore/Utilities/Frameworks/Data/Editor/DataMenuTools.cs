@@ -5,33 +5,32 @@
 using UnityEditor;
 using UnityEngine;
 using RCore.Common;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Framework.Data
 {
-    public class DataMenuTools
+    public static class DataMenuTools
     {
-        [MenuItem("RUtilities/Data/Open Data Window %_#_'")]
+        [MenuItem("RCore/Data/Open Data Window %_#_'")]
         private static void OpenDataWindow()
         {
             var window = EditorWindow.GetWindow<DataWindow>("Game Data", true);
             window.Show();
         }
 
-        [MenuItem("RUtilities/Data/Clear PlayerPrefs")]
+        [MenuItem("RCore/Data/Clear PlayerPrefs")]
         private static void ClearPlayerPrefs()
         {
-            EditorHelper.ConfirmPopup(() => { PlayerPrefs.DeleteAll(); });
+            EditorHelper.ConfirmPopup(PlayerPrefs.DeleteAll);
         }
 
         /*
-        [MenuItem("RUtilities/Data/Clear Game Data")]
+        [MenuItem("RCore/Data/Clear Game Data")]
         private static void ClearSaveData()
         {
-            EditorHelper.ConfimPopup(() => { DataSaverContainer.DeleteAll(); });
+            EditorHelper.ConfirmPopup(() => { DataSaverContainer.DeleteAll(); });
         }
 
-        [MenuItem("RUtilities/Data/Backup Game Data")]
+        [MenuItem("RCore/Data/Backup Game Data")]
         private static void BackUpData()
         {
             string path = EditorUtility.SaveFilePanelInProject("Save Backup", "GameData_" + System.DateTime.Now.ToString().Replace("/", "_").Replace(":", "_")
@@ -42,7 +41,7 @@ namespace RCore.Framework.Data
             }
         }
 
-        [MenuItem("RUtilities/Data/Restore Game Data")]
+        [MenuItem("RCore/Data/Restore Game Data")]
         private static void RestoreData()
         {
             string path = EditorUtility.OpenFilePanel("Select Backup Data File", Application.dataPath, "txt");
@@ -52,13 +51,13 @@ namespace RCore.Framework.Data
             }
         }
 
-        [MenuItem("RUtilities/Data/Log Game Data")]
+        [MenuItem("RCore/Data/Log Game Data")]
         private static void LogData()
         {
             DataSaverContainer.LogData();
         }
 
-        [MenuItem("RUtilities/Data/Save Game Data (In Game)")]
+        [MenuItem("RCore/Data/Save Game Data (In Game)")]
         private static void Save()
         {
             if (!Application.isPlaying)

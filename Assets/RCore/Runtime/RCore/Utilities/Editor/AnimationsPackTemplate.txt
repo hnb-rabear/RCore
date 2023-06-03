@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "<class_name>", menuName = "RUtilities/Animations/Create <class_name>")]
+[CreateAssetMenu(fileName = "<class_name>", menuName = "RCore/Animations/Create <class_name>")]
 public class <class_name> : ScriptableObject
 {
 <enum_>

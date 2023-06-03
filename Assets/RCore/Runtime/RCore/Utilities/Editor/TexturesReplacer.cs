@@ -644,7 +644,7 @@ namespace RCore.Editor
 			return pSource;
 		}
 
-		[MenuItem("RUtilities/Tools/Textures Replacer")]
+		[MenuItem("RCore/Tools/Textures Replacer")]
 		private static void OpenEditorWindow()
 		{
 			var window = GetWindow<TexturesReplacer>("Textures Replacer", true);
