@@ -134,7 +134,7 @@ namespace RCore.Components
                 if (images.Length > 0)
                 {
                     targetGraphic = images[0];
-                    mImg = targetGraphic as Image;
+                    mImg = (Image)targetGraphic;
                 }
             }
             if (targetGraphic != null && mImg == null)
@@ -242,15 +242,15 @@ namespace RCore.Components
             }
         }
 
-        public void SetPivot(RectTransform rectTransform, Vector2 pivot)
+        public void SetPivot(RectTransform pRectTransform, Vector2 pivot)
         {
-            if (rectTransform == null) return;
+            if (pRectTransform == null) return;
 
-            Vector2 size = rectTransform.rect.size;
-            Vector2 deltaPivot = rectTransform.pivot - pivot;
+            Vector2 size = pRectTransform.rect.size;
+            Vector2 deltaPivot = pRectTransform.pivot - pivot;
             Vector3 deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
-            rectTransform.pivot = pivot;
-            rectTransform.localPosition -= deltaPosition;
+            pRectTransform.pivot = pivot;
+            pRectTransform.localPosition -= deltaPosition;
         }
 
         public Material GetGreyMat()
@@ -346,11 +346,11 @@ namespace RCore.Components
             var gameObjects = Selection.gameObjects;
             for (int i = 0; i < gameObjects.Length; i++)
             {
-                var btns = gameObjects[i].FindComponentsInChildren<Button>();
-                for (int j = 0; j < btns.Count; j++)
+                var buttons = gameObjects[i].FindComponentsInChildren<Button>();
+                for (int j = 0; j < buttons.Count; j++)
                 {
-                    var btn = btns[j];
-                    if (!(btn is JustButton))
+                    var btn = buttons[j];
+                    if (btn is not JustButton)
                     {
                         var obj = btn.gameObject;
                         DestroyImmediate(btn);

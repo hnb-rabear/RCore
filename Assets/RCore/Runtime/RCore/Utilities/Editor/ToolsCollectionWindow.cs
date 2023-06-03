@@ -1483,6 +1483,7 @@ namespace RCore.Editor
 		private void DrawGenerators()
 		{
 			GenerateAnimationsPackScript();
+			GenerateCharactersMap();
 		}
 
 		private void GenerateAnimationsPackScript()
@@ -1588,9 +1589,9 @@ namespace RCore.Editor
 
 		private static string m_CombinedTextsResult;
 		private static readonly List<TextAsset> m_TextFiles = new List<TextAsset>();
-		private static void DrawRemoveDuplicateCharacters()
+		private static void GenerateCharactersMap()
 		{
-			if (EditorHelper.HeaderFoldout("Remove Duplicate Characters"))
+			if (EditorHelper.HeaderFoldout("Generate Characters Map"))
 			{
 				if (EditorHelper.ButtonColor("Add Txt File", Color.green))
 					m_TextFiles.Add(null);
@@ -1625,7 +1626,7 @@ namespace RCore.Editor
 					m_CombinedTextsResult = string.Concat(m_CombinedTextsResult.OrderBy(c => c));
 				}
 				m_CombinedTextsResult = EditorHelper.TextArea(m_CombinedTextsResult, null);
-				if (EditorHelper.Button("Save To File"))
+				if (EditorHelper.Button("Save Characters Map"))
 				{
 					EditorHelper.SaveFilePanel(null, "combined_text", m_CombinedTextsResult, "txt");
 				}

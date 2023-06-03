@@ -51,14 +51,16 @@ namespace RCore.Components
 
 			if (mLabelTMP == null)
 				mLabelTMP = GetComponentInChildren<TextMeshProUGUI>();
-			if (m_LabelMatSwap)
+			if (mLabelTMP == null)
+				m_LabelMatSwap = false;
+			if (!m_LabelMatSwap)
 			{
-				if (mLabelTMP == null)
-				{
-					m_LabelMatSwap = false;
-					m_LabelMatActive = null;
-					m_LabelMatInactive = null;
-				}
+				m_LabelMatActive = null;
+				m_LabelMatInactive = null;
+			}
+			else if (m_LabelMatActive == null)
+			{
+				m_LabelMatActive = mLabelTMP.fontSharedMaterial;
 			}
 		}
 #endif
@@ -100,7 +102,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
 		[CanEditMultipleObjects]
 		[CustomEditor(typeof(SimpleTMPButton), true)]
-		class SimpleTMPButtonEditor : JustButtonEditor
+		private class SimpleTMPButtonEditor : JustButtonEditor
 		{
 			private SimpleTMPButton mButton;
 			private string[] m_MatsName;
@@ -139,8 +141,8 @@ namespace RCore.Components
 						EditorGUI.indentLevel--;
 					}
 
-					var LabelMatSwap = EditorHelper.SerializeField(serializedObject, "m_LabelMatSwap");
-					if (LabelMatSwap.boolValue)
+					var labelMatSwap = EditorHelper.SerializeField(serializedObject, "m_LabelMatSwap");
+					if (labelMatSwap.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");

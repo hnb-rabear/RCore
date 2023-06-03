@@ -39,7 +39,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
     [CanEditMultipleObjects]
     [CustomEditor(typeof(SimpleButton), true)]
-    class SimpleButtonEditor : JustButtonEditor
+    internal class SimpleButtonEditor : JustButtonEditor
     {
         public override void OnInspectorGUI()
         {
@@ -68,14 +68,14 @@ namespace RCore.Components
         [MenuItem("RCore/UI/Replace Button By SimpleButton")]
         private static void ReplaceButton()
         {
-            var gameobjects = Selection.gameObjects;
-            for (int i = 0; i < gameobjects.Length; i++)
+            var gameObjects = Selection.gameObjects;
+            for (int i = 0; i < gameObjects.Length; i++)
             {
-                var btns = gameobjects[i].FindComponentsInChildren<Button>();
-                for (int j = 0; j < btns.Count; j++)
+                var buttons = gameObjects[i].FindComponentsInChildren<Button>();
+                for (int j = 0; j < buttons.Count; j++)
                 {
-                    var btn = btns[j];
-                    if (!(btn is SimpleButton))
+                    var btn = buttons[j];
+                    if (btn is not SimpleButton)
                     {
                         var obj = btn.gameObject;
                         DestroyImmediate(btn);
