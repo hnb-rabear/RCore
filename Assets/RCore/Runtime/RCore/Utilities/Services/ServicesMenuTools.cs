@@ -16,17 +16,6 @@ namespace RCore.Service
                 obj.AddComponent<RFirebaseManager>();
             }
         }
-
-        [MenuItem("RCore/Services/Add Game Services")]
-        private static void AddGameServices()
-        {
-            var manager = FindObjectOfType<GameServices>();
-            if (manager == null)
-            {
-                var obj = new GameObject("GameServices");
-                obj.AddComponent<GameServices>();
-            }
-        }
     }
 }
 #endif
