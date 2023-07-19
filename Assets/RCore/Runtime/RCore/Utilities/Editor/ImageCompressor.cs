@@ -1,0 +1,309 @@
+/**
+ * Author RadBear - nbhung71711 @gmail.com - 2023
+ **/
+
+using Cysharp.Threading.Tasks;
+using RCore.Common;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Networking;
+using Debug = UnityEngine.Debug;
+
+namespace RCore.Editor
+{
+	public class ImageCompressor : EditorWindow
+	{
+#region TinyPNG Compression
+
+		private const string API_KEY = "7yGJHbBnvVdwCclFT1Z5Ywk2K5Mqy7qB";
+		private static List<string> FilesCompressed;
+
+		private static string AuthKey
+		{
+			get
+			{
+				var key = "api:" + API_KEY;
+				key = Convert.ToBase64String(Encoding.UTF8.GetBytes(key));
+				return $"Basic {key}";
+			}
+		}
+
+		private static int m_ImagesProcessedCount;
+		private static async void CompressTexturesWithTinyPNG(string folderPath)
+		{
+			m_ImagesProcessedCount = 0;
+			if (string.IsNullOrEmpty(folderPath))
+				return;
+			string[] texturePaths = Directory.GetFiles(folderPath, "*.png", SearchOption.AllDirectories);
+			foreach (string texturePath in texturePaths)
+				await Compress(texturePath, true);
+			Debug.Log($"[{nameof(ImageCompressor)}] Compressed {m_ImagesProcessedCount} textures");
+		}
+
+		//{"size":91,"type":"image/png"}
+		[Serializable]
+		private class InputModel
+		{
+			public int size;
+			public string type;
+		}
+
+		//{"size":91,"type":"image/png","width":16,"height":16,"ratio":1,"url":"https://api.tinify.com/output/d6vu2y5mm231fjkjhp6fj22jd648k2vz"}
+		[Serializable]
+		private class OutputModel
+		{
+			public int size;
+			public string type;
+			public int width;
+			public int height;
+			public float ratio;
+			public string url;
+		}
+
+		[Serializable]
+		private class ResponseModel
+		{
+			public InputModel input;
+			public OutputModel output;
+		}
+
+		private static bool NeedCompression(long fileSizeKb, int width, int height, out float compressedSize)
+		{
+			var size = width * height;
+			compressedSize = size / 4f / GetNearestPowerOfTwo(Mathf.Sqrt(size));
+			return fileSizeKb < compressedSize;
+		}
+		
+		private static int GetNearestPowerOfTwo(float number)
+		{
+			int power = Mathf.CeilToInt(Mathf.Log(number, 2));
+			var result = (int)Mathf.Pow(2, power);
+			return result;
+		}
+		
+		private static async UniTask Compress(string filePath, bool overwrite)
+		{
+			FilesCompressed ??= JsonHelper.ToList<string>(EditorPrefs.GetString(nameof(FilesCompressed), "[]"));
+			var fileInfo = new FileInfo(filePath);
+			long fileSizeBytes = fileInfo.Length;
+			long fileSizeKb = fileSizeBytes / 1024;
+			string fileName = Path.GetFileName(filePath);
+			var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(filePath);
+			if (NeedCompression(fileSizeKb, texture.width, texture.height, out var compressedSize))
+			{
+				Debug.Log($"[{nameof(ImageCompressor)}] File {fileName} size is {fileSizeKb}kb, it needs to bigger than {compressedSize} to be compressed.");
+				return;
+			}
+			if (FilesCompressed.Contains(filePath))
+			{
+				Debug.Log($"[{nameof(ImageCompressor)}] File {fileName} was compressed.");
+				return;
+			}
+			var bytes = await File.ReadAllBytesAsync(filePath);
+			var www = UnityWebRequest.Put("https://api.tinify.com/shrink", bytes);
+			www.SetRequestHeader("Authorization", AuthKey);
+			www.method = UnityWebRequest.kHttpVerbPOST;
+			www.timeout = 10;
+			try
+			{
+				await www.SendWebRequest();
+
+				if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+					Debug.Log(www.error);
+
+				if (!string.IsNullOrEmpty(www.downloadHandler.text))
+				{
+					try
+					{
+						var model = JsonUtility.FromJson<ResponseModel>(www.downloadHandler.text);
+						www.Dispose();
+
+						var url = model.output.url;
+						www = UnityWebRequest.Get(url);
+						www.timeout = 10;
+						await www.SendWebRequest();
+
+						if (www.downloadHandler.data.Length > 100)
+						{
+							int sizeBytes = www.downloadHandler.data.Length;
+							int sizeKb = sizeBytes / 1024;
+							await File.WriteAllBytesAsync(overwrite ? filePath : filePath.Replace(".png", "_tiny.png"), www.downloadHandler.data);
+							AssetDatabase.Refresh();
+							AssetDatabase.ImportAsset(filePath);
+							FilesCompressed.Add(filePath);
+							Debug.Log($"[{nameof(ImageCompressor)}] {m_ImagesProcessedCount}: Compressed file {filePath} by {(fileSizeKb - sizeKb) * 1f / fileSizeKb * 100}% from {fileSizeKb}kb to {sizeKb}kb");
+							EditorPrefs.SetString(nameof(FilesCompressed), JsonHelper.ToJson(FilesCompressed));
+							m_ImagesProcessedCount++;
+						}
+					}
+					catch (Exception e)
+					{
+						Debug.LogError($"[{nameof(ImageCompressor)}] Compressed file {filePath} failed\n{e}");
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"[{nameof(ImageCompressor)}] Compressed file {filePath} failed\n{e}");
+			}
+		}
+
+		[MenuItem("Assets/RCore/Compress Textures with TinyPNG")]
+		private static async void CompressTexturesWithTinyPNG()
+		{
+			// 	string folderPath = EditorUtility.OpenFolderPanel("Select Folder", "", "");
+			// 	CompressTexturesWithTinyPNG(folderPath);
+			
+			if (Selection.activeObject != null)
+			{
+				string imagePath = AssetDatabase.GetAssetPath(Selection.activeObject);
+				var extension = Path.GetExtension(imagePath);
+				if (extension == ".png" || extension == ".jpg")
+				{
+					await Compress(imagePath, true);
+					return;
+				}
+			}
+			var objects = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets);
+			if (objects.Length == 0)
+				return;
+			string directoryPath = AssetDatabase.GetAssetPath(objects[0]);
+			CompressTexturesWithTinyPNG(directoryPath);
+		}
+
+#endregion
+
+#region Remove Exif of Images
+
+		[MenuItem("Assets/RCore/Remove Exif Of Textures")]
+		private static void RemoveExifOfImages()
+		{
+			if (Selection.activeObject != null)
+			{
+				string imagePath = AssetDatabase.GetAssetPath(Selection.activeObject);
+				var extension = Path.GetExtension(imagePath);
+				if (extension == ".png" || extension == ".jpg")
+				{
+					RemoveExifAndCompressImage(imagePath);
+					return;
+				}
+			}
+			var objects = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets);
+			if (objects.Length == 0)
+				return;
+			string directoryPath = AssetDatabase.GetAssetPath(objects[0]);
+			RemoveExifOfImages(directoryPath);
+		}
+
+		private static void RemoveExifOfImages(string pDirectoryPath)
+		{
+			var log = new StringBuilder().AppendFormat($"[{nameof(ImageCompressor)}]");
+			var log2 = new StringBuilder().AppendFormat($"[{nameof(ImageCompressor)}]");
+			string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { pDirectoryPath });
+			foreach (string guid in guids)
+			{
+				string imagePath = AssetDatabase.GUIDToAssetPath(guid);
+				var extension = Path.GetExtension(imagePath);
+				if (extension == ".png" || extension == ".jpg")
+				{
+					var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(imagePath);
+					if (texture != null)
+					{
+						RemoveExifAndCompressImage(imagePath);
+						log.AppendFormat("Processed image: {0}\n", imagePath);
+					}
+				}
+				else
+				{
+					log2.AppendFormat("Unprocessed image: {0}\n", imagePath);
+				}
+			}
+			if (guids.Length > 0)
+			{
+				AssetDatabase.SaveAssets();
+				AssetDatabase.Refresh();
+				Debug.Log(log);
+				Debug.Log(log2);
+			}
+		}
+		
+		private static void RemoveExifAndCompressImage(string imagePath)
+		{
+			var texture = new Texture2D(2, 2);
+			var bytes = File.ReadAllBytes(imagePath);
+			texture.LoadImage(bytes);
+			int sizeMb = bytes.Length / 1024 / 1024;
+			if (sizeMb >= 5)
+			{
+				Debug.LogError($"{imagePath} should be corrected format, please check the size of the image and before procession.");
+				return;
+			}
+			// Create a new Texture2D to remove EXIF data
+			var newTexture = new Texture2D(texture.width, texture.height, texture.format, false);
+			newTexture.SetPixels(texture.GetPixels());
+			newTexture.Apply();
+			// Encode the new Texture2D as a PNG or JPEG (based on file extension)
+			var extension = Path.GetExtension(imagePath).ToLower();
+			byte[] newImageData = null;
+			if (extension == ".jpg")
+				newImageData = newTexture.EncodeToJPG();
+			else if (extension == ".png")
+				newImageData = newTexture.EncodeToPNG();
+			if (newImageData != null)
+				// Save the new image data back to the file
+				File.WriteAllBytes(imagePath, newImageData);
+			// Destroy the temporary textures
+			DestroyImmediate(texture);
+			DestroyImmediate(newTexture);
+			Debug.Log($"[{nameof(ImageCompressor)}] Processed image: {imagePath}");
+		}
+
+		private static void RemoveExifAndCompressImage2(string imagePath)
+		{
+			var originalTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(imagePath);
+			// Create a new Texture2D to remove EXIF data
+			var newTexture = new Texture2D(originalTexture.width, originalTexture.height, originalTexture.format, false);
+			newTexture.SetPixels(originalTexture.GetPixels());
+			newTexture.Apply();
+			// Encode the new Texture2D as a PNG or JPEG (based on file extension)
+			var extension = Path.GetExtension(imagePath).ToLower();
+			byte[] newImageData = null;
+			if (extension == ".jpg")
+				newImageData = newTexture.EncodeToJPG();
+			else if (extension == ".png")
+				newImageData = newTexture.EncodeToPNG();
+			if (newImageData != null)
+				// Save the new image data back to the file
+				File.WriteAllBytes(imagePath, newImageData);
+			// Destroy the temporary textures
+			DestroyImmediate(newTexture);
+			Debug.Log($"[{nameof(ImageCompressor)}] Processed image: {imagePath}");
+		}
+
+		private static Texture2D CloneTexture2D(Texture2D texture)
+		{
+			// Create a temporary RenderTexture with the same dimensions and format as the texture
+			var tempRenderTexture = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+			// Set the active RenderTexture to the temporary RenderTexture
+			RenderTexture.active = tempRenderTexture;
+			// Copy the texture data to the temporary RenderTexture
+			Graphics.Blit(texture, tempRenderTexture);
+			// Create a new Texture2D to read the pixel data
+			var tempTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+			// Read the pixel data from the temporary RenderTexture to the new Texture2D
+			tempTexture.ReadPixels(new Rect(0, 0, tempRenderTexture.width, tempRenderTexture.height), 0, 0);
+			// Apply the changes to the new Texture2D
+			tempTexture.Apply();
+			// Clean up temporary objects
+			RenderTexture.active = null;
+			RenderTexture.ReleaseTemporary(tempRenderTexture);
+			return tempTexture;
+		}
+		
+#endregion
+	}
+}

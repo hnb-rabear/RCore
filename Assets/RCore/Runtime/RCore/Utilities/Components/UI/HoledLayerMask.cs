@@ -21,8 +21,8 @@ using UnityEditor;
 namespace RCore.Components
 {
     /// <summary>
-    /// Create a hole at a recttransform target
-    /// And everythings outside that hole will not be interable
+    /// Create a hole at a rect-transform target
+    /// And everything's outside that hole will not be interactable
     /// </summary>
     public class HoledLayerMask : MonoBehaviour
     {
@@ -69,18 +69,17 @@ namespace RCore.Components
         private void DrawHole()
         {
             //Change size of 4-border following the size and position of hole
-            var canvasWidth = mBounds.size.x;
-            var canvasHeight = mBounds.size.y;
             var holePosition = imgHole.rectTransform.anchoredPosition;
-            var holeHalfSize = imgHole.rectTransform.sizeDelta / 2f;
+            var holeSizeDelta = imgHole.rectTransform.sizeDelta;
+            var holeHalfSize = holeSizeDelta / 2f;
             float borderLeft = mBounds.min.x;
             float borderRight = mBounds.max.x;
             float borderTop = mBounds.max.y;
             float borderBot = mBounds.min.y;
-            float layerLeftW = (holePosition.x - holeHalfSize.x) - borderLeft;
+            float layerLeftW = holePosition.x - holeHalfSize.x - borderLeft;
             float layerRightW = borderRight - (holePosition.x + holeHalfSize.x);
-            float layerLeftH = imgHole.rectTransform.sizeDelta.y;
-            float layerRightH = imgHole.rectTransform.sizeDelta.y;
+            float layerLeftH = holeSizeDelta.y;
+            float layerRightH = holeSizeDelta.y;
             float layerTopW = mBounds.size.x;
             float layerBotW = mBounds.size.x;
             float layerTopH = borderTop - (holePosition.y + holeHalfSize.y);
@@ -92,14 +91,19 @@ namespace RCore.Components
             imgBot.rectTransform.sizeDelta = new Vector2(layerBotW, layerBotH);
 
             var leftLayerPos = imgLeft.rectTransform.anchoredPosition;
-            leftLayerPos.y = imgHole.rectTransform.anchoredPosition.y;
+            var holeAnchoredPosition = imgHole.rectTransform.anchoredPosition;
+            leftLayerPos.y = holeAnchoredPosition.y;
             imgLeft.rectTransform.anchoredPosition = leftLayerPos;
             var rightLayerPos = imgRight.rectTransform.anchoredPosition;
-            rightLayerPos.y = imgHole.rectTransform.anchoredPosition.y;
+            rightLayerPos.y = holeAnchoredPosition.y;
             imgRight.rectTransform.anchoredPosition = rightLayerPos;
 
             if (mCurrentTarget != null && !mTweening)
-                imgHole.rectTransform.sizeDelta = new Vector2(mCurrentTarget.rect.width * mCurrentTarget.localScale.x, mCurrentTarget.rect.height * mCurrentTarget.localScale.y);
+            {
+	            var rect = mCurrentTarget.rect;
+	            var localScale = mCurrentTarget.localScale;
+	            imgHole.rectTransform.sizeDelta = new Vector2(rect.width * localScale.x, rect.height * localScale.y);
+            }
         }
 
         public void Active(bool pValue)
@@ -129,15 +133,18 @@ namespace RCore.Components
             mBounds = rectContainer.Bounds();
             mCurrentTarget = pTarget;
 
-            Vector2 fromSize = new Vector2(pTarget.rect.width, pTarget.rect.height) * 10;
-            Vector2 toSize = new Vector2(pTarget.rect.width, pTarget.rect.height);
+            var rect = pTarget.rect;
+            var fromSize = new Vector2(rect.width, rect.height) * 10;
+            var toSize = new Vector2(rect.width, rect.height);
 
             imgHole.rectTransform.position = pTarget.position;
             imgHole.rectTransform.sizeDelta = fromSize;
             var targetPivot = pTarget.pivot;
-            var x = imgHole.rectTransform.anchoredPosition.x - pTarget.rect.width * targetPivot.x + pTarget.rect.width / 2f;
-            var y = imgHole.rectTransform.anchoredPosition.y - pTarget.rect.height * targetPivot.y + pTarget.rect.height / 2f;
-            imgHole.rectTransform.anchoredPosition = new Vector2(x, y);
+            var anchoredPosition = imgHole.rectTransform.anchoredPosition;
+            var x = anchoredPosition.x - rect.width * targetPivot.x + rect.width / 2f;
+            var y = anchoredPosition.y - rect.height * targetPivot.y + rect.height / 2f;
+            anchoredPosition = new Vector2(x, y);
+            imgHole.rectTransform.anchoredPosition = anchoredPosition;
 #if USE_DOTWEEN
             DOTween.Kill(imgHole.GetInstanceID());
             if (pTime > 0)
@@ -175,10 +182,13 @@ namespace RCore.Components
 
             var targetPivot = pTarget.pivot;
             imgHole.rectTransform.position = pTarget.position;
-            imgHole.rectTransform.sizeDelta = new Vector2(pTarget.rect.width, pTarget.rect.height);
-            var x = imgHole.rectTransform.anchoredPosition.x - pTarget.rect.width * targetPivot.x + pTarget.rect.width / 2f;
-            var y = imgHole.rectTransform.anchoredPosition.y - pTarget.rect.height * targetPivot.y + pTarget.rect.height / 2f;
-            imgHole.rectTransform.anchoredPosition = new Vector2(x, y);
+            var rect = pTarget.rect;
+            imgHole.rectTransform.sizeDelta = new Vector2(rect.width, rect.height);
+            var anchoredPosition = imgHole.rectTransform.anchoredPosition;
+            var x = anchoredPosition.x - rect.width * targetPivot.x + rect.width / 2f;
+            var y = anchoredPosition.y - rect.height * targetPivot.y + rect.height / 2f;
+            anchoredPosition = new Vector2(x, y);
+            imgHole.rectTransform.anchoredPosition = anchoredPosition;
 
             imgHole.raycastTarget = false;
 
@@ -200,15 +210,20 @@ namespace RCore.Components
 
             mCurrentTarget = null;
             mBounds = rectContainer.Bounds();
-            Vector2 viewportPoint = Vector2.zero;
-            Vector2 wRecSprite = Vector2.zero;
 
-            float x = Mathf.Abs(pTarget.transform.lossyScale.x) * pTarget.size.x * pTarget.sprite.pixelsPerUnit * 3.6f / pWorldCamera.orthographicSize;
-            float y = Mathf.Abs(pTarget.transform.lossyScale.y) * pTarget.size.y * pTarget.sprite.pixelsPerUnit * 3.6f / pWorldCamera.orthographicSize;
-            wRecSprite = new Vector2(x, y);
-            viewportPoint = pWorldCamera.WorldPointToCanvasPoint(pTarget.transform.position, pMainCanvas);
+            var sprite = pTarget.sprite;
+            var pivot = sprite.pivot;
+            var lossyScale = pTarget.transform.lossyScale;
+            float x = Mathf.Abs(lossyScale.x) * pTarget.size.x * sprite.pixelsPerUnit * 3.6f / pWorldCamera.orthographicSize;
+            float y = Mathf.Abs(lossyScale.y) * pTarget.size.y * sprite.pixelsPerUnit * 3.6f / pWorldCamera.orthographicSize;
+            var wRecSprite = new Vector2(x, y);
+            Vector2 viewportPoint = pWorldCamera.WorldPointToCanvasPoint(pTarget.transform.position, pMainCanvas);
+            
+            var normalizedPivot = new Vector2(pivot.x / sprite.rect.width, pivot.y / sprite.rect.height);
+            float offsetX = sprite.rect.width * (0.5f - normalizedPivot.x) * lossyScale.x;
+            float offsetY = sprite.rect.height * (0.5f - normalizedPivot.y) * lossyScale.y;
 
-            imgHole.rectTransform.localPosition = new Vector3(viewportPoint.x, viewportPoint.y);
+            imgHole.rectTransform.anchoredPosition = new Vector3(viewportPoint.x + offsetX, viewportPoint.y + offsetY);
             imgHole.rectTransform.sizeDelta = new Vector2(wRecSprite.x, wRecSprite.y);
             imgHole.raycastTarget = false;
         }
@@ -239,8 +254,8 @@ namespace RCore.Components
                 int sizeX = (int)(spriteToClone.bounds.size.x * spriteToClone.pixelsPerUnit);
                 int sizeY = (int)(spriteToClone.bounds.size.y * spriteToClone.pixelsPerUnit);
 
-                Texture2D newTex = new Texture2D(sizeX, sizeY, spriteToClone.texture.format, false);
-                Color[] colors = spriteToClone.texture.GetPixels(posX, posY, sizeX, sizeY);
+                var newTex = new Texture2D(sizeX, sizeY, spriteToClone.texture.format, false);
+                var colors = spriteToClone.texture.GetPixels(posX, posY, sizeX, sizeY);
 
                 for (int i = 0; i < colors.Length; i++)
                 {
@@ -252,7 +267,7 @@ namespace RCore.Components
                 newTex.SetPixels(colors);
                 newTex.Apply();
 
-                Sprite sprite = Sprite.Create(newTex, new Rect(0, 0, newTex.width, newTex.height), spriteToClone.pivot, spriteToClone.pixelsPerUnit, 0, SpriteMeshType.Tight, spriteToClone.border);
+                var sprite = Sprite.Create(newTex, new Rect(0, 0, newTex.width, newTex.height), spriteToClone.pivot, spriteToClone.pixelsPerUnit, 0, SpriteMeshType.Tight, spriteToClone.border);
                 imgHole.sprite = sprite;
                 imgHole.color = imgLeft.color;
                 if (sprite.border != Vector4.zero)
