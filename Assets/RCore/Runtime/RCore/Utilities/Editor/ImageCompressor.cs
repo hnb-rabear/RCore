@@ -12,6 +12,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace RCore.Editor
 {
@@ -77,14 +78,14 @@ namespace RCore.Editor
 			compressedSize = size / 4f / GetNearestPowerOfTwo(Mathf.Sqrt(size));
 			return fileSizeKb < compressedSize;
 		}
-		
+
 		private static int GetNearestPowerOfTwo(float number)
 		{
 			int power = Mathf.CeilToInt(Mathf.Log(number, 2));
 			var result = (int)Mathf.Pow(2, power);
 			return result;
 		}
-		
+
 		private static async UniTask Compress(string filePath, bool overwrite)
 		{
 			FilesCompressed ??= JsonHelper.ToList<string>(EditorPrefs.GetString(nameof(FilesCompressed), "[]"));
@@ -155,24 +156,25 @@ namespace RCore.Editor
 		[MenuItem("Assets/RCore/Compress Textures with TinyPNG")]
 		private static async void CompressTexturesWithTinyPNG()
 		{
-			// 	string folderPath = EditorUtility.OpenFolderPanel("Select Folder", "", "");
-			// 	CompressTexturesWithTinyPNG(folderPath);
-			
-			if (Selection.activeObject != null)
-			{
-				string imagePath = AssetDatabase.GetAssetPath(Selection.activeObject);
-				var extension = Path.GetExtension(imagePath);
-				if (extension == ".png" || extension == ".jpg")
-				{
-					await Compress(imagePath, true);
-					return;
-				}
-			}
-			var objects = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets);
+			var objects = Selection.GetFiltered(typeof(Object), SelectionMode.Assets);
 			if (objects.Length == 0)
 				return;
-			string directoryPath = AssetDatabase.GetAssetPath(objects[0]);
-			CompressTexturesWithTinyPNG(directoryPath);
+			foreach (var obj in objects)
+			{
+				bool isFolder = AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(obj));
+				if (isFolder)
+				{
+					string directoryPath = AssetDatabase.GetAssetPath(objects[0]);
+					CompressTexturesWithTinyPNG(directoryPath);
+				}
+				else
+				{
+					string imagePath = AssetDatabase.GetAssetPath(obj);
+					var extension = Path.GetExtension(imagePath);
+					if (extension == ".png" || extension == ".jpg")
+						await Compress(imagePath, true);
+				}
+			}
 		}
 
 #endregion
@@ -182,21 +184,30 @@ namespace RCore.Editor
 		[MenuItem("Assets/RCore/Remove Exif Of Textures")]
 		private static void RemoveExifOfImages()
 		{
-			if (Selection.activeObject != null)
-			{
-				string imagePath = AssetDatabase.GetAssetPath(Selection.activeObject);
-				var extension = Path.GetExtension(imagePath);
-				if (extension == ".png" || extension == ".jpg")
-				{
-					RemoveExifAndCompressImage(imagePath);
-					return;
-				}
-			}
-			var objects = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets);
+			var objects = Selection.GetFiltered(typeof(Object), SelectionMode.Assets);
 			if (objects.Length == 0)
 				return;
-			string directoryPath = AssetDatabase.GetAssetPath(objects[0]);
-			RemoveExifOfImages(directoryPath);
+			foreach (var obj in objects)
+			{
+				bool isFolder = AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(obj));
+				if (isFolder)
+				{
+					string directoryPath = AssetDatabase.GetAssetPath(obj);
+					RemoveExifOfImages(directoryPath);
+				}
+				else
+				{
+					RemoveExifAndCompressImage(obj);
+				}
+			}
+		}
+
+		private static void RemoveExifAndCompressImage(Object obj)
+		{
+			string imagePath = AssetDatabase.GetAssetPath(obj);
+			var extension = Path.GetExtension(imagePath);
+			if (extension == ".png" || extension == ".jpg")
+				RemoveExifAndCompressImage(imagePath);
 		}
 
 		private static void RemoveExifOfImages(string pDirectoryPath)
@@ -230,7 +241,7 @@ namespace RCore.Editor
 				Debug.Log(log2);
 			}
 		}
-		
+
 		private static void RemoveExifAndCompressImage(string imagePath)
 		{
 			var texture = new Texture2D(2, 2);
@@ -303,7 +314,7 @@ namespace RCore.Editor
 			RenderTexture.ReleaseTemporary(tempRenderTexture);
 			return tempTexture;
 		}
-		
+
 #endregion
 	}
 }
