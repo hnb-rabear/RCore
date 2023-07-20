@@ -3,7 +3,6 @@
  **/
 
 using Cysharp.Threading.Tasks;
-using RCore.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +20,8 @@ namespace RCore.Editor
 #region TinyPNG Compression
 
 		private const string API_KEY = "7yGJHbBnvVdwCclFT1Z5Ywk2K5Mqy7qB";
-		private static List<string> FilesCompressed;
+		private static List<string> m_FilesCompressed;
+		private static int m_ImagesProcessedCount;
 
 		private static string AuthKey
 		{
@@ -33,15 +33,20 @@ namespace RCore.Editor
 			}
 		}
 
-		private static int m_ImagesProcessedCount;
 		private static async void CompressTexturesWithTinyPNG(string folderPath)
 		{
 			m_ImagesProcessedCount = 0;
 			if (string.IsNullOrEmpty(folderPath))
 				return;
 			string[] texturePaths = Directory.GetFiles(folderPath, "*.png", SearchOption.AllDirectories);
-			foreach (string texturePath in texturePaths)
+			EditorUtility.DisplayProgressBar("Compressing", $"Processing {texturePaths.Length}", 0f);
+			for (int i = 0; i < texturePaths.Length; i++)
+			{
+				string texturePath = texturePaths[i];
 				await Compress(texturePath, true);
+				EditorUtility.DisplayProgressBar("Compressing", $"Processing {texturePaths.Length}", (i + 1) * 1f / texturePaths.Length);
+			}
+			EditorUtility.ClearProgressBar();
 			Debug.Log($"[{nameof(ImageCompressor)}] Compressed {m_ImagesProcessedCount} textures");
 		}
 
@@ -88,7 +93,6 @@ namespace RCore.Editor
 
 		private static async UniTask Compress(string filePath, bool overwrite)
 		{
-			FilesCompressed ??= JsonHelper.ToList<string>(EditorPrefs.GetString(nameof(FilesCompressed), "[]"));
 			var fileInfo = new FileInfo(filePath);
 			long fileSizeBytes = fileInfo.Length;
 			long fileSizeKb = fileSizeBytes / 1024;
@@ -99,12 +103,13 @@ namespace RCore.Editor
 				Debug.Log($"[{nameof(ImageCompressor)}] File {fileName} size is {fileSizeKb}kb, it needs to bigger than {compressedSize} to be compressed.");
 				return;
 			}
-			if (FilesCompressed.Contains(filePath))
+			m_FilesCompressed ??= new List<string>();
+			if (m_FilesCompressed.Contains(filePath))
 			{
 				Debug.Log($"[{nameof(ImageCompressor)}] File {fileName} was compressed.");
 				return;
 			}
-			var bytes = await File.ReadAllBytesAsync(filePath);
+			var bytes = File.ReadAllBytes(filePath);
 			var www = UnityWebRequest.Put("https://api.tinify.com/shrink", bytes);
 			www.SetRequestHeader("Authorization", AuthKey);
 			www.method = UnityWebRequest.kHttpVerbPOST;
@@ -132,12 +137,11 @@ namespace RCore.Editor
 						{
 							int sizeBytes = www.downloadHandler.data.Length;
 							int sizeKb = sizeBytes / 1024;
-							await File.WriteAllBytesAsync(overwrite ? filePath : filePath.Replace(".png", "_tiny.png"), www.downloadHandler.data);
+							File.WriteAllBytes(overwrite ? filePath : filePath.Replace(".png", "_tiny.png"), www.downloadHandler.data);
 							AssetDatabase.Refresh();
 							AssetDatabase.ImportAsset(filePath);
-							FilesCompressed.Add(filePath);
+							m_FilesCompressed.Add(filePath);
 							Debug.Log($"[{nameof(ImageCompressor)}] {m_ImagesProcessedCount}: Compressed file {filePath} by {(fileSizeKb - sizeKb) * 1f / fileSizeKb * 100}% from {fileSizeKb}kb to {sizeKb}kb");
-							EditorPrefs.SetString(nameof(FilesCompressed), JsonHelper.ToJson(FilesCompressed));
 							m_ImagesProcessedCount++;
 						}
 					}
@@ -159,20 +163,26 @@ namespace RCore.Editor
 			var objects = Selection.GetFiltered(typeof(Object), SelectionMode.Assets);
 			if (objects.Length == 0)
 				return;
-			foreach (var obj in objects)
+			for (int i = 0; i < objects.Length; i++)
 			{
+				var obj = objects[i];
 				bool isFolder = AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(obj));
 				if (isFolder)
 				{
-					string directoryPath = AssetDatabase.GetAssetPath(objects[0]);
+					string directoryPath = AssetDatabase.GetAssetPath(obj);
 					CompressTexturesWithTinyPNG(directoryPath);
 				}
 				else
 				{
+					EditorUtility.DisplayProgressBar("Compressing", $"Processing {objects.Length}", 0f);
 					string imagePath = AssetDatabase.GetAssetPath(obj);
 					var extension = Path.GetExtension(imagePath);
 					if (extension == ".png" || extension == ".jpg")
+					{
 						await Compress(imagePath, true);
+						EditorUtility.DisplayProgressBar("Compressing", $"Processing {objects.Length}", (i + 1) * 1f / objects.Length);
+					}
+					EditorUtility.ClearProgressBar();
 				}
 			}
 		}
