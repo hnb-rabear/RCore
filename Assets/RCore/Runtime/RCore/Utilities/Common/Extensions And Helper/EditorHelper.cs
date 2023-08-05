@@ -2540,7 +2540,7 @@ namespace RCore.Common
 			return materialPresetNames;
 		}
 
-		public static void SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object
+		public static Dictionary<string, int> SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object
 		{
 			if (assetGUIDs == null)
 			{
@@ -2552,7 +2552,7 @@ namespace RCore.Common
 			var inverseReferenceMap = new Dictionary<string, HashSet<string>>();
 
 			if (oldObjects.Count == 0)
-				return;
+				return updatedAssets;
 
 			// Initialize map to store all paths that have a reference to our selectedGuids
 			foreach (var selectedObj in oldObjects)
@@ -2623,17 +2623,12 @@ namespace RCore.Common
 						File.WriteAllText(referencePath, contents);
 						countReplaced++;
 					}
-					else if (contents.Contains(selectedGuid))
-					{
-						contents = contents.Replace(selectedGuid, newGuid);
-						File.WriteAllText(referencePath, contents);
-						countReplaced++;
-					}
 				}
 
 				UnityEngine.Debug.Log("Replace GUID in: " + selectedPath);
 				updatedAssets.Add(selectedPath, countReplaced);
 			}
+			return updatedAssets;
 		}
 
 		private static bool IsDirectory(string path) => File.GetAttributes(path).HasFlag(FileAttributes.Directory);

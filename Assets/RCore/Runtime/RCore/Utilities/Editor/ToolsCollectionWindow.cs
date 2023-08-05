@@ -16,7 +16,6 @@ namespace RCore.Editor
 	public class ToolsCollectionWindow : EditorWindow
 	{
 		private Vector2 m_ScrollPosition;
-		private Object m_TargetFolder;
 
 		private void OnGUI()
 		{
@@ -1038,8 +1037,6 @@ namespace RCore.Editor
 						EditorGUILayout.Separator();
 					}
 
-					m_TargetFolder = EditorHelper.ObjectField<DefaultAsset>(m_TargetFolder, "Target Folder");
-
 					if (EditorHelper.Button("Search and replace"))
 					{
 						for (int i = 0; i < m_SpriteReplace.inputs.Count; i++)
@@ -1060,68 +1057,19 @@ namespace RCore.Editor
 						if (m_SpriteReplace.inputs.Count == 0)
 							return;
 
-						string folderPath = "Assets";
-						if (m_TargetFolder != null)
-							folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
-
 						AssetDatabase.StartAssetEditing();
 						
-						int count = 0;
-						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { folderPath });
-						foreach (var guid in assetIds)
-						{
-							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-
-							var images = obj.FindComponentsInChildren<Image>();
-							foreach (var com in images)
-							{
-								foreach (var target in m_SpriteReplace.inputs)
-									if (target.targets.Contains(com.sprite))
-									{
-										com.sprite = target.replace;
-										count++;
-									}
-							}
-
-							var buttons = obj.FindComponentsInChildren<Components.JustButton>();
-							foreach (var com in buttons)
-							{
-								foreach (var target in m_SpriteReplace.inputs)
-								{
-									if (target.targets.Contains(com.mImgActive))
-									{
-										com.mImgActive = target.replace;
-									}
-
-									if (target.targets.Contains(com.mImgInactive))
-									{
-										com.mImgInactive = target.replace;
-										count++;
-									}
-								}
-							}
-
-							var sptRenderers = obj.FindComponentsInChildren<SpriteRenderer>();
-							foreach (var com in sptRenderers)
-							{
-								foreach (var target in m_SpriteReplace.inputs)
-									if (target.targets.Contains(com.sprite))
-									{
-										com.sprite = target.replace;
-										count++;
-									}
-							}
-						}
-
-						var scriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
+						var assetGUIDs = AssetDatabase.FindAssets("t:Object", new string[] { "Assets" });
 						foreach (var target in m_SpriteReplace.inputs)
-							EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, scriptableObjects);
+						{
+							var result = EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, assetGUIDs);
 
+							foreach (var item in result)
+								Debug.Log($"{target.replace.name} is replaced in {item.Value} Assets");
+						}
 						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
 						AssetDatabase.Refresh();
-
-						Debug.Log($"Replace {count} Objects");
 					}
 				}
 
@@ -1206,50 +1154,22 @@ namespace RCore.Editor
 						EditorGUILayout.Separator();
 					}
 
-					m_TargetFolder = EditorHelper.ObjectField<DefaultAsset>(m_TargetFolder, "Target Folder");
-
 					if (EditorHelper.Button("Search and replace in Projects"))
 					{
-						string folderPath = "Assets";
-						if (m_TargetFolder != null)
-							folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
-
 						AssetDatabase.StartAssetEditing();
 						
-						int count = 0;
-						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { folderPath });
-						foreach (var guid in assetIds)
-						{
-							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-
-							foreach (var target in m_FontReplace.inputs)
-							{
-								for (int t = target.targets.Count - 1; t >= 0; t--)
-									if (target.targets[t] == null)
-										target.targets.RemoveAt(t);
-							}
-
-							var images = obj.FindComponentsInChildren<Text>();
-							foreach (var com in images)
-							{
-								foreach (var target in m_FontReplace.inputs)
-									if (target.targets.Contains(com.font))
-									{
-										com.font = target.replace;
-										count++;
-									}
-							}
-						}
-
-						var scriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
+						var assetGUIDs = AssetDatabase.FindAssets("t:Object", new string[] { "Assets" });
 						foreach (var target in m_FontReplace.inputs)
-							EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, scriptableObjects);
+						{
+							var result = EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, assetGUIDs);
+							
+							foreach (var item in result)
+								Debug.Log($"{target.replace.name} is replaced in {item.Value} Assets");
+						}
 						
 						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
 						AssetDatabase.Refresh();
-
-						Debug.Log($"Replace {count} Objects");
 					}
 
 					if (EditorHelper.Button("Search and replace in Scene"))
@@ -1269,6 +1189,7 @@ namespace RCore.Editor
 									{
 										com.font = target.replace;
 										count++;
+										EditorUtility.SetDirty(obj);
 									}
 							}
 						}
@@ -1362,61 +1283,22 @@ namespace RCore.Editor
 						EditorGUILayout.Separator();
 					}
 
-					m_TargetFolder = EditorHelper.ObjectField<DefaultAsset>(m_TargetFolder, "Target Folder");
-
 					if (EditorHelper.Button("Search and replace in Projects"))
 					{
-						string folderPath = "Assets";
-						if (m_TargetFolder != null)
-							folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
-
 						AssetDatabase.StartAssetEditing();
-						
-						int count = 0;
-						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { folderPath });
-						foreach (var guid in assetIds)
-						{
-							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-
-							foreach (var target in m_TMPFontReplace.inputs)
-							{
-								for (int t = target.targets.Count - 1; t >= 0; t--)
-									if (target.targets[t] == null)
-										target.targets.RemoveAt(t);
-							}
-
-							var txtsUI = obj.FindComponentsInChildren<TextMeshProUGUI>();
-							foreach (var com in txtsUI)
-							{
-								foreach (var target in m_TMPFontReplace.inputs)
-									if (target.targets.Contains(com.font))
-									{
-										com.font = target.replace;
-										count++;
-									}
-							}
-
-							var txts = obj.FindComponentsInChildren<TextMeshPro>();
-							foreach (var com in txts)
-							{
-								foreach (var target in m_TMPFontReplace.inputs)
-									if (target.targets.Contains(com.font))
-									{
-										com.font = target.replace;
-										count++;
-									}
-							}
-						}
-						
-						var scriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
+                        
+						var assetGUIDs = AssetDatabase.FindAssets("t:Object", new string[] { "Assets" });
 						foreach (var target in m_TMPFontReplace.inputs)
-							EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, scriptableObjects);
+						{
+							var result = EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, assetGUIDs);
+							
+							foreach (var item in result)
+								Debug.Log($"{target.replace.name} is replaced in {item.Value} Assets");
+						}
 
 						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
 						AssetDatabase.Refresh();
-
-						Debug.Log($"Replace {count} Objects");
 					}
 
 					if (EditorHelper.Button("Search and replace in Scene"))
@@ -1437,6 +1319,7 @@ namespace RCore.Editor
 										com.font = target.replace;
 										valid = true;
 										count++;
+										EditorUtility.SetDirty(obj);
 									}
 							}
 
@@ -1449,6 +1332,7 @@ namespace RCore.Editor
 										com.font = target.replace;
 										valid = true;
 										count++;
+										EditorUtility.SetDirty(obj);
 									}
 							}
 
