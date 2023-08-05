@@ -63,7 +63,7 @@ public class DevSettingEditor : Editor
         mRemovingProfile = false;
         mPreviewingProfiles = false;
 
-        InitDirectives(mScript.profile.defines);
+        mScript.profile.InitDirectives(EditorHelper.GetDirectives());
 
         CheckFirebaseConfigPaths();
     }
@@ -122,32 +122,6 @@ public class DevSettingEditor : Editor
 
     //========= SETTINGS PROFILE
 
-    private static void InitDirectives(List<DevSetting.Directive> defines)
-    {
-        string[] currentDefines = EditorHelper.GetDirectives();
-        for (int i = 0; i < currentDefines.Length; i++)
-        {
-            if (!ContainDirective(defines, currentDefines[i]))
-                defines.Add(new DevSetting.Directive(currentDefines[i], true));
-        }
-
-        for (int i = 0; i < defines.Count; i++)
-        {
-            if (currentDefines.Length > 0)
-            {
-                bool exist = false;
-                for (int j = 0; j < currentDefines.Length; j++)
-                {
-                    if (currentDefines[j] == defines[i].name)
-                        exist = true;
-                }
-                defines[i].enabled = exist;
-            }
-            else
-                defines[i].enabled = false;
-        }
-    }
-
     private void DrawSettingsProfiles()
     {
         EditorHelper.BoxVertical("Project Settings" + (mPreviewingProfiles ? " Preview" : ""), () =>
@@ -197,13 +171,7 @@ public class DevSettingEditor : Editor
                 draws[1] = btnApply;
                 if (EditorHelper.HeaderFoldout("Directives", pProfile.name + "Directives", false, draws))
 				{
-					pProfile.defines ??= new List<DevSetting.Directive>(); 
-                    if (!ContainDirective(pProfile.defines, "DEVELOPMENT"))
-                        pProfile.defines.Insert(0, new DevSetting.Directive("DEVELOPMENT", false));
-                    if (!ContainDirective(pProfile.defines, "UNITY_IAP"))
-                        pProfile.defines.Insert(0, new DevSetting.Directive("UNITY_IAP", false));
-                    if (!ContainDirective(pProfile.defines, "UNITY_MONETIZATION"))
-                        pProfile.defines.Insert(0, new DevSetting.Directive("UNITY_MONETIZATION", false));
+					pProfile.ValidateDirectives();
 
                     if (!mReorderDirectivesDict.ContainsKey(pProfile.name))
                     {
@@ -218,7 +186,7 @@ public class DevSettingEditor : Editor
                             float widthName = rect.width - widthTog - widthColor - 10;
                             define.enabled = EditorGUI.Toggle(new Rect(rect.x, rect.y, widthTog, 20), define.enabled);
 
-                            if (define.name == "DEVELOPMENT" || define.name == "UNITY_IAP" || define.name == "UNITY_MONETIZATION")
+                            if (define.IsFixed())
                                 EditorGUI.LabelField(new Rect(rect.x + widthTog + 5, rect.y, widthName, 20), define.name);
                             else
                                 define.name = EditorGUI.TextField(new Rect(rect.x + widthTog + 5, rect.y, widthName, 20), define.name);
@@ -270,21 +238,6 @@ public class DevSettingEditor : Editor
                         .Select(d => d.name).ToArray());
         var target = EditorUserBuildSettings.selectedBuildTargetGroup;
         PlayerSettings.SetScriptingDefineSymbolsForGroup(target, symbols);
-    }
-
-    private static bool ContainDirective(List<DevSetting.Directive> defines, string pName)
-    {
-        if (string.IsNullOrEmpty(pName))
-            return true;
-
-        for (int i = 0; i < defines.Count; i++)
-        {
-            if (defines[i].name == pName)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void DrawProfilesSelection()

@@ -40,7 +40,7 @@ namespace RCore.Demo
 		///Example of instantiate gameObject from references
 		private IEnumerator IEInstantiatePrefabReferences()
 		{
-			var uniTask = AddressableUtil.InstantiateAsync(prefabReferences);
+			var uniTask = AddressableUtil.InstantiateAsync(prefabReferences, transform);
 			yield return uniTask;
 			objects = uniTask.GetAwaiter().GetResult();
 			foreach (var obj in objects)

@@ -7,7 +7,6 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEngine.SocialPlatforms;
-using RCore.Common;
 using Debug = RCore.Common.Debug;
 
 #if UNITY_IOS
@@ -20,13 +19,8 @@ using GooglePlayGames.BasicApi;
 using GPGSSavedGame = GooglePlayGames.BasicApi.SavedGame;
 #endif
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace RCore.Service
 {
-#if UNITY_ANDROID && GPGS
 	public enum AskFriendResolutionStatus
 	{
 		Valid = 1,
@@ -39,16 +33,13 @@ namespace RCore.Service
 		NetworkError = -20,
 		NotInitialized = -30,
 	}
-#endif
-
-	public static class PlayGameServicesV1
+	
+	public class PlayGameServices
 	{
 		private static Action<bool> m_OnUserLoginSucceeded;
-
 		public static ILocalUser LocalUser => IsInitialized() ? Social.localUser : null;
-
 		public static string UserId => IsInitialized() ? Social.localUser.id : "";
-
+		
 		private struct LoadScoreRequest
 		{
 			public bool useLeaderboardDefault;
@@ -61,49 +52,27 @@ namespace RCore.Service
 			public Action<string, IScore[]> callback;
 		}
 
-		private static bool isLoadingScore;
-		private static readonly List<LoadScoreRequest> loadScoreRequests = new List<LoadScoreRequest>();
+		private static bool IsLoadingScore;
+		private static readonly List<LoadScoreRequest> LoadScoreRequests = new List<LoadScoreRequest>();
 
 		public static void Init(Action<bool> pOnAuthenticated)
 		{
 			if (IsInitialized())
+			{
+				pOnAuthenticated?.Invoke(true);
 				return;
+			}
 
-			// Authenticate and register a ProcessAuthentication callback
-			// This call needs to be made before we can proceed to other calls in the Social API
+#if UNITY_ANDROID && GPGS
 			m_OnUserLoginSucceeded = pOnAuthenticated;
-#if UNITY_IOS
-            GameCenterPlatform.ShowDefaultAchievementCompletionBanner(true);
-            Social.localUser.Authenticate(ProcessAuthentication);
-#elif UNITY_ANDROID && GPGS
-			var gpgsConfigBuilder = new PlayGamesClientConfiguration.Builder();
-
-			// Enable Saved Games.
-			gpgsConfigBuilder.EnableSavedGames();
-
-			// Build the config
-			var gpgsConfig = gpgsConfigBuilder.Build();
-
-			// Initialize PlayGamesPlatform
-			PlayGamesPlatform.InitializeInstance(gpgsConfig);
-
-			// Set PlayGamesPlatforms as active
-			if (Social.Active != PlayGamesPlatform.Instance)
-				PlayGamesPlatform.Activate();
-			
-			// Now authenticate
+			PlayGamesPlatform.Activate();
 			Social.localUser.Authenticate(ProcessAuthentication);
-#elif UNITY_ANDROID && !GPGS
-            Debug.LogError("SDK missing. Please import Google Play Games plugin for Unity.");
 #else
-            Debug.Log("Failed to initialize Game Services module: platform not supported.");
+			Debug.LogError("Failed to initialize Game Services");
+			pOnAuthenticated?.Invoke(false);
 #endif
 		}
 
-		/// <summary>
-		/// Determines whether this module is initialized (user is authenticated) and ready to use.
-		/// </summary>
-		/// <returns><c>true</c> if initialized; otherwise, <c>false</c>.</returns>
 		public static bool IsInitialized()
 		{
 #if UNITY_EDITOR
@@ -123,21 +92,7 @@ namespace RCore.Service
 				Debug.Log("Couldn't show leaderboard UI: user is not logged in.");
 		}
 
-		/// <summary>
-		/// Shows the leaderboard UI for the given leaderboard.
-		/// </summary>
-		/// <param name="leaderboardId">Leaderboard name.</param>
-		public static void ShowLeaderboardUI(string leaderboardId)
-		{
-			ShowLeaderboardUI(leaderboardId, TimeScope.AllTime);
-		}
-
-		/// <summary>
-		/// Shows the leaderboard UI for the given leaderboard in the specified time scope.
-		/// </summary>
-		/// <param name="leaderboardid">Leaderboard name.</param>
-		/// <param name="timeScope">Time scope to display scores in the leaderboard.</param>
-		public static void ShowLeaderboardUI(string leaderboardId, TimeScope timeScope)
+		public static void ShowLeaderboardUI(string leaderboardId, TimeScope timeScope = TimeScope.AllTime)
 		{
 			if (!IsInitialized())
 			{
@@ -150,8 +105,8 @@ namespace RCore.Service
 #elif UNITY_ANDROID && GPGS
 			PlayGamesPlatform.Instance.ShowLeaderboardUI(leaderboardId, ToGpgsLeaderboardTimeSpan(timeScope), null);
 #else
-            // Fallback
-            Social.ShowLeaderboardUI();
+			// Fallback
+			Social.ShowLeaderboardUI();
 #endif
 		}
 
@@ -222,7 +177,7 @@ namespace RCore.Service
 			if (!IsInitialized())
 			{
 				Debug.Log("Failed to load friends: user is not logged in.");
-				callback?.Invoke(new IUserProfile[0]);
+				callback?.Invoke(Array.Empty<IUserProfile>());
 				return;
 			}
 
@@ -234,14 +189,7 @@ namespace RCore.Service
 			{
 				Social.localUser.LoadFriends(success =>
 				{
-					if (success)
-					{
-						callback?.Invoke(Social.localUser.friends);
-					}
-					else
-					{
-						callback?.Invoke(new IUserProfile[0]);
-					}
+					callback?.Invoke(success ? Social.localUser.friends : Array.Empty<IUserProfile>());
 				});
 			}
 		}
@@ -256,7 +204,7 @@ namespace RCore.Service
 			if (!IsInitialized())
 			{
 				Debug.Log("Failed to load users: user is not logged in.");
-				callback?.Invoke(new IUserProfile[0]);
+				callback?.Invoke(Array.Empty<IUserProfile>());
 				return;
 			}
 
@@ -277,19 +225,21 @@ namespace RCore.Service
 			if (!IsInitialized())
 			{
 				Debug.Log($"Failed to load scores from leaderboard {leaderboardId}: user is not logged in.");
-				callback?.Invoke(leaderboardId, new IScore[0]);
+				callback?.Invoke(leaderboardId, Array.Empty<IScore>());
 				return;
 			}
 
 			// Create new request
-			var request = new LoadScoreRequest();
-			request.leaderboardId = leaderboardId;
-			request.callback = callback;
-			request.useLeaderboardDefault = true;
-			request.loadLocalUserScore = false;
+			var request = new LoadScoreRequest
+			{
+				leaderboardId = leaderboardId,
+				callback = callback,
+				useLeaderboardDefault = true,
+				loadLocalUserScore = false
+			};
 
 			// Add request to the queue
-			loadScoreRequests.Add(request);
+			LoadScoreRequests.Add(request);
 
 			DoNextLoadScoreRequest();
 		}
@@ -314,23 +264,25 @@ namespace RCore.Service
 			if (!IsInitialized())
 			{
 				Debug.Log($"Failed to load scores from leaderboard {leaderboardId}: user is not logged in.");
-				callback?.Invoke(leaderboardId, new IScore[0]);
+				callback?.Invoke(leaderboardId, Array.Empty<IScore>());
 				return;
 			}
 
 			// Create new request
-			var request = new LoadScoreRequest();
-			request.leaderboardId = leaderboardId;
-			request.callback = callback;
-			request.useLeaderboardDefault = false;
-			request.loadLocalUserScore = false;
-			request.fromRank = fromRank;
-			request.scoreCount = scoreCount;
-			request.timeScope = timeScope;
-			request.userScope = userScope;
+			var request = new LoadScoreRequest
+			{
+				leaderboardId = leaderboardId,
+				callback = callback,
+				useLeaderboardDefault = false,
+				loadLocalUserScore = false,
+				fromRank = fromRank,
+				scoreCount = scoreCount,
+				timeScope = timeScope,
+				userScope = userScope
+			};
 
 			// Add request to the queue
-			loadScoreRequests.Add(request);
+			LoadScoreRequests.Add(request);
 
 			DoNextLoadScoreRequest();
 		}
@@ -352,91 +304,25 @@ namespace RCore.Service
 			}
 
 			// Create new request
-			var request = new LoadScoreRequest();
-			request.leaderboardId = leaderboardId;
-			request.callback = delegate(string ldbName, IScore[] scores)
+			var request = new LoadScoreRequest
 			{
-				if (scores != null)
+				leaderboardId = leaderboardId,
+				callback = delegate(string ldbName, IScore[] scores)
 				{
-					callback?.Invoke(ldbName, scores[0]);
-				}
-				else
-				{
-					callback?.Invoke(ldbName, null);
-				}
+					callback?.Invoke(ldbName, scores?[0]);
+				},
+				useLeaderboardDefault = false,
+				loadLocalUserScore = true,
+				fromRank = -1,
+				scoreCount = -1,
+				timeScope = TimeScope.AllTime,
+				userScope = UserScope.Global
 			};
 
-			request.useLeaderboardDefault = false;
-			request.loadLocalUserScore = true;
-			request.fromRank = -1;
-			request.scoreCount = -1;
-			request.timeScope = TimeScope.AllTime;
-			request.userScope = UserScope.Global;
-
 			// Add request to the queue
-			loadScoreRequests.Add(request);
+			LoadScoreRequests.Add(request);
 
 			DoNextLoadScoreRequest();
-		}
-
-		/// <summary>
-		/// [Google Play Games] Gets the server auth code.
-		/// </summary>
-		/// <returns></returns>
-		public static string GetServerAuthCode()
-		{
-			if (!IsInitialized())
-			{
-				return string.Empty;
-			}
-
-#if UNITY_ANDROID && GPGS
-			return PlayGamesPlatform.Instance.GetServerAuthCode();
-#elif UNITY_ANDROID && !GPGS
-            Debug.LogError("SDK missing. Please import Google Play Games plugin for Unity.");
-            return string.Empty;
-#else
-            Debug.Log("GetServerAuthCode is only available on Google Play Games platform.");
-            return string.Empty;
-#endif
-		}
-
-		/// <summary>
-		/// [Google Play Games] Gets another server auth code.
-		/// </summary>
-		/// <param name="reAuthenticateIfNeeded"></param>
-		/// <param name="callback"></param>
-		public static void GetAnotherServerAuthCode(bool reAuthenticateIfNeeded, Action<string> callback)
-		{
-			if (!IsInitialized())
-				return;
-
-#if UNITY_ANDROID && GPGS
-			PlayGamesPlatform.Instance.GetAnotherServerAuthCode(reAuthenticateIfNeeded, callback);
-#elif UNITY_ANDROID && !GPGS
-            Debug.LogError("SDK missing. Please import Google Play Games plugin for Unity.");
-#else
-            Debug.Log("GetAnotherServerAuthCode is only available on Google Play Games platform.");
-#endif
-		}
-
-		/// <summary>
-		/// [Google Play Games] Signs the user out.
-		/// </summary>
-		public static void SignOut()
-		{
-			if (!IsInitialized())
-			{
-				return;
-			}
-
-#if UNITY_ANDROID && GPGS
-			PlayGamesPlatform.Instance.SignOut();
-#elif UNITY_ANDROID && !GPGS
-            Debug.LogError("SDK missing. Please import Google Play Games plugin for Unity.");
-#else
-            Debug.Log("Signing out from script is not available on this platform.");
-#endif
 		}
 
 #if UNITY_ANDROID && GPGS
@@ -485,8 +371,6 @@ namespace RCore.Service
 		}
 #endif
 
-#region Private methods
-
 		public static void DoReportScore(long score, string leaderboardId, Action<bool> callback)
 		{
 			if (!IsInitialized())
@@ -513,19 +397,17 @@ namespace RCore.Service
 			Social.ReportProgress(achievementId, progress, callback);
 		}
 
-		static void DoNextLoadScoreRequest()
+		private static void DoNextLoadScoreRequest()
 		{
-			LoadScoreRequest request;
-
-			if (isLoadingScore)
+			if (IsLoadingScore)
 				return;
 
-			if (loadScoreRequests.Count == 0)
+			if (LoadScoreRequests.Count == 0)
 				return;
 
-			isLoadingScore = true;
-			request = loadScoreRequests[0]; // fetch the next request
-			loadScoreRequests.RemoveAt(0); // then remove it from the queue
+			IsLoadingScore = true;
+			var request = LoadScoreRequests[0]; // fetch the next request
+			LoadScoreRequests.RemoveAt(0); // then remove it from the queue
 
 			// Now create a new leaderboard and start loading scores
 			var ldb = Social.CreateLeaderboard();
@@ -544,17 +426,16 @@ namespace RCore.Service
 					request.callback?.Invoke(request.leaderboardId, scores);
 
 					// Load next request
-					isLoadingScore = false;
+					IsLoadingScore = false;
 					DoNextLoadScoreRequest();
 				});
 #elif UNITY_IOS
                 // On iOS, we use LoadScores from ILeaderboard with default parameters.
                 ldb.LoadScores((bool success) =>
                     {
-                        if (request.callback != null)
-                            request.callback(request.leaderboardId, ldb.scores);
+						request.callback?.Invoke(request.leaderboardId, ldb.scores);
 
-                        // Load next request
+						// Load next request
                         isLoadingScore = false;
                         DoNextLoadScoreRequest();
                     });
@@ -584,35 +465,34 @@ namespace RCore.Service
 					}
 
 					// Load next request
-					isLoadingScore = false;
+					IsLoadingScore = false;
 					DoNextLoadScoreRequest();
 				});
 			}
 		}
 
-#endregion
-
-#region Authentication listeners
-
+#if UNITY_ANDROID && GPGS
 		// This function gets called when Authenticate completes
 		// Note that if the operation is successful, Social.localUser will contain data from the server.
-		static void ProcessAuthentication(bool success)
+		private static void ProcessAuthentication(bool pSuccess)
 		{
-			Debug.Log($"Init GameServices {success}");
+			Debug.Log($"Init GameServices {pSuccess}");
 
-			m_OnUserLoginSucceeded?.Invoke(success);
+			m_OnUserLoginSucceeded?.Invoke(pSuccess);
 		}
 
-		static void ProcessLoadedAchievements(IAchievement[] achievements)
+		private static void ProcessLoadedAchievements(IAchievement[] achievements)
 		{
-			Debug.Log(achievements.Length == 0 ? "No achievements found." : $"Got {achievements.Length} achievements.");
+			if (achievements.Length == 0)
+			{
+				Debug.Log("No achievements found.");
+			}
+			else
+			{
+				Debug.Log("Got " + achievements.Length + " achievements.");
+			}
 		}
-
-#endregion
-
-#region Helpers
-
-#if UNITY_ANDROID && GPGS
+		
 		private static LeaderboardTimeSpan ToGpgsLeaderboardTimeSpan(TimeScope timeScope)
 		{
 			return timeScope switch
@@ -623,37 +503,6 @@ namespace RCore.Service
 				_ => LeaderboardTimeSpan.AllTime
 			};
 		}
-#endif
-
-#endregion
-
-#if UNITY_EDITOR
-
-#region Editor
-
-		[CustomEditor(typeof(PlayGameServicesV1))]
-		public class GameServicesEditor : Editor
-		{
-			public override void OnInspectorGUI()
-			{
-				base.OnInspectorGUI();
-
-				GUILayout.BeginVertical("box");
-#if GPGS
-				GUI.backgroundColor = Color.red;
-				if (GUILayout.Button("Disable Game Services"))
-					EditorHelper.RemoveDirective("GPGS");
-#else
-                GUI.backgroundColor = Color.green;
-                if (GUILayout.Button("Enable Game Services"))
-                    EditorHelper.AddDirective("GPGS");
-#endif
-				GUILayout.EndVertical();
-			}
-		}
-
-#endregion
-
 #endif
 	}
 }

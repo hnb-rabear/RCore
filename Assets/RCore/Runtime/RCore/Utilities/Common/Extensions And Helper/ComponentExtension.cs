@@ -2,6 +2,9 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
+#if USE_DOTWEEN
+using DG.Tweening;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +16,7 @@ namespace RCore.Common
 	{
 		public static void SetAlpha(this UnityEngine.UI.Image img, float alpha)
 		{
-			Color color = img.color;
+			var color = img.color;
 			color.a = alpha;
 			img.color = color;
 		}
@@ -76,7 +79,7 @@ namespace RCore.Common
 			{
 				// transform is what makes the hierarchy of GameObjects, so 
 				// need to access it to iterate children
-				Transform trnsRoot = objRoot.transform;
+				var trnsRoot = objRoot.transform;
 				int iNumChildren = trnsRoot.childCount;
 
 				// could have used foreach(), but it causes GC churn
@@ -164,10 +167,28 @@ namespace RCore.Common
 			var components = objRoot.FindComponentsInChildren<T>();
 			foreach (var component in components)
 			{
-				if (component.name.ToLower() == pChildName || (pContainChildName && component.name.ToLower().Contains(pChildName)))
+				if (component.name.ToLower() == pChildName || pContainChildName && component.name.ToLower().Contains(pChildName))
 					return component;
 			}
 			return null;
+		}
+
+		public static List<T> FindAllComponentsInChildren<T>(this GameObject objRoot) where T : Component
+		{
+			var list = new List<T>();
+			var component = objRoot.GetComponents<T>();
+
+			if (component != null)
+				list.AddRange(component);
+
+			foreach (Transform t in objRoot.transform)
+			{
+				var components = FindAllComponentsInChildren<T>(t.gameObject);
+				if (components != null)
+					list.AddRange(components);
+			}
+
+			return list;
 		}
 
 		public static List<GameObject> GetAllChildren(this GameObject pParent)
@@ -196,7 +217,7 @@ namespace RCore.Common
 		public static GameObject FindChildObject(this GameObject objRoot, string pName, bool pContain = false)
 		{
 			GameObject obj;
-			bool found = !pContain ? (objRoot.name.ToLower() == pName.ToLower()) : (objRoot.name.ToLower().Contains(pName.ToLower()));
+			bool found = !pContain ? objRoot.name.ToLower() == pName.ToLower() : objRoot.name.ToLower().Contains(pName.ToLower());
 			if (found)
 			{
 				obj = objRoot;
@@ -204,7 +225,7 @@ namespace RCore.Common
 			}
 			else
 			{
-				Transform trnsRoot = objRoot.transform;
+				var trnsRoot = objRoot.transform;
 				int iNumChildren = trnsRoot.childCount;
 				for (int i = 0; i < iNumChildren; ++i)
 				{
@@ -219,11 +240,40 @@ namespace RCore.Common
 			return null;
 		}
 
-		public static T Instantiate<T>(T original, Transform parent, string pName) where T : UnityEngine.Object
+		public static void FindChildObjects(this GameObject objRoot, string pName, List<GameObject> pOutput, bool pContain = false)
 		{
-			var obj = UnityEngine.Object.Instantiate(original, parent);
-			obj.name = pName;
-			return obj;
+			bool found = !pContain ? objRoot.name == pName : objRoot.name.Contains(pName);
+			if (found)
+				pOutput.Add(objRoot);
+			var trnsRoot = objRoot.transform;
+			int iNumChildren = trnsRoot.childCount;
+			for (int i = 0; i < iNumChildren; ++i)
+				trnsRoot.GetChild(i).gameObject.FindChildObjects(pName, pOutput, pContain);
+		}
+
+		public static List<T> RemoveDuplicate<T>(this List<T> pList) where T : UnityEngine.Object
+		{
+			var duplicate = new List<int>();
+			for (int i = 0; i < pList.Count; i++)
+			{
+				int count = 0;
+				for (int j = pList.Count - 1; j >= 0; j--)
+				{
+					if (pList[j] == pList[i])
+					{
+						count++;
+						if (count > 1)
+							duplicate.Add(j);
+					}
+				}
+			}
+			for (int j = pList.Count - 1; j >= 0; j--)
+			{
+				if (duplicate.Contains(j))
+					pList.Remove(pList[j]);
+			}
+
+			return pList;
 		}
 
 		public static void StopMove(this UnityEngine.AI.NavMeshAgent pAgent, bool pStop)
@@ -243,14 +293,6 @@ namespace RCore.Common
 			return false;
 		}
 
-		public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
-		{
-			var component = gameObject.GetComponent<T>();
-			if (component != null)
-				return component;
-			return gameObject.AddComponent<T>();
-		}
-
 		public static bool CompareTags(this GameObject gameObject, params string[] tags)
 		{
 			for (int i = 0; i < tags.Length; i++)
@@ -261,7 +303,13 @@ namespace RCore.Common
 			return false;
 		}
 
-		#region Simple Pool
+		public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
+		{
+			var component = gameObject.GetComponent<T>();
+			return component != null ? component : gameObject.AddComponent<T>();
+		}
+
+#region Simple Pool
 
 		public static T Obtain<T>(this List<T> pool, GameObject prefab, Transform parent, string name = null) where T : Component
 		{
@@ -275,8 +323,8 @@ namespace RCore.Common
 				}
 			}
 
-			GameObject temp = UnityEngine.Object.Instantiate(prefab, parent);
-			temp.name = name == null ? prefab.name : name;
+			var temp = UnityEngine.Object.Instantiate(prefab, parent);
+			temp.name = name ?? prefab.name;
 			temp.transform.localPosition = Vector3.zero;
 #if UNITY_2019_2_OR_NEWER
 			temp.TryGetComponent(out T t);
@@ -300,8 +348,8 @@ namespace RCore.Common
 				}
 			}
 
-			GameObject temp = UnityEngine.Object.Instantiate(pool[0].gameObject, parent);
-			temp.name = name == null ? $"{pool[0].name}_{(pool.Count() + 1)}" : name;
+			var temp = UnityEngine.Object.Instantiate(pool[0].gameObject, parent);
+			temp.name = name ?? $"{pool[0].name}_{pool.Count() + 1}";
 			temp.transform.localPosition = Vector3.zero;
 #if UNITY_2019_2_OR_NEWER
 			temp.TryGetComponent(out T t);
@@ -321,9 +369,10 @@ namespace RCore.Common
 				{
 					var obj = pool[i];
 					pool.RemoveAt(i); //Temporary remove to push this item to bottom of list latter
-					obj.transform.SetParent(pParent);
-					obj.transform.localPosition = Vector3.zero;
-					obj.transform.localScale = Vector3.one;
+					Transform transform;
+					(transform = obj.transform).SetParent(pParent);
+					transform.localPosition = Vector3.zero;
+					transform.localScale = Vector3.one;
 					pool.Add(obj);
 					return obj;
 				}
@@ -331,10 +380,11 @@ namespace RCore.Common
 
 			if (max > 1 && max > pool.Count)
 			{
-				T temp = UnityEngine.Object.Instantiate(pool[0], pParent);
+				var temp = UnityEngine.Object.Instantiate(pool[0], pParent);
 				pool.Add(temp);
-				temp.transform.localPosition = Vector3.zero;
-				temp.transform.localScale = Vector3.one;
+				var transform = temp.transform;
+				transform.localPosition = Vector3.zero;
+				transform.localScale = Vector3.one;
 				if (!string.IsNullOrEmpty(pName))
 					temp.name = pName;
 				return temp;
@@ -367,7 +417,7 @@ namespace RCore.Common
 		{
 			for (int i = 0; i < count; i++)
 			{
-				GameObject temp = UnityEngine.Object.Instantiate(prefab, parent);
+				var temp = UnityEngine.Object.Instantiate(prefab, parent);
 				temp.SetActive(false);
 #if UNITY_2019_2_OR_NEWER
 				temp.TryGetComponent(out T t);
@@ -383,10 +433,13 @@ namespace RCore.Common
 			for (int i = 0; i < pool.Count; i++)
 			{
 				if (!pool[i].gameObject.activeSelf)
+				{
+					pool[i].transform.SetParent(parent);
 					return pool[i];
+				}
 			}
 
-			T temp = UnityEngine.Object.Instantiate(prefab, parent);
+			var temp = UnityEngine.Object.Instantiate(prefab, parent);
 			temp.name = prefab.name;
 			pool.Add(temp);
 
@@ -405,7 +458,7 @@ namespace RCore.Common
 			}
 		}
 
-		#endregion
+#endregion
 
 		public static T Find<T>(this List<T> pList, string pName) where T : Component
 		{
@@ -432,10 +485,10 @@ namespace RCore.Common
 			return target.scene.name == null;
 		}
 
-		public static Vector2 NativeSize(this Sprite pSrite)
+		public static Vector2 NativeSize(this Sprite pSprite)
 		{
-			var sizeX = pSrite.bounds.size.x * pSrite.pixelsPerUnit;
-			var sizeY = pSrite.bounds.size.y * pSrite.pixelsPerUnit;
+			var sizeX = pSprite.bounds.size.x * pSprite.pixelsPerUnit;
+			var sizeY = pSprite.bounds.size.y * pSprite.pixelsPerUnit;
 			return new Vector2(sizeX, sizeY);
 		}
 
@@ -456,61 +509,61 @@ namespace RCore.Common
 
 		//===================================================
 
-		#region Image
+#region Image
 
 		/// <summary>
-		/// Sketch image following prefered with
+		/// Sketch image following preferred with
 		/// </summary>
-		public static Vector2 SketchByHeight(this UnityEngine.UI.Image pImage, float pPreferedHeight, bool pPreferNative = false)
+		public static Vector2 SketchByHeight(this UnityEngine.UI.Image pImage, float pPreferredHeight, bool pPreferNative = false)
 		{
 			if (pImage.sprite == null)
-				return new Vector2(pPreferedHeight, pPreferedHeight);
+				return new Vector2(pPreferredHeight, pPreferredHeight);
 
 			var nativeSizeX = pImage.sprite.bounds.size.x * pImage.sprite.pixelsPerUnit;
 			var nativeSizeY = pImage.sprite.bounds.size.y * pImage.sprite.pixelsPerUnit;
-			float coeff = pPreferedHeight / nativeSizeY;
+			float coeff = pPreferredHeight / nativeSizeY;
 			float sizeX = nativeSizeX * coeff;
-			if (pPreferNative && pPreferedHeight > nativeSizeY)
+			if (pPreferNative && pPreferredHeight > nativeSizeY)
 			{
 				sizeX = nativeSizeX;
-				pPreferedHeight = nativeSizeY;
+				pPreferredHeight = nativeSizeY;
 			}
-			pImage.rectTransform.sizeDelta = new Vector2(sizeX, pPreferedHeight);
+			pImage.rectTransform.sizeDelta = new Vector2(sizeX, pPreferredHeight);
 			return pImage.rectTransform.sizeDelta;
 		}
 
 		/// <summary>
-		/// Sketch image following prefered with
+		/// Sketch image following preferred with
 		/// </summary>
-		public static Vector2 SketchByWidth(this UnityEngine.UI.Image pImage, float pPreferedWith, bool pPreferNative = false)
+		public static Vector2 SketchByWidth(this UnityEngine.UI.Image pImage, float pPreferredWith, bool pPreferNative = false)
 		{
 			if (pImage.sprite == null)
-				return new Vector2(pPreferedWith, pPreferedWith);
+				return new Vector2(pPreferredWith, pPreferredWith);
 
 			var nativeSizeX = pImage.sprite.bounds.size.x * pImage.sprite.pixelsPerUnit;
 			var nativeSizeY = pImage.sprite.bounds.size.y * pImage.sprite.pixelsPerUnit;
-			float coeff = pPreferedWith / nativeSizeX;
+			float coeff = pPreferredWith / nativeSizeX;
 			float sizeY = nativeSizeY * coeff;
-			if (pPreferNative && pPreferedWith > nativeSizeX)
+			if (pPreferNative && pPreferredWith > nativeSizeX)
 			{
-				pPreferedWith = nativeSizeX;
+				pPreferredWith = nativeSizeX;
 				sizeY = nativeSizeY;
 			}
-			pImage.rectTransform.sizeDelta = new Vector2(pPreferedWith, sizeY);
+			pImage.rectTransform.sizeDelta = new Vector2(pPreferredWith, sizeY);
 			return pImage.rectTransform.sizeDelta;
 		}
 
-		public static Vector2 Sketch(this UnityEngine.UI.Image pImage, Vector2 pPreferedSize, bool pPreferNative = false)
+		public static Vector2 Sketch(this UnityEngine.UI.Image pImage, Vector2 pPreferredSize, bool pPreferNative = false)
 		{
 			if (pImage.sprite == null)
-				return pPreferedSize;
+				return pPreferredSize;
 
 			var nativeSizeX = pImage.sprite.bounds.size.x * pImage.sprite.pixelsPerUnit;
 			var nativeSizeY = pImage.sprite.bounds.size.y * pImage.sprite.pixelsPerUnit;
-			float coeffX = pPreferedSize.x / nativeSizeX;
-			float coeffY = pPreferedSize.y / nativeSizeY;
-			float sizeX = 0;
-			float sizeY = 0;
+			float coeffX = pPreferredSize.x / nativeSizeX;
+			float coeffY = pPreferredSize.y / nativeSizeY;
+			float sizeX;
+			float sizeY;
 			if (coeffX > coeffY)
 			{
 				sizeX = nativeSizeX * coeffY;
@@ -568,7 +621,34 @@ namespace RCore.Common
 			}
 		}
 
-		#endregion
+		public static void FillSmooth(this UnityEngine.UI.Image pImage, float pFill, float durationFull, float durationMin)
+		{
+#if USE_DOTWEEN
+			if (Application.isPlaying && durationFull > 0 && pImage.fillAmount != pFill)
+			{
+				float previousFill = pImage.fillAmount;
+				float duration = Mathf.Abs(previousFill - pFill * 1f) * durationFull;
+				if (durationMin > 0 && duration < durationMin)
+					duration = durationMin;
+				float lerp = previousFill;
+				DOTween.Kill(pImage.GetInstanceID());
+				DOTween.To(() => lerp, x => lerp = x, pFill, duration)
+					.OnUpdate(() =>
+					{
+						pImage.fillAmount = lerp;
+					})
+					.OnComplete(() =>
+					{
+						pImage.fillAmount = pFill;
+					})
+					.SetUpdate(true)
+					.SetId(pImage.GetInstanceID());
+			}
+#endif
+
+		}
+
+#endregion
 
 		//===================================================
 	}
