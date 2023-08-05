@@ -509,6 +509,8 @@ namespace RCore.Common
 		public int labelWidth = 80;
 		public int valueWidth;
 		public int value;
+		public int min;
+		public int max;
 		public bool readOnly;
 		public int OutputValue { get; private set; }
 
@@ -534,10 +536,19 @@ namespace RCore.Common
 
 			int result;
 			if (valueWidth == 0)
-				result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
+			{
+				if (min == max)
+					result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
+				else
+					result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40));
+			}
 			else
-				result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40),
-					GUILayout.Width(valueWidth));
+			{
+				if (min == max)
+					result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+				else
+					result = EditorGUILayout.IntField(value, style, GUILayout.Height(20), GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+			}
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
@@ -757,7 +768,8 @@ namespace RCore.Common
 			float pFixedWidth = 0, float pFixedHeight = 0)
 		{
 			var defaultColor = GUI.backgroundColor;
-			BoxColours.TryAdd(id, defaultColor);
+			if (!BoxColours.ContainsKey(id))
+				BoxColours.Add(id, defaultColor);
 
 			if (color != default)
 				GUI.backgroundColor = color;
@@ -1755,7 +1767,7 @@ namespace RCore.Common
 		public static ReorderableList CreateReorderableList<T>(T[] pObjects, string pName) where T : Object
 		{
 			var reorderableList = new ReorderableList(pObjects, typeof(T), true, false, true, true);
-			reorderableList.drawElementCallback += (rect, index, _, _) =>
+			reorderableList.drawElementCallback += (rect, index, a, b) =>
 			{
 				pObjects[index] = (T)EditorGUI.ObjectField(rect, pObjects[index], typeof(T), true);
 			};
@@ -1771,7 +1783,7 @@ namespace RCore.Common
 		public static ReorderableList CreateReorderableList<T>(List<T> pObjects, string pName) where T : Object
 		{
 			var reorderableList = new ReorderableList(pObjects, typeof(T), true, false, true, true);
-			reorderableList.drawElementCallback += (rect, index, _, _) =>
+			reorderableList.drawElementCallback += (rect, index, a, b) =>
 			{
 				pObjects[index] = (T)EditorGUI.ObjectField(rect, pObjects[index], typeof(T), true);
 			};
@@ -1942,8 +1954,7 @@ namespace RCore.Common
 			return toggle.OutputValue;
 		}
 
-		public static int IntField(int value, string label, int labelWidth = 80, int valueWidth = 0,
-			bool readOnly = false)
+		public static int IntField(int value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, int pMin = 0, int pMax = 0)
 		{
 			var intField = new EditorInt()
 			{
@@ -1952,12 +1963,14 @@ namespace RCore.Common
 				labelWidth = labelWidth,
 				valueWidth = valueWidth,
 				readOnly = readOnly,
+				min = pMin,
+				max = pMax
 			};
 			intField.Draw();
 			return intField.OutputValue;
 		}
 
-		public static float FloatField(float value, string label, int labelWidth = 80, int valueWidth = 0)
+		public static float FloatField(float value, string label, int labelWidth = 80, int valueWidth = 0, float pMin = 0, float pMax = 0)
 		{
 			if (!string.IsNullOrEmpty(label))
 			{
@@ -1967,9 +1980,19 @@ namespace RCore.Common
 
 			float result;
 			if (valueWidth == 0)
-				result = EditorGUILayout.FloatField(value, GUILayout.Height(20));
+			{
+				if (pMin != pMax)
+					result = EditorGUILayout.Slider(value, pMin, pMax, GUILayout.Height(20));
+				else
+					result = EditorGUILayout.FloatField(value, GUILayout.Height(20));
+			}
 			else
-				result = EditorGUILayout.FloatField(value, GUILayout.Height(20), GUILayout.Width(valueWidth));
+			{
+				if (pMin != pMax)
+					result = EditorGUILayout.Slider(value, pMin, pMax, GUILayout.Height(20), GUILayout.Width(valueWidth));
+				else
+					result = EditorGUILayout.FloatField(value, GUILayout.Height(20), GUILayout.Width(valueWidth));
+			}
 
 			if (!string.IsNullOrEmpty(label))
 				EditorGUILayout.EndHorizontal();
@@ -1977,8 +2000,7 @@ namespace RCore.Common
 			return result;
 		}
 
-		public static Object ObjectField<T>(Object value, string label, int labelWidth = 80, int valueWidth = 0,
-			bool showAsBox = false)
+		public static Object ObjectField<T>(Object value, string label, int labelWidth = 80, int valueWidth = 0, bool showAsBox = false)
 		{
 			var obj = new EditorObject<T>()
 			{
@@ -1992,8 +2014,7 @@ namespace RCore.Common
 			return obj.OutputValue;
 		}
 
-		public static void LabelField(string label, int width = 0, bool isBold = true,
-			TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default)
+		public static void LabelField(string label, int width = 0, bool isBold = true, TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default)
 		{
 			var style = new GUIStyle(isBold ? EditorStyles.boldLabel : EditorStyles.label)
 			{
@@ -2219,7 +2240,7 @@ namespace RCore.Common
 				: pTarget;
 			string directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
 			directives = directives.Replace(pSymbol, "");
-			if (directives.Length > 1 && directives[^1] == ';')
+			if (directives.Length > 1 && directives[directives.Length - 1] == ';')
 				directives = directives.Remove(directives.Length - 1, 1);
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directives);
 		}
@@ -2238,7 +2259,7 @@ namespace RCore.Common
 					directives = directives.Replace(s, "");
 			}
 
-			if (directives.Length > 1 && directives[^1] == ';')
+			if (directives.Length > 1 && directives[directives.Length - 1] == ';')
 				directives = directives.Remove(directives.Length - 1, 1);
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directives);
 		}
@@ -2570,14 +2591,17 @@ namespace RCore.Common
 				}
 			}
 
+			
 			string newPath = AssetDatabase.GetAssetPath(newObject);
 			string newGuid = AssetDatabase.AssetPathToGUID(newPath);
+			AssetDatabase.TryGetGUIDAndLocalFileIdentifier(newObject, out string assetId, out long newFileId);
 			var countProgress = 0;
 			int countReplaced = 0;
 			foreach (var selectedObj in oldObjects)
 			{
 				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
 				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
+				AssetDatabase.TryGetGUIDAndLocalFileIdentifier(selectedObj, out assetId, out long selectedFileId);
 				var referencePaths = inverseReferenceMap[selectedGuid];
 				foreach (var referencePath in referencePaths)
 				{
@@ -2593,13 +2617,18 @@ namespace RCore.Common
 
 					var contents = File.ReadAllText(referencePath);
 
-					if (!contents.Contains(selectedGuid))
-						continue;
-
-					contents = contents.Replace(selectedGuid, newGuid);
-					File.WriteAllText(referencePath, contents);
-
-					countReplaced++;
+					if (contents.Contains($"fileID: {selectedFileId}, guid: {selectedGuid}"))
+					{
+						contents = contents.Replace($"fileID: {selectedFileId}, guid: {selectedGuid}", $"fileID: {newFileId}, guid: {newGuid}");
+						File.WriteAllText(referencePath, contents);
+						countReplaced++;
+					}
+					else if (contents.Contains(selectedGuid))
+					{
+						contents = contents.Replace(selectedGuid, newGuid);
+						File.WriteAllText(referencePath, contents);
+						countReplaced++;
+					}
 				}
 
 				UnityEngine.Debug.Log("Replace GUID in: " + selectedPath);
@@ -2815,13 +2844,44 @@ namespace RCore.Common
 		}
 	}
 
+	public class EditorPrefsInt : CustomEditorPrefs
+	{
+		private int mValue;
+		public EditorPrefsInt(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		{
+			mValue = EditorPrefs.GetInt(Key);
+		}
+		public EditorPrefsInt(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		{
+			mValue = EditorPrefs.GetInt(Key);
+		}
+
+		public int Value
+		{
+			get => mValue;
+			set
+			{
+				if (mValue != value)
+				{
+					mValue = value;
+					EditorPrefs.SetInt(Key, value);
+				}
+			}
+		}
+
+		public override string ToString()
+		{
+			return mValue.ToString();
+		}
+	}
+
 	//===================================================================
 	// Custom GUIStyle
 	//===================================================================
 
 	public static class GUIStyleHelper
 	{
-		public static readonly GUIStyle headerTitle = new(EditorStyles.boldLabel)
+		public static readonly GUIStyle headerTitle = new GUIStyle(EditorStyles.boldLabel)
 		{
 			fontSize = 15,
 			fontStyle = FontStyle.Bold,

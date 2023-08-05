@@ -23,7 +23,7 @@ namespace RCore.Editor
 			m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition, false, false);
 
 			EditorHelper.SeparatorBox();
-			DrawGameObjectUtilities();
+			DrawUtilities();
 
 			EditorHelper.SeparatorBox();
 			DrawRendererUtilities();
@@ -37,6 +37,9 @@ namespace RCore.Editor
 			EditorHelper.SeparatorBox();
 			DrawGenerators();
 
+			EditorHelper.SeparatorBox();
+			DrawRefactorUtilities();
+
 			GUILayout.EndScrollView();
 		}
 
@@ -45,9 +48,9 @@ namespace RCore.Editor
 		private List<GameObject> m_ReplaceableGameObjects = new List<GameObject>();
 		private List<GameObject> m_Prefabs = new List<GameObject>();
 
-		private void DrawGameObjectUtilities()
+		private void DrawUtilities()
 		{
-			EditorHelper.HeaderFoldout("GameObject Utilities", "", () =>
+			EditorHelper.HeaderFoldout("Utilities", "", () =>
 			{
 				ReplaceGameObjectsInScene();
 				FindGameObjectsMissingScript();
@@ -319,9 +322,7 @@ namespace RCore.Editor
 				ReplaceTextByTextTMP();
 				PerfectRatioImages();
 				ConvertSpriteRendererToImage();
-				SearchAndReplaceSprite();
-				SearchAndReplaceFont();
-				SearchAndReplaceTMPFont();
+			
 			});
 		}
 
@@ -951,7 +952,20 @@ namespace RCore.Editor
 			}
 		}
 
-		//
+		#endregion
+
+#region Refactor Utilities
+
+		private void DrawRefactorUtilities()
+		{
+			EditorHelper.HeaderFoldout("Refactor Utilities", "", () =>
+			{
+				SearchAndReplaceSprite();
+				SearchAndReplaceFont();
+				SearchAndReplaceTMPFont();
+			});
+		}
+		
 		public class SpriteReplace
 		{
 			public class Input
@@ -1494,8 +1508,11 @@ namespace RCore.Editor
 
 		private void DrawGenerators()
 		{
-			GenerateAnimationsPackScript();
-			GenerateCharactersMap();
+			EditorHelper.HeaderFoldout("Script Generators", "", () =>
+			{
+				GenerateAnimationsPackScript();
+				GenerateCharactersMap();
+			});
 		}
 
 		private void GenerateAnimationsPackScript()
