@@ -634,7 +634,7 @@ namespace RCore.Common
 	}
 	
 	[Serializable]
-	public class AssetBundlerWrap<T> where T : Component
+	public class AssetBundleWrap<T> where T : Component
 	{
 		public Transform parent;
 		public ComponentRef<T> reference;

@@ -62,9 +62,7 @@ namespace RCore.Common
 		public Action onPressed;
 		public bool IsPressed { get; private set; }
 
-		public EditorButton()
-		{
-		}
+		public EditorButton() { }
 
 		public EditorButton(string pLabel, Action pOnPressed, Color pColor = default)
 		{
@@ -97,7 +95,7 @@ namespace RCore.Common
 		public string OutputValue { get; private set; }
 		public bool readOnly;
 		public bool textArea;
-		
+
 		public void Draw(GUIStyle style = null)
 		{
 			if (!string.IsNullOrEmpty(label))
@@ -550,7 +548,7 @@ namespace RCore.Common
 
 	public static class EditorHelper
 	{
-		#region File Utilities
+#region File Utilities
 
 		public static string SaveFilePanel(string mainDirectory, string defaultName, string content,
 			string extension = "json,txt")
@@ -652,11 +650,11 @@ namespace RCore.Common
 			pObj = (T)serializer.Deserialize(reader);
 		}
 
-		#endregion
+#endregion
 
 		//========================================
 
-		#region Quick Shortcut
+#region Quick Shortcut
 
 		/// <summary>
 		/// Find all scene components, active or inactive.
@@ -747,11 +745,11 @@ namespace RCore.Common
 			return (!string.IsNullOrEmpty(path)) ? AssetDatabase.AssetPathToGUID(path) : null;
 		}
 
-		#endregion
+#endregion
 
 		//=============================
 
-		#region Layout
+#region Layout
 
 		private static readonly Dictionary<int, Color> BoxColours = new Dictionary<int, Color>();
 
@@ -980,11 +978,11 @@ namespace RCore.Common
 			return scrollPos;
 		}
 
-		#endregion
+#endregion
 
 		//=============================
 
-		#region Tools
+#region Tools
 
 		public static bool Button(string pLabel, int pWidth = 0)
 		{
@@ -1269,7 +1267,10 @@ namespace RCore.Common
 
 					if (!pReadOnly)
 					{
-						DragDropBox<T>(pName, (objs) => { list.AddRange(objs); });
+						DragDropBox<T>(pName, (objs) =>
+						{
+							list.AddRange(objs);
+						});
 					}
 
 					if (totalPages > 1)
@@ -1383,7 +1384,10 @@ namespace RCore.Common
 							}
 
 							if (ButtonColor("Clear", Color.red, 50))
-								ConfirmPopup(() => { list = new List<T>(); });
+								ConfirmPopup(() =>
+								{
+									list = new List<T>();
+								});
 						});
 					}
 
@@ -1520,7 +1524,10 @@ namespace RCore.Common
 						}
 					}
 
-					DragDropBox<T>(pName, (objs) => { list.AddRange(objs); });
+					DragDropBox<T>(pName, (objs) =>
+					{
+						list.AddRange(objs);
+					});
 
 					if (totalPages > 1)
 					{
@@ -1630,7 +1637,10 @@ namespace RCore.Common
 						}
 
 						if (ButtonColor("Clear", Color.red, 50))
-							ConfirmPopup(() => { list = new List<T>(); });
+							ConfirmPopup(() =>
+							{
+								list = new List<T>();
+							});
 					});
 				}, default, true);
 			}
@@ -1751,7 +1761,10 @@ namespace RCore.Common
 			};
 			reorderableList.elementHeight = 17f;
 			reorderableList.headerHeight = 17f;
-			reorderableList.drawHeaderCallback += (rect) => { EditorGUI.LabelField(rect, pName); };
+			reorderableList.drawHeaderCallback += (rect) =>
+			{
+				EditorGUI.LabelField(rect, pName);
+			};
 			return reorderableList;
 		}
 
@@ -1764,7 +1777,10 @@ namespace RCore.Common
 			};
 			reorderableList.elementHeight = 17f;
 			reorderableList.headerHeight = 17f;
-			reorderableList.drawHeaderCallback += (rect) => { EditorGUI.LabelField(rect, pName); };
+			reorderableList.drawHeaderCallback += (rect) =>
+			{
+				EditorGUI.LabelField(rect, pName);
+			};
 			return reorderableList;
 		}
 
@@ -1802,11 +1818,11 @@ namespace RCore.Common
 			}
 		}
 
-		#endregion
+#endregion
 
 		//=============================
 
-		#region Input Fields
+#region Input Fields
 
 		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false)
 		{
@@ -1836,7 +1852,7 @@ namespace RCore.Common
 			text.Draw();
 			return text.OutputValue;
 		}
-		
+
 		public static string DropdownList(string value, string label, string[] selections, int labelWidth = 80, int valueWidth = 0)
 		{
 			var dropdownList = new EditorDropdownListString()
@@ -2190,11 +2206,11 @@ namespace RCore.Common
 			return enm.Current;
 		}
 
-		#endregion
+#endregion
 
 		//===============
 
-		#region Build
+#region Build
 
 		public static void RemoveDirective(string pSymbol, BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
@@ -2308,11 +2324,11 @@ namespace RCore.Common
 			return scenes;
 		}
 
-		#endregion
+#endregion
 
 		//=============================
 
-		#region Get / Load Assets
+#region Get / Load Assets
 
 		public static string OpenFolderPanel(string pFolderPath = null)
 		{
@@ -2487,9 +2503,9 @@ namespace RCore.Common
 #endif
 			return false;
 		}
-		
-		#endregion
-		
+
+#endregion
+
 		public static string[] GetTMPMaterialPresets(TMPro.TMP_FontAsset fontAsset)
 		{
 			if (fontAsset == null) return null;
@@ -2502,6 +2518,96 @@ namespace RCore.Common
 
 			return materialPresetNames;
 		}
+
+		public static void SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object
+		{
+			if (assetGUIDs == null)
+			{
+				const string searchFilter = "t:Object";
+				string[] searchDirectories = { "Assets" };
+				assetGUIDs = AssetDatabase.FindAssets(searchFilter, searchDirectories);
+			}
+			var updatedAssets = new Dictionary<string, int>();
+			var inverseReferenceMap = new Dictionary<string, HashSet<string>>();
+
+			if (oldObjects.Count == 0)
+				return;
+
+			// Initialize map to store all paths that have a reference to our selectedGuids
+			foreach (var selectedObj in oldObjects)
+			{
+				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
+				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
+				inverseReferenceMap[selectedGuid] = new HashSet<string>();
+			}
+
+			// Scan all assets and store the inverse reference if contains a reference to any selectedGuid...
+			var scanProgress = 0;
+			var referencesCount = 0;
+			foreach (var guid in assetGUIDs)
+			{
+				scanProgress++;
+				var path = AssetDatabase.GUIDToAssetPath(guid);
+				if (IsDirectory(path))
+					continue;
+
+				var dependencies = AssetDatabase.GetDependencies(path);
+				foreach (var dependency in dependencies)
+				{
+					EditorUtility.DisplayProgressBar($"Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
+
+					var dependencyGUID = AssetDatabase.AssetPathToGUID(dependency);
+					if (inverseReferenceMap.ContainsKey(dependencyGUID))
+					{
+						inverseReferenceMap[dependencyGUID].Add(path);
+
+						// Also include .meta path. This fixes broken references when an FBX uses external materials
+						// var metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
+						// inverseReferenceMap[dependencyGUID].Add(metaPath);
+
+						referencesCount++;
+					}
+				}
+			}
+
+			string newPath = AssetDatabase.GetAssetPath(newObject);
+			string newGuid = AssetDatabase.AssetPathToGUID(newPath);
+			var countProgress = 0;
+			int countReplaced = 0;
+			foreach (var selectedObj in oldObjects)
+			{
+				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
+				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
+				var referencePaths = inverseReferenceMap[selectedGuid];
+				foreach (var referencePath in referencePaths)
+				{
+					if (referencePath == selectedPath)
+						continue;
+
+					countProgress++;
+
+					EditorUtility.DisplayProgressBar($"Replacing GUID: {selectedPath}", referencePath, (float)countProgress / referencesCount);
+
+					if (IsDirectory(referencePath))
+						continue;
+
+					var contents = File.ReadAllText(referencePath);
+
+					if (!contents.Contains(selectedGuid))
+						continue;
+
+					contents = contents.Replace(selectedGuid, newGuid);
+					File.WriteAllText(referencePath, contents);
+
+					countReplaced++;
+				}
+
+				UnityEngine.Debug.Log("Replace GUID in: " + selectedPath);
+				updatedAssets.Add(selectedPath, countReplaced);
+			}
+		}
+
+		private static bool IsDirectory(string path) => File.GetAttributes(path).HasFlag(FileAttributes.Directory);
 	}
 
 	//===================================================================

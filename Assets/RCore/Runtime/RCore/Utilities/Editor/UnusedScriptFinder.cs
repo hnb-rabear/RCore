@@ -14,7 +14,7 @@ public class UnusedScriptFinder : EditorWindow
 	private List<MonoScript> m_AllScripts;
 	private List<MonoScript> m_UsedScripts;
 	private Vector2 m_ScrollPosition;
-	private string folderPath;
+	private string m_FolderPath;
 
 	[MenuItem("RCore/Tools/Find Unused Mono Scripts")]
 	public static void ShowWindow()
@@ -81,8 +81,8 @@ public class UnusedScriptFinder : EditorWindow
 	private void FindUnusedScripts()
 	{
 		if (m_TargetFolder != null)
-			folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
-		else folderPath = "Assets";
+			m_FolderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
+		else m_FolderPath = "Assets";
 		m_AllScripts = GetAllMonoScriptsInFolder();
 		m_UsedScripts = GetUsedMonoScripts();
 		
@@ -107,7 +107,7 @@ public class UnusedScriptFinder : EditorWindow
 	private List<MonoScript> GetAllMonoScriptsInFolder()
 	{
 		var scripts = new List<MonoScript>();
-		string[] guids = AssetDatabase.FindAssets("t:MonoScript", new[] { folderPath });
+		string[] guids = AssetDatabase.FindAssets("t:MonoScript", new[] { m_FolderPath });
 
 		foreach (string guid in guids)
 		{
@@ -128,7 +128,7 @@ public class UnusedScriptFinder : EditorWindow
 		//======================================
 
 		// Find all objects in the project
-		string[] allAssetGuids = AssetDatabase.FindAssets("t:GameObject t:ScriptableObject", new[] { folderPath });
+		string[] allAssetGuids = AssetDatabase.FindAssets("t:GameObject t:ScriptableObject", new[] { m_FolderPath });
 		foreach (string assetGuid in allAssetGuids)
 		{
 			string assetPath = AssetDatabase.GUIDToAssetPath(assetGuid);
@@ -185,7 +185,7 @@ public class UnusedScriptFinder : EditorWindow
 
 	private string[] GetAllScenes()
 	{
-		string[] guids = AssetDatabase.FindAssets("t:Scene", new[] { folderPath });
+		string[] guids = AssetDatabase.FindAssets("t:Scene", new[] { m_FolderPath });
 		var scenePaths = new List<string>();
 
 		foreach (string guid in guids)

@@ -5,19 +5,22 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using System.IO;
 using System.Linq;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace RCore.Editor
 {
 	public class ToolsCollectionWindow : EditorWindow
 	{
-		private Vector2 mScrollPosition;
+		private Vector2 m_ScrollPosition;
+		private Object m_TargetFolder;
 
 		private void OnGUI()
 		{
-			mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, false, false);
+			m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition, false, false);
 
 			EditorHelper.SeparatorBox();
 			DrawGameObjectUtilities();
@@ -292,7 +295,7 @@ namespace RCore.Editor
 
 #region UI Utilities
 
-		public enum FormatType
+		private enum FormatType
 		{
 			UpperCase,
 			Lowercase,
@@ -407,7 +410,7 @@ namespace RCore.Editor
 
 		private float m_ImgWidth;
 		private float m_ImgHeight;
-		private int m_CountImgs;
+		private int m_CountImages;
 
 		private void SketchImages()
 		{
@@ -415,15 +418,15 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 				{
-					if (m_CountImgs == 0)
+					if (m_CountImages == 0)
 						EditorGUILayout.HelpBox("Select at least one Image Object to see how it work", MessageType.Info);
 					else
-						EditorGUILayout.LabelField("Image Count: ", m_CountImgs.ToString());
+						EditorGUILayout.LabelField("Image Count: ", m_CountImages.ToString());
 
 					m_ImgWidth = EditorHelper.FloatField(m_ImgWidth, "Width");
 					m_ImgHeight = EditorHelper.FloatField(m_ImgHeight, "Height");
 
-					m_CountImgs = 0;
+					m_CountImages = 0;
 					var allImages = new List<Image>();
 					foreach (var g in Selection.gameObjects)
 					{
@@ -532,10 +535,10 @@ namespace RCore.Editor
 
 						EditorHelper.LabelField($"{i + 1}", 30);
 						if (EditorHelper.Button($"{deepStr}" + graphic.name, new GUIStyle("button")
-							{
-								fixedWidth = 250,
-								alignment = TextAnchor.MiddleLeft
-							}))
+						    {
+							    fixedWidth = 250,
+							    alignment = TextAnchor.MiddleLeft
+						    }))
 						{
 							Selection.activeObject = graphic.gameObject;
 						}
@@ -947,7 +950,7 @@ namespace RCore.Editor
 				}
 			}
 		}
-		
+
 		//
 		public class SpriteReplace
 		{
@@ -1017,27 +1020,43 @@ namespace RCore.Editor
 								EditorGUILayout.EndVertical();
 							}
 						}
-
 						EditorGUILayout.EndHorizontal();
 						EditorGUILayout.Separator();
 					}
 
+					m_TargetFolder = EditorHelper.ObjectField<DefaultAsset>(m_TargetFolder, "Target Folder");
+
 					if (EditorHelper.Button("Search and replace"))
 					{
+						for (int i = 0; i < m_SpriteReplace.inputs.Count; i++)
+						{
+							var target = m_SpriteReplace.inputs[i];
+							if (target.replace == null)
+							{
+								m_SpriteReplace.inputs.Remove(target);
+								i--;
+								continue;
+							}
+
+							for (int t = target.targets.Count - 1; t >= 0; t--)
+								if (target.targets[t] == null)
+									target.targets.RemoveAt(t);
+						}
+
+						if (m_SpriteReplace.inputs.Count == 0)
+							return;
+
+						string folderPath = "Assets";
+						if (m_TargetFolder != null)
+							folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
+
+						AssetDatabase.StartAssetEditing();
+						
 						int count = 0;
-						var objectsFound = new List<GameObject>();
-						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { "Assets" });
+						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { folderPath });
 						foreach (var guid in assetIds)
 						{
 							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-							bool valid = false;
-
-							foreach (var target in m_SpriteReplace.inputs)
-							{
-								for (int t = target.targets.Count - 1; t >= 0; t--)
-									if (target.targets[t] == null)
-										target.targets.RemoveAt(t);
-							}
 
 							var images = obj.FindComponentsInChildren<Image>();
 							foreach (var com in images)
@@ -1046,7 +1065,6 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.sprite))
 									{
 										com.sprite = target.replace;
-										valid = true;
 										count++;
 									}
 							}
@@ -1059,13 +1077,11 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.mImgActive))
 									{
 										com.mImgActive = target.replace;
-										valid = true;
 									}
 
 									if (target.targets.Contains(com.mImgInactive))
 									{
 										com.mImgInactive = target.replace;
-										valid = true;
 										count++;
 									}
 								}
@@ -1078,20 +1094,18 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.sprite))
 									{
 										com.sprite = target.replace;
-										valid = true;
 										count++;
 									}
 							}
-
-							if (valid && !objectsFound.Contains(obj))
-								objectsFound.Add(obj);
 						}
 
-						foreach (var g in objectsFound)
-							EditorUtility.SetDirty(g);
+						var scriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
+						foreach (var target in m_SpriteReplace.inputs)
+							EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, scriptableObjects);
 
-						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
+						AssetDatabase.Refresh();
 
 						Debug.Log($"Replace {count} Objects");
 					}
@@ -1174,20 +1188,25 @@ namespace RCore.Editor
 								EditorGUILayout.EndVertical();
 							}
 						}
-
 						EditorGUILayout.EndHorizontal();
 						EditorGUILayout.Separator();
 					}
 
+					m_TargetFolder = EditorHelper.ObjectField<DefaultAsset>(m_TargetFolder, "Target Folder");
+
 					if (EditorHelper.Button("Search and replace in Projects"))
 					{
+						string folderPath = "Assets";
+						if (m_TargetFolder != null)
+							folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
+
+						AssetDatabase.StartAssetEditing();
+						
 						int count = 0;
-						var objectsFound = new List<GameObject>();
-						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { "Assets" });
+						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { folderPath });
 						foreach (var guid in assetIds)
 						{
 							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-							bool valid = false;
 
 							foreach (var target in m_FontReplace.inputs)
 							{
@@ -1203,33 +1222,30 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.font))
 									{
 										com.font = target.replace;
-										valid = true;
 										count++;
 									}
 							}
-
-							if (valid && !objectsFound.Contains(obj))
-								objectsFound.Add(obj);
 						}
 
-						foreach (var g in objectsFound)
-							EditorUtility.SetDirty(g);
-
-						Selection.objects = objectsFound.ToArray();
+						var scriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
+						foreach (var target in m_FontReplace.inputs)
+							EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, scriptableObjects);
+						
+						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
+						AssetDatabase.Refresh();
 
 						Debug.Log($"Replace {count} Objects");
 					}
 
 					if (EditorHelper.Button("Search and replace in Scene"))
 					{
+						AssetDatabase.StartAssetEditing();
+						
 						var objs = FindObjectsOfType<GameObject>();
 						int count = 0;
-						//var objs = Selection.gameObjects;
-						var objectsFound = new List<GameObject>();
 						for (int i = 0; i < objs.Length; i++)
 						{
-							bool valid = false;
 							var obj = objs[i];
 							var images = obj.FindComponentsInChildren<Text>();
 							foreach (var com in images)
@@ -1238,20 +1254,14 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.font))
 									{
 										com.font = target.replace;
-										valid = true;
 										count++;
 									}
 							}
-
-							if (valid && !objectsFound.Contains(obj))
-								objectsFound.Add(obj);
 						}
 
-						foreach (var g in objectsFound)
-							EditorUtility.SetDirty(g);
-
-						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
+						AssetDatabase.Refresh();
 
 						Debug.Log($"Replace {count} Objects");
 					}
@@ -1273,7 +1283,7 @@ namespace RCore.Editor
 			public readonly List<Input> inputs = new List<Input>();
 		}
 
-		public TextMeshProFontReplace m_TMPFontReplace = new TextMeshProFontReplace();
+		private TextMeshProFontReplace m_TMPFontReplace = new TextMeshProFontReplace();
 
 		private void SearchAndReplaceTMPFont()
 		{
@@ -1334,20 +1344,25 @@ namespace RCore.Editor
 								EditorGUILayout.EndVertical();
 							}
 						}
-
 						EditorGUILayout.EndHorizontal();
 						EditorGUILayout.Separator();
 					}
 
+					m_TargetFolder = EditorHelper.ObjectField<DefaultAsset>(m_TargetFolder, "Target Folder");
+
 					if (EditorHelper.Button("Search and replace in Projects"))
 					{
+						string folderPath = "Assets";
+						if (m_TargetFolder != null)
+							folderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
+
+						AssetDatabase.StartAssetEditing();
+						
 						int count = 0;
-						var objectsFound = new List<GameObject>();
-						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { "Assets" });
+						var assetIds = AssetDatabase.FindAssets("t:prefab", new[] { folderPath });
 						foreach (var guid in assetIds)
 						{
 							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-							bool valid = false;
 
 							foreach (var target in m_TMPFontReplace.inputs)
 							{
@@ -1363,7 +1378,6 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.font))
 									{
 										com.font = target.replace;
-										valid = true;
 										count++;
 									}
 							}
@@ -1375,20 +1389,18 @@ namespace RCore.Editor
 									if (target.targets.Contains(com.font))
 									{
 										com.font = target.replace;
-										valid = true;
 										count++;
 									}
 							}
-
-							if (valid && !objectsFound.Contains(obj))
-								objectsFound.Add(obj);
 						}
+						
+						var scriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
+						foreach (var target in m_TMPFontReplace.inputs)
+							EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, scriptableObjects);
 
-						foreach (var g in objectsFound)
-							EditorUtility.SetDirty(g);
-
-						Selection.objects = objectsFound.ToArray();
+						AssetDatabase.StopAssetEditing();
 						AssetDatabase.SaveAssets();
+						AssetDatabase.Refresh();
 
 						Debug.Log($"Replace {count} Objects");
 					}
@@ -1443,7 +1455,7 @@ namespace RCore.Editor
 				EditorGUILayout.EndVertical();
 			}
 		}
-		
+
 #endregion
 
 		//===================================================================================================
@@ -1618,7 +1630,7 @@ namespace RCore.Editor
 						if (textAsset != null)
 							combineStr += textAsset.text;
 					}
-					
+
 					m_CombinedTextsResult = string.Empty;
 					var unique = new HashSet<char>(combineStr);
 					foreach (char c in unique)
@@ -1634,9 +1646,9 @@ namespace RCore.Editor
 		}
 
 #endregion
-		
+
 		//===================================================================================================
-		
+
 		private static bool SelectedObject()
 		{
 			if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
@@ -1680,5 +1692,5 @@ namespace RCore.Editor
 		}
 	}
 
-	public delegate bool ConditionalDelegate<T>(T pComponent) where T : Component;
+	public delegate bool ConditionalDelegate<in T>(T pComponent) where T : Component;
 }

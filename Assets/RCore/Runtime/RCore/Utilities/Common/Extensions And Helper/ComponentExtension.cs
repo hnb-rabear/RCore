@@ -497,16 +497,6 @@ namespace RCore.Common
 			return target.gameObject.GetInstanceID();
 		}
 
-		public static bool IsNull<T>(this T pObj) where T : UnityEngine.Object
-		{
-			return ReferenceEquals(pObj, null);
-		}
-
-		public static bool IsNotNull<T>(this T pObj) where T : UnityEngine.Object
-		{
-			return !ReferenceEquals(pObj, null);
-		}
-
 		//===================================================
 
 #region Image
