@@ -11,6 +11,7 @@ using UnityEditor.AddressableAssets;
 #endif
 using UnityEngine;
 #if ADDRESSABLES
+using System.Collections;
 using TMPro;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -29,6 +30,8 @@ namespace RCore.Common
 	[Serializable]
 	public class ComponentRef<TComponent> : AssetReference where TComponent : Component
 	{
+		public TComponent instance;
+		public TComponent asset;
 		public ComponentRef(string guid) : base(guid) { }
 		public override bool ValidateAsset(Object obj)
 		{
@@ -44,6 +47,49 @@ namespace RCore.Common
 #else
             return false;
 #endif
+		}
+		public async UniTask<TComponent> InternalInstantiateAsync(bool pDefaultActive = false)
+		{
+			var go = await Addressables.InstantiateAsync(this);
+			go.SetActive(pDefaultActive);
+			go.TryGetComponent(out instance);
+			Debug.Log($"Instantiate Asset Bundle {instance.name}");
+			return instance;
+		}
+		public async UniTask<TComponent> InternalLoadAssetAsync()
+		{
+			if (asset != null)
+				return asset;
+			var operation = IsValid() ? OperationHandle.Convert<GameObject>() : LoadAssetAsync<GameObject>();
+			await operation;
+			asset = operation.Result.GetComponent<TComponent>();
+			Debug.Log($"Load Asset Bundle {asset.name}");
+			return asset;
+		}
+		public IEnumerator IEInternalLoadAssetAsync()
+		{
+			if (asset != null)
+				yield break;
+			var operation = IsValid() ? OperationHandle.Convert<GameObject>() : LoadAssetAsync<GameObject>();
+			yield return operation;
+			asset = operation.Result.GetComponent<TComponent>();
+			Debug.Log($"Load Asset Bundle {asset.name}");
+		}
+		public void Unload()
+		{
+			if (instance != null)
+			{
+				string name = instance.name;
+				if (Addressables.ReleaseInstance(instance.gameObject))
+					UnityEngine.Debug.Log($"Unload asset bundle success {name}");
+			}
+			if (asset != null)
+			{
+				string name = asset.name;
+				asset = null;
+				ReleaseAsset();
+				UnityEngine.Debug.Log($"Unload asset bundle success {name}");
+			}
 		}
 	}
 

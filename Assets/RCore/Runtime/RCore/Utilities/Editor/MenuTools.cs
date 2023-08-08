@@ -23,6 +23,20 @@ namespace RCore.Editor
 
             AssetDatabase.SaveAssets();
         }
+        
+        [MenuItem("RCore/Refresh Assets Database " + SHIFT + "_2", priority = 1)]
+        private static void RefreshAssetsDatabase()
+        {
+	        var assetGUIDs = AssetDatabase.FindAssets("t:GameObject t:ScriptableObject", new string[] { "Assets" });
+	        foreach (string guid in assetGUIDs)
+	        {
+		        var path = AssetDatabase.GUIDToAssetPath(guid);
+		        var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+		        if (asset != null)
+			        EditorUtility.SetDirty(asset);
+	        }
+	        AssetDatabase.SaveAssets();
+        }
 
         //==========================================================
 
