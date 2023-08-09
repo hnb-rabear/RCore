@@ -3,7 +3,9 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor.SceneManagement;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using Debug = RCore.Common.Debug;
@@ -13,6 +15,7 @@ public class UnusedScriptFinder : EditorWindow
 	private Object m_TargetFolder;
 	private List<MonoScript> m_AllScripts;
 	private List<MonoScript> m_UsedScripts;
+	private List<GameObject> m_ParticleSystemPrefabs;
 	private Vector2 m_ScrollPosition;
 	private string m_FolderPath;
 
@@ -34,45 +37,65 @@ public class UnusedScriptFinder : EditorWindow
 		if (GUILayout.Button("Find Unused Scripts"))
 			FindUnusedScripts();
 
+		if (GUILayout.Button("Find Particle Systems"))
+			FindParticleSystems();
+		
+		if (GUILayout.Button("Find Persistent Events"))
+			FindPersistentEvents();
+
 		EditorGUILayout.Space();
 
 		m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition);
 
-		if (EditorHelper.HeaderFoldout("All Scripts"))
+		if (m_AllScripts != null && m_AllScripts.Count > 0)
 		{
-			if (m_AllScripts != null)
+			if (EditorHelper.HeaderFoldout($"All Scripts: {m_AllScripts.Count}", "All Scripts"))
 			{
-				GUILayout.Label($"All Scripts: {m_AllScripts.Count}");
 				foreach (var script in m_AllScripts)
 				{
 					EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
 				}
 			}
 		}
-		if (EditorHelper.HeaderFoldout("Used Scripts"))
+
+		if (m_UsedScripts != null && m_UsedScripts.Count > 0)
 		{
-			if (m_UsedScripts != null)
-			{
-				GUILayout.Label($"Used Scripts: {m_UsedScripts.Count}");
+			if (EditorHelper.HeaderFoldout($"Used Scripts: {m_UsedScripts.Count}", "Used Scripts"))
 				foreach (var script in m_UsedScripts)
-				{
 					EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
-				}
-			}
 		}
-		if (EditorHelper.HeaderFoldout("Unused Scripts"))
+
+		if (m_UsedScripts != null && m_AllScripts != null && m_UsedScripts.Count > 0)
 		{
-			if (m_UsedScripts != null && m_AllScripts != null)
+			if (EditorHelper.HeaderFoldout("Unused Scripts"))
 			{
 				var scripts = m_AllScripts.Except(m_UsedScripts).ToList();
 				GUILayout.Label($"Unused Scripts: {scripts.Count}");
 				foreach (var script in scripts)
-				{
 					EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
-				}
 				if (GUILayout.Button("Delete Unused Scripts"))
 					DeleteUnusedScripts(scripts);
 			}
+		}
+
+		if (m_ParticleSystemPrefabs != null && m_ParticleSystemPrefabs.Count > 0)
+		{
+			if (EditorHelper.HeaderFoldout($"ParticleSystem prefabs {m_ParticleSystemPrefabs.Count}", "ParticleSystem prefabs"))
+				foreach (var script in m_ParticleSystemPrefabs)
+					EditorGUILayout.ObjectField(script, typeof(GameObject), false);
+
+			if (EditorHelper.Button("Select All"))
+				Selection.objects = m_ParticleSystemPrefabs.ToArray();
+		}
+		
+		if (m_PersistentEvents != null && m_PersistentEvents.Count > 0)
+		{
+			if (EditorHelper.HeaderFoldout($"Prefabs has Persistent Event {m_PersistentEvents.Count}", "Prefabs has Persistent Event"))
+				foreach (var script in m_PersistentEvents)
+					EditorGUILayout.ObjectField(script, typeof(GameObject), false);
+
+			if (EditorHelper.Button("Select All"))
+				Selection.objects = m_PersistentEvents.ToArray();
 		}
 
 		EditorGUILayout.EndScrollView();
@@ -85,7 +108,7 @@ public class UnusedScriptFinder : EditorWindow
 		else m_FolderPath = "Assets";
 		m_AllScripts = GetAllMonoScriptsInFolder();
 		m_UsedScripts = GetUsedMonoScripts();
-		
+
 		var unusedScripts = m_AllScripts.Except(m_UsedScripts).ToList();
 		foreach (var unusedScript in unusedScripts)
 		{
@@ -102,6 +125,99 @@ public class UnusedScriptFinder : EditorWindow
 			}
 		}
 		Repaint();
+	}
+
+	private void FindParticleSystems()
+	{
+		if (m_TargetFolder != null)
+			m_FolderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
+		else m_FolderPath = "Assets";
+
+		m_ParticleSystemPrefabs = new List<GameObject>();
+		var guids = AssetDatabase.FindAssets("t:GameObject", new[] { m_FolderPath });
+		foreach (string guid in guids)
+		{
+			var obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+			if (obj.GetComponent<MonoBehaviour>())
+				continue;
+			if (obj.GetComponent<ParticleSystem>())
+			{
+				m_ParticleSystemPrefabs.Add(obj);
+				continue;
+			}
+			foreach (Transform t in obj.transform)
+			{
+				if (t.gameObject.GetComponent<ParticleSystem>())
+				{
+					m_ParticleSystemPrefabs.Add(obj);
+					break;
+				}
+			}
+		}
+	}
+
+	private List<GameObject> m_PersistentEvents;
+	private void FindPersistentEvents()
+	{
+		if (m_TargetFolder != null)
+			m_FolderPath = AssetDatabase.GetAssetPath(m_TargetFolder);
+		else m_FolderPath = "Assets";
+
+		m_PersistentEvents = new List<GameObject>();
+		var guids = AssetDatabase.FindAssets("t:GameObject", new[] { m_FolderPath });
+		foreach (string guid in guids)
+		{
+			string path = AssetDatabase.GUIDToAssetPath(guid);
+			var obj = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+			if (HasPersistentEvents(obj) && !m_PersistentEvents.Contains(obj))
+				m_PersistentEvents.Add(obj);
+		}
+	}
+	
+	private static bool HasPersistentEvents(GameObject go)
+	{
+		var components = go.GetComponentsInChildren<MonoBehaviour>(true);
+		foreach (var script in components)
+		{
+			if (script)
+			{
+				var fields = script.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				foreach (var field in fields)
+				{
+					if (field.FieldType.IsSubclassOf(typeof(UnityEventBase)))
+					{
+						var unityEventBase = (UnityEventBase)field.GetValue(script);
+
+						if (unityEventBase != null)
+						{
+							int persistentCount = CountPersistentListeners(unityEventBase);
+							Debug.Log($"Script: {script.name}, Event: {field.Name}, Persistent Listeners: {persistentCount}");
+							return persistentCount > 0;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static int CountPersistentListeners(UnityEventBase unityEventBase)
+	{
+		int persistentCount = 0;
+
+		if (unityEventBase is UnityEvent unityEvent)
+		{
+			persistentCount = unityEvent.GetPersistentEventCount();
+		}
+		else
+		{
+			if (unityEventBase is UnityEvent<int> unityEventGeneric)
+			{
+				persistentCount = unityEventGeneric.GetPersistentEventCount();
+			}
+			// Add more cases for other UnityEvent types if needed
+		}
+		return persistentCount;
 	}
 
 	private List<MonoScript> GetAllMonoScriptsInFolder()
@@ -138,7 +254,7 @@ public class UnusedScriptFinder : EditorWindow
 			{
 				if (asset is GameObject go)
 				{
-					var components = go.FindAllComponentsInChildren<MonoBehaviour>();
+					var components = go.GetComponentsInChildren<MonoBehaviour>(true);
 					foreach (var component in components)
 					{
 						if (component == null)
