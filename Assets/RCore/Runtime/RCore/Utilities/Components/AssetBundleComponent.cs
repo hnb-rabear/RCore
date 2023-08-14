@@ -15,7 +15,7 @@ namespace RCore.Components
 		public Transform parent;
 		public AssetReferenceGameObject reference;
 		internal bool loading { get; private set; }
-		internal GameObject cache { get; private set; }
+		internal GameObject instance { get; private set; }
 		private void Start()
 		{
 			if (auto)
@@ -23,42 +23,42 @@ namespace RCore.Components
 		}
 		public async UniTask<T> InstantiateAsync<T>() where T : Component
 		{
-			if (cache == null)
+			if (instance == null)
 			{
 				loading = true;
-				cache = await Addressables.InstantiateAsync(reference, parent);
+				instance = await Addressables.InstantiateAsync(reference, parent);
 				loading = false;
-				if (cache != null)
+				if (instance != null)
 				{
-					cache.transform.localPosition = Vector3.zero;
-					Debug.Log($"Instantiate Asset Bundle {cache.name}");
+					instance.transform.localPosition = Vector3.zero;
+					Debug.Log($"Instantiate Asset Bundle {instance.name}");
 				}
 			}
-			var component = cache.GetComponent<T>();
+			var component = instance.GetComponent<T>();
 			return component;
 		}
 		public async UniTask<GameObject> InstantiateAsync()
 		{
-			if (cache == null)
+			if (instance == null)
 			{
 				loading = true;
-				cache = await Addressables.InstantiateAsync(reference, parent);
+				instance = await Addressables.InstantiateAsync(reference, parent);
 				loading = false;
-				if (cache != null)
+				if (instance != null)
 				{
-					cache.transform.localPosition = Vector3.zero;
-					cache.name = cache.name;
-					Debug.Log($"Instantiate Asset Bundle {cache.name}");
+					instance.transform.localPosition = Vector3.zero;
+					instance.name = instance.name;
+					Debug.Log($"Instantiate Asset Bundle {instance.name}");
 				}
 			}
-			return cache;
+			return instance;
 		}
 		private void OnDestroy()
 		{
-			if (cache != null)
+			if (instance != null)
 			{
-				Debug.Log($"Unload Asset Bundle {cache.name}");
-				Addressables.ReleaseInstance(cache.gameObject);
+				Debug.Log($"Unload Asset Bundle {instance.name}");
+				Addressables.ReleaseInstance(instance.gameObject);
 			}
 		}
 	}
