@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Serialization;
 
 #if UNITY_IAP
+using Unity.Services.Core;
+using Unity.Services.Core.Environments;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Security;
 #endif
@@ -38,7 +41,7 @@ namespace RCore.Service
 		public const string PROCESSING_PURCHASE_ABORT = "PROCESSING_PURCHASE_ABORT";
 		public const string PROCESSING_PURCHASE_INVALID_RECEIPT = "PROCESSING_PURCHASE_INVALID_RECEIPT";
 		public const string CONFIRM_PENDING_PURCHASE_FAILED = "CONFIRM_PENDING_PURCHASE_FAILED";
-		public const string k_Environment = "production";
+		public const string K_ENVIRONMENT = "production";
 
 		public List<Product> products;
 		public bool validateAppleReceipt = true;
@@ -47,9 +50,9 @@ namespace RCore.Service
 		public bool interceptApplePromotionalPurchases;
 		public bool simulateAppleAskToBuy;
 
-		public Action<Product> PurchaseCompleted;
-		public Action<Product, string> PurchaseFailed;
-		public Action<Product> PurchaseDeferred;
+		public Action<Product> purchaseCompleted;
+		public Action<Product, string> purchaseFailed;
+		public Action<Product> purchaseDeferred;
 
 		/// <summary>
 		/// [Apple store only] Occurs when a promotional purchase that comes directly
@@ -57,18 +60,18 @@ namespace RCore.Service
 		/// <see cref="IAPSettings.InterceptApplePromotionalPurchases"/> setting is <c>true</c>.
 		/// On non-Apple platforms this event will never fire.
 		/// </summary>
-		public Action<Product> PromotionalPurchaseIntercepted;
+		public Action<Product> promotionalPurchaseIntercepted;
 		/// <summary>
 		/// [Apple store only] Occurs when the (non-consumable and subscription) 
 		/// purchases were restored successfully.
 		/// On non-Apple platforms this event will never fire.
 		/// </summary>
-		public Action RestoreCompleted;
+		public Action restoreCompleted;
 		/// <summary>
 		/// [Apple store only] Occurs when the purchase restoration failed.
 		/// On non-Apple platforms this event will never fire.
 		/// </summary>
-		public Action RestoreFailed;
+		public Action restoreFailed;
 
 		private Action<bool> m_OnInitialized;
 		private Action<bool, string> m_OnPurchased;
@@ -108,9 +111,15 @@ namespace RCore.Service
 
 		public void OnInitializeFailed(InitializationFailureReason error)
 		{
-			// Purchasing set-up has not succeeded. Check error for reason. Consider sharing this reason with the user.
 			Debug.Log("In-App Purchasing OnInitializeFailed. InitializationFailureReason:" + error);
 
+			m_OnInitialized?.Invoke(false);
+		}
+		
+		public void OnInitializeFailed(InitializationFailureReason error, string message)
+		{
+			Debug.Log($"In-App Purchasing OnInitializeFailed. InitializationFailureReason:{error}\n{message}");
+			
 			m_OnInitialized?.Invoke(false);
 		}
 
@@ -121,7 +130,7 @@ namespace RCore.Service
 			Debug.Log(string.Format("Couldn't purchase product: '{0}', PurchaseFailureReason: {1}", product.definition.storeSpecificId, failureReason));
 
 			// Fire purchase failure event
-			PurchaseFailed?.Invoke(GetIAPProductById(product.definition.id), failureReason.ToString());
+			purchaseFailed?.Invoke(GetIAPProductById(product.definition.id), failureReason.ToString());
 			m_OnPurchased?.Invoke(false, failureReason.ToString());
 		}
 
@@ -129,40 +138,36 @@ namespace RCore.Service
 		{
 			Debug.Log("Processing purchase of product: " + args.purchasedProduct.transactionID);
 
-			Product pd = GetIAPProductById(args.purchasedProduct.definition.id);
+			var pd = GetIAPProductById(args.purchasedProduct.definition.id);
 
-			if (sPrePurchaseProcessDel != null)
+			if (m_SPrePurchaseProcessDel != null)
 			{
-				var nextStep = sPrePurchaseProcessDel(args);
+				var nextStep = m_SPrePurchaseProcessDel(args);
 
 				if (nextStep == PrePurchaseProcessResult.Abort)
 				{
 					Debug.Log("Purchase aborted.");
 
 					// Fire purchase failure event
-					PurchaseFailed?.Invoke(pd, PROCESSING_PURCHASE_ABORT);
+					purchaseFailed?.Invoke(pd, PROCESSING_PURCHASE_ABORT);
 					m_OnPurchased?.Invoke(false, PROCESSING_PURCHASE_ABORT);
 
 					return PurchaseProcessingResult.Complete;
 				}
-				else if (nextStep == PrePurchaseProcessResult.Suspend)
+				if (nextStep == PrePurchaseProcessResult.Suspend)
 				{
 					Debug.Log("Purchase suspended.");
 					return PurchaseProcessingResult.Pending;
 				}
-				else
-				{
-					// Proceed.
-					Debug.Log("Proceeding with purchase processing.");
-				}
+				// Proceed.
+				Debug.Log("Proceeding with purchase processing.");
 			}
 
-			bool validPurchase = true;  // presume validity if not validate receipt
+			bool validPurchase = true; // presume validity if not validate receipt
 
 			if (IsReceiptValidationEnabled())
 			{
-				IPurchaseReceipt[] purchaseReceipts;
-				validPurchase = ValidateReceipt(args.purchasedProduct.receipt, out purchaseReceipts);
+				validPurchase = ValidateReceipt(args.purchasedProduct.receipt, out _);
 			}
 
 			if (validPurchase)
@@ -170,7 +175,7 @@ namespace RCore.Service
 				Debug.Log("Product purchase completed.");
 
 				// Fire purchase success event
-				PurchaseCompleted?.Invoke(pd);
+				purchaseCompleted?.Invoke(pd);
 				m_OnPurchased?.Invoke(true, null);
 			}
 			else
@@ -178,7 +183,7 @@ namespace RCore.Service
 				Debug.Log("Couldn't purchase product: Invalid receipt.");
 
 				// Fire purchase failure event
-				PurchaseFailed?.Invoke(pd, PROCESSING_PURCHASE_INVALID_RECEIPT);
+				purchaseFailed?.Invoke(pd, PROCESSING_PURCHASE_INVALID_RECEIPT);
 				m_OnPurchased?.Invoke(false, PROCESSING_PURCHASE_INVALID_RECEIPT);
 			}
 
@@ -193,7 +198,6 @@ namespace RCore.Service
 
 		public async void Init(Action<bool> pCallback)
 		{
-
 			if (IsInitialized())
 			{
 				pCallback?.Invoke(true);
@@ -202,7 +206,7 @@ namespace RCore.Service
 
 			m_OnInitialized = pCallback;
 
-			var options = new InitializationOptions().SetEnvironmentName(k_Environment);
+			var options = new InitializationOptions().SetEnvironmentName(K_ENVIRONMENT);
 			var task = UnityServices.InitializeAsync(options);
 			await task;
 
@@ -210,14 +214,14 @@ namespace RCore.Service
 			m_Builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
 			// Add products
-			foreach (Product pd in products)
+			foreach (var pd in products)
 			{
-				if (pd.StoreSpecificIds != null && pd.StoreSpecificIds.Length > 0)
+				if (pd.storeSpecificIds != null && pd.storeSpecificIds.Length > 0)
 				{
 					// Add store-specific id if any
-					IDs storeIDs = new IDs();
+					var storeIDs = new IDs();
 
-					foreach (Product.StoreSpecificId sId in pd.StoreSpecificIds)
+					foreach (var sId in pd.storeSpecificIds)
 					{
 						storeIDs.Add(sId.id, new string[] { GetStoreName(sId.store) });
 					}
@@ -258,7 +262,6 @@ namespace RCore.Service
 		/// <summary>
 		/// Purchases the product with specified ID.
 		/// </summary>
-		/// <param name="productId">Product identifier.</param>
 		public void Purchase(string productId, Action<bool, string> pCallback)
 		{
 #if UNITY_EDITOR
@@ -269,7 +272,7 @@ namespace RCore.Service
 			if (IsInitialized())
 			{
 				m_OnPurchased = pCallback;
-				UnityEngine.Purchasing.Product product = m_StoreController.products.WithID(productId);
+				var product = m_StoreController.products.WithID(productId);
 
 				if (product != null && product.availableToPurchase)
 				{
@@ -298,7 +301,6 @@ namespace RCore.Service
 		/// </summary>
 		public void RestorePurchases()
 		{
-
 			if (!IsInitialized())
 			{
 				Debug.Log("Couldn't restore IAP purchases: In-App Purchasing is not initialized.");
@@ -313,7 +315,7 @@ namespace RCore.Service
 
 				// Begin the asynchronous process of restoring purchases. Expect a confirmation response in 
 				// the Action<bool> below, and ProcessPurchase if there are previously purchased products to restore.
-				apple.RestoreTransactions((result) =>
+				apple.RestoreTransactions(result =>
 				{
 					// The first phase of restoration. If no more responses are received on ProcessPurchase then 
 					// no purchases are available to be restored.
@@ -322,14 +324,12 @@ namespace RCore.Service
 					if (result)
 					{
 						// Fire restore complete event.
-						if (RestoreCompleted != null)
-							RestoreCompleted();
+						restoreCompleted?.Invoke();
 					}
 					else
 					{
 						// Fire event failed event.
-						if (RestoreFailed != null)
-							RestoreFailed();
+						restoreFailed?.Invoke();
 					}
 				});
 			}
@@ -351,10 +351,9 @@ namespace RCore.Service
 		/// it doesn't check if the subscription has been expired or canceled. 
 		/// </summary>
 		/// <returns><c>true</c> if the product has a receipt and that receipt is valid (if receipt validation is enabled); otherwise, <c>false</c>.</returns>
-		/// <param name="productId">Product id.</param>
 		public bool IsProductWithIdOwned(string productId)
 		{
-			Product iapProduct = GetIAPProductById(productId);
+			var iapProduct = GetIAPProductById(productId);
 			return IsProductOwned(iapProduct);
 		}
 
@@ -369,17 +368,15 @@ namespace RCore.Service
 		/// it doesn't check if the subscription has been expired or canceled. 
 		/// </summary>
 		/// <returns><c>true</c> if the product has a receipt and that receipt is valid (if receipt validation is enabled); otherwise, <c>false</c>.</returns>
-		/// <param name="product">the product.</param>
 		public bool IsProductOwned(Product product)
 		{
-
 			if (!IsInitialized())
 				return false;
 
 			if (product == null)
 				return false;
 
-			UnityEngine.Purchasing.Product pd = m_StoreController.products.WithID(product.id);
+			var pd = m_StoreController.products.WithID(product.id);
 
 			if (pd.hasReceipt)
 			{
@@ -387,27 +384,20 @@ namespace RCore.Service
 
 				if (IsReceiptValidationEnabled())
 				{
-					IPurchaseReceipt[] purchaseReceipts;
-					isValid = ValidateReceipt(pd.receipt, out purchaseReceipts);
+					isValid = ValidateReceipt(pd.receipt, out _);
 				}
 
 				return isValid;
 			}
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 
 		/// <summary>
 		/// Fetches a new Apple App receipt from their servers.
 		/// Note that this will prompt the user for their password.
 		/// </summary>
-		/// <param name="successCallback">Success callback.</param>
-		/// <param name="errorCallback">Error callback.</param>
 		public void RefreshAppleAppReceipt(Action<string> successCallback, Action errorCallback)
 		{
-
 			if (Application.platform != RuntimePlatform.IPhonePlayer)
 			{
 				Debug.Log("Refreshing Apple app receipt is only available on iOS.");
@@ -420,22 +410,21 @@ namespace RCore.Service
 				return;
 			}
 
-			m_StoreExtensionProvider.GetExtension<IAppleExtensions>().RefreshAppReceipt(
-				(receipt) =>
-				{
-					// This handler is invoked if the request is successful.
-					// Receipt will be the latest app receipt.
-					if (successCallback != null)
-						successCallback(receipt);
-				},
-				() =>
-				{
-					// This handler will be invoked if the request fails,
-					// such as if the network is unavailable or the user
-					// enters the wrong password.
-					if (errorCallback != null)
-						errorCallback();
-				});
+			m_StoreExtensionProvider.GetExtension<IAppleExtensions>()
+				.RefreshAppReceipt(
+					receipt =>
+					{
+						// This handler is invoked if the request is successful.
+						// Receipt will be the latest app receipt.
+						successCallback?.Invoke(receipt);
+					},
+					() =>
+					{
+						// This handler will be invoked if the request fails,
+						// such as if the network is unavailable or the user
+						// enters the wrong password.
+						errorCallback?.Invoke();
+					});
 		}
 
 		/// <summary>
@@ -443,7 +432,6 @@ namespace RCore.Service
 		/// Call this after the module has been initialized to toggle the simulation, regardless
 		/// of the <see cref="IAPSettings.SimulateAppleAskToBuy"/> setting.
 		/// </summary>
-		/// <param name="shouldSimulate">If set to <c>true</c> should simulate.</param>
 		public void SetSimulateAppleAskToBuy(bool shouldSimulate)
 		{
 			if (m_AppleExtensions != null)
@@ -452,13 +440,12 @@ namespace RCore.Service
 
 		/// <summary>
 		/// Continues the Apple promotional purchases. Call this inside the handler of
-		/// the <see cref="PromotionalPurchaseIntercepted"/> event to continue the
+		/// the <see cref="promotionalPurchaseIntercepted"/> event to continue the
 		/// intercepted purchase.
 		/// </summary>
 		public void ContinueApplePromotionalPurchases()
 		{
-			if (m_AppleExtensions != null)
-				m_AppleExtensions.ContinuePromotionalPurchases(); // iOS and tvOS only; does nothing on Mac
+			m_AppleExtensions?.ContinuePromotionalPurchases(); // iOS and tvOS only; does nothing on Mac
 		}
 
 		/// <summary>
@@ -467,15 +454,13 @@ namespace RCore.Service
 		/// the visibility for a promotional product on Apple App Store.
 		/// On non-Apple platforms this method is a no-op.
 		/// </summary>
-		/// <param name="productId">Product id.</param>
-		/// <param name="visible">If set to <c>true</c> the product is shown, otherwise it is hidden.</param>
-		public void SetAppleStorePromotionVisibilityWithId(string productId, bool visible)
+		public void SetAppleStorePromotionVisibilityWithId(string pProductId, bool visible)
 		{
-			Product iapProduct = GetIAPProductById(productId);
+			var iapProduct = GetIAPProductById(pProductId);
 
 			if (iapProduct == null)
 			{
-				Debug.Log("Couldn't set promotion visibility: not found product with id: " + productId);
+				Debug.Log("Couldn't set promotion visibility: not found product with id: " + pProductId);
 				return;
 			}
 
@@ -488,11 +473,8 @@ namespace RCore.Service
 		/// the visibility for a promotional product on Apple App Store.
 		/// On non-Apple platforms this method is a no-op.
 		/// </summary>
-		/// <param name="product">the product.</param>
-		/// <param name="visible">If set to <c>true</c> the product is shown, otherwise it is hidden.</param>
 		public void SetAppleStorePromotionVisibility(Product product, bool visible)
 		{
-
 			if (!IsInitialized())
 			{
 				Debug.Log("Couldn't set promotion visibility: In-App Purchasing is not initialized.");
@@ -502,13 +484,10 @@ namespace RCore.Service
 			if (product == null)
 				return;
 
-			UnityEngine.Purchasing.Product prod = m_StoreController.products.WithID(product.id);
+			var prod = m_StoreController.products.WithID(product.id);
 
-			if (m_AppleExtensions != null)
-			{
-				m_AppleExtensions.SetStorePromotionVisibility(prod,
-					visible ? AppleStorePromotionVisibility.Show : AppleStorePromotionVisibility.Hide);
-			}
+			m_AppleExtensions?.SetStorePromotionVisibility(prod,
+				visible ? AppleStorePromotionVisibility.Show : AppleStorePromotionVisibility.Hide);
 		}
 
 		/// <summary>
@@ -517,10 +496,8 @@ namespace RCore.Service
 		/// the order for your promotional products on Apple App Store.
 		/// On non-Apple platforms this method is a no-op.
 		/// </summary>
-		/// <param name="products">Products.</param>
-		public void SetAppleStorePromotionOrder(List<Product> products)
+		public void SetAppleStorePromotionOrder(List<Product> pProducts)
 		{
-
 			if (!IsInitialized())
 			{
 				Debug.Log("Couldn't set promotion order: In-App Purchasing is not initialized.");
@@ -529,24 +506,22 @@ namespace RCore.Service
 
 			var items = new List<UnityEngine.Purchasing.Product>();
 
-			for (int i = 0; i < products.Count; i++)
+			for (int i = 0; i < pProducts.Count; i++)
 			{
-				if (products[i] != null)
-					items.Add(m_StoreController.products.WithID(products[i].id));
+				if (pProducts[i] != null)
+					items.Add(m_StoreController.products.WithID(pProducts[i].id));
 			}
 
-			if (m_AppleExtensions != null)
-				m_AppleExtensions.SetStorePromotionOrder(items);
+			m_AppleExtensions?.SetStorePromotionOrder(items);
 		}
 
 		/// <summary>
 		/// Gets the IAP product declared in module settings with the specified identifier.
 		/// </summary>
 		/// <returns>The IAP product.</returns>
-		/// <param name="productId">Product identifier.</param>
 		public Product GetIAPProductById(string productId)
 		{
-			foreach (Product pd in products)
+			foreach (var pd in products)
 			{
 				if (pd.id.Equals(productId))
 					return pd;
@@ -555,7 +530,7 @@ namespace RCore.Service
 			return null;
 		}
 
-		#region Module-Enable-Only Methods
+#region Module-Enable-Only Methods
 
 		/// <summary>
 		/// Gets the product registered with UnityIAP stores by its id. This method returns
@@ -563,10 +538,9 @@ namespace RCore.Service
 		/// object, whose main purpose is for displaying.
 		/// </summary>
 		/// <returns>The product.</returns>
-		/// <param name="productId">Product id.</param>
 		public UnityEngine.Purchasing.Product GetProductWithId(string productId)
 		{
-			Product iapProduct = GetIAPProductById(productId);
+			var iapProduct = GetIAPProductById(productId);
 
 			if (iapProduct == null)
 			{
@@ -583,7 +557,6 @@ namespace RCore.Service
 		/// object, whose main purpose is for displaying.
 		/// </summary>
 		/// <returns>The product.</returns>
-		/// <param name="product">the product.</param>
 		public UnityEngine.Purchasing.Product GetProduct(Product product)
 		{
 			if (!IsInitialized())
@@ -604,8 +577,7 @@ namespace RCore.Service
 		/// Gets the product localized data provided by the stores.
 		/// </summary>
 		/// <returns>The product localized data.</returns>
-		/// <param name="product">the product.</param>
-		public ProductMetadata GetProductLocalizedData(string productId)
+		public ProductMetadata GetProductLocalizedData(string pProductId)
 		{
 			if (!IsInitialized())
 			{
@@ -613,14 +585,27 @@ namespace RCore.Service
 				return null;
 			}
 
-			return m_StoreController.products.WithID(productId).metadata;
+			return m_StoreController.products.WithID(pProductId).metadata;
 		}
 
 		public string GetProductLocalizedPrice(string productId)
 		{
 			var metadata = m_StoreController.products.WithID(productId).metadata;
-			if (metadata != null)
-				return metadata.localizedPriceString;
+			return metadata?.localizedPriceString;
+		}
+
+		/// <summary>
+		/// Gets the parsed Apple InAppPurchase receipt for the specified product.
+		/// This method only works if receipt validation is enabled.
+		/// </summary>
+		/// <returns>The Apple In App Purchase receipt.</returns>
+		public AppleInAppPurchaseReceipt GetAppleIAPReceiptWithId(string productId)
+		{
+			if (Application.platform == RuntimePlatform.IPhonePlayer)
+			{
+				return GetPurchaseReceiptWithId(productId) as AppleInAppPurchaseReceipt;
+			}
+			Debug.Log("Getting Apple IAP receipt is only available on iOS.");
 			return null;
 		}
 
@@ -629,37 +614,14 @@ namespace RCore.Service
 		/// This method only works if receipt validation is enabled.
 		/// </summary>
 		/// <returns>The Apple In App Purchase receipt.</returns>
-		/// <param name="productId">Product id.</param>
-		public AppleInAppPurchaseReceipt GetAppleIAPReceiptWithId(string productId)
-		{
-			if (Application.platform == RuntimePlatform.IPhonePlayer)
-			{
-				return GetPurchaseReceiptWithId(productId) as AppleInAppPurchaseReceipt;
-			}
-			else
-			{
-				Debug.Log("Getting Apple IAP receipt is only available on iOS.");
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Gets the parsed Apple InAppPurchase receipt for the specified product.
-		/// This method only works if receipt validation is enabled.
-		/// </summary>
-		/// <returns>The Apple In App Purchase receipt.</returns>
-		/// <param name="product">The product.</param>
 		public AppleInAppPurchaseReceipt GetAppleIAPReceipt(Product product)
 		{
 			if (Application.platform == RuntimePlatform.IPhonePlayer)
 			{
 				return GetPurchaseReceipt(product) as AppleInAppPurchaseReceipt;
 			}
-			else
-			{
-				Debug.Log("Getting Apple IAP receipt is only available on iOS.");
-				return null;
-			}
+			Debug.Log("Getting Apple IAP receipt is only available on iOS.");
+			return null;
 		}
 
 		/// <summary>
@@ -667,18 +629,14 @@ namespace RCore.Service
 		/// This method only works if receipt validation is enabled.
 		/// </summary>
 		/// <returns>The Google Play receipt.</returns>
-		/// <param name="productId">Product id.</param>
 		public GooglePlayReceipt GetGooglePlayReceiptWithId(string productId)
 		{
 			if (Application.platform == RuntimePlatform.Android)
 			{
 				return GetPurchaseReceiptWithId(productId) as GooglePlayReceipt;
 			}
-			else
-			{
-				Debug.Log("Getting Google Play receipt is only available on Android.");
-				return null;
-			}
+			Debug.Log("Getting Google Play receipt is only available on Android.");
+			return null;
 		}
 
 		/// <summary>
@@ -686,18 +644,14 @@ namespace RCore.Service
 		/// This method only works if receipt validation is enabled.
 		/// </summary>
 		/// <returns>The Google Play receipt.</returns>
-		/// <param name="product">The product.</param>
 		public GooglePlayReceipt GetGooglePlayReceipt(Product product)
 		{
 			if (Application.platform == RuntimePlatform.Android)
 			{
 				return GetPurchaseReceipt(product) as GooglePlayReceipt;
 			}
-			else
-			{
-				Debug.Log("Getting Google Play receipt is only available on Android.");
-				return null;
-			}
+			Debug.Log("Getting Google Play receipt is only available on Android.");
+			return null;
 		}
 
 		/// <summary>
@@ -705,10 +659,9 @@ namespace RCore.Service
 		/// This method only works if receipt validation is enabled.
 		/// </summary>
 		/// <returns>The purchase receipt.</returns>
-		/// <param name="produtId">Product id.</param>
 		public IPurchaseReceipt GetPurchaseReceiptWithId(string produtId)
 		{
-			Product iapProduct = GetIAPProductById(produtId);
+			var iapProduct = GetIAPProductById(produtId);
 
 			if (iapProduct == null)
 			{
@@ -724,7 +677,6 @@ namespace RCore.Service
 		/// This method only works if receipt validation is enabled.
 		/// </summary>
 		/// <returns>The purchase receipt.</returns>
-		/// <param name="product">the product.</param>
 		public IPurchaseReceipt GetPurchaseReceipt(Product product)
 		{
 			if (Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer)
@@ -745,7 +697,7 @@ namespace RCore.Service
 				return null;
 			}
 
-			UnityEngine.Purchasing.Product pd = m_StoreController.products.WithID(product.id);
+			var pd = m_StoreController.products.WithID(product.id);
 
 			if (!pd.hasReceipt)
 			{
@@ -813,10 +765,9 @@ namespace RCore.Service
 		/// which currently supports the Apple store and Google Play store.
 		/// </summary>
 		/// <returns>The subscription info.</returns>
-		/// <param name="productId">Product name.</param>
 		public SubscriptionInfo GetSubscriptionInfoWithId(string productId)
 		{
-			Product iapProduct = GetIAPProductById(productId);
+			var iapProduct = GetIAPProductById(productId);
 
 			if (iapProduct == null)
 			{
@@ -831,7 +782,6 @@ namespace RCore.Service
 		/// which currently supports the Apple store and Google Play store.
 		/// </summary>
 		/// <returns>The subscription info.</returns>
-		/// <param name="product">The product.</param>
 		public SubscriptionInfo GetSubscriptionInfo(Product product)
 		{
 			if (Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer)
@@ -852,7 +802,7 @@ namespace RCore.Service
 				return null;
 			}
 
-			UnityEngine.Purchasing.Product prod = m_StoreController.products.WithID(product.id);
+			var prod = m_StoreController.products.WithID(product.id);
 
 			if (prod.definition.type != ProductType.Subscription)
 			{
@@ -872,10 +822,10 @@ namespace RCore.Service
 			if (m_AppleExtensions != null)
 				introPriceDict = m_AppleExtensions.GetIntroductoryPriceDictionary();
 
-			string introJson = (introPriceDict == null || !introPriceDict.ContainsKey(prod.definition.storeSpecificId)) ?
+			string introJson = introPriceDict == null || !introPriceDict.ContainsKey(prod.definition.storeSpecificId) ?
 				null : introPriceDict[prod.definition.storeSpecificId];
 
-			SubscriptionManager p = new SubscriptionManager(prod, introJson);
+			var p = new SubscriptionManager(prod, introJson);
 			return p.getSubscriptionInfo();
 		}
 
@@ -883,7 +833,6 @@ namespace RCore.Service
 		/// Gets the name of the store.
 		/// </summary>
 		/// <returns>The store name.</returns>
-		/// <param name="store">Store.</param>
 		public string GetStoreName(Store store)
 		{
 			switch (store)
@@ -907,7 +856,6 @@ namespace RCore.Service
 		/// Gets the type of the product.
 		/// </summary>
 		/// <returns>The product type.</returns>
-		/// <param name="pType">P type.</param>
 		public ProductType GetProductType(Product.Type pType)
 		{
 			switch (pType)
@@ -927,7 +875,6 @@ namespace RCore.Service
 		/// Converts to UnityIAP AndroidStore.
 		/// </summary>
 		/// <returns>The android store.</returns>
-		/// <param name="store">Store.</param>
 		public UnityEngine.Purchasing.AndroidStore GetAndroidStore(AndroidStore store)
 		{
 			switch (store)
@@ -947,7 +894,6 @@ namespace RCore.Service
 		/// Converts to UnityIAP AppStore.
 		/// </summary>
 		/// <returns>The app store.</returns>
-		/// <param name="store">Store.</param>
 		public AppStore GetAppStore(AndroidStore store)
 		{
 			switch (store)
@@ -966,29 +912,26 @@ namespace RCore.Service
 		/// <summary>
 		/// Confirms a pending purchase. Use this if you register a <see cref="PrePurchaseProcessing"/>
 		/// delegate and return a <see cref="PrePurchaseProcessResult.Suspend"/> in it so that UnityIAP
-		/// won't inform the app of the purchase again. After confirming the purchase, either <see cref="PurchaseCompleted"/>
-		/// or <see cref="PurchaseFailed"/> event will be called according to the input given by the caller.
+		/// won't inform the app of the purchase again. After confirming the purchase, either <see cref="purchaseCompleted"/>
+		/// or <see cref="purchaseFailed"/> event will be called according to the input given by the caller.
 		/// </summary>
-		/// <param name="product">The pending product to confirm.</param>
-		/// <param name="purchaseSuccess">If true, <see cref="PurchaseCompleted"/> event will be called, otherwise <see cref="PurchaseFailed"/> event will be called.</param>
 		public void ConfirmPendingPurchase(UnityEngine.Purchasing.Product product, bool purchaseSuccess)
 		{
-			if (m_StoreController != null)
-				m_StoreController.ConfirmPendingPurchase(product);
+			m_StoreController?.ConfirmPendingPurchase(product);
 
 			if (purchaseSuccess)
 			{
-				PurchaseCompleted?.Invoke(GetIAPProductById(product.definition.id));
+				purchaseCompleted?.Invoke(GetIAPProductById(product.definition.id));
 			}
 			else
 			{
-				PurchaseFailed?.Invoke(GetIAPProductById(product.definition.id), CONFIRM_PENDING_PURCHASE_FAILED);
+				purchaseFailed?.Invoke(GetIAPProductById(product.definition.id), CONFIRM_PENDING_PURCHASE_FAILED);
 			}
 		}
 
-		#endregion
+#endregion
 
-		#region PrePurchaseProcessing
+#region PrePurchaseProcessing
 
 		/// <summary>
 		/// Available results for the <see cref="PrePurchaseProcessing"/> delegate.
@@ -1015,49 +958,42 @@ namespace RCore.Service
 		/// If you want to intervene in the purchase processing step, e.g. adding custom receipt validation,
 		/// this delegate is the place to go.
 		/// </summary>
-		/// <param name="args"></param>
-		/// <returns></returns>
 		public delegate PrePurchaseProcessResult PrePurchaseProcessing(PurchaseEventArgs args);
 
-		private PrePurchaseProcessing sPrePurchaseProcessDel;
+		private PrePurchaseProcessing m_SPrePurchaseProcessDel;
 
 		/// <summary>
 		/// Registers a <see cref="PrePurchaseProcessing"/> delegate.
 		/// </summary>
-		/// <param name="del"></param>
 		public void RegisterPrePurchaseProcessDelegate(PrePurchaseProcessing del)
 		{
-			sPrePurchaseProcessDel = del;
+			m_SPrePurchaseProcessDel = del;
 		}
 
-		#endregion
+#endregion
 
-		#region Private Stuff
+#region Private Stuff
 
 		/// <summary>
 		/// Raises the purchase deferred event.
 		/// Apple store only.
 		/// </summary>
-		/// <param name="product">Product.</param>
 		private void OnApplePurchaseDeferred(UnityEngine.Purchasing.Product product)
 		{
 			Debug.Log("Purchase deferred: " + product.definition.id);
 
-			if (PurchaseDeferred != null)
-				PurchaseDeferred(GetIAPProductById(product.definition.id));
+			purchaseDeferred?.Invoke(GetIAPProductById(product.definition.id));
 		}
 
 		/// <summary>
 		/// Raises the Apple promotional purchase event.
 		/// Apple store only.
 		/// </summary>
-		/// <param name="product">Product.</param>
 		private void OnApplePromotionalPurchase(UnityEngine.Purchasing.Product product)
 		{
 			Debug.Log("Attempted promotional purchase: " + product.definition.id);
 
-			if (PromotionalPurchaseIntercepted != null)
-				PromotionalPurchaseIntercepted(GetIAPProductById(product.definition.id));
+			promotionalPurchaseIntercepted?.Invoke(GetIAPProductById(product.definition.id));
 		}
 
 		/// <summary>
@@ -1066,17 +1002,17 @@ namespace RCore.Service
 		/// <returns><c>true</c> if is receipt validation enabled; otherwise, <c>false</c>.</returns>
 		private bool IsReceiptValidationEnabled()
 		{
-			bool canValidateReceipt = false;    // disable receipt validation by default
+			bool canValidateReceipt = false; // disable receipt validation by default
 
 			if (Application.platform == RuntimePlatform.Android)
 			{
 				// On Android, receipt validation is only available for Google Play store
 				canValidateReceipt = validateGooglePlayReceipt;
-				canValidateReceipt &= (GetAndroidStore(targetAndroidStore) == UnityEngine.Purchasing.AndroidStore.GooglePlay);
+				canValidateReceipt &= GetAndroidStore(targetAndroidStore) == UnityEngine.Purchasing.AndroidStore.GooglePlay;
 			}
 			else if (Application.platform == RuntimePlatform.IPhonePlayer ||
-					 Application.platform == RuntimePlatform.OSXPlayer ||
-					 Application.platform == RuntimePlatform.tvOS)
+					Application.platform == RuntimePlatform.OSXPlayer ||
+					Application.platform == RuntimePlatform.tvOS)
 			{
 				// Receipt validation is also available for Apple app stores
 				canValidateReceipt = validateAppleReceipt;
@@ -1089,12 +1025,9 @@ namespace RCore.Service
 		/// Validates the receipt. Works with receipts from Apple stores and Google Play store only.
 		/// Always returns true for other stores.
 		/// </summary>
-		/// <returns><c>true</c>, if the receipt is valid, <c>false</c> otherwise.</returns>
-		/// <param name="receipt">Receipt.</param>
-		/// <param name="logReceiptContent">If set to <c>true</c> log receipt content.</param>
-		private bool ValidateReceipt(string receipt, out IPurchaseReceipt[] purchaseReceipts, bool logReceiptContent = false)
+		private bool ValidateReceipt(string receipt, out IPurchaseReceipt[] pPurchaseReceipts, bool logReceiptContent = false)
 		{
-			purchaseReceipts = new IPurchaseReceipt[0];   // default the out parameter to an empty array   
+			pPurchaseReceipts = new IPurchaseReceipt[0]; // default the out parameter to an empty array   
 
 			// Does the receipt has some content?
 			if (string.IsNullOrEmpty(receipt))
@@ -1104,15 +1037,15 @@ namespace RCore.Service
 			}
 
 			bool isValidReceipt = true; // presume validity for platforms with no receipt validation.
-										// Unity IAP's receipt validation is only available for Apple app stores and Google Play store.   
+			// Unity IAP's receipt validation is only available for Apple app stores and Google Play store.   
 #if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX || UNITY_TVOS
 
-            byte[] googlePlayTangleData = null;
-            byte[] appleTangleData = null;
+			byte[] googlePlayTangleData = null;
+			byte[] appleTangleData = null;
 
-            // Here we populate the secret keys for each platform.
-            // Note that the code is disabled in the editor for it to not stop the EM editor code (due to ClassNotFound error)
-            // from recreating the dummy AppleTangle and GoogleTangle classes if they were inadvertently removed.
+			// Here we populate the secret keys for each platform.
+			// Note that the code is disabled in the editor for it to not stop the EM editor code (due to ClassNotFound error)
+			// from recreating the dummy AppleTangle and GoogleTangle classes if they were inadvertently removed.
 
 #if UNITY_ANDROID && !UNITY_EDITOR
             googlePlayTangleData = GooglePlayTangle.Data();
@@ -1122,53 +1055,54 @@ namespace RCore.Service
             appleTangleData = AppleTangle.Data();
 #endif
 
-            // Prepare the validator with the secrets we prepared in the Editor obfuscation window.
+			// Prepare the validator with the secrets we prepared in the Editor obfuscation window.
 #if UNITY_5_6_OR_NEWER
-            var validator = new CrossPlatformValidator(googlePlayTangleData, appleTangleData, Application.identifier);
+			var validator = new CrossPlatformValidator(googlePlayTangleData, appleTangleData, Application.identifier);
 #else
             var validator = new CrossPlatformValidator(googlePlayTangleData, appleTangleData, Application.bundleIdentifier);
 #endif
 
-            try
-            {
-                // On Google Play, result has a single product ID.
-                // On Apple stores, receipts contain multiple products.
-                var result = validator.Validate(receipt);
+			try
+			{
+				// On Google Play, result has a single product ID.
+				// On Apple stores, receipts contain multiple products.
+				var result = validator.Validate(receipt);
 
-                // If the validation is successful, the result won't be null.
-                if (result == null)
-                {
-                    isValidReceipt = false;
-                }
-                else
-                {
-                    purchaseReceipts = result;
+				// If the validation is successful, the result won't be null.
+				if (result == null)
+				{
+					isValidReceipt = false;
+				}
+				else
+				{
+					pPurchaseReceipts = result;
 
-                    // For informational purposes, we list the receipt(s)
-                    if (logReceiptContent)
-                    {
-                        Debug.Log("Receipt contents:");
-                        foreach (IPurchaseReceipt productReceipt in result)
-                        {
-                            if (productReceipt != null)
-                            {
-                                Debug.Log(productReceipt.productID);
-                                Debug.Log(productReceipt.purchaseDate);
-                                Debug.Log(productReceipt.transactionID);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (IAPSecurityException)
-            {
-                isValidReceipt = false;
-            }
+					// For informational purposes, we list the receipt(s)
+					if (logReceiptContent)
+					{
+						Debug.Log("Receipt contents:");
+						foreach (var productReceipt in result)
+						{
+							if (productReceipt != null)
+							{
+								Debug.Log(productReceipt.productID);
+								Debug.Log(productReceipt.purchaseDate);
+								Debug.Log(productReceipt.transactionID);
+							}
+						}
+					}
+				}
+			}
+			catch (IAPSecurityException)
+			{
+				isValidReceipt = false;
+			}
 #endif
 			return isValidReceipt;
 		}
 
-		#endregion
+#endregion
+
 #else
         public string GetProductLocalizedPrice(string sku)
         {
@@ -1199,12 +1133,13 @@ namespace RCore.Service
 				NonConsumable,
 				Subscription
 			}
+
 			public string id;
 			public Type type;
 			/// <summary>
 			/// Store-specific product Ids, these Ids if given will override the unified Id for the corresponding stores.
 			/// </summary>
-			public StoreSpecificId[] StoreSpecificIds;
+			[FormerlySerializedAs("StoreSpecificIds")] public StoreSpecificId[] storeSpecificIds;
 		}
 
 		public enum Store

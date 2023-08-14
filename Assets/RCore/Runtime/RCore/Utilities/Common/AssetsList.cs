@@ -39,7 +39,7 @@ namespace RCore.Common
         {
             foreach (var s in source)
             {
-                if (s != null && pSpriteName != null && (s.name.ToLower() == pSpriteName.ToLower() || (pContain && s.name.ToLower().Contains(pSpriteName.ToLower()))))
+                if (s != null && pSpriteName != null && (s.name.ToLower() == pSpriteName.ToLower() || pContain && s.name.ToLower().Contains(pSpriteName.ToLower())))
                     return s;
             }
 

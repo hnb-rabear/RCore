@@ -38,7 +38,7 @@ namespace RCore.Components
 
         private static Material m_GreyMat;
 
-        [SerializeField] protected PivotForScale mPivotForFX;
+        [SerializeField] protected PivotForScale mPivotForFX = PivotForScale.Center;
         [SerializeField] protected bool mEnabledFX = true;
         [SerializeField] protected Image mImg;
         [SerializeField] protected Vector2 mInitialScale = Vector2.one;
@@ -246,9 +246,9 @@ namespace RCore.Components
         {
             if (pRectTransform == null) return;
 
-            Vector2 size = pRectTransform.rect.size;
-            Vector2 deltaPivot = pRectTransform.pivot - pivot;
-            Vector3 deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
+            var size = pRectTransform.rect.size;
+            var deltaPivot = pRectTransform.pivot - pivot;
+            var deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
             pRectTransform.pivot = pivot;
             pRectTransform.localPosition -= deltaPosition;
         }

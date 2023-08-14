@@ -97,7 +97,7 @@ namespace RCore.Common
 
         public static int ToRGBAHex(this Color32 color)
         {
-            return (color.r << 24) | (color.g << 16) | (color.b << 8) | (color.a);
+            return color.r << 24 | color.g << 16 | color.b << 8 | color.a;
         }
 
         public static int ToInt(this Color c)
@@ -186,10 +186,10 @@ namespace RCore.Common
         public static Color IntToColor(int val)
         {
             float inv = 1f / 255f;
-            Color c = Color.black;
-            c.r = inv * ((val >> 24) & 0xFF);
-            c.g = inv * ((val >> 16) & 0xFF);
-            c.b = inv * ((val >> 8) & 0xFF);
+            var c = Color.black;
+            c.r = inv * (val >> 24 & 0xFF);
+            c.g = inv * (val >> 16 & 0xFF);
+            c.b = inv * (val >> 8 & 0xFF);
             c.a = inv * (val & 0xFF);
             return c;
         }

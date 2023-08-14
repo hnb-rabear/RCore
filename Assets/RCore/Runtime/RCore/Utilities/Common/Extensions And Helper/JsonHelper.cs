@@ -24,12 +24,12 @@ namespace RCore.Common
             {
                 var sb = new StringBuilder();
                 string newJson = sb.Append("{").Append("\"array\":").Append(json).Append("}").ToString();
-                Wrapper<T> wrapper = JsonUtility.FromJson<Wrapper<T>>(newJson);
+                var wrapper = JsonUtility.FromJson<Wrapper<T>>(newJson);
                 return wrapper.array;
             }
             catch
             {
-                Debug.LogError((typeof(T).Name));
+                Debug.LogError(typeof(T).Name);
                 return null;
             }
         }
@@ -42,12 +42,12 @@ namespace RCore.Common
             {
                 var sb = new StringBuilder();
                 string newJson = sb.Append("{").Append("\"list\":").Append(json).Append("}").ToString();
-                ListWrapper<T> wrapper = JsonUtility.FromJson<ListWrapper<T>>(newJson);
+                var wrapper = JsonUtility.FromJson<ListWrapper<T>>(newJson);
                 return wrapper.list;
             }
             catch
             {
-                Debug.LogError((typeof(T).Name));
+                Debug.LogError(typeof(T).Name);
                 return null;
             }
         }
@@ -56,7 +56,7 @@ namespace RCore.Common
 
         public static string ToJson<T>(T[] array)
         {
-            Wrapper<T> wrapper = new Wrapper<T>();
+            var wrapper = new Wrapper<T>();
             wrapper.array = array;
             string json = JsonUtility.ToJson(wrapper);
             json = json.Remove(0, 9);
@@ -66,7 +66,7 @@ namespace RCore.Common
 
         public static string ToJson<T>(List<T> list)
         {
-            ListWrapper<T> wrapper = new ListWrapper<T>();
+            var wrapper = new ListWrapper<T>();
             wrapper.list = list;
             string json = JsonUtility.ToJson(wrapper);
             json = json.Remove(0, 8);

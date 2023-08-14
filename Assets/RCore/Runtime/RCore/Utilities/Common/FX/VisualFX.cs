@@ -129,7 +129,7 @@ namespace RCore.Common
 				{
 					animator.SetInteger("trigger", value);
 
-					AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+					var info = animator.GetCurrentAnimatorStateInfo(0);
 					m_LifeTime = info.length;
 
 					m_WaitForInactivate = new WaitForSeconds(m_LifeTime);
@@ -159,7 +159,7 @@ namespace RCore.Common
 			{
 				available = true;
 
-				AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+				var info = animator.GetCurrentAnimatorStateInfo(0);
 				m_LifeTime = info.length;
 
 				m_WaitForInactivate = new WaitForSeconds(m_LifeTime);
@@ -234,7 +234,7 @@ namespace RCore.Common
 		{
 			if (animator != null)
 			{
-				AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+				var info = animator.GetCurrentAnimatorStateInfo(0);
 				m_LifeTime = info.length;
 			}
 
@@ -271,8 +271,8 @@ namespace RCore.Common
 
 			m_Initialized = true;
 
-			List<float> lifeTimes = new List<float>();
-			List<float> durations = new List<float>();
+			var lifeTimes = new List<float>();
+			var durations = new List<float>();
 
 			if (m_ParticleSystems == null)
 			{
@@ -500,7 +500,7 @@ namespace RCore.Common
 
 			yield return new WaitUntil(() => !process);
 
-			if (onFinishedMovement != null) onFinishedMovement();
+			onFinishedMovement?.Invoke();
 		}
 #else
 		public IEnumerator IE_MoveEmitsEase(Transform pDestination, float pDuration, float pDelay = 0)
@@ -542,7 +542,7 @@ namespace RCore.Common
 
 			bool process = true;
 
-			WaitForSeconds mDelayEach = new WaitForSeconds(pDuration - pDuration / m_Particles.Length);
+			var mDelayEach = new WaitForSeconds(pDuration - pDuration / m_Particles.Length);
 
 			for (int i = 0; i < m_Particles.Length; i++)
 			{
@@ -633,7 +633,7 @@ namespace RCore.Common
 						try
 						{
 							m_Particles[pIndex].startColor = Color.clear;
-							if (onFinishedMovementSeparately != null) onFinishedMovementSeparately();
+							onFinishedMovementSeparately?.Invoke();
 						}
 						catch (Exception ex)
 						{

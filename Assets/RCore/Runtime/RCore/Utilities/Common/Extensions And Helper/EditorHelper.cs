@@ -753,7 +753,7 @@ namespace RCore.Common
 		public static string ObjectToGuid(Object obj)
 		{
 			string path = AssetDatabase.GetAssetPath(obj);
-			return (!string.IsNullOrEmpty(path)) ? AssetDatabase.AssetPathToGUID(path) : null;
+			return !string.IsNullOrEmpty(path) ? AssetDatabase.AssetPathToGUID(path) : null;
 		}
 
 #endregion

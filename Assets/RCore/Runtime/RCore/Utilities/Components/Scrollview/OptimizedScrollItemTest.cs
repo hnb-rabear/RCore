@@ -10,12 +10,10 @@ namespace RCore.Components
     {
         public Text mTxtIndex;
 
-        public override void UpdateContent(int pIndex)
-        {
-            base.UpdateContent(pIndex);
-
-            name = pIndex.ToString();
-            mTxtIndex.text = pIndex.ToString();
-        }
-    }
+		protected override void OnUpdateContent()
+		{
+			name = m_Index.ToString();
+			mTxtIndex.text = m_Index.ToString();
+		}
+	}
 }

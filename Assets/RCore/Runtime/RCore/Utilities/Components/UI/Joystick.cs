@@ -36,7 +36,7 @@ namespace RCore.Components
         public void OnDrag(PointerEventData data)
         {
             //get RectTransforms of involved components
-            RectTransform draggingPlane = transform as RectTransform;
+            var draggingPlane = transform as RectTransform;
             Vector3 mousePos;
 
             //check whether the dragged position is inside the dragging rect,

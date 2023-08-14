@@ -38,7 +38,7 @@ class StandardBoard : IBoard {
     private static PropertyInfo m_systemCopyBufferProperty = null;
     private static PropertyInfo GetSystemCopyBufferProperty() {
         if (m_systemCopyBufferProperty == null) {
-            Type T = typeof(GUIUtility);
+            var T = typeof(GUIUtility);
             m_systemCopyBufferProperty = T.GetProperty("systemCopyBuffer", BindingFlags.Static | BindingFlags.Public);
             if (m_systemCopyBufferProperty == null)
             {
@@ -55,11 +55,11 @@ class StandardBoard : IBoard {
         return m_systemCopyBufferProperty;
     }
     public void SetText(string str) {
-        PropertyInfo P = GetSystemCopyBufferProperty();
+        var P = GetSystemCopyBufferProperty();
         P.SetValue(null, str, null);
     }
     public string GetText(){
-        PropertyInfo P = GetSystemCopyBufferProperty();
+        var P = GetSystemCopyBufferProperty();
         return (string)P.GetValue(null, null);
     }
 }

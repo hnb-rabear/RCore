@@ -39,7 +39,7 @@ namespace RCore.Common
 
         public static void SendEmailBySMTP(string pSubject, string pBody, string pEmailTo, string[] pCCTo, string pTemplateEmail, string pTemplatePassword)
         {
-            MailMessage mail = new MailMessage();
+            var mail = new MailMessage();
 
             mail.From = new MailAddress(pTemplateEmail);
             mail.To.Add(pEmailTo);
@@ -53,7 +53,7 @@ namespace RCore.Common
                 }
             }
 
-            SmtpClient smtpServer = new SmtpClient("smtp.gmail.com");
+            var smtpServer = new SmtpClient("smtp.gmail.com");
             smtpServer.Port = 587;
             smtpServer.Credentials = new NetworkCredential(pTemplateEmail, pTemplatePassword) as ICredentialsByHost;
             smtpServer.EnableSsl = true;
@@ -68,7 +68,7 @@ namespace RCore.Common
 
         public static string CreateEmailReportSubject()
         {
-            DateTime dateTime = DateTime.Now;
+            var dateTime = DateTime.Now;
             string subject = PROJECT_NAME + "_CRASH_" + dateTime.ToString("MM'_'dd'_'yyyy_HH'_'mm'_'ss.fff");
             return subject;
         }

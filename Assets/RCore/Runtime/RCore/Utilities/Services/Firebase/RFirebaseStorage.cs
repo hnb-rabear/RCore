@@ -72,7 +72,7 @@ namespace RCore.Service
 
         public string BuildMetaData(Dictionary<string, string> pMetaDataDict)
         {
-            List<string> build = new List<string>();
+            var build = new List<string>();
             foreach (var metaData in pMetaDataDict)
             {
                 string key = metaData.Key;

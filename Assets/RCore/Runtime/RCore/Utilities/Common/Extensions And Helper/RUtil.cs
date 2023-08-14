@@ -202,7 +202,7 @@ namespace RCore.Common
 			// If versions are the same so far, but they have different length...
 			if (res == 0 && oldNumbers.Length != newNumbers.Length)
 			{
-				res = (oldNumbers.Length > newNumbers.Length) ? 1 : -1;
+				res = oldNumbers.Length > newNumbers.Length ? 1 : -1;
 			}
 
 			return res;

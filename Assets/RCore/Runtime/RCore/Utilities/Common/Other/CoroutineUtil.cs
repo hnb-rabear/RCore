@@ -156,7 +156,7 @@ namespace RCore.Common
 
         public float GetProgress()
         {
-            return 1 - (remainTime / waitTime);
+            return 1 - remainTime / waitTime;
         }
 
         public void Kill()

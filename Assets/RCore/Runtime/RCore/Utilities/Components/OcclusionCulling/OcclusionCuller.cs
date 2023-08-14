@@ -133,7 +133,7 @@ namespace RCore.Components
             if (mainCamera == null)
                 return;
 
-            Plane[] planes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
+            var planes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
             for (int i = 0; i < culledRenderers.Count; i++)
             {
                 var obj = culledRenderers[i];

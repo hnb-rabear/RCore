@@ -59,17 +59,17 @@ public class UIParticleSystem : MaskableGraphic
             }
 
             // automatically set material to UI/Particles/Hidden shader, and get previous texture
-            ParticleSystemRenderer renderer = _particleSystem.GetComponent<ParticleSystemRenderer>();
+            var renderer = _particleSystem.GetComponent<ParticleSystemRenderer>();
             if (renderer == null)
             {
                 renderer = _particleSystem.gameObject.AddComponent<ParticleSystemRenderer>();
             }
-            Material currentMaterial = renderer.sharedMaterial;
+            var currentMaterial = renderer.sharedMaterial;
             if (currentMaterial && currentMaterial.HasProperty("_MainTex"))
             {
                 particleTexture = currentMaterial.mainTexture;
             }
-            Material material = new Material(Shader.Find("UI/Particles/Hidden")); // TODO - You should create this discard shader
+            var material = new Material(Shader.Find("UI/Particles/Hidden")); // TODO - You should create this discard shader
             if (Application.isPlaying)
             {
                 renderer.material = material;
@@ -150,13 +150,13 @@ public class UIParticleSystem : MaskableGraphic
         var main = _particleSystem.main;
         for (int i = 0; i < count; ++i)
         {
-            ParticleSystem.Particle particle = _particles[i];
+            var particle = _particles[i];
 
             // get particle properties
-            Vector2 position = (main.simulationSpace == ParticleSystemSimulationSpace.Local ? particle.position : _transform.InverseTransformPoint(particle.position));
+            Vector2 position = main.simulationSpace == ParticleSystemSimulationSpace.Local ? particle.position : _transform.InverseTransformPoint(particle.position);
             float rotation = -particle.rotation * Mathf.Deg2Rad;
             float rotation90 = rotation + Mathf.PI / 2;
-            Color32 color = particle.GetCurrentColor(_particleSystem);
+            var color = particle.GetCurrentColor(_particleSystem);
             float size = particle.GetCurrentSize(_particleSystem) * 0.5f;
 
             // apply scale
@@ -166,10 +166,10 @@ public class UIParticleSystem : MaskableGraphic
             }
 
             // apply texture sheet animation
-            Vector4 particleUV = _uv;
+            var particleUV = _uv;
             if (_textureSheetAnimation.enabled)
             {
-                float frameProgress = 1 - (particle.remainingLifetime / particle.startLifetime);
+                float frameProgress = 1 - particle.remainingLifetime / particle.startLifetime;
                 //                float frameProgress = textureSheetAnimation.frameOverTime.curveMin.Evaluate(1 - (particle.lifetime / particle.startLifetime)); // TODO - once Unity allows MinMaxCurve reading
                 frameProgress = Mathf.Repeat(frameProgress * _textureSheetAnimation.cycleCount, 1);
                 int frame = 0;
@@ -195,7 +195,7 @@ public class UIParticleSystem : MaskableGraphic
 
                 frame %= _textureSheetAnimationFrames;
 
-                particleUV.x = (frame % _textureSheetAnimation.numTilesX) * _textureSheedAnimationFrameSize.x;
+                particleUV.x = frame % _textureSheetAnimation.numTilesX * _textureSheedAnimationFrameSize.x;
                 particleUV.y = Mathf.FloorToInt(frame / _textureSheetAnimation.numTilesX) * _textureSheedAnimationFrameSize.y;
                 particleUV.z = particleUV.x + _textureSheedAnimationFrameSize.x;
                 particleUV.w = particleUV.y + _textureSheedAnimationFrameSize.y;
@@ -220,8 +220,8 @@ public class UIParticleSystem : MaskableGraphic
             if (rotation == 0)
             {
                 // no rotation
-                Vector2 corner1 = new Vector2(position.x - size, position.y - size);
-                Vector2 corner2 = new Vector2(position.x + size, position.y + size);
+                var corner1 = new Vector2(position.x - size, position.y - size);
+                var corner2 = new Vector2(position.x + size, position.y + size);
 
                 _quad[0].position = new Vector2(corner1.x, corner1.y);
                 _quad[1].position = new Vector2(corner1.x, corner2.y);
@@ -231,8 +231,8 @@ public class UIParticleSystem : MaskableGraphic
             else
             {
                 // apply rotation
-                Vector2 right = new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)) * size;
-                Vector2 up = new Vector2(Mathf.Cos(rotation90), Mathf.Sin(rotation90)) * size;
+                var right = new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)) * size;
+                var up = new Vector2(Mathf.Cos(rotation90), Mathf.Sin(rotation90)) * size;
 
                 _quad[0].position = position - right - up;
                 _quad[1].position = position - right + up;

@@ -187,7 +187,7 @@ namespace RCore.Common
             else if (pow > pBeta.pow)
             {
                 int negPow = pow - pBeta.pow;
-                readableValue += (pBeta.readableValue * (decimal)Math.Pow(10, -negPow));
+                readableValue += pBeta.readableValue * (decimal)Math.Pow(10, -negPow);
             }
             else if (pow < pBeta.pow)
             {
@@ -205,13 +205,13 @@ namespace RCore.Common
 
         public BigNumberBeta Add(float pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Add(temp);
         }
 
         public BigNumberBeta Add(int pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Add(temp);
         }
 
@@ -237,7 +237,7 @@ namespace RCore.Common
             else if (pow > pBeta.pow)
             {
                 int negPow = pow - pBeta.pow;
-                readableValue -= (pBeta.readableValue * (decimal)Math.Pow(10, -negPow));
+                readableValue -= pBeta.readableValue * (decimal)Math.Pow(10, -negPow);
             }
             else if (pow < pBeta.pow)
             {
@@ -255,13 +255,13 @@ namespace RCore.Common
 
         public BigNumberBeta Subtract(float pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Subtract(temp);
         }
 
         public BigNumberBeta Subtract(int pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Subtract(temp);
         }
 
@@ -303,13 +303,13 @@ namespace RCore.Common
 
         public BigNumberBeta Divide(float pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Divide(temp);
         }
 
         public BigNumberBeta Divide(int pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Divide(temp);
         }
 
@@ -342,7 +342,7 @@ namespace RCore.Common
             else if (pow < pBeta.pow)
             {
                 decimal stripValue = readableValue / (decimal)Math.Pow(10, valueLength - 1);
-                pow += (valueLength - 1);
+                pow += valueLength - 1;
 
                 readableValue = pBeta.readableValue * stripValue;
             }
@@ -358,13 +358,13 @@ namespace RCore.Common
 
         public BigNumberBeta Multiply(float pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Multiply(temp);
         }
 
         public BigNumberBeta Multiply(int pValue)
         {
-            BigNumberBeta temp = new BigNumberBeta(pValue);
+            var temp = new BigNumberBeta(pValue);
             return Multiply(temp);
         }
 
@@ -448,9 +448,9 @@ namespace RCore.Common
             if (CompareTo(pBeta) < 0)
                 return new BigNumberBeta(this);
 
-            BigNumberBeta div = this / pBeta;
+            var div = this / pBeta;
             decimal divDecimal = div.readableValue - Math.Truncate(div.readableValue);
-            BigNumberBeta mod = new BigNumberBeta(divDecimal) * pBeta;
+            var mod = new BigNumberBeta(divDecimal) * pBeta;
             return mod;
         }
 
@@ -647,7 +647,7 @@ namespace RCore.Common
             if (len > 15)
             {
                 int unitSize = (len - 16) / (3 * 26) + 2;
-                int unitTypeInt = ((len - 16) / 3) % 26;
+                int unitTypeInt = (len - 16) / 3 % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
                     mNumberBuilder.Append(unitChar);
@@ -677,7 +677,7 @@ namespace RCore.Common
             if (len > 15)
             {
                 int unitSize = (len - 16) / (3 * 26) + 2;
-                int unitTypeInt = ((len - 16) / 3) % 26;
+                int unitTypeInt = (len - 16) / 3 % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
                     mNumberBuilder.Append(unitChar);
@@ -722,7 +722,7 @@ namespace RCore.Common
             {
                 int unitSize = pUnit.Length;
                 int unitTypeInt = pUnit[0] - 65;
-                int length = (unitSize - 2) * (3 * 26) + 15 + (unitTypeInt * 3);
+                int length = (unitSize - 2) * 3 * 26 + 15 + unitTypeInt * 3;
                 pow = length - 1;
             }
             return pow;
@@ -884,77 +884,77 @@ namespace RCore.Common
 
         public static BigNumberBeta operator +(BigNumberBeta pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Add(pRight);
+            return new BigNumberBeta(pLeft).Add(pRight);
         }
 
         public static BigNumberBeta operator +(BigNumberBeta pLeft, float pRight)
         {
-            return (new BigNumberBeta(pLeft)).Add(pRight);
+            return new BigNumberBeta(pLeft).Add(pRight);
         }
 
         public static BigNumberBeta operator +(float pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pRight)).Add(pLeft);
+            return new BigNumberBeta(pRight).Add(pLeft);
         }
 
         public static BigNumberBeta operator -(BigNumberBeta pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Subtract(pRight);
+            return new BigNumberBeta(pLeft).Subtract(pRight);
         }
 
         public static BigNumberBeta operator -(BigNumberBeta pLeft, float pRight)
         {
-            return (new BigNumberBeta(pLeft)).Subtract(pRight);
+            return new BigNumberBeta(pLeft).Subtract(pRight);
         }
 
         public static BigNumberBeta operator -(float pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Subtract(pRight);
+            return new BigNumberBeta(pLeft).Subtract(pRight);
         }
 
         public static BigNumberBeta operator *(BigNumberBeta pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Multiply(pRight);
+            return new BigNumberBeta(pLeft).Multiply(pRight);
         }
 
         public static BigNumberBeta operator *(BigNumberBeta pLeft, float pRight)
         {
-            return (new BigNumberBeta(pLeft)).Multiply(pRight);
+            return new BigNumberBeta(pLeft).Multiply(pRight);
         }
 
         public static BigNumberBeta operator *(float pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pRight)).Multiply(pLeft);
+            return new BigNumberBeta(pRight).Multiply(pLeft);
         }
 
         public static BigNumberBeta operator /(BigNumberBeta pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Divide(pRight);
+            return new BigNumberBeta(pLeft).Divide(pRight);
         }
 
         public static BigNumberBeta operator /(BigNumberBeta pLeft, float pRight)
         {
-            return (new BigNumberBeta(pLeft)).Divide(pRight);
+            return new BigNumberBeta(pLeft).Divide(pRight);
         }
 
         public static BigNumberBeta operator /(float pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Divide(pRight);
+            return new BigNumberBeta(pLeft).Divide(pRight);
         }
 
         public static BigNumberBeta operator ^(BigNumberBeta pLeft, float pRight)
         {
-            return (new BigNumberBeta(pLeft)).Pow(pRight);
+            return new BigNumberBeta(pLeft).Pow(pRight);
         }
 
         public static BigNumberBeta operator %(BigNumberBeta pLeft, BigNumberBeta pRight)
         {
-            return (new BigNumberBeta(pLeft)).Mod(pRight);
+            return new BigNumberBeta(pLeft).Mod(pRight);
         }
 
         public static BigNumberBeta operator %(BigNumberBeta pLeft, float pRight)
         {
-            return (new BigNumberBeta(pLeft)).Mod(new BigNumberBeta(pRight));
+            return new BigNumberBeta(pLeft).Mod(new BigNumberBeta(pRight));
         }
 
         public static BigNumberBeta Lg(BigNumberBeta pLeft, float pRight)
@@ -1023,27 +1023,27 @@ namespace RCore.Common
 
         public static BigNumberBeta operator +(BigNumberBeta pLeft, BigNumberAlpha pRight)
         {
-            return (new BigNumberBeta(pLeft)).Add(new BigNumberBeta(pRight));
+            return new BigNumberBeta(pLeft).Add(new BigNumberBeta(pRight));
         }
 
         public static BigNumberBeta operator -(BigNumberBeta pLeft, BigNumberAlpha pRight)
         {
-            return (new BigNumberBeta(pLeft)).Subtract(new BigNumberBeta(pRight));
+            return new BigNumberBeta(pLeft).Subtract(new BigNumberBeta(pRight));
         }
 
         public static BigNumberBeta operator *(BigNumberBeta pLeft, BigNumberAlpha pRight)
         {
-            return (new BigNumberBeta(pLeft)).Multiply(new BigNumberBeta(pRight));
+            return new BigNumberBeta(pLeft).Multiply(new BigNumberBeta(pRight));
         }
 
         public static BigNumberBeta operator /(BigNumberBeta pLeft, BigNumberAlpha pRight)
         {
-            return (new BigNumberBeta(pLeft)).Divide(new BigNumberBeta(pRight));
+            return new BigNumberBeta(pLeft).Divide(new BigNumberBeta(pRight));
         }
 
         public static BigNumberBeta operator %(BigNumberBeta pLeft, BigNumberAlpha pRight)
         {
-            return (new BigNumberBeta(pLeft)).Mod(new BigNumberBeta(pRight));
+            return new BigNumberBeta(pLeft).Mod(new BigNumberBeta(pRight));
         }
 
         #endregion

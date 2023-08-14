@@ -239,7 +239,7 @@ namespace RCore.Framework.Data
 
         public static void RestoreData(string pFilePath)
         {
-            using (StreamReader sw = new StreamReader(pFilePath))
+            using (var sw = new StreamReader(pFilePath))
             {
                 var jsonData = sw.ReadToEnd();
                 if (!string.IsNullOrEmpty(jsonData))

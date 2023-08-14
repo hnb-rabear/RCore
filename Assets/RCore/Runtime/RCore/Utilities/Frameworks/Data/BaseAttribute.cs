@@ -268,9 +268,9 @@ namespace RCore.Framework.Data
 				{
 					if (pLevel > 0)
 					{
-						float unlock = (unlocks != null && unlocks.Length > i) ? unlocks[i] : 0;
-						float max = (maxes != null && maxes.Length > i) ? maxes[i] : 0;
-						float increase = (increases != null && increases.Length > i) ? increases[i] : 0;
+						float unlock = unlocks != null && unlocks.Length > i ? unlocks[i] : 0;
+						float max = maxes != null && maxes.Length > i ? maxes[i] : 0;
+						float increase = increases != null && increases.Length > i ? increases[i] : 0;
 
 						float inc = 0;
 						if (unlock > 0)

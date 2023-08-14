@@ -46,7 +46,7 @@ namespace RCore.Framework.Data
 			{
 				float val = MathHelper.Round(pVals[j], 2);
 				var curColor = positiveColor == Mathf.Sign(val) ? VAL_COLOR : VAL_MINUS_COLOR;
-				string sign = (addSign && val > 0) ? "+" : "";
+				string sign = addSign && val > 0 ? "+" : "";
 				valsStr[j] = $"<color={curColor}>{sign}{val}</color>";
 			}
 			return valsStr;
@@ -65,20 +65,20 @@ namespace RCore.Framework.Data
 					var bonusColor = positiveColor == Mathf.Sign(toVal - fromVal) ? VAL_PLUS_COLOR : VAL_MINUS_COLOR;
 					if (fromVal != 0)
 					{
-						string signFrom = (addSign && fromVal > 0) ? "+" : "";
-						string signTo = (addSign && toVal - fromVal > 0) ? "+" : "";
+						string signFrom = addSign && fromVal > 0 ? "+" : "";
+						string signTo = addSign && toVal - fromVal > 0 ? "+" : "";
 						valsStr[j] = $"<color={curColor}>{signFrom}{fromVal}</color>(<color={bonusColor}>{signTo}{toVal - fromVal}</color>)";
 					}
 					else
 					{
-						string sign = (addSign && toVal > 0) ? "+" : "";
+						string sign = addSign && toVal > 0 ? "+" : "";
 						valsStr[j] = $"<color={bonusColor}>{sign}{toVal}</color>";
 					}
 				}
 				else
 				{
 					var bonusColor = positiveColor == Mathf.Sign(fromVal) ? VAL_PLUS_COLOR : VAL_MINUS_COLOR;
-					string sign = (addSign && fromVal > 0) ? "+" : "";
+					string sign = addSign && fromVal > 0 ? "+" : "";
 					valsStr[j] = $"<color={bonusColor}>{sign}{fromVal}</color>";
 				}
 			}
@@ -95,13 +95,13 @@ namespace RCore.Framework.Data
 				if (toVal != fromVal)
 				{
 					var bonusColor = positiveColor == Mathf.Sign(toVal - fromVal) ? VAL_PLUS_COLOR : VAL_MINUS_COLOR;
-					string sign = (addSign && toVal - fromVal > 0) ? "+" : "";
+					string sign = addSign && toVal - fromVal > 0 ? "+" : "";
 					valsStr[j] = $"<color={bonusColor}>{sign}{toVal - fromVal}</color>";
 				}
 				else
 				{
 					var bonusColor = positiveColor == Mathf.Sign(fromVal) ? VAL_PLUS_COLOR : VAL_MINUS_COLOR;
-					string sign = (addSign && fromVal > 0) ? "+" : "";
+					string sign = addSign && fromVal > 0 ? "+" : "";
 					valsStr[j] = $"<color={bonusColor}>{sign}{fromVal}</color>";
 				}
 			}
@@ -115,7 +115,7 @@ namespace RCore.Framework.Data
 			{
 				float val = MathHelper.Round(pVals[j], 2);
 				var bonusColor = positiveColor == Mathf.Sign(val) ? VAL_PLUS_COLOR : VAL_MINUS_COLOR;
-				string sign = (addSign && val > 0) ? "+" : "";
+				string sign = addSign && val > 0 ? "+" : "";
 				valsStr[j] = $"<color={bonusColor}>{sign}{val}</color>";
 			}
 			return valsStr;

@@ -8,6 +8,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -24,27 +25,27 @@ namespace RCore.Components
     /// </summary>
     public class SimpleLeanFX : MonoBehaviour
     {
-        private static SimpleLeanFX mInstance;
-        public static SimpleLeanFX instance => mInstance;
+        private static SimpleLeanFX m_Instance;
+        public static SimpleLeanFX Instance => m_Instance;
 
-        [SerializeField] AnimationCurve mBubbleAnim;
-        [SerializeField] AnimationCurve mFadeInAndOutAnim;
-        [SerializeField] AnimationCurve mShakeAnim;
+        [SerializeField] private AnimationCurve mBubbleAnim;
+        [SerializeField] private AnimationCurve mFadeInAndOutAnim;
+        [SerializeField] private AnimationCurve mShakeAnim;
 
         public Image imgTest;
         public Transform transformTest;
 
         private void Start()
         {
-            if (mInstance == null)
-                mInstance = this;
-            else if (mInstance != this)
+            if (m_Instance == null)
+                m_Instance = this;
+            else if (m_Instance != this)
                 Destroy(gameObject);
         }
 
         public int Bubble(Transform pTarget, Vector3 defaultScale, float time = 0.5f, Action pOnFinished = null)
         {
-            return SimulateBubble(pTarget, defaultScale, 0, 1, instance.mBubbleAnim, time, pOnFinished);
+            return SimulateBubble(pTarget, defaultScale, 0, 1, Instance.mBubbleAnim, time, pOnFinished);
         }
 
         public int SingleHightLight(Image pTarget, float time = 0.5f, Action pOnFinished = null)
@@ -71,22 +72,22 @@ namespace RCore.Components
             var tween = DOTween.To(tweenVal => val = tweenVal, 0f, 1f, time)
                 .OnUpdate(() =>
                 {
-                    float curve = instance.mFadeInAndOutAnim.Evaluate(val);
-                    Color color = pTarget.color;
+                    float curve = Instance.mFadeInAndOutAnim.Evaluate(val);
+                    var color = pTarget.color;
                     color.a = defaultAlpha * curve;
                     pTarget.color = color;
                 })
                 .OnComplete(() =>
-                {
-                    if (pOnFinished != null) pOnFinished();
-                })
+				{
+					pOnFinished?.Invoke();
+				})
                 .SetId(pTarget.GetInstanceID() + GetInstanceID()).SetUpdate(true);
             id = tween.intId;
 #endif
             return id;
         }
 
-        private int SimulateBubble(Transform pTarget, Vector3 defaultScale, float pFrom, float pTo, AnimationCurve pAnim, float time, Action pOnFinished)
+        private int SimulateBubble(Component pTarget, Vector3 defaultScale, float pFrom, float pTo, AnimationCurve pAnim, float time, Action pOnFinished)
         {
             int id = 0;
 #if USE_LEANTWEEN
@@ -118,8 +119,8 @@ namespace RCore.Components
                 {
                     pTarget.transform.localScale = defaultScale;
 
-                    if (pOnFinished != null) pOnFinished();
-                })
+					pOnFinished?.Invoke();
+				})
                 .SetId(pTarget.GetInstanceID() + GetInstanceID()).SetUpdate(true);
             id = tween.intId;
 #endif
@@ -128,9 +129,9 @@ namespace RCore.Components
 
         public void Shake(Transform pTarget, float pTime, float pIntensity, Action pOnFinished = null)
         {
-            Vector3 defaultPos = pTarget.position;
-            Vector3 defaultScale = pTarget.localScale;
-            Quaternion defaultRotaion = pTarget.rotation;
+            var defaultPos = pTarget.position;
+            var defaultScale = pTarget.localScale;
+            var defaultRotaion = pTarget.rotation;
 
 #if USE_LEANTWEEN
             LeanTween.cancel(pTarget.gameObject);
@@ -162,7 +163,7 @@ namespace RCore.Components
             var tween = DOTween.To(tweenVal => val = tweenVal, 0f, 1f, pTime)
                 .OnUpdate(() =>
                 {
-                    float curve = instance.mShakeAnim.Evaluate(val);
+                    float curve = Instance.mShakeAnim.Evaluate(val);
                     float intensity = pIntensity * curve;
 
                     var shakingPos = defaultPos + Random.insideUnitSphere * intensity;
@@ -178,15 +179,15 @@ namespace RCore.Components
                     pTarget.localScale = defaultScale;
                     pTarget.rotation = defaultRotaion;
 
-                    if (pOnFinished != null) pOnFinished();
-                })
+					pOnFinished?.Invoke();
+				})
                 .SetId(pTarget.GetInstanceID() + GetInstanceID()).SetUpdate(true);
 #endif
         }
 
         public void FadeIn(Image pImage, float pTime, Action pOnFinished = null)
         {
-            Color color = pImage.color;
+            var color = pImage.color;
 #if USE_LEANTWEEN
             LeanTween.value(pImage.gameObject, 0f, 1f, pTime)
                 .setOnUpdate((float val) =>
@@ -204,17 +205,16 @@ namespace RCore.Components
             pImage.color = color;
             pImage.DOFade(1f, pTime)
                 .OnComplete(() =>
-                {
-                    if (pOnFinished != null)
-                        pOnFinished();
-                })
+				{
+					pOnFinished?.Invoke();
+				})
                 .SetId(pImage.GetInstanceID() + GetInstanceID()).SetUpdate(true);
 #endif
         }
 
         public void FadeOut(Image pImage, float pTime, Action pOnFinished = null)
         {
-            Color color = pImage.color;
+            var color = pImage.color;
 #if USE_LEANTWEEN
             LeanTween.value(pImage.gameObject, 1f, 0f, pTime)
                 .setOnUpdate((float val) =>
@@ -232,10 +232,9 @@ namespace RCore.Components
             pImage.color = color;
             pImage.DOFade(0f, pTime)
                 .OnComplete(() =>
-                {
-                    if (pOnFinished != null)
-                        pOnFinished();
-                })
+				{
+					pOnFinished?.Invoke();
+				})
                 .SetId(pImage.GetInstanceID() + GetInstanceID()).SetUpdate(true);
 #endif
         }

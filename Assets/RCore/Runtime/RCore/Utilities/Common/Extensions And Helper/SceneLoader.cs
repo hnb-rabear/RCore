@@ -67,7 +67,7 @@ namespace RCore.Common
                     if (time > additionalTime)
                         break;
 
-                    float progress = (1 - fakeProgress) + time / additionalTime * fakeProgress;
+                    float progress = 1 - fakeProgress + time / additionalTime * fakeProgress;
                     pOnProgress.Raise(progress);
                     yield return null;
                 }

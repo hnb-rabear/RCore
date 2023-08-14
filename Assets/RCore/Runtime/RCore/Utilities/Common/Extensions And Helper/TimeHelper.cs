@@ -33,7 +33,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                TimeSpan t = TimeSpan.FromSeconds(seconds);
+                var t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -78,7 +78,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                TimeSpan t = TimeSpan.FromSeconds(seconds);
+                var t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -123,7 +123,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                TimeSpan t = TimeSpan.FromSeconds(seconds);
+                var t = TimeSpan.FromSeconds(seconds);
 
                 //I keep below code as a result to provide that StringBuilder is much faster than string.format
                 //StringBuilder create gabrage lesser than string.Format about 65%
@@ -199,14 +199,14 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                TimeSpan t = TimeSpan.FromSeconds(seconds);
+                var t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Days > 0)
                 {
-                    string day = t.Days > 0 ? (t.Days > 1 ? " days" : " day") : "";
+                    string day = t.Days > 0 ? t.Days > 1 ? " days" : " day" : "";
                     //00:00:00:000
                     return mTimeBuilder.Clear()
-                        .Append(t.Days > 0 ? (t.Days + day) : "").Append(t.Days > 0 ? " " : "")
+                        .Append(t.Days > 0 ? t.Days + day : "").Append(t.Days > 0 ? " " : "")
                           .Append(t.Hours.ToString("D2")).Append(":")
                             .Append(t.Minutes.ToString("D2")).Append(":")
                               .Append(t.Seconds.ToString("D2"))
@@ -244,7 +244,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                TimeSpan t = TimeSpan.FromSeconds(seconds);
+                var t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -285,7 +285,7 @@ namespace RCore.Common
         {
             if (seconds > 0)
             {
-                TimeSpan t = TimeSpan.FromSeconds(seconds);
+                var t = TimeSpan.FromSeconds(seconds);
 
                 if (showFull || t.Hours > 0)
                 {
@@ -294,8 +294,8 @@ namespace RCore.Common
                         //Hour Minute Second
                         return mTimeBuilder.Clear()
                             .Append(t.Hours).Append(t.Hours <= 1 ? " Hour " : " Hours ")
-                              .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? (t.Minutes == 1 ? " Minute " : " Minutes ") : "")
-                                .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? (t.Seconds == 1 ? " Second" : " Seconds") : "")
+                              .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? t.Minutes == 1 ? " Minute " : " Minutes " : "")
+                                .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
                             .ToString();
                     }
                 }
@@ -306,7 +306,7 @@ namespace RCore.Common
                         //Minute Second
                         return mTimeBuilder.Clear()
                           .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes == 1 ? " Minute " : " Minutes ")
-                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? (t.Seconds == 1 ? " Second" : " Seconds") : "")
+                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
                         .ToString();
                     }
                     else
@@ -427,7 +427,7 @@ namespace RCore.Common
                     if (request.responseCode == 200)
                     {
                         var text = request.downloadHandler.text;
-                        if (TryParse(text, out DateTime time))
+                        if (TryParse(text, out var time))
                         {
                             m_StartServerTime = time;
                             m_AppTimeWhenGetServerTime = Time.unscaledTime;
@@ -559,7 +559,7 @@ namespace RCore.Common
 
         public static long ConvertToTimestamp(this DateTime value)
         {
-            TimeSpan elapsedTime = value - Epoch;
+            var elapsedTime = value - Epoch;
             return (long)elapsedTime.TotalSeconds;
         }
     }

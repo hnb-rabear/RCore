@@ -192,7 +192,7 @@ namespace RCore.Components
         {
             if (imgBackground == null || imgProgressValue == null)
             {
-                Image[] imgs = gameObject.GetComponentsInChildren<Image>();
+                var imgs = gameObject.GetComponentsInChildren<Image>();
                 if (imgs.Length >= 2)
                 {
                     imgBackground = imgs[0];
@@ -244,10 +244,10 @@ namespace RCore.Components
                 {
                     var barTransform = mBar.imgProgressValue.transform as RectTransform;
                     var pivot = new Vector2(0, 0.5f);
-                    Vector2 size = barTransform.rect.size;
+                    var size = barTransform.rect.size;
                     size.x -= mBar.mWidthOffset;
-                    Vector2 deltaPivot = barTransform.pivot - pivot;
-                    Vector3 deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
+                    var deltaPivot = barTransform.pivot - pivot;
+                    var deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
                     barTransform.pivot = pivot;
                     barTransform.localPosition -= deltaPosition;
                 }

@@ -13,7 +13,7 @@ namespace RCore.Common
         public static long getMillisSinceBoot()
         {
             var ticks = System.Diagnostics.Stopwatch.GetTimestamp();
-            var uptime = ((double)ticks) / System.Diagnostics.Stopwatch.Frequency;
+            var uptime = (double)ticks / System.Diagnostics.Stopwatch.Frequency;
             var uptimeSpan = TimeSpan.FromSeconds(uptime);
             //
             double miliSeconds = uptimeSpan.TotalMilliseconds;

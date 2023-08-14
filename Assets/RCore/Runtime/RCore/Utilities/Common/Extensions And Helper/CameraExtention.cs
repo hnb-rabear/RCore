@@ -26,7 +26,7 @@ namespace RCore.Common
         {
             float screenAspect = Screen.width / Screen.height;
             float cameraHeight = camera.orthographicSize * 2;
-            Bounds bounds = new Bounds(camera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
+            var bounds = new Bounds(camera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
             return bounds;
         }
 
@@ -42,7 +42,7 @@ namespace RCore.Common
             float screenRatioX = screenPoint.x / Screen.width;
             float screenRatioY = screenPoint.y / Screen.height;
 
-            Vector2 camSize = camera.Size();
+            var camSize = camera.Size();
             Vector2 position = camera.transform.position;
             position.x -= camSize.x / 2;
             position.y -= camSize.y / 2;
@@ -60,7 +60,7 @@ namespace RCore.Common
         {
             float screenAspect = Screen.width / Screen.height;
             float cameraHeight = pCamera.orthographicSize * 2;
-            Bounds bounds = new Bounds(pCamera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
+            var bounds = new Bounds(pCamera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
 
             if (pWorldPosition.x < bounds.min.x)
                 return false;
@@ -75,7 +75,7 @@ namespace RCore.Common
 
         public static bool InsideCamera(this Vector3 pPosition, Camera pCamera, float pExtXRatio = 0, float pExtYRatio = 0)
         {
-            Vector3 screenPoint = pCamera.WorldToViewportPoint(pPosition);
+            var screenPoint = pCamera.WorldToViewportPoint(pPosition);
             bool onScreen = screenPoint.z > 0
                 && screenPoint.x >= 0 - pExtXRatio
                 && screenPoint.x <= 1 + pExtXRatio
@@ -87,9 +87,9 @@ namespace RCore.Common
         public static Vector3 WorldPointToCanvasPoint(this Camera camera, Vector3 worldPos, RectTransform canvasRect)
         {
             Vector2 viewportPosition = camera.WorldToViewportPoint(worldPos);
-            Vector2 anchoredPosition = new Vector2(
-            ((viewportPosition.x * canvasRect.rect.size.x) - (canvasRect.rect.size.x * 0.5f)),
-            ((viewportPosition.y * canvasRect.rect.size.y) - (canvasRect.rect.size.y * 0.5f)));
+            var anchoredPosition = new Vector2(
+            viewportPosition.x * canvasRect.rect.size.x - canvasRect.rect.size.x * 0.5f,
+            viewportPosition.y * canvasRect.rect.size.y - canvasRect.rect.size.y * 0.5f);
 
             return anchoredPosition;
         }
