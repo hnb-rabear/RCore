@@ -245,8 +245,8 @@ namespace RCore.Components
 
             yield return new WaitUntil(() => !process);
 
-            if (onFinishedMovement != null) onFinishedMovement();
-        }
+			onFinishedMovement?.Invoke();
+		}
 #else
 		public IEnumerator IE_MoveEmitsEase(Transform pDestination, float pDuration, float pDelay = 0)
 		{
@@ -287,7 +287,7 @@ namespace RCore.Components
 
 			bool process = true;
 
-			WaitForSeconds mDelayEach = new WaitForSeconds(pDuration - pDuration / mParticles.Length);
+			var mDelayEach = new WaitForSeconds(pDuration - pDuration / mParticles.Length);
 
 			for (int i = 0; i < mParticles.Length; i++)
 			{
@@ -378,8 +378,8 @@ namespace RCore.Components
                         try
                         {
                             mParticles[pIndex].startColor = Color.clear;
-                            if (onFinishedMovementSeparately != null) onFinishedMovementSeparately();
-                        }
+							onFinishedMovementSeparately?.Invoke();
+						}
                         catch (Exception ex)
                         {
                             Debug.LogError(ex.ToString());
@@ -555,8 +555,8 @@ namespace RCore.Components
 		[ContextMenu("Validate")]
 		protected override void Validate()
 		{
-			List<float> lifeTimes = new List<float>();
-			List<float> durations = new List<float>();
+			var lifeTimes = new List<float>();
+			var durations = new List<float>();
 			isLoop = false;
 
 			if (mMain == null)

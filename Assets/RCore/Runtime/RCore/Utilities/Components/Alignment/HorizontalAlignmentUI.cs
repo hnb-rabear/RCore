@@ -118,7 +118,7 @@ namespace RCore.Components
         private void RefreshPositions()
         {
             if (Math.Abs(mChildren.Count * cellDistance) > maxContainerWidth && maxContainerWidth > 0)
-                cellDistance *= maxContainerWidth / (Math.Abs(mChildren.Count * cellDistance));
+                cellDistance *= maxContainerWidth / Math.Abs(mChildren.Count * cellDistance);
 
             mChildrenNewPosition = new Vector2[mChildren.Count];
             mChildrenPrePosition = new Vector2[mChildren.Count];
@@ -192,7 +192,7 @@ namespace RCore.Components
                         t = animCurve.Evaluate(lerp);
                     for (int j = 0; j < mChildren.Count; j++)
                     {
-                        Vector2 pos = Vector2.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
+                        var pos = Vector2.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
                         mChildren[j].anchoredPosition = pos;
                     }
                 })

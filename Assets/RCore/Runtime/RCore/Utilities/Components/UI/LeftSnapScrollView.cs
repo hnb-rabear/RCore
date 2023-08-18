@@ -133,7 +133,7 @@ namespace RCore.Components
             {
                 float itemAnchoredX = mItems[i].anchoredPosition.x;
                 float itemAnchoredX_left = itemAnchoredX - mItems[mNearestIndex].rect.width * mItems[mNearestIndex].pivot.x;
-                float distanceX = mScrollView.content.anchoredPosition.x - (itemAnchoredX_left * -1);
+                float distanceX = mScrollView.content.anchoredPosition.x - itemAnchoredX_left * -1;
                 distanceX = Mathf.Abs(distanceX);
                 if (mDistance > distanceX)
                 {
@@ -167,7 +167,7 @@ namespace RCore.Components
                     targetAnchored = mContentAnchoredXMin;
             }
 
-            Vector2 contentAnchored = mScrollView.content.anchoredPosition;
+            var contentAnchored = mScrollView.content.anchoredPosition;
 
             if (pImediate)
             {
@@ -220,7 +220,7 @@ namespace RCore.Components
                     targetAnchor = mContentAnchoredXMin;
             }
 
-            Vector2 contentAnchor = mScrollView.content.anchoredPosition;
+            var contentAnchor = mScrollView.content.anchoredPosition;
             contentAnchor.x = targetAnchor;
             mScrollView.content.anchoredPosition = contentAnchor;
         }
@@ -279,7 +279,7 @@ namespace RCore.Components
                     && mNearestIndex > 0)
                 {
                     mNearestIndex--;
-                    float distanceX = mScrollView.content.anchoredPosition.x - (itemAnchoredX_left * -1);
+                    float distanceX = mScrollView.content.anchoredPosition.x - itemAnchoredX_left * -1;
                     mDistance = Mathf.Abs(distanceX);
                 }
                 else if (!mDragLeftToRight
@@ -287,7 +287,7 @@ namespace RCore.Components
                     && mNearestIndex < mItems.Count - 1)
                 {
                     mNearestIndex++;
-                    float distanceX = mScrollView.content.anchoredPosition.x - (itemAnchoredX_left * -1);
+                    float distanceX = mScrollView.content.anchoredPosition.x - itemAnchoredX_left * -1;
                     mDistance = Mathf.Abs(distanceX);
                 }
             }

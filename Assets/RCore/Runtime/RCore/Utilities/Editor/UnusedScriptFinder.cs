@@ -91,8 +91,26 @@ public class UnusedScriptFinder : EditorWindow
 		if (m_PersistentEvents != null && m_PersistentEvents.Count > 0)
 		{
 			if (EditorHelper.HeaderFoldout($"Prefabs has Persistent Event {m_PersistentEvents.Count}", "Prefabs has Persistent Event"))
-				foreach (var script in m_PersistentEvents)
-					EditorGUILayout.ObjectField(script, typeof(GameObject), false);
+			{
+				foreach (var persistentEvents in m_PersistentEventsCount)
+				{
+					if (EditorHelper.Foldout($"{persistentEvents.Key.name} ({persistentEvents.Value.Count})"))
+					{
+						GUILayout.BeginHorizontal();
+						EditorGUILayout.ObjectField(persistentEvents.Key, typeof(GameObject), false);
+						if (GUILayout.Button("Log Methods"))
+							Debug.Log(m_PersistentEventsMethod[persistentEvents.Key]);
+						GUILayout.EndHorizontal();
+						foreach (var obj in persistentEvents.Value)
+							EditorGUILayout.ObjectField(obj, typeof(GameObject), false);
+					}
+				}
+			}
+
+			if (EditorHelper.Button("Log all persistent methods"))
+			{
+				Debug.Log(JsonHelper.ToJson(m_AllPersistentMethods));
+			}
 
 			if (EditorHelper.Button("Select All"))
 				Selection.objects = m_PersistentEvents.ToArray();
@@ -156,7 +174,10 @@ public class UnusedScriptFinder : EditorWindow
 		}
 	}
 
-	private List<GameObject> m_PersistentEvents;
+	private static List<GameObject> m_PersistentEvents;
+	private static Dictionary<GameObject, List<GameObject>> m_PersistentEventsCount;
+	private static Dictionary<GameObject, string> m_PersistentEventsMethod;
+	private static List<string> m_AllPersistentMethods;
 	private void FindPersistentEvents()
 	{
 		if (m_TargetFolder != null)
@@ -164,6 +185,9 @@ public class UnusedScriptFinder : EditorWindow
 		else m_FolderPath = "Assets";
 
 		m_PersistentEvents = new List<GameObject>();
+		m_PersistentEventsCount = new Dictionary<GameObject, List<GameObject>>();
+		m_PersistentEventsMethod = new Dictionary<GameObject, string>();
+		m_AllPersistentMethods = new List<string>();
 		var guids = AssetDatabase.FindAssets("t:GameObject", new[] { m_FolderPath });
 		foreach (string guid in guids)
 		{
@@ -176,6 +200,7 @@ public class UnusedScriptFinder : EditorWindow
 	
 	private static bool HasPersistentEvents(GameObject go)
 	{
+		int persistentCount = 0;
 		var components = go.GetComponentsInChildren<MonoBehaviour>(true);
 		foreach (var script in components)
 		{
@@ -187,37 +212,99 @@ public class UnusedScriptFinder : EditorWindow
 					if (field.FieldType.IsSubclassOf(typeof(UnityEventBase)))
 					{
 						var unityEventBase = (UnityEventBase)field.GetValue(script);
-
 						if (unityEventBase != null)
 						{
-							int persistentCount = CountPersistentListeners(unityEventBase);
-							Debug.Log($"Script: {script.name}, Event: {field.Name}, Persistent Listeners: {persistentCount}");
-							return persistentCount > 0;
+							int count = 0;
+							string methodName = "";
+
+							if (unityEventBase is UnityEvent unityEvent)
+							{
+								count = unityEvent.GetPersistentEventCount();
+								for (int i = 0; i < count; i++)
+								{
+									string functionName = unityEvent.GetPersistentTarget(i) != null ? unityEvent.GetPersistentMethodName(i) : "";
+									if (!string.IsNullOrEmpty(functionName))
+									{
+										if (!m_AllPersistentMethods.Contains(functionName))
+											m_AllPersistentMethods.Add(functionName);
+										methodName += functionName + (i < count - 1 ? "\n" : "");
+									}
+								}
+							}
+							else
+							{
+								if (unityEventBase is UnityEvent<int> unityEventGeneric)
+								{
+									count = unityEventGeneric.GetPersistentEventCount();
+									for (int i = 0; i < count; i++)
+									{
+										string functionName = unityEventGeneric.GetPersistentTarget(i) != null ? unityEventGeneric.GetPersistentMethodName(i) : "";
+										if (!string.IsNullOrEmpty(functionName))
+										{
+											if (!m_AllPersistentMethods.Contains(functionName))
+												m_AllPersistentMethods.Add(functionName);
+											methodName += functionName + (i < count - 1 ? "\n" : "");
+										}
+									}
+								}
+								// Add more cases for other UnityEvent types if needed
+							}
+							
+							if (count > 0 && !string.IsNullOrEmpty(methodName))
+							{
+								if (m_PersistentEventsCount.ContainsKey(go))
+								{
+									m_PersistentEventsCount[go].Add(script.gameObject);
+									if (!m_PersistentEventsMethod[go].Contains(methodName))
+										m_PersistentEventsMethod[go] += "\n" + methodName;
+								}
+								else
+								{
+									m_PersistentEventsCount.Add(go, new List<GameObject> { script.gameObject });
+									m_PersistentEventsMethod[go] = methodName;
+								}
+							}
+							
+							persistentCount += count;
 						}
 					}
 				}
 			}
-		}
-		return false;
-	}
-	
-	private static int CountPersistentListeners(UnityEventBase unityEventBase)
-	{
-		int persistentCount = 0;
-
-		if (unityEventBase is UnityEvent unityEvent)
-		{
-			persistentCount = unityEvent.GetPersistentEventCount();
-		}
-		else
-		{
-			if (unityEventBase is UnityEvent<int> unityEventGeneric)
+			if (script is EventTrigger trigger)
 			{
-				persistentCount = unityEventGeneric.GetPersistentEventCount();
+				string methodName = "";
+				foreach (var entry in trigger.triggers)
+				{
+					int count = entry.callback.GetPersistentEventCount();
+					for (int i = 0; i < count; i++)
+					{
+						string functionName = entry.callback.GetPersistentTarget(i) != null ? entry.callback.GetPersistentMethodName(i) : "";
+						if (!string.IsNullOrEmpty(functionName))
+						{
+							if (!m_AllPersistentMethods.Contains(functionName))
+								m_AllPersistentMethods.Add(functionName);
+							methodName += functionName + (i < count - 1 ? "\n" : "");
+						}
+					}
+					if (count > 0 && !string.IsNullOrEmpty(methodName))
+					{
+						if (m_PersistentEventsCount.ContainsKey(go))
+						{
+							m_PersistentEventsCount[go].Add(script.gameObject);
+							if (!m_PersistentEventsMethod[go].Contains(methodName))
+								m_PersistentEventsMethod[go] += "\n" + methodName;
+						}
+						else
+						{
+							m_PersistentEventsCount.Add(go, new List<GameObject>() { script.gameObject });
+							m_PersistentEventsMethod[go] = methodName;
+						}
+						persistentCount++;
+					}
+				}
 			}
-			// Add more cases for other UnityEvent types if needed
 		}
-		return persistentCount;
+		return persistentCount > 0;
 	}
 
 	private List<MonoScript> GetAllMonoScriptsInFolder()

@@ -83,7 +83,7 @@ namespace RCore.Components
             float layerTopW = mBounds.size.x;
             float layerBotW = mBounds.size.x;
             float layerTopH = borderTop - (holePosition.y + holeHalfSize.y);
-            float layerBotH = (holePosition.y - holeHalfSize.y) - borderBot;
+            float layerBotH = holePosition.y - holeHalfSize.y - borderBot;
 
             imgLeft.rectTransform.sizeDelta = new Vector2(layerLeftW, layerLeftH);
             imgRight.rectTransform.sizeDelta = new Vector2(layerRightW, layerRightH);

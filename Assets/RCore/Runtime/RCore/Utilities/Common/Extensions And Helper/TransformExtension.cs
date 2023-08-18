@@ -390,8 +390,8 @@ namespace RCore.Common
         {
             float contentWidth = pContent.rect.width;
             float contentHeight = pContent.rect.height;
-            Vector2 itemAnchoredPos = pItem.anchoredPosition;
-            Vector2 targetAnchored = pContent.anchoredPosition;
+            var itemAnchoredPos = pItem.anchoredPosition;
+            var targetAnchored = pContent.anchoredPosition;
             targetAnchored.y = -itemAnchoredPos.y + (pContent.pivot.y - 0.5f) * contentHeight;
             targetAnchored.x = -itemAnchoredPos.x + (pContent.pivot.x - 0.5f) * contentWidth;
             targetAnchored.x -= contentWidth * (pItem.anchorMax.x - 0.5f);
@@ -423,7 +423,7 @@ namespace RCore.Common
 
             float height = contentTopRight.y - contentBotLeft.y;
             float width = contentTopRight.x - contentBotLeft.x;
-            Bounds bounds = new Bounds();
+            var bounds = new Bounds();
             bounds.size = new Vector2(width, height);
             bounds.min = contentBotLeft;
             bounds.max = contentTopRight;
@@ -440,20 +440,20 @@ namespace RCore.Common
         public static Vector3 WorldToCanvasPoint(this RectTransform mainCanvas, Vector3 worldPos)
         {
             Vector2 viewportPosition = Camera.main.WorldToViewportPoint(worldPos);
-            Vector2 worldPosition = new Vector2(
-            ((viewportPosition.x * mainCanvas.sizeDelta.x) - (mainCanvas.sizeDelta.x * 0.5f)),
-            ((viewportPosition.y * mainCanvas.sizeDelta.y) - (mainCanvas.sizeDelta.y * 0.5f)));
+            var worldPosition = new Vector2(
+            viewportPosition.x * mainCanvas.sizeDelta.x - mainCanvas.sizeDelta.x * 0.5f,
+            viewportPosition.y * mainCanvas.sizeDelta.y - mainCanvas.sizeDelta.y * 0.5f);
 
             return worldPosition;
         }
 
         public static List<Vector2> GetScreenCoordinateOfUIRect(this RectTransform rt)
         {
-            Vector3[] corners = new Vector3[4];
+            var corners = new Vector3[4];
             rt.GetWorldCorners(corners);
 
             var output = new List<Vector2>();
-            foreach (Vector3 item in corners)
+            foreach (var item in corners)
             {
                 var pos = RectTransformUtility.WorldToScreenPoint(null, item);
                 output.Add(pos);
@@ -479,7 +479,7 @@ namespace RCore.Common
                 && anchorMin.x == anchorMax.x && anchorMin.x == 0.5f)
                 center = true;
 
-            AnchorType type = AnchorType.Stretch;
+            var type = AnchorType.Stretch;
             if (top) type = AnchorType.Top;
             if (right) type = AnchorType.Right;
             if (left) type = AnchorType.Left;

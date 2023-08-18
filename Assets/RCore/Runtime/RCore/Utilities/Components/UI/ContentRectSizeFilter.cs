@@ -98,14 +98,14 @@ namespace RCore.Components
             float widght = m_Content.rect.width;
             float height = m_Content.rect.height;
 
-            Vector2 parentTopRight = new Vector2(m_Content.rect.width * (1 - m_Content.pivot.x), m_Content.rect.height * (1 - m_Content.pivot.y));
+            var parentTopRight = new Vector2(m_Content.rect.width * (1 - m_Content.pivot.x), m_Content.rect.height * (1 - m_Content.pivot.y));
             float offsetY = m_ChildTopRight.y - parentTopRight.y + m_ContentSizeBonus.y / 2f;
             float offsetX = m_ChildTopRight.x - parentTopRight.x + m_ContentSizeBonus.x / 2f;
             for (int i = 0; i < m_Children.Count; i++)
             {
                 var childPos = m_Children[i].anchoredPosition;
-                childPos.x -= offsetX - ((m_Content.pivot.x - 0.5f) * widght);
-                childPos.y -= offsetY - ((m_Content.pivot.y - 0.5f) * height);
+                childPos.x -= offsetX - (m_Content.pivot.x - 0.5f) * widght;
+                childPos.y -= offsetY - (m_Content.pivot.y - 0.5f) * height;
                 m_Children[i].anchoredPosition = childPos;
             }
 
@@ -139,7 +139,7 @@ namespace RCore.Components
             else
             {
 #if USE_DOTWEEN
-                Vector2 fromPos = m_Content.anchoredPosition;
+                var fromPos = m_Content.anchoredPosition;
 
                 float time = Vector2.Distance(targetAnchoredPos, fromPos) / (m_TransitionSpeed / Time.deltaTime);
                 if (time == 0)

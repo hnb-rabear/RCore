@@ -108,7 +108,7 @@ namespace RCore.Common
 		public PlayerPrefDateTime(string pKey, DateTime pDefault) : base(pKey)
 		{
 			string dateStr = PlayerPrefs.GetString(m_Key);
-			if (DateTime.TryParse(dateStr, out DateTime date))
+			if (DateTime.TryParse(dateStr, out var date))
 				m_Value = date;
 			else
 				m_Value = pDefault;

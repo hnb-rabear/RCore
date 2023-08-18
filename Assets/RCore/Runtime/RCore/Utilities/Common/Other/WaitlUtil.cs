@@ -27,7 +27,7 @@ namespace RCore.Common
             public float Elapsed => mElapsed;
             public float ElapsedOffset => mElapsedOffset;
             public bool IsTimeOut => mElapsed >= waitTime;
-            public float Remain => (waitTime - mElapsed > 0) ? (waitTime - mElapsed) : 0;
+            public float Remain => waitTime - mElapsed > 0 ? waitTime - mElapsed : 0;
 
             public CountdownEvent(int pid = 0)
             {

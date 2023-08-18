@@ -26,7 +26,7 @@ namespace RCore.Framework.Data
 			get => m_Value != null ? m_Value : m_DefaultValue;
 			set
 			{
-				if ((m_Value != null && value == null) || (m_Value == null && value != null) || m_Value.CompareTo(value) != 0)
+				if (m_Value != null && value == null || m_Value == null && value != null || m_Value.CompareTo(value) != 0)
 				{
 					m_Value = value;
 					m_CompareValue = Clone(value);
@@ -49,7 +49,7 @@ namespace RCore.Framework.Data
 
 		public override bool Stage()
 		{
-			if ((m_Value != null && m_CompareValue == null) || (m_Value == null && m_CompareValue != null) || m_Changed || m_Value.CompareTo(m_CompareValue) != 0)
+			if (m_Value != null && m_CompareValue == null || m_Value == null && m_CompareValue != null || m_Changed || m_Value.CompareTo(m_CompareValue) != 0)
 			{
 				var saveStr = JsonUtility.ToJson(m_Value);
 				SetStringValue(saveStr);

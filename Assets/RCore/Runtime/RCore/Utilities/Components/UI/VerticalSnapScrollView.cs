@@ -255,7 +255,7 @@ namespace RCore.Components
                             contentWidth = itemSize.x;
                     }
                 }
-                contentHeight += (paddingTop + paddingBottom);
+                contentHeight += paddingTop + paddingBottom;
                 contentHeight += spacing * (m_Items.Count - 1);
             }
             else
@@ -274,7 +274,7 @@ namespace RCore.Components
         {
             m_ScrollView.StopMovement();
 
-            Vector2 targetAnchored = m_Items[m_FocusedItemIndex].CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+            var targetAnchored = m_Items[m_FocusedItemIndex].CovertAnchoredPosFromChildToParent(m_ScrollView.content);
             targetAnchored.x -= m_TargetPosOffset.x;
             targetAnchored.y -= m_TargetPosOffset.y;
             if (targetAnchored.y > m_ContentAnchoredYMax)
@@ -282,7 +282,7 @@ namespace RCore.Components
             if (targetAnchored.y < m_ContentAnchoredYMin)
                 targetAnchored.y = m_ContentAnchoredYMin;
 
-            Vector2 contentAnchored = Content.anchoredPosition;
+            var contentAnchored = Content.anchoredPosition;
             if (pImmediately || !Application.isPlaying)
             {
                 contentAnchored.y = targetAnchored.y;

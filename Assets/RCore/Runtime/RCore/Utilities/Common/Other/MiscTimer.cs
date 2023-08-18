@@ -23,7 +23,7 @@ namespace RCore.Common
         {
             if (mActive)
             {
-                mElapsedTime += (pElapsedTime * Time.timeScale);
+                mElapsedTime += pElapsedTime * Time.timeScale;
                 if (mElapsedTime > timeTarget)
                     Finish();
             }

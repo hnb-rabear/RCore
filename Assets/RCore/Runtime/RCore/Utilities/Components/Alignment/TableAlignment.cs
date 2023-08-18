@@ -230,8 +230,8 @@ namespace RCore.Components
                     var children = a.Value;
                     float y = a.Key * rowDistance;
 
-                    Vector3[] childrenNewPosition = new Vector3[children.Count];
-                    Vector3[] childrenPrePosition = new Vector3[children.Count];
+                    var childrenNewPosition = new Vector3[children.Count];
+                    var childrenPrePosition = new Vector3[children.Count];
                     switch (alignmentType)
                     {
                         case Alignment.Left:
@@ -284,7 +284,7 @@ namespace RCore.Components
                                 t = animCurve.Evaluate(lerp);
                             for (int j = 0; j < children.Count; j++)
                             {
-                                Vector2 pos = Vector2.Lerp(childrenPrePosition[j], childrenNewPosition[j], t);
+                                var pos = Vector2.Lerp(childrenPrePosition[j], childrenNewPosition[j], t);
                                 children[j].localPosition = pos;
                             }
                         })
@@ -309,8 +309,8 @@ namespace RCore.Components
                     var children = a.Value;
                     float x = a.Key * columnDistance;
 
-                    Vector3[] childrenPrePosition = new Vector3[children.Count];
-                    Vector3[] childrenNewPosition = new Vector3[children.Count];
+                    var childrenPrePosition = new Vector3[children.Count];
+                    var childrenNewPosition = new Vector3[children.Count];
                     switch (alignmentType)
                     {
                         case Alignment.Top:

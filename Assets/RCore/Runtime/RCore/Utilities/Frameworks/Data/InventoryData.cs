@@ -246,8 +246,8 @@ namespace RCore.Framework.Data
 			{
 				for (int j = i + 1; j < m_Items.Count; ++j)
 				{
-					if ((m_Items[i].Id > m_Items[j].Id && !des)
-						|| (m_Items[i].Id < m_Items[j].Id && des))
+					if (m_Items[i].Id > m_Items[j].Id && !des
+						|| m_Items[i].Id < m_Items[j].Id && des)
 					{
 						var temp = m_Items[i];
 						m_Items[i] = m_Items[j];
@@ -263,8 +263,8 @@ namespace RCore.Framework.Data
 			{
 				for (int j = i + 1; j < m_Items.Count; ++j)
 				{
-					if ((m_Items[i].Rarity > m_Items[j].Rarity && !des)
-						|| (m_Items[i].Rarity < m_Items[j].Rarity && des))
+					if (m_Items[i].Rarity > m_Items[j].Rarity && !des
+						|| m_Items[i].Rarity < m_Items[j].Rarity && des)
 					{
 						var temp = m_Items[i];
 						m_Items[i] = m_Items[j];
@@ -280,8 +280,8 @@ namespace RCore.Framework.Data
 			{
 				for (int j = i + 1; j < m_Items.Count; ++j)
 				{
-					if ((m_Items[i].Level > m_Items[j].Level && !des)
-						|| (m_Items[i].Level < m_Items[j].Level && des))
+					if (m_Items[i].Level > m_Items[j].Level && !des
+						|| m_Items[i].Level < m_Items[j].Level && des)
 					{
 						var temp = m_Items[i];
 						m_Items[i] = m_Items[j];
@@ -297,8 +297,8 @@ namespace RCore.Framework.Data
 			{
 				for (int j = i + 1; j < m_Items.Count; ++j)
 				{
-					if ((m_Items[i].Quantity > m_Items[j].Quantity && !des)
-						|| (m_Items[i].Quantity < m_Items[j].Quantity && des))
+					if (m_Items[i].Quantity > m_Items[j].Quantity && !des
+						|| m_Items[i].Quantity < m_Items[j].Quantity && des)
 					{
 						var temp = m_Items[i];
 						m_Items[i] = m_Items[j];
@@ -314,8 +314,8 @@ namespace RCore.Framework.Data
 			{
 				for (int j = i + 1; j < m_Items.Count; ++j)
 				{
-					if ((m_Items[i].BaseId > m_Items[j].BaseId && !des)
-						|| (m_Items[i].BaseId < m_Items[j].BaseId && des))
+					if (m_Items[i].BaseId > m_Items[j].BaseId && !des
+						|| m_Items[i].BaseId < m_Items[j].BaseId && des)
 					{
 						var temp = m_Items[i];
 						m_Items[i] = m_Items[j];
@@ -382,9 +382,9 @@ namespace RCore.Framework.Data
 					{
 						case InvSort.Level:
 							if (!iEquipped && jEquipped
-								|| (iEquipped == jEquipped && iLevel < jLevel)
-								|| (iEquipped == jEquipped && iLevel == jLevel && iRarity < jRarity)
-								|| (iEquipped == jEquipped && iLevel == jLevel && iRarity == jRarity && iSlot > jSlot))
+								|| iEquipped == jEquipped && iLevel < jLevel
+								|| iEquipped == jEquipped && iLevel == jLevel && iRarity < jRarity
+								|| iEquipped == jEquipped && iLevel == jLevel && iRarity == jRarity && iSlot > jSlot)
 							{
 								var temp = m_Items[i];
 								m_Items[i] = m_Items[j];
@@ -394,9 +394,9 @@ namespace RCore.Framework.Data
 
 						case InvSort.Rarity:
 							if (!iEquipped && jEquipped
-								|| (iEquipped == jEquipped && iRarity < jRarity)
-								|| (iEquipped == jEquipped && iRarity == jRarity && iLevel < jLevel)
-								|| (iEquipped == jEquipped && iRarity == jRarity && iLevel == jLevel && iSlot > jSlot))
+								|| iEquipped == jEquipped && iRarity < jRarity
+								|| iEquipped == jEquipped && iRarity == jRarity && iLevel < jLevel
+								|| iEquipped == jEquipped && iRarity == jRarity && iLevel == jLevel && iSlot > jSlot)
 							{
 								var temp = m_Items[i];
 								m_Items[i] = m_Items[j];
@@ -406,9 +406,9 @@ namespace RCore.Framework.Data
 
 						case InvSort.Slot:
 							if (!iEquipped && jEquipped
-								|| (iEquipped == jEquipped && iSlot > jSlot)
-								|| (iEquipped == jEquipped && iSlot == jSlot && iRarity < jRarity)
-								|| (iEquipped == jEquipped && iSlot == jSlot && iRarity == jRarity && iLevel < jLevel))
+								|| iEquipped == jEquipped && iSlot > jSlot
+								|| iEquipped == jEquipped && iSlot == jSlot && iRarity < jRarity
+								|| iEquipped == jEquipped && iSlot == jSlot && iRarity == jRarity && iLevel < jLevel)
 							{
 								var temp = m_Items[i];
 								m_Items[i] = m_Items[j];

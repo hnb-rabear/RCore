@@ -272,7 +272,7 @@ namespace RCore.Components
 							contentHeight = itemSize.y;
 					}
 				}
-				contentWidth += (paddingLeft + paddingRight);
+				contentWidth += paddingLeft + paddingRight;
 				contentWidth += spacing * (m_Items.Count - 1);
 			}
 			else
@@ -295,7 +295,7 @@ namespace RCore.Components
 		{
 			m_ScrollView.StopMovement();
 
-			Vector2 targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+			var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
 			targetAnchored.x -= m_TargetPosOffset.x;
 			targetAnchored.y -= m_TargetPosOffset.y;
 			if (targetAnchored.x > m_ContentAnchoredXMax)
@@ -303,7 +303,7 @@ namespace RCore.Components
 			if (targetAnchored.x < m_ContentAnchoredXMin)
 				targetAnchored.x = m_ContentAnchoredXMin;
 
-			Vector2 contentAnchored = Content.anchoredPosition;
+			var contentAnchored = Content.anchoredPosition;
 			if (pImmediately)
 			{
 				contentAnchored.x = targetAnchored.x;
@@ -336,7 +336,7 @@ namespace RCore.Components
 				bool moveToLeft = Content.anchoredPosition.x < targetAnchored.x;
 				for (int i = 0; i < m_Items.Count; i++)
 				{
-					if ((moveToLeft && i > m_PreviousItemIndex) || (!moveToLeft && i < m_PreviousItemIndex) || (moveToLeft && i < m_FocusedItemIndex) || (!moveToLeft && i > m_FocusedItemIndex))
+					if (moveToLeft && i > m_PreviousItemIndex || !moveToLeft && i < m_PreviousItemIndex || moveToLeft && i < m_FocusedItemIndex || !moveToLeft && i > m_FocusedItemIndex)
 						m_Items[i].Hide();
 					else
 						m_Items[i].Show();
@@ -390,7 +390,7 @@ namespace RCore.Components
 			for (int i = 0; i < m_Items.Count; i++)
 				m_Items[i].Show();
 
-			Vector2 targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+			var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
 			targetAnchored.x -= m_TargetPosOffset.x;
 			targetAnchored.y -= m_TargetPosOffset.y;
 			if (targetAnchored.x > m_ContentAnchoredXMax)
@@ -398,7 +398,7 @@ namespace RCore.Components
 			if (targetAnchored.x < m_ContentAnchoredXMin)
 				targetAnchored.x = m_ContentAnchoredXMin;
 
-			Vector2 contentAnchored = Content.anchoredPosition;
+			var contentAnchored = Content.anchoredPosition;
 			contentAnchored.x = targetAnchored.x;
 			Content.anchoredPosition = contentAnchored;
 			m_PreviousItemIndex = m_FocusedItemIndex;

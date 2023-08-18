@@ -107,7 +107,7 @@ namespace RCore.Framework.Data
             if (string.IsNullOrEmpty(val))
                 return mDefaultValue;
 
-            DateTime output = DateTime.MinValue;
+            var output = DateTime.MinValue;
             if (DateTime.TryParse(val, out output))
             {
                 return output;

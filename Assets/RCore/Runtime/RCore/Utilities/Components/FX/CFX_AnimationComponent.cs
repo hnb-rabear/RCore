@@ -20,7 +20,7 @@ namespace RCore.Components
                 {
                     animator.SetInteger("trigger", value);
 
-                    AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+                    var info = animator.GetCurrentAnimatorStateInfo(0);
                     lifeTime = info.length;
                 }
             }
@@ -72,7 +72,7 @@ namespace RCore.Components
         {
             if (animator != null)
             {
-                AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+                var info = animator.GetCurrentAnimatorStateInfo(0);
                 lifeTime = info.length;
             }
 
@@ -96,7 +96,7 @@ namespace RCore.Components
 
             if (animator != null)
             {
-                AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+                var info = animator.GetCurrentAnimatorStateInfo(0);
                 lifeTime = info.length;
             }
 

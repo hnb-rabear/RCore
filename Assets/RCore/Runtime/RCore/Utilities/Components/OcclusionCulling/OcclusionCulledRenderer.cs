@@ -86,7 +86,7 @@ namespace RCore.Components
 
         public bool InsideCamera(Camera pCamera)
         {
-            Plane[] planes = GeometryUtility.CalculateFrustumPlanes(pCamera);
+            var planes = GeometryUtility.CalculateFrustumPlanes(pCamera);
             return InSidePlanes(planes);
         }
 

@@ -685,64 +685,64 @@ namespace RCore.Common
 		public Transform parent;
 		public ComponentRef<T> reference;
 		internal bool loading { get; private set; }
-		internal T prefab { get; private set; }
-		internal T cache;
+		internal T asset { get; private set; }
+		internal T instance;
 		public async UniTask<T> InstantiateAsync(bool pDefaultActive = false)
 		{
-			if (cache != null) return cache;
-			if (prefab == null)
+			if (instance != null) return instance;
+			if (asset != null)
+			{
+				instance = Object.Instantiate(asset, parent);
+				instance.SetActive(pDefaultActive);
+				instance.name = asset.name;
+			}
+			else
 			{
 				loading = true;
 				var go = await Addressables.InstantiateAsync(reference, parent);
 				loading = false;
 				go.SetActive(pDefaultActive);
-				go.TryGetComponent(out cache);
-				Debug.Log($"Instantiate Asset Bundle {cache.name}");
-				return cache;
+				go.TryGetComponent(out instance);
+				Debug.Log($"Instantiate Asset Bundle {instance.name}");
+				return instance;
 			}
-			if (prefab != null)
-			{
-				cache = Object.Instantiate(prefab, parent);
-				cache.SetActive(pDefaultActive);
-				cache.name = prefab.name;
-			}
-			return cache;
+			return instance;
 		}
 		public async UniTask<T> LoadAsync()
 		{
-			if (prefab != null) return prefab;
-			if (prefab == null)
+			if (asset != null) return asset;
+			if (asset == null)
 			{
 				loading = true;
 				var obj = await Addressables.LoadAssetAsync<GameObject>(reference);
 				if (obj)
-					prefab = obj.GetComponent<T>();
+					asset = obj.GetComponent<T>();
 				loading = false;
 
-				if (prefab != null)
-					Debug.Log($"Load Asset Bundle {prefab.name}");
+				if (asset != null)
+					Debug.Log($"Load Asset Bundle {asset.name}");
 			}
-			return prefab;
+			return asset;
 		}
 		public bool Preloaded()
 		{
-			if (cache == null)
+			if (instance == null)
 				InstantiateAsync();
-			return cache != null;
+			return instance != null;
 		}
 		public void Unload()
 		{
-			if (prefab != null)
+			if (asset != null)
 			{
-				Debug.Log($"Unload Asset Bundle {prefab.name}");
-				if (cache != null)
-					Object.Destroy(cache.gameObject);
-				Addressables.Release(prefab.gameObject);
+				Debug.Log($"Unload Asset Bundle {asset.name}");
+				if (instance != null)
+					Object.Destroy(instance.gameObject);
+				Addressables.Release(asset.gameObject);
 			}
-			else if (cache != null)
+			else if (instance != null)
 			{
-				Debug.Log($"Unload Asset Bundle {cache.name}");
-				Addressables.ReleaseInstance(cache.gameObject);
+				Debug.Log($"Unload Asset Bundle {instance.name}");
+				Addressables.ReleaseInstance(instance.gameObject);
 			}
 		}
 	}

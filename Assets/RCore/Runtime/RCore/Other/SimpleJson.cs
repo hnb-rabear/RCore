@@ -374,14 +374,14 @@ namespace SimpleJSON
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             WriteToStringBuilder(sb, 0, 0, JSONTextMode.Compact);
             return sb.ToString();
         }
 
         public virtual string ToString(int aIndent)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             WriteToStringBuilder(sb, 0, aIndent, JSONTextMode.Indent);
             return sb.ToString();
         }
@@ -430,7 +430,7 @@ namespace SimpleJSON
                     return v;
                 return !string.IsNullOrEmpty(Value);
             }
-            set => Value = (value) ? "true" : "false";
+            set => Value = value ? "true" : "false";
         }
 
         public virtual JSONArray AsArray => this as JSONArray;
@@ -447,7 +447,7 @@ namespace SimpleJSON
         }
         public static implicit operator string(JSONNode d)
         {
-            return (d == null) ? null : d.Value;
+            return d == null ? null : d.Value;
         }
 
         public static implicit operator JSONNode(double n)
@@ -456,7 +456,7 @@ namespace SimpleJSON
         }
         public static implicit operator double(JSONNode d)
         {
-            return (d == null) ? 0 : d.AsDouble;
+            return d == null ? 0 : d.AsDouble;
         }
 
         public static implicit operator JSONNode(float n)
@@ -465,7 +465,7 @@ namespace SimpleJSON
         }
         public static implicit operator float(JSONNode d)
         {
-            return (d == null) ? 0 : d.AsFloat;
+            return d == null ? 0 : d.AsFloat;
         }
 
         public static implicit operator JSONNode(int n)
@@ -474,7 +474,7 @@ namespace SimpleJSON
         }
         public static implicit operator int(JSONNode d)
         {
-            return (d == null) ? 0 : d.AsInt;
+            return d == null ? 0 : d.AsInt;
         }
 
         public static implicit operator JSONNode(bool b)
@@ -483,7 +483,7 @@ namespace SimpleJSON
         }
         public static implicit operator bool(JSONNode d)
         {
-            return (d == null) ? false : d.AsBool;
+            return d == null ? false : d.AsBool;
         }
 
         public static implicit operator JSONNode(KeyValuePair<string, JSONNode> aKeyValue)
@@ -562,7 +562,7 @@ namespace SimpleJSON
                         sb.Append("\\f");
                         break;
                     default:
-                        if (c < ' ' || (forceASCII && c > 127))
+                        if (c < ' ' || forceASCII && c > 127)
                         {
                             ushort val = c;
                             sb.Append("\\u").Append(val.ToString("X4"));
@@ -601,10 +601,10 @@ namespace SimpleJSON
 
         public static JSONNode Parse(string aJSON)
         {
-            Stack<JSONNode> stack = new Stack<JSONNode>();
+            var stack = new Stack<JSONNode>();
             JSONNode ctx = null;
             int i = 0;
-            StringBuilder Token = new StringBuilder();
+            var Token = new StringBuilder();
             string TokenName = "";
             bool QuoteMode = false;
             bool TokenIsQuoted = false;
@@ -821,7 +821,7 @@ namespace SimpleJSON
         {
             if (aIndex < 0 || aIndex >= m_List.Count)
                 return null;
-            JSONNode tmp = m_List[aIndex];
+            var tmp = m_List[aIndex];
             m_List.RemoveAt(aIndex);
             return tmp;
         }
@@ -836,7 +836,7 @@ namespace SimpleJSON
         {
             get
             {
-                foreach (JSONNode N in m_List)
+                foreach (var N in m_List)
                     yield return N;
             }
         }
@@ -944,7 +944,7 @@ namespace SimpleJSON
         {
             if (!m_Dict.ContainsKey(aKey))
                 return null;
-            JSONNode tmp = m_Dict[aKey];
+            var tmp = m_Dict[aKey];
             m_Dict.Remove(aKey);
             return tmp;
         }
@@ -976,7 +976,7 @@ namespace SimpleJSON
         {
             get
             {
-                foreach (KeyValuePair<string, JSONNode> N in m_Dict)
+                foreach (var N in m_Dict)
                     yield return N.Value;
             }
         }
@@ -1043,7 +1043,7 @@ namespace SimpleJSON
             string s = obj as string;
             if (s != null)
                 return m_Data == s;
-            JSONString s2 = obj as JSONString;
+            var s2 = obj as JSONString;
             if (s2 != null)
                 return m_Data == s2.m_Data;
             return false;
@@ -1109,7 +1109,7 @@ namespace SimpleJSON
                 return false;
             if (base.Equals(obj))
                 return true;
-            JSONNumber s2 = obj as JSONNumber;
+            var s2 = obj as JSONNumber;
             if (s2 != null)
                 return m_Data == s2.m_Data;
             if (IsNumeric(obj))
@@ -1159,7 +1159,7 @@ namespace SimpleJSON
 
         internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
-            aSB.Append((m_Data) ? "true" : "false");
+            aSB.Append(m_Data ? "true" : "false");
         }
         public override bool Equals(object obj)
         {
@@ -1205,7 +1205,7 @@ namespace SimpleJSON
         {
             if (ReferenceEquals(this, obj))
                 return true;
-            return (obj is JSONNull);
+            return obj is JSONNull;
         }
         public override int GetHashCode()
         {
@@ -1315,13 +1315,13 @@ namespace SimpleJSON
         {
             get
             {
-                JSONNumber tmp = new JSONNumber(0);
+                var tmp = new JSONNumber(0);
                 Set(tmp);
                 return 0;
             }
             set
             {
-                JSONNumber tmp = new JSONNumber(value);
+                var tmp = new JSONNumber(value);
                 Set(tmp);
             }
         }
@@ -1330,13 +1330,13 @@ namespace SimpleJSON
         {
             get
             {
-                JSONNumber tmp = new JSONNumber(0.0f);
+                var tmp = new JSONNumber(0.0f);
                 Set(tmp);
                 return 0.0f;
             }
             set
             {
-                JSONNumber tmp = new JSONNumber(value);
+                var tmp = new JSONNumber(value);
                 Set(tmp);
             }
         }
@@ -1345,13 +1345,13 @@ namespace SimpleJSON
         {
             get
             {
-                JSONNumber tmp = new JSONNumber(0.0);
+                var tmp = new JSONNumber(0.0);
                 Set(tmp);
                 return 0.0;
             }
             set
             {
-                JSONNumber tmp = new JSONNumber(value);
+                var tmp = new JSONNumber(value);
                 Set(tmp);
             }
         }
@@ -1360,13 +1360,13 @@ namespace SimpleJSON
         {
             get
             {
-                JSONBool tmp = new JSONBool(false);
+                var tmp = new JSONBool(false);
                 Set(tmp);
                 return false;
             }
             set
             {
-                JSONBool tmp = new JSONBool(value);
+                var tmp = new JSONBool(value);
                 Set(tmp);
             }
         }
@@ -1375,7 +1375,7 @@ namespace SimpleJSON
         {
             get
             {
-                JSONArray tmp = new JSONArray();
+                var tmp = new JSONArray();
                 Set(tmp);
                 return tmp;
             }
@@ -1385,7 +1385,7 @@ namespace SimpleJSON
         {
             get
             {
-                JSONObject tmp = new JSONObject();
+                var tmp = new JSONObject();
                 Set(tmp);
                 return tmp;
             }

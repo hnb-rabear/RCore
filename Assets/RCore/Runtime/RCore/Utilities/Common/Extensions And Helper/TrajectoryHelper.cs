@@ -20,8 +20,8 @@ namespace RCore.Common
         /// <returns>First order intercept</returns>
         public static Vector3 CalcInterceptPos(Vector3 shooterPosition, Vector3 shooterVelocity, float shotSpeed, Vector3 targetPosition, Vector3 targetVelocity)
         {
-            Vector3 targetRelativePosition = targetPosition - shooterPosition;
-            Vector3 targetRelativeVelocity = targetVelocity - shooterVelocity;
+            var targetRelativePosition = targetPosition - shooterPosition;
+            var targetRelativeVelocity = targetVelocity - shooterVelocity;
             float t = CalcInterceptTime(shotSpeed, targetRelativePosition, targetRelativeVelocity);
             return targetPosition + t * targetRelativeVelocity;
         }
@@ -108,8 +108,8 @@ namespace RCore.Common
         public static float? CalcAngleOfElevation(Vector3 from, Vector3 to, float pProjectileVelocity, float pGravity, bool posAngle = false)
         {
             //float x = Mathf.Abs((to - from).z);
-            Vector3 fromNoY = new Vector3(from.x, 0, from.z);
-            Vector3 toNoY = new Vector3(to.x, 0, to.z);
+            var fromNoY = new Vector3(from.x, 0, from.z);
+            var toNoY = new Vector3(to.x, 0, to.z);
             float x = Vector3.Distance(fromNoY, toNoY);
             float y = (to - from).y;
             float v2 = pProjectileVelocity * pProjectileVelocity;
@@ -164,7 +164,7 @@ namespace RCore.Common
             float speedSquared = speed * speed;
 
             float operandA = Mathf.Pow(speed, 4);
-            float operandB = gravity * (gravity * (distance * distance) + (2 * yOffset * speedSquared));
+            float operandB = gravity * (gravity * (distance * distance) + 2 * yOffset * speedSquared);
 
             // Target is not in range
             if (operandB > operandA)
@@ -198,7 +198,7 @@ namespace RCore.Common
         public static float CalcLaunchSpeed(float distance, float yOffset, float gravity, float pAngleInDeg)
         {
             float angle = pAngleInDeg * Mathf.Deg2Rad;
-            float speed = (distance * Mathf.Sqrt(gravity) * Mathf.Sqrt(1 / Mathf.Cos(angle))) / Mathf.Sqrt(2 * distance * Mathf.Sin(angle) + 2 * yOffset * Mathf.Cos(angle));
+            float speed = distance * Mathf.Sqrt(gravity) * Mathf.Sqrt(1 / Mathf.Cos(angle)) / Mathf.Sqrt(2 * distance * Mathf.Sin(angle) + 2 * yOffset * Mathf.Cos(angle));
 
             return speed;
 
@@ -224,7 +224,7 @@ namespace RCore.Common
         {
             float radians = angleInDeg * Mathf.Deg2Rad;
             float ySpeed = speed * Mathf.Sin(radians);
-            float time = (ySpeed + Mathf.Sqrt((ySpeed * ySpeed) + 2 * gravity * yOffset)) / gravity;
+            float time = (ySpeed + Mathf.Sqrt(ySpeed * ySpeed + 2 * gravity * yOffset)) / gravity;
 
             return time;
         }
@@ -249,7 +249,7 @@ namespace RCore.Common
 
             float radians = angleInDeg * Mathf.Deg2Rad;
 
-            Vector2[] points = new Vector2[iterations + 1];
+            var points = new Vector2[iterations + 1];
 
             for (int i = 0; i <= iterations; i++)
             {
@@ -259,7 +259,7 @@ namespace RCore.Common
                 float ySpeed = speed * Mathf.Sin(radians);
                 float y = -0.5f * gravity * (t * t) + ySpeed * t;
 
-                Vector2 p = new Vector2(startPoint.x + x * direction, startPoint.y + y);
+                var p = new Vector2(startPoint.x + x * direction, startPoint.y + y);
                 points[i] = p;
             }
 
@@ -307,21 +307,21 @@ namespace RCore.Common
             float angle = pAngleInDeg * Mathf.Deg2Rad;
 
             //Positions of this object and the target on the same plane
-            Vector3 planarTarget = new Vector3(pTargetPos.x, 0, pTargetPos.z);
-            Vector3 planarPostion = new Vector3(pStartPos.x, 0, pStartPos.z);
+            var planarTarget = new Vector3(pTargetPos.x, 0, pTargetPos.z);
+            var planarPostion = new Vector3(pStartPos.x, 0, pStartPos.z);
 
             //Planar distance between objects
             float distance = Vector3.Distance(planarTarget, planarPostion);
             //Distance along the y axis between objects
             float yOffset = pStartPos.y - pTargetPos.y;
 
-            float initialVelocity = (1 / Mathf.Cos(angle)) * Mathf.Sqrt((0.5f * gravity * Mathf.Pow(distance, 2)) / (distance * Mathf.Tan(angle) + yOffset));
+            float initialVelocity = 1 / Mathf.Cos(angle) * Mathf.Sqrt(0.5f * gravity * Mathf.Pow(distance, 2) / (distance * Mathf.Tan(angle) + yOffset));
 
-            Vector3 velocity = new Vector3(0, initialVelocity * Mathf.Sin(angle), initialVelocity * Mathf.Cos(angle));
+            var velocity = new Vector3(0, initialVelocity * Mathf.Sin(angle), initialVelocity * Mathf.Cos(angle));
 
             //Rotate our velocity to match the direction between the two objects
             float angleBetweenObjects = Vector3.Angle(Vector3.forward, planarTarget - planarPostion) * (pTargetPos.x > pStartPos.x ? 1 : -1);
-            Vector3 finalVelocity = Quaternion.AngleAxis(angleBetweenObjects, Vector3.up) * velocity;
+            var finalVelocity = Quaternion.AngleAxis(angleBetweenObjects, Vector3.up) * velocity;
 
             return finalVelocity;
 

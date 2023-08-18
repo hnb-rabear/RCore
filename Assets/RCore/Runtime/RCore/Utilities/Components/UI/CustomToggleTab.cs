@@ -57,12 +57,28 @@ namespace RCore.Components
         public Action onClickOnLock;
 
         private CustomToggleGroup m_CustomToggleGroup;
+		private bool m_IsOn;
+		
+		public bool IsOn
+		{
+			get => isOn;
+			set
+			{
+				isOn = value;
+				if (m_IsOn != value)
+				{
+					m_IsOn = value;
+					onValueChanged?.Invoke(value);
+				}
+			}
+		}
 
 		protected override void Start()
         {
             base.Start();
 
             m_CustomToggleGroup = group as CustomToggleGroup;
+			m_IsOn = isOn;
 		}
 
 #if UNITY_EDITOR
@@ -89,7 +105,7 @@ namespace RCore.Components
             }
             if (enableBgSpriteSwitch)
             {
-                if (sptActiveBackground == null && imgBackground.sprite != null)
+                if (imgBackground != null && sptActiveBackground == null && imgBackground.sprite != null)
                     sptActiveBackground = imgBackground.sprite;
             }
             if (enableFontSizeSwitch)
@@ -186,17 +202,17 @@ namespace RCore.Components
         private void RefreshByTween()
         {
 #if USE_DOTWEEN
-            if (mIsOn == isOn)
+            if (m_IsOn == isOn)
                 return;
 
-            mIsOn = isOn;
+            m_IsOn = isOn;
 
-            if (contentsInActive != null)
-                foreach (var item in contentsInActive)
+            if (contentsActive != null)
+                foreach (var item in contentsActive)
                     item.SetActive(isOn);
 
-            if (contentsInDeactive != null)
-                foreach (var item in contentsInDeactive)
+            if (contentsInactive != null)
+                foreach (var item in contentsInactive)
                     item.SetActive(!isOn);
 
             if (Application.isPlaying)
@@ -209,28 +225,28 @@ namespace RCore.Components
                 if (enableSizeSwitch || enableTextColorSwitch || enableBgColorSwitch || enableFontSizeSwitch)
                 {
 
-                    Color txtFromColor = !isOn ? colorActiveText : colorInactiveText;
-                    Color txtToColor = isOn ? colorActiveText : colorInactiveText;
-                    Color bgFromColor = !isOn ? colorActiveBackground : colorInactiveBackground;
-                    Color bgToColor = isOn ? colorActiveBackground : colorInactiveBackground;
-                    Vector2 sizeFrom = !isOn ? sizeActive : sizeDeactive;
-                    Vector2 sizeTo = isOn ? sizeActive : sizeDeactive;
+                    var txtFromColor = !isOn ? colorActiveText : colorInactiveText;
+                    var txtToColor = isOn ? colorActiveText : colorInactiveText;
+                    var bgFromColor = !isOn ? colorActiveBackground : colorInactiveBackground;
+                    var bgToColor = isOn ? colorActiveBackground : colorInactiveBackground;
+                    var sizeFrom = !isOn ? sizeActive : sizeInactive;
+                    var sizeTo = isOn ? sizeActive : sizeInactive;
                     float fontSizeFrom = !isOn ? fontSizeActive : fontSizeInactive;
                     float fontSizeTo = isOn ? fontSizeActive : fontSizeInactive;
                     float val = 0;
-                    var rectTransform = (transform as RectTransform);
+                    var rectTransform = transform as RectTransform;
                     DOTween.Kill(GetInstanceID());
                     DOTween.To(() => val, x => val = x, 1, tweenTime)
                         .OnUpdate(() =>
                         {
                             if (enableSizeSwitch)
                             {
-                                Vector2 size = Vector2.Lerp(sizeFrom, sizeTo, val);
+                                var size = Vector2.Lerp(sizeFrom, sizeTo, val);
                                 rectTransform.sizeDelta = size;
                             }
                             if (enableTextColorSwitch)
                             {
-                                Color color = Color.Lerp(txtFromColor, txtToColor, val);
+                                var color = Color.Lerp(txtFromColor, txtToColor, val);
                                 if (txtLabel != null)
                                     txtLabel.color = color;
 
@@ -240,7 +256,7 @@ namespace RCore.Components
                             }
                             if (enableBgColorSwitch)
                             {
-                                Color color = Color.Lerp(bgFromColor, bgToColor, val);
+                                var color = Color.Lerp(bgFromColor, bgToColor, val);
                                 imgBackground.color = color;
                             }
                             if (enableFontSizeSwitch)
@@ -256,7 +272,7 @@ namespace RCore.Components
                         .OnComplete(() =>
                         {
                             if (enableSizeSwitch)
-                                rectTransform.sizeDelta = isOn ? sizeActive : sizeDeactive;
+                                rectTransform.sizeDelta = isOn ? sizeActive : sizeInactive; 
                             if (enableTextColorSwitch)
                             {
                                 if (txtLabel != null)
@@ -281,8 +297,8 @@ namespace RCore.Components
                         .SetId(GetInstanceID())
                         .SetEase(Ease.OutCubic);
 
-                    if (mCustomToggleGroup != null)
-                        mCustomToggleGroup.SetTarget(rectTransform, tweenTime);
+                    if (m_CustomToggleGroup != null)
+						m_CustomToggleGroup.SetTarget(rectTransform, tweenTime);
                 }
             }
 #endif
@@ -293,7 +309,7 @@ namespace RCore.Components
             if (pIsOn && AudioManager.Instance)
                 AudioManager.Instance.PlaySFX(sfxClip, 0);
 #if USE_DOTWEEN
-            if (Application.isPlaying && tweenTime > 0)
+			if (Application.isPlaying && tweenTime > 0 && transition != Transition.Animation)
             {
                 RefreshByTween();
                 return;

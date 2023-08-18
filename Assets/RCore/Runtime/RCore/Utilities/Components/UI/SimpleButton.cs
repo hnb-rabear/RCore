@@ -51,7 +51,7 @@ namespace RCore.Components
                 var text = label.objectReferenceValue as Text;
                 if (text != null)
                 {
-                    SerializedObject textObj = new SerializedObject(text);
+                    var textObj = new SerializedObject(text);
                     EditorHelper.SerializeField(textObj, "m_Text");
 
                     if (GUI.changed)

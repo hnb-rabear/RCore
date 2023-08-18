@@ -15,10 +15,10 @@ namespace RCore.Common
         public static Rect DrawHandlesRectangleXY(Vector3 pRoot, Rect pRect, Color pWireColor)
         {
 #if UNITY_EDITOR
-            Vector3 topLeft = new Vector3(pRect.xMin, pRect.yMax) + pRoot;
-            Vector3 topRight = new Vector3(pRect.xMax, pRect.yMax) + pRoot;
-            Vector3 botLeft = new Vector3(pRect.xMin, pRect.yMin) + pRoot;
-            Vector3 botRight = new Vector3(pRect.xMax, pRect.yMin) + pRoot;
+            var topLeft = new Vector3(pRect.xMin, pRect.yMax) + pRoot;
+            var topRight = new Vector3(pRect.xMax, pRect.yMax) + pRoot;
+            var botLeft = new Vector3(pRect.xMin, pRect.yMin) + pRoot;
+            var botRight = new Vector3(pRect.xMax, pRect.yMin) + pRoot;
 
             topLeft = RoundVector(topLeft, 2);
             topRight = RoundVector(topRight, 2);
@@ -27,9 +27,9 @@ namespace RCore.Common
 
             Handles.color = pWireColor;
             Handles.DrawPolyLine(topLeft, topRight, botRight, botLeft, topLeft);
-            Vector3 newTopRight = Handles.FreeMoveHandle(topRight, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newTopRight = Handles.FreeMoveHandle(topRight, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
             Handles.color = pWireColor.Invert();
-            Vector3 newBotLeft = Handles.FreeMoveHandle(botLeft, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newBotLeft = Handles.FreeMoveHandle(botLeft, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
 
             newTopRight = RoundVector(newTopRight, 2);
             newBotLeft = RoundVector(newBotLeft, 2);
@@ -49,13 +49,13 @@ namespace RCore.Common
         public static void DrawHandlesRectangleXZ(ref Vector3 pBotLeft, ref Vector3 pTopRight, Color pWireColor = default(Color))
         {
 #if UNITY_EDITOR
-            Vector3 topLeft = new Vector3(pBotLeft.x, 0, pTopRight.z);
-            Vector3 botRight = new Vector3(pTopRight.x, 0, pBotLeft.z);
+            var topLeft = new Vector3(pBotLeft.x, 0, pTopRight.z);
+            var botRight = new Vector3(pTopRight.x, 0, pBotLeft.z);
 
             Handles.color = pWireColor;
             Handles.DrawPolyLine(topLeft, pTopRight, botRight, pBotLeft, topLeft);
-            Vector3 newTopRight = Handles.FreeMoveHandle(pTopRight, Quaternion.identity, 1, Vector3.zero, Handles.SphereHandleCap);
-            Vector3 newBotLeft = Handles.FreeMoveHandle(pBotLeft, Quaternion.identity, 1, Vector3.zero, Handles.SphereHandleCap);
+            var newTopRight = Handles.FreeMoveHandle(pTopRight, Quaternion.identity, 1, Vector3.zero, Handles.SphereHandleCap);
+            var newBotLeft = Handles.FreeMoveHandle(pBotLeft, Quaternion.identity, 1, Vector3.zero, Handles.SphereHandleCap);
 
             pTopRight = RoundVector(newTopRight, 0);
             pBotLeft = RoundVector(newBotLeft, 0);
@@ -65,10 +65,10 @@ namespace RCore.Common
         public static Bounds DrawHandlesRectangleXY(Vector3 pRoot, Bounds pBounds, Color pWireColor)
         {
 #if UNITY_EDITOR
-            Vector3 topLeft = new Vector3(pBounds.min.x, pBounds.max.y) + pRoot;
-            Vector3 topRight = new Vector3(pBounds.max.x, pBounds.max.y) + pRoot;
-            Vector3 botLeft = new Vector3(pBounds.min.x, pBounds.min.y) + pRoot;
-            Vector3 botRight = new Vector3(pBounds.max.x, pBounds.min.y) + pRoot;
+            var topLeft = new Vector3(pBounds.min.x, pBounds.max.y) + pRoot;
+            var topRight = new Vector3(pBounds.max.x, pBounds.max.y) + pRoot;
+            var botLeft = new Vector3(pBounds.min.x, pBounds.min.y) + pRoot;
+            var botRight = new Vector3(pBounds.max.x, pBounds.min.y) + pRoot;
 
             topLeft = RoundVector(topLeft, 2);
             topRight = RoundVector(topRight, 2);
@@ -77,9 +77,9 @@ namespace RCore.Common
 
             Handles.color = pWireColor;
             Handles.DrawPolyLine(topLeft, topRight, botRight, botLeft, topLeft);
-            Vector3 newTopRight = Handles.FreeMoveHandle(topRight, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newTopRight = Handles.FreeMoveHandle(topRight, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
             Handles.color = pWireColor.Invert();
-            Vector3 newBotLeft = Handles.FreeMoveHandle(botLeft, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newBotLeft = Handles.FreeMoveHandle(botLeft, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
 
             newTopRight = RoundVector(newTopRight, 2);
             newBotLeft = RoundVector(newBotLeft, 2);
@@ -157,7 +157,7 @@ namespace RCore.Common
             var restoreColor = GUI.color;
             if (colour.HasValue) GUI.color = colour.Value;
             var view = SceneView.currentDrawingSceneView;
-            Vector3 screenPos = view.camera.WorldToScreenPoint(worldPos);
+            var screenPos = view.camera.WorldToScreenPoint(worldPos);
 
             if (screenPos.y < 0 || screenPos.y > Screen.height || screenPos.x < 0 || screenPos.x > Screen.width || screenPos.z < 0)
             {
@@ -166,8 +166,8 @@ namespace RCore.Common
                 return;
             }
 
-            Vector2 size = GUI.skin.label.CalcSize(new GUIContent(text));
-            GUI.Label(new Rect(screenPos.x - (size.x / 2), -screenPos.y + view.position.height + 4, size.x, size.y), text);
+            var size = GUI.skin.label.CalcSize(new GUIContent(text));
+            GUI.Label(new Rect(screenPos.x - size.x / 2, -screenPos.y + view.position.height + 4, size.x, size.y), text);
             GUI.color = restoreColor;
             Handles.EndGUI();
 #endif
@@ -226,7 +226,7 @@ namespace RCore.Common
         {
 #if UNITY_EDITOR
             Vector3 mousePosition = e.mousePosition;
-            Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
+            var ray = HandleUtility.GUIPointToWorldRay(mousePosition);
             return ray.origin;
 #else
             return Vector3.zero;

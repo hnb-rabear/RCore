@@ -2,6 +2,7 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
+using RCore.Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,10 +25,28 @@ namespace RCore.Editor
             AssetDatabase.SaveAssets();
         }
         
-        [MenuItem("RCore/Refresh Assets Database " + SHIFT + "_2", priority = 1)]
-        private static void RefreshAssetsDatabase()
+        [MenuItem("RCore/Refresh Prefabs " + SHIFT + "_2", priority = 1)]
+        private static void RefreshPrefabs()
         {
-	        var assetGUIDs = AssetDatabase.FindAssets("t:GameObject t:ScriptableObject", new string[] { "Assets" });
+	        string folderPath = EditorHelper.OpenFolderPanel();
+	        folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
+	        var assetGUIDs = AssetDatabase.FindAssets("t:GameObject", new string[] { folderPath });
+	        foreach (string guid in assetGUIDs)
+	        {
+		        var path = AssetDatabase.GUIDToAssetPath(guid);
+		        var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+		        if (asset != null)
+			        EditorUtility.SetDirty(asset);
+	        }
+	        AssetDatabase.SaveAssets();
+        }
+        
+        [MenuItem("RCore/Refresh ScriptableObjects " + SHIFT + "_3", priority = 1)]
+        private static void RefreshScriptableObjects()
+        {
+	        string folderPath = EditorHelper.OpenFolderPanel();
+	        folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
+	        var assetGUIDs = AssetDatabase.FindAssets("t:ScriptableObject", new string[] { folderPath });
 	        foreach (string guid in assetGUIDs)
 	        {
 		        var path = AssetDatabase.GUIDToAssetPath(guid);

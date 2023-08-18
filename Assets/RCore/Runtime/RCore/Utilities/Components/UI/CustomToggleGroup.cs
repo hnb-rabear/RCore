@@ -31,10 +31,10 @@ namespace RCore.Components
             DOTween.To(() => lerp, x => lerp = x, 1f, pTweenDuration)
                 .OnUpdate(() =>
                 {
-                    Vector2 pos = Vector2.Lerp(oldPos, pTarget.anchoredPosition, lerp);
+                    var pos = Vector2.Lerp(oldPos, pTarget.anchoredPosition, lerp);
                     dynamicBackground.anchoredPosition = pos;
 
-                    Vector2 size = Vector2.Lerp(oldSize, pTarget.sizeDelta, lerp);
+                    var size = Vector2.Lerp(oldSize, pTarget.sizeDelta, lerp);
                     dynamicBackground.sizeDelta = size;
                 })
                 .OnComplete(() =>

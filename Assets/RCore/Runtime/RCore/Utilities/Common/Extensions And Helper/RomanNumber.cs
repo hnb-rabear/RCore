@@ -69,7 +69,7 @@ public static class Roman
 
             if (previous != 0 && current > previous)
             {
-                total = total - (2 * previous) + current;
+                total = total - 2 * previous + current;
             }
             else
             {

@@ -279,7 +279,7 @@ namespace RCore.Common
 
 			if (m_Parent == null)
 			{
-				GameObject temp = new GameObject();
+				var temp = new GameObject();
 				temp.name = $"Pool_{m_Name}";
 				m_Parent = temp.transform;
 			}
@@ -350,14 +350,14 @@ namespace RCore.Common
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
 			{
-				T newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
+				var newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
 				newItem.name = m_Name;
 				m_InactiveList.Add(newItem);
 			}
 			else
 #endif
 			{
-				T newItem = Object.Instantiate(m_Prefab, m_Parent);
+				var newItem = Object.Instantiate(m_Prefab, m_Parent);
 				newItem.name = m_Name;
 				m_InactiveList.Add(newItem);
 			}
@@ -398,7 +398,7 @@ namespace RCore.Common
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
 			{
-				T newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
+				var newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
 				newItem.name = m_Name;
 				m_InactiveList.Add(newItem);
 
@@ -406,7 +406,7 @@ namespace RCore.Common
 			else
 #endif
 			{
-				T newItem = Object.Instantiate(m_Prefab, m_Parent);
+				var newItem = Object.Instantiate(m_Prefab, m_Parent);
 				newItem.name = m_Name;
 				m_InactiveList.Add(newItem);
 			}

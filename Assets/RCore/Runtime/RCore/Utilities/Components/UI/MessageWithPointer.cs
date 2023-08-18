@@ -58,40 +58,40 @@ namespace RCore.Components
                 case PointerAlignment.TopLeft:
                     arrowPos.y = arrowPos.y + targetBounds.size.y / 2 + arrowBounds.size.y / 2 + pOffset;
                     arrowPos.x = arrowPos.x - targetBounds.size.x / 2 - arrowBounds.size.x / 2 - pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, 45));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, 45);
                     break;
                 case PointerAlignment.Top:
                     arrowPos.y = arrowPos.y + targetBounds.size.y / 2 + arrowBounds.size.y / 2 + pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, 0));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, 0);
                     break;
                 case PointerAlignment.TopRight:
                     arrowPos.y = arrowPos.y + targetBounds.size.y / 2 + arrowBounds.size.y / 2 + pOffset;
                     arrowPos.x = arrowPos.x + targetBounds.size.x / 2 + arrowBounds.size.x / 2 + pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, -45));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, -45);
                     break;
                 case PointerAlignment.Left:
                     arrowPos.x = arrowPos.x - targetBounds.size.x / 2 - arrowBounds.size.x / 2 + pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, 90));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, 90);
                     break;
                 case PointerAlignment.Center:
                     break;
                 case PointerAlignment.Right:
                     arrowPos.x = arrowPos.x + targetBounds.size.x / 2 + arrowBounds.size.x / 2 + pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, -90));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, -90);
                     break;
                 case PointerAlignment.BotLeft:
                     arrowPos.y = arrowPos.y - targetBounds.size.y / 2 - arrowBounds.size.y / 2 - pOffset;
                     arrowPos.x = arrowPos.x - targetBounds.size.x / 2 - arrowBounds.size.x / 2 - pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, -235));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, -235);
                     break;
                 case PointerAlignment.Bot:
                     arrowPos.y = arrowPos.y - targetBounds.size.y / 2 - arrowBounds.size.y / 2 - pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, 180));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, 180);
                     break;
                 case PointerAlignment.BotRight:
                     arrowPos.y = arrowPos.y - targetBounds.size.y / 2 - arrowBounds.size.y / 2 - pOffset;
                     arrowPos.x = arrowPos.x + targetBounds.size.x / 2 + arrowBounds.size.x / 2 + pOffset;
-                    mRectPointer.eulerAngles = (new Vector3(0, 0, 235));
+                    mRectPointer.eulerAngles = new Vector3(0, 0, 235);
                     break;
             }
 

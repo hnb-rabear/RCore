@@ -26,7 +26,7 @@ namespace RCore.Framework.UI
         {
             var rootPanel = panel.GetRootPanel();
             var screenWidth = (rootPanel.transform as RectTransform).rect.width;
-            var panelRect = (panel.transform as RectTransform);
+            var panelRect = panel.transform as RectTransform;
             var moveFrom = -(screenWidth / 2f + panelRect.rect.width * (1 - panelRect.pivot.x));
             var moveTo = mDefaultAnchoredPosition.x;
             panelRect.SetX(moveFrom);
@@ -41,7 +41,7 @@ namespace RCore.Framework.UI
         {
             var rootPanel = panel.GetRootPanel();
             var screenWidth = (rootPanel.transform as RectTransform).rect.width;
-            var panelRect = (panel.transform as RectTransform);
+            var panelRect = panel.transform as RectTransform;
             var moveFrom = mDefaultAnchoredPosition.x;
             var moveTo = screenWidth / 2f + panelRect.rect.width * (1 - panelRect.pivot.x);
             panelRect.SetX(moveFrom);
@@ -268,7 +268,7 @@ namespace RCore.Framework.UI
             panel.mParentPanel = this;
             if (TopPanel != null)
             {
-                PanelController currentTopPanel = TopPanel;
+                var currentTopPanel = TopPanel;
                 if (currentTopPanel.Displayed)
                 {
                     currentTopPanel.Hide(() =>

@@ -170,7 +170,7 @@ namespace RCore.Common
 			{
 				var previousPoint = currentPoint;
 				float x = -width + interval * i;
-				float y = Mathf.Sqrt(1 - (x * x) / (width * width)) * height;
+				float y = Mathf.Sqrt(1 - x * x / (width * width)) * height;
 				currentPoint = new Vector2(x, y);
 				if (i > 0)
 					DrawLine(center + previousPoint, center + currentPoint, color, duration);
@@ -292,16 +292,16 @@ namespace RCore.Common
 			for (int y = 0; y <= sizeY; y++)
 			{
 				int yy = y + cellOffset;
-				var pos1 = rootPos + new Vector2((cellOffset * offsetX) - (yy * offsetX), (yy * offsetY) + (cellOffset * offsetY));
-				var pos2 = rootPos + new Vector2(((sizeX + cellOffset) * offsetX) - (yy * offsetX), (yy * offsetY) + ((sizeX + cellOffset) * offsetY));
+				var pos1 = rootPos + new Vector2(cellOffset * offsetX - yy * offsetX, yy * offsetY + cellOffset * offsetY);
+				var pos2 = rootPos + new Vector2((sizeX + cellOffset) * offsetX - yy * offsetX, yy * offsetY + (sizeX + cellOffset) * offsetY);
 				Gizmos.DrawLine(pos1, pos2);
 			}
 
 			for (int x = 0; x <= sizeX; x++)
 			{
 				int xx = x + cellOffset;
-				var pos1 = rootPos + new Vector2((xx * offsetX) - (cellOffset * offsetX), (cellOffset * offsetY) + (xx * offsetY));
-				var pos2 = rootPos + new Vector2((xx * offsetX) - ((sizeY + cellOffset) * offsetX), ((sizeY + cellOffset) * offsetY) + (xx * offsetY));
+				var pos1 = rootPos + new Vector2(xx * offsetX - cellOffset * offsetX, cellOffset * offsetY + xx * offsetY);
+				var pos2 = rootPos + new Vector2(xx * offsetX - (sizeY + cellOffset) * offsetX, (sizeY + cellOffset) * offsetY + xx * offsetY);
 				Gizmos.DrawLine(pos1, pos2);
 			}
 
@@ -311,7 +311,7 @@ namespace RCore.Common
 				for (int x = 0; x < sizeX; x++)
 				{
 					int xx = x + cellOffset;
-					var pos = new Vector2((xx * offsetX) - (yy * offsetX), (yy * offsetY) + (xx * offsetY));
+					var pos = new Vector2(xx * offsetX - yy * offsetX, yy * offsetY + xx * offsetY);
 					pos.x += rootPos.x;
 					pos.y += rootPos.y;
 					DrawGizmosPoint(pos, color.Invert(), 0.1f);
@@ -413,7 +413,7 @@ namespace RCore.Common
 			}
 
 			var size = GUI.skin.label.CalcSize(new GUIContent(text));
-			GUI.Label(new Rect(screenPos.x - (size.x / 2), -screenPos.y + view.position.height + 4, size.x, size.y), text);
+			GUI.Label(new Rect(screenPos.x - size.x / 2, -screenPos.y + view.position.height + 4, size.x, size.y), text);
 			GUI.color = restoreColor;
 			UnityEditor.Handles.EndGUI();
 #endif
@@ -492,11 +492,11 @@ namespace RCore.Common
 		/// <param name='depthTest'>Whether or not this point should be faded when behind other objects.</param>
 		public static void DrawPoint(Vector3 position, Color color, float scale = 1.0f, float duration = 0, bool depthTest = true)
 		{
-			color = (color == default) ? Color.white : color;
+			color = color == default ? Color.white : color;
 
-			UnityEngine.Debug.DrawRay(position + (Vector3.up * (scale * 0.5f)), -Vector3.up * scale, color, duration, depthTest);
-			UnityEngine.Debug.DrawRay(position + (Vector3.right * (scale * 0.5f)), -Vector3.right * scale, color, duration, depthTest);
-			UnityEngine.Debug.DrawRay(position + (Vector3.forward * (scale * 0.5f)), -Vector3.forward * scale, color, duration, depthTest);
+			UnityEngine.Debug.DrawRay(position + Vector3.up * (scale * 0.5f), -Vector3.up * scale, color, duration, depthTest);
+			UnityEngine.Debug.DrawRay(position + Vector3.right * (scale * 0.5f), -Vector3.right * scale, color, duration, depthTest);
+			UnityEngine.Debug.DrawRay(position + Vector3.forward * (scale * 0.5f), -Vector3.forward * scale, color, duration, depthTest);
 		}
 
 		/// <summary>Debugs a point.</summary>
@@ -566,17 +566,17 @@ namespace RCore.Common
 		/// <param name='depthTest'>Whether or not the cube should be faded when behind other objects.</param>
 		public static void DrawLocalCube(Transform transform, Vector3 size, Color color, Vector3 center = default, float duration = 0, bool depthTest = true)
 		{
-			var lbb = transform.TransformPoint(center + ((-size) * 0.5f));
-			var rbb = transform.TransformPoint(center + (new Vector3(size.x, -size.y, -size.z) * 0.5f));
+			var lbb = transform.TransformPoint(center + -size * 0.5f);
+			var rbb = transform.TransformPoint(center + new Vector3(size.x, -size.y, -size.z) * 0.5f);
 
-			var lbf = transform.TransformPoint(center + (new Vector3(size.x, -size.y, size.z) * 0.5f));
-			var rbf = transform.TransformPoint(center + (new Vector3(-size.x, -size.y, size.z) * 0.5f));
+			var lbf = transform.TransformPoint(center + new Vector3(size.x, -size.y, size.z) * 0.5f);
+			var rbf = transform.TransformPoint(center + new Vector3(-size.x, -size.y, size.z) * 0.5f);
 
-			var lub = transform.TransformPoint(center + (new Vector3(-size.x, size.y, -size.z) * 0.5f));
-			var rub = transform.TransformPoint(center + (new Vector3(size.x, size.y, -size.z) * 0.5f));
+			var lub = transform.TransformPoint(center + new Vector3(-size.x, size.y, -size.z) * 0.5f);
+			var rub = transform.TransformPoint(center + new Vector3(size.x, size.y, -size.z) * 0.5f);
 
-			var luf = transform.TransformPoint(center + ((size) * 0.5f));
-			var ruf = transform.TransformPoint(center + (new Vector3(-size.x, size.y, size.z) * 0.5f));
+			var luf = transform.TransformPoint(center + size * 0.5f);
+			var ruf = transform.TransformPoint(center + new Vector3(-size.x, size.y, size.z) * 0.5f);
 
 			UnityEngine.Debug.DrawLine(lbb, rbb, color, duration, depthTest);
 			UnityEngine.Debug.DrawLine(rbb, lbf, color, duration, depthTest);
@@ -614,19 +614,19 @@ namespace RCore.Common
 		/// <param name='depthTest'>Whether or not the cube should be faded when behind other objects.</param>
 		public static void DrawLocalCube(Matrix4x4 space, Vector3 size, Color color, Vector3 center = default, float duration = 0, bool depthTest = true)
 		{
-			color = (color == default) ? Color.white : color;
+			color = color == default ? Color.white : color;
 
-			var lbb = space.MultiplyPoint3x4(center + ((-size) * 0.5f));
-			var rbb = space.MultiplyPoint3x4(center + (new Vector3(size.x, -size.y, -size.z) * 0.5f));
+			var lbb = space.MultiplyPoint3x4(center + -size * 0.5f);
+			var rbb = space.MultiplyPoint3x4(center + new Vector3(size.x, -size.y, -size.z) * 0.5f);
 
-			var lbf = space.MultiplyPoint3x4(center + (new Vector3(size.x, -size.y, size.z) * 0.5f));
-			var rbf = space.MultiplyPoint3x4(center + (new Vector3(-size.x, -size.y, size.z) * 0.5f));
+			var lbf = space.MultiplyPoint3x4(center + new Vector3(size.x, -size.y, size.z) * 0.5f);
+			var rbf = space.MultiplyPoint3x4(center + new Vector3(-size.x, -size.y, size.z) * 0.5f);
 
-			var lub = space.MultiplyPoint3x4(center + (new Vector3(-size.x, size.y, -size.z) * 0.5f));
-			var rub = space.MultiplyPoint3x4(center + (new Vector3(size.x, size.y, -size.z) * 0.5f));
+			var lub = space.MultiplyPoint3x4(center + new Vector3(-size.x, size.y, -size.z) * 0.5f);
+			var rub = space.MultiplyPoint3x4(center + new Vector3(size.x, size.y, -size.z) * 0.5f);
 
-			var luf = space.MultiplyPoint3x4(center + ((size) * 0.5f));
-			var ruf = space.MultiplyPoint3x4(center + (new Vector3(-size.x, size.y, size.z) * 0.5f));
+			var luf = space.MultiplyPoint3x4(center + size * 0.5f);
+			var ruf = space.MultiplyPoint3x4(center + new Vector3(-size.x, size.y, size.z) * 0.5f);
 
 			UnityEngine.Debug.DrawLine(lbb, rbb, color, duration, depthTest);
 			UnityEngine.Debug.DrawLine(rbb, lbf, color, duration, depthTest);
@@ -684,12 +684,12 @@ namespace RCore.Common
 			var _lastPoint = position + matrix.MultiplyPoint3x4(new Vector3(Mathf.Cos(0), 0, Mathf.Sin(0)));
 			var _nextPoint = Vector3.zero;
 
-			color = (color == default) ? Color.white : color;
+			color = color == default ? Color.white : color;
 
 			for (var i = 0; i < 91; i++)
 			{
-				_nextPoint.x = Mathf.Cos((i * 4) * Mathf.Deg2Rad);
-				_nextPoint.z = Mathf.Sin((i * 4) * Mathf.Deg2Rad);
+				_nextPoint.x = Mathf.Cos(i * 4 * Mathf.Deg2Rad);
+				_nextPoint.z = Mathf.Sin(i * 4 * Mathf.Deg2Rad);
 				_nextPoint.y = 0;
 
 				_nextPoint = position + matrix.MultiplyPoint3x4(_nextPoint);
@@ -845,8 +845,8 @@ namespace RCore.Common
 			UnityEngine.Debug.DrawRay(position, Vector3.Slerp(_forward, _right, angle / 90.0f).normalized * dist, color, duration, depthTest);
 			UnityEngine.Debug.DrawRay(position, Vector3.Slerp(_forward, -_right, angle / 90.0f).normalized * dist, color, duration, depthTest);
 
-			DrawCircle(position + _forward, direction, color, (_forward - (slerpVector.normalized * dist)).magnitude, duration, depthTest);
-			DrawCircle(position + (_forward * 0.5f), direction, color, ((_forward * 0.5f) - (slerpVector.normalized * (dist * 0.5f))).magnitude, duration, depthTest);
+			DrawCircle(position + _forward, direction, color, (_forward - slerpVector.normalized * dist).magnitude, duration, depthTest);
+			DrawCircle(position + _forward * 0.5f, direction, color, (_forward * 0.5f - slerpVector.normalized * (dist * 0.5f)).magnitude, duration, depthTest);
 		}
 
 		/// <summary>Debugs a cone.</summary>
@@ -917,11 +917,11 @@ namespace RCore.Common
 			var right = Vector3.Cross(up, forward).normalized * radius;
 
 			float height = (start - end).magnitude;
-			float sideLength = Mathf.Max(0, (height * 0.5f) - radius);
+			float sideLength = Mathf.Max(0, height * 0.5f - radius);
 			var middle = (end + start) * 0.5f;
 
-			start = middle + ((start - middle).normalized * sideLength);
-			end = middle + ((end - middle).normalized * sideLength);
+			start = middle + (start - middle).normalized * sideLength;
+			end = middle + (end - middle).normalized * sideLength;
 
 			//Radial circles
 			DrawCircle(start, up, color, radius, duration, depthTest);
@@ -974,9 +974,9 @@ namespace RCore.Common
 			var oldColor = Gizmos.color;
 
 			Gizmos.color = color;
-			Gizmos.DrawRay(position + (Vector3.up * (scale * 0.5f)), -Vector3.up * scale);
-			Gizmos.DrawRay(position + (Vector3.right * (scale * 0.5f)), -Vector3.right * scale);
-			Gizmos.DrawRay(position + (Vector3.forward * (scale * 0.5f)), -Vector3.forward * scale);
+			Gizmos.DrawRay(position + Vector3.up * (scale * 0.5f), -Vector3.up * scale);
+			Gizmos.DrawRay(position + Vector3.right * (scale * 0.5f), -Vector3.right * scale);
+			Gizmos.DrawRay(position + Vector3.forward * (scale * 0.5f), -Vector3.forward * scale);
 
 			Gizmos.color = oldColor;
 		}
@@ -1050,17 +1050,17 @@ namespace RCore.Common
 			var oldColor = Gizmos.color;
 			Gizmos.color = color;
 
-			var lbb = transform.TransformPoint(center + ((-size) * 0.5f));
-			var rbb = transform.TransformPoint(center + (new Vector3(size.x, -size.y, -size.z) * 0.5f));
+			var lbb = transform.TransformPoint(center + -size * 0.5f);
+			var rbb = transform.TransformPoint(center + new Vector3(size.x, -size.y, -size.z) * 0.5f);
 
-			var lbf = transform.TransformPoint(center + (new Vector3(size.x, -size.y, size.z) * 0.5f));
-			var rbf = transform.TransformPoint(center + (new Vector3(-size.x, -size.y, size.z) * 0.5f));
+			var lbf = transform.TransformPoint(center + new Vector3(size.x, -size.y, size.z) * 0.5f);
+			var rbf = transform.TransformPoint(center + new Vector3(-size.x, -size.y, size.z) * 0.5f);
 
-			var lub = transform.TransformPoint(center + (new Vector3(-size.x, size.y, -size.z) * 0.5f));
-			var rub = transform.TransformPoint(center + (new Vector3(size.x, size.y, -size.z) * 0.5f));
+			var lub = transform.TransformPoint(center + new Vector3(-size.x, size.y, -size.z) * 0.5f);
+			var rub = transform.TransformPoint(center + new Vector3(size.x, size.y, -size.z) * 0.5f);
 
-			var luf = transform.TransformPoint(center + ((size) * 0.5f));
-			var ruf = transform.TransformPoint(center + (new Vector3(-size.x, size.y, size.z) * 0.5f));
+			var luf = transform.TransformPoint(center + size * 0.5f);
+			var ruf = transform.TransformPoint(center + new Vector3(-size.x, size.y, size.z) * 0.5f);
 
 			Gizmos.DrawLine(lbb, rbb);
 			Gizmos.DrawLine(rbb, lbf);
@@ -1099,17 +1099,17 @@ namespace RCore.Common
 			var oldColor = Gizmos.color;
 			Gizmos.color = color;
 
-			var lbb = space.MultiplyPoint3x4(center + ((-size) * 0.5f));
-			var rbb = space.MultiplyPoint3x4(center + (new Vector3(size.x, -size.y, -size.z) * 0.5f));
+			var lbb = space.MultiplyPoint3x4(center + -size * 0.5f);
+			var rbb = space.MultiplyPoint3x4(center + new Vector3(size.x, -size.y, -size.z) * 0.5f);
 
-			var lbf = space.MultiplyPoint3x4(center + (new Vector3(size.x, -size.y, size.z) * 0.5f));
-			var rbf = space.MultiplyPoint3x4(center + (new Vector3(-size.x, -size.y, size.z) * 0.5f));
+			var lbf = space.MultiplyPoint3x4(center + new Vector3(size.x, -size.y, size.z) * 0.5f);
+			var rbf = space.MultiplyPoint3x4(center + new Vector3(-size.x, -size.y, size.z) * 0.5f);
 
-			var lub = space.MultiplyPoint3x4(center + (new Vector3(-size.x, size.y, -size.z) * 0.5f));
-			var rub = space.MultiplyPoint3x4(center + (new Vector3(size.x, size.y, -size.z) * 0.5f));
+			var lub = space.MultiplyPoint3x4(center + new Vector3(-size.x, size.y, -size.z) * 0.5f);
+			var rub = space.MultiplyPoint3x4(center + new Vector3(size.x, size.y, -size.z) * 0.5f);
 
-			var luf = space.MultiplyPoint3x4(center + ((size) * 0.5f));
-			var ruf = space.MultiplyPoint3x4(center + (new Vector3(-size.x, size.y, size.z) * 0.5f));
+			var luf = space.MultiplyPoint3x4(center + size * 0.5f);
+			var ruf = space.MultiplyPoint3x4(center + new Vector3(-size.x, size.y, size.z) * 0.5f);
 
 			Gizmos.DrawLine(lbb, rbb);
 			Gizmos.DrawLine(rbb, lbf);
@@ -1145,7 +1145,7 @@ namespace RCore.Common
 		/// <param name='radius'>The radius of the circle.</param>
 		public static void DrawGizmosCircle(Vector3 position, Vector3 up, Color color, float radius = 1.0f)
 		{
-			up = ((up == Vector3.zero) ? Vector3.up : up).normalized * radius;
+			up = (up == Vector3.zero ? Vector3.up : up).normalized * radius;
 			var forward = Vector3.Slerp(up, -up, 0.5f);
 			var right = Vector3.Cross(up, forward).normalized * radius;
 
@@ -1166,12 +1166,12 @@ namespace RCore.Common
 			var nextPoint = Vector3.zero;
 
 			var oldColor = Gizmos.color;
-			Gizmos.color = (color == default) ? Color.white : color;
+			Gizmos.color = color == default ? Color.white : color;
 
 			for (var i = 0; i < 91; i++)
 			{
-				nextPoint.x = Mathf.Cos((i * 4) * Mathf.Deg2Rad);
-				nextPoint.z = Mathf.Sin((i * 4) * Mathf.Deg2Rad);
+				nextPoint.x = Mathf.Cos(i * 4 * Mathf.Deg2Rad);
+				nextPoint.z = Mathf.Sin(i * 4 * Mathf.Deg2Rad);
 				nextPoint.y = 0;
 
 				nextPoint = position + matrix.MultiplyPoint3x4(nextPoint);
@@ -1287,8 +1287,8 @@ namespace RCore.Common
 			Gizmos.DrawRay(position, Vector3.Slerp(_forward, _right, angle / 90.0f).normalized * dist);
 			Gizmos.DrawRay(position, Vector3.Slerp(_forward, -_right, angle / 90.0f).normalized * dist);
 
-			DrawGizmosCircle(position + _forward, direction, color, (_forward - (slerpVector.normalized * dist)).magnitude);
-			DrawGizmosCircle(position + (_forward * 0.5f), direction, color, ((_forward * 0.5f) - (slerpVector.normalized * (dist * 0.5f))).magnitude);
+			DrawGizmosCircle(position + _forward, direction, color, (_forward - slerpVector.normalized * dist).magnitude);
+			DrawGizmosCircle(position + _forward * 0.5f, direction, color, (_forward * 0.5f - slerpVector.normalized * (dist * 0.5f)).magnitude);
 
 			Gizmos.color = oldColor;
 		}
@@ -1357,11 +1357,11 @@ namespace RCore.Common
 			Gizmos.color = color;
 
 			float height = (start - end).magnitude;
-			float sideLength = Mathf.Max(0, (height * 0.5f) - radius);
+			float sideLength = Mathf.Max(0, height * 0.5f - radius);
 			var middle = (end + start) * 0.5f;
 
-			start = middle + ((start - middle).normalized * sideLength);
-			end = middle + ((end - middle).normalized * sideLength);
+			start = middle + (start - middle).normalized * sideLength;
+			end = middle + (end - middle).normalized * sideLength;
 
 			//Radial circles
 			DrawGizmosCircle(start, up, color, radius);
@@ -1425,7 +1425,7 @@ namespace RCore.Common
 				}
 			}
 
-			return (methods);
+			return methods;
 		}
 
 		/// <summary>Gets the methods of a type.</summary>
@@ -1448,7 +1448,7 @@ namespace RCore.Common
 				}
 			}
 
-			return (methods);
+			return methods;
 		}
 
 #endregion

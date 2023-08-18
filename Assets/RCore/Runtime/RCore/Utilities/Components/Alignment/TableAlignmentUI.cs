@@ -188,7 +188,7 @@ namespace RCore.Components
                                 for (int i = 0; i < children.Count; i++)
                                 {
                                     var pos = children[i].anchoredPosition;
-                                    pos.x -= (columnDistance * (maxColumn - 1)) / 2f;
+                                    pos.x -= columnDistance * (maxColumn - 1) / 2f;
                                     children[i].anchoredPosition = pos;
                                 }
                             }
@@ -257,7 +257,7 @@ namespace RCore.Components
                                 for (int i = 0; i < children.Count; i++)
                                 {
                                     var pos = children[i].anchoredPosition;
-                                    pos.y -= (rowDistance * (maxRow - 1)) / 2f;
+                                    pos.y -= rowDistance * (maxRow - 1) / 2f;
                                     children[i].anchoredPosition = pos;
                                 }
                             }
@@ -322,8 +322,8 @@ namespace RCore.Components
                     float y = a.Key * rowDistance;
                     if (reverseY) y = -y + m_Height;
 
-                    Vector3[] childrenNewPosition = new Vector3[children.Count];
-                    Vector3[] childrenPrePosition = new Vector3[children.Count];
+                    var childrenNewPosition = new Vector3[children.Count];
+                    var childrenPrePosition = new Vector3[children.Count];
                     switch (alignmentType)
                     {
                         case Alignment.Left:
@@ -358,7 +358,7 @@ namespace RCore.Components
                                 for (int i = 0; i < children.Count; i++)
                                 {
                                     var pos = childrenNewPosition[i];
-                                    pos.x -= (columnDistance * (maxColumn - 1)) / 2f;
+                                    pos.x -= columnDistance * (maxColumn - 1) / 2f;
                                     childrenNewPosition[i] = pos;
                                 }
                             else
@@ -420,7 +420,7 @@ namespace RCore.Components
                                 for (int i = 0; i < children.Count; i++)
                                 {
                                     var pos = childrenNewPosition[i];
-                                    pos.y -= (rowDistance * (maxRow - 1)) / 2f;
+                                    pos.y -= rowDistance * (maxRow - 1) / 2f;
                                     childrenNewPosition[i] = pos;
                                 }
                             }
@@ -454,7 +454,7 @@ namespace RCore.Components
                         var children = a.Value;
                         for (int j = 0; j < children.Count; j++)
                         {
-                            Vector2 pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
+                            var pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
                             children[j].anchoredPosition = pos;
 
                             var topRight = children[j].TopRight();
@@ -475,10 +475,9 @@ namespace RCore.Components
                     }
                 })
                 .OnComplete(() =>
-                {
-                    if (onFinish != null)
-                        onFinish();
-                });
+				{
+					onFinish?.Invoke();
+				});
 
 #else
             StartCoroutine(IEArrangeChildren(childrenGroup, initialPositions, finalPositions, tweenTime, onFinish));
@@ -503,7 +502,7 @@ namespace RCore.Components
                     var children = a.Value;
                     for (int j = 0; j < children.Count; j++)
                     {
-                        Vector2 pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
+                        var pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
                         children[j].anchoredPosition = pos;
 
                         var topRight = children[j].TopRight();

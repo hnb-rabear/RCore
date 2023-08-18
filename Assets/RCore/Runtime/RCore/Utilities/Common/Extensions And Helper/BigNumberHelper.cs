@@ -87,7 +87,7 @@ namespace RCore.Common
             if (len > 15)
             {
                 int unitSize = (len - 16) / (3 * 26) + 2;
-                int unitTypeInt = ((len - 16) / 3) % 26;
+                int unitTypeInt = (len - 16) / 3 % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
                     numberBuilder.Append(unitChar);
@@ -136,7 +136,7 @@ namespace RCore.Common
             if (len > 15)
             {
                 int unitSize = (len - 16) / (3 * 26) + 2;
-                int unitTypeInt = ((len - 16) / 3) % 26;
+                int unitTypeInt = (len - 16) / 3 % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
                     numberBuilder.Append(unitChar);

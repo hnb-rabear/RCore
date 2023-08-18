@@ -79,7 +79,7 @@ namespace RCore.Common
         {
             string url = $"{pUrl}/{(pEncryptIn ? 1 : 0)}/{(pEncryptOut ? 1 : 0)}";
 
-            WWWForm form = new WWWForm();
+            var form = new WWWForm();
 
             if (pKeyValueList != null && pKeyValueList.Count > 0)
             {
@@ -94,7 +94,7 @@ namespace RCore.Common
                 }
             }
 
-            UnityWebRequest request = UnityWebRequest.Post(url, form);
+            var request = UnityWebRequest.Post(url, form);
             request.SendWebRequest();
             WaitUtil.Start(() => request.isDone, () =>
             {

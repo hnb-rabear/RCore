@@ -142,7 +142,7 @@ namespace RCore.Common
 			float A3 = Area(a, b, p);
 
 			/* Check if sum of A1, A2 and A3 is same as A */
-			return (A == A1 + A2 + A3);
+			return A == A1 + A2 + A3;
 		}
 
 		public static Vector3 DirOfYAngle(float pAngleInDegrees)
@@ -288,7 +288,7 @@ namespace RCore.Common
 			for (int i = bits; i > 0;)
 			{
 				if (i == 8 || i == 16 || i == 24) final += " ";
-				final += ((val & (1 << --i)) != 0) ? '1' : '0';
+				final += (val & 1 << --i) != 0 ? '1' : '0';
 			}
 			return final;
 		}
@@ -306,7 +306,7 @@ namespace RCore.Common
 		/// </summary>
 		public static int ClampIndex(int val, int max)
 		{
-			return (val < 0) ? 0 : (val < max ? val : max - 1);
+			return val < 0 ? 0 : val < max ? val : max - 1;
 		}
 
 		/// <summary>
@@ -431,7 +431,7 @@ namespace RCore.Common
 				Vector3 v0 = screenPoints[RepeatIndex(i, 4)];
 				Vector3 v1 = screenPoints[RepeatIndex(j, 4)];
 
-				if ((v0.y > mousePos.y) != (v1.y > mousePos.y))
+				if (v0.y > mousePos.y != v1.y > mousePos.y)
 				{
 					if (mousePos.x < (v1.x - v0.x) * (mousePos.y - v0.y) / (v1.y - v0.y) + v0.x)
 					{
@@ -652,8 +652,8 @@ namespace RCore.Common
 			}
 			float dx = pointToCheck.x - ellipsePos.x;
 			float dy = pointToCheck.y - ellipsePos.y;
-			float xComponent = (dx * dx / (ellipseWidth * ellipseWidth));
-			float yComponent = (dy * dy / (ellipseHeight * ellipseHeight));
+			float xComponent = dx * dx / (ellipseWidth * ellipseWidth);
+			float yComponent = dy * dy / (ellipseHeight * ellipseHeight);
 			float value = xComponent + yComponent;
 
 			if (value < 1)
@@ -733,7 +733,7 @@ namespace RCore.Common
 
 				if ((t_a < 0 || 1 < t_a) && (t_b < 0 || 1 < t_b))
 				{
-					if ((t_a < 0 && t_b < 0) || (t_a > 1 && t_b > 1))
+					if (t_a < 0 && t_b < 0 || t_a > 1 && t_b > 1)
 						result = Intersection_OUT_SIDE;
 					else
 						result = Intersection_IN_SIDE;
@@ -786,7 +786,7 @@ namespace RCore.Common
 		private static bool InAngle(Vector2 v1, Vector2 v2, float pFromDeg, float pToDeg)
 		{
 			float deg = AngleDeg(v1, v2);
-			return (deg >= pFromDeg && deg <= pToDeg) || (deg + 360 >= pFromDeg && deg + 360 <= pToDeg);
+			return deg >= pFromDeg && deg <= pToDeg || deg + 360 >= pFromDeg && deg + 360 <= pToDeg;
 		}
 
 		public static bool IntersectOrOverlapEllipseRectangle(Vector2 c, float rx, float ry, Rect pRect, float pFromAngle = 0, float pToAngle = 360, bool pRightSide = true, bool drawBox = false)
@@ -876,7 +876,7 @@ namespace RCore.Common
 			{
 				previousPoint = currentPoint;
 				float x = -width + interval * i;
-				float y = Mathf.Sqrt(1 - (x * x) / (width * width)) * height;
+				float y = Mathf.Sqrt(1 - x * x / (width * width)) * height;
 				currentPoint = new Vector2(x, y);
 				if (i > 0)
 					DebugDraw.DrawLine(center + previousPoint, center + currentPoint, color, duration);
@@ -913,7 +913,7 @@ namespace RCore.Common
 				if (i == 1)
 					cost = pBase;
 				else
-					cost *= (1 + pGrow / 100f);
+					cost *= 1 + pGrow / 100f;
 			}
 			return cost;
 		}
@@ -953,7 +953,7 @@ namespace RCore.Common
 			for (int i = bits; i > 0;)
 			{
 				if (i == 8 || i == 16 || i == 24) final += " ";
-				final += ((val & (1 << --i)) != 0) ? '1' : '0';
+				final += (val & 1 << --i) != 0 ? '1' : '0';
 			}
 			return final;
 		}

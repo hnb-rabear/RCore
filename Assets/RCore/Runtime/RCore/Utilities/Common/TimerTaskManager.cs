@@ -228,7 +228,7 @@ namespace RCore.Framework.Data
                     if (request.responseCode == 200)
                     {
                         var text = request.downloadHandler.text;
-                        if (TimeHelper.TryParse(text, out DateTime utcTime))
+                        if (TimeHelper.TryParse(text, out var utcTime))
                         {
                             m_TimeServerFetched = true;
                             m_StartServerTime = utcTime;
