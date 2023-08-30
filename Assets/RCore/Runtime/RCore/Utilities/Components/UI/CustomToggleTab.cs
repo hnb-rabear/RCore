@@ -57,7 +57,7 @@ namespace RCore.Components
         public Action onClickOnLock;
 
         private CustomToggleGroup m_CustomToggleGroup;
-		private bool m_IsOn;
+		private bool m_IsOn2;
 		
 		public bool IsOn
 		{
@@ -65,9 +65,9 @@ namespace RCore.Components
 			set
 			{
 				isOn = value;
-				if (m_IsOn != value)
+				if (m_IsOn2 != value)
 				{
-					m_IsOn = value;
+					m_IsOn2 = value;
 					onValueChanged?.Invoke(value);
 				}
 			}
@@ -78,7 +78,7 @@ namespace RCore.Components
             base.Start();
 
             m_CustomToggleGroup = group as CustomToggleGroup;
-			m_IsOn = isOn;
+			m_IsOn2 = isOn;
 		}
 
 #if UNITY_EDITOR
@@ -202,10 +202,10 @@ namespace RCore.Components
         private void RefreshByTween()
         {
 #if USE_DOTWEEN
-            if (m_IsOn == isOn)
+            if (m_IsOn2 == isOn)
                 return;
 
-            m_IsOn = isOn;
+            m_IsOn2 = isOn;
 
             if (contentsActive != null)
                 foreach (var item in contentsActive)

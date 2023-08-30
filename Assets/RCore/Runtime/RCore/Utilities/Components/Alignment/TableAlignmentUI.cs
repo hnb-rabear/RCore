@@ -484,25 +484,25 @@ namespace RCore.Components
 #endif
         }
 
-        private IEnumerator IEArrangeChildren(Dictionary<int, List<RectTransform>> childrenGroup, Dictionary<int, Vector3[]> initialPositions, Dictionary<int, Vector3[]> finalPositions, float pDuration, Action pOnCompleted)
+        private IEnumerator IEArrangeChildren(Dictionary<int, List<RectTransform>> p_childrenGroup, Dictionary<int, Vector3[]> p_initialPositions, Dictionary<int, Vector3[]> p_finalPositions, float p_pDuration, Action p_pOnCompleted)
         {
             float time = 0;
             while (true)
             {
-                if (time >= pDuration)
-                    time = pDuration;
-                float lerp = time / pDuration;
+                if (time >= p_pDuration)
+                    time = p_pDuration;
+                float lerp = time / p_pDuration;
                 float t = lerp;
 
                 if (animCurve.length > 1)
                     t = animCurve.Evaluate(lerp);
 
-                foreach (var a in childrenGroup)
+                foreach (var a in p_childrenGroup)
                 {
                     var children = a.Value;
                     for (int j = 0; j < children.Count; j++)
                     {
-                        var pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
+                        var pos = Vector2.Lerp(p_initialPositions[a.Key][j], p_finalPositions[a.Key][j], t);
                         children[j].anchoredPosition = pos;
 
                         var topRight = children[j].TopRight();
@@ -528,7 +528,7 @@ namespace RCore.Components
                 time += Time.deltaTime;
             }
 
-            pOnCompleted?.Invoke();
+            p_pOnCompleted?.Invoke();
         }
     }
 }
