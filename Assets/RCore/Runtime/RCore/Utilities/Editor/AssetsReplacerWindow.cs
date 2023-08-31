@@ -119,8 +119,11 @@ namespace RCore.Editor
 								if (EditorHelper.ButtonColor("Remove", Color.red, 60))
 									m_textureReplace.inputs.Remove(target);
 
-								EditorHelper.LabelField(target.replace != null ? target.replace.name : "", 60);
-								EditorHelper.LabelField(target.replace != null ? $"{target.replace.NativeSize().x},{target.replace.NativeSize().y}" : "", 60);
+								int tris = target.replace != null ? target.replace.triangles.Length / 3 : 0;
+								int verts = target.replace != null ? target.replace.vertices.Length : 0;
+								EditorHelper.LabelField(target.replace != null ? target.replace.name : "", 80);
+								EditorHelper.LabelField($"t: {tris}, v: {verts}", 80);
+								EditorHelper.LabelField(target.replace != null ? $"{target.replace.NativeSize().x},{target.replace.NativeSize().y}" : "", 80);
 							}
 
 							EditorGUILayout.EndVertical();
@@ -146,8 +149,11 @@ namespace RCore.Editor
 										t--;
 									}
 
-									EditorHelper.LabelField(target.targets[t] != null ? target.targets[t].name : "", 60);
-									EditorHelper.LabelField(target.targets[t] != null ? $"{target.targets[t].NativeSize().x},{target.targets[t].NativeSize().y}" : "", 60);
+									int tris = target.targets[t] != null ? target.targets[t].triangles.Length / 3 : 0;
+									int verts = target.targets[t] != null ? target.targets[t].vertices.Length : 0;
+									EditorHelper.LabelField(target.targets[t] != null ? target.targets[t].name : "", 80);
+									EditorHelper.LabelField($"t: {tris}, v: {verts}", 80);
+									EditorHelper.LabelField(target.targets[t] != null ? $"{target.targets[t].NativeSize().x},{target.targets[t].NativeSize().y}" : "", 80);
 								}
 
 								EditorGUILayout.EndVertical();
