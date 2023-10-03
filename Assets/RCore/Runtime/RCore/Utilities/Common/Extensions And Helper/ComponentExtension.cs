@@ -1,6 +1,6 @@
-﻿/**
- * Author RadBear - nbhung71711 @gmail.com - 2017
- **/
+﻿/***
+* Author RadBear - nbhung71711 @gmail.com - 2017
+**/
 
 #if USE_DOTWEEN
 using DG.Tweening;
@@ -167,7 +167,7 @@ namespace RCore.Common
 			var components = objRoot.FindComponentsInChildren<T>();
 			foreach (var component in components)
 			{
-				if (component.name.ToLower() == pChildName || pContainChildName && component.name.ToLower().Contains(pChildName))
+				if (component.name.ToLower() == pChildName.ToLower() || pContainChildName && component.name.ToLower().Contains(pChildName))
 					return component;
 			}
 			return null;
@@ -492,6 +492,14 @@ namespace RCore.Common
 			return new Vector2(sizeX, sizeY);
 		}
 
+		public static Vector2 NormalizedPivot(this Sprite pSprite)
+		{
+			float x = pSprite.pivot.x / pSprite.bounds.size.x / pSprite.pixelsPerUnit;
+			float y = pSprite.pivot.y / pSprite.bounds.size.y / pSprite.pixelsPerUnit;
+			var normalizedPivot = new Vector2(MathHelper.Round(x, 4), MathHelper.Round(y, 4));
+			return normalizedPivot;
+		}
+
 		public static int GameObjectId<T>(this T target) where T : Component
 		{
 			return target.gameObject.GetInstanceID();
@@ -635,7 +643,6 @@ namespace RCore.Common
 					.SetId(pImage.GetInstanceID());
 			}
 #endif
-
 		}
 
 #endregion

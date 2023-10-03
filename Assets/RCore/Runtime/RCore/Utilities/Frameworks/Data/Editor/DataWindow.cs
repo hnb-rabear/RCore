@@ -1,4 +1,4 @@
-﻿/**
+﻿/***
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2020
  **/
 
@@ -40,12 +40,12 @@ namespace RCore.Framework.Data
                     label = "Clear",
                     onPressed = () =>
                     {
-                        EditorHelper.ConfirmPopup(() =>
-                        {
-                            DataSaverContainer.DeleteAll();
-                            mDictKeyValues = DataSaverContainer.GetAllDataKeyValues();
-                            Repaint();
-                        });
+						if (EditorHelper.ConfirmPopup())
+						{
+							DataSaverContainer.DeleteAll();
+							mDictKeyValues = DataSaverContainer.GetAllDataKeyValues();
+							Repaint();
+						}
                     }
                 });
                 actions.Add(new EditorButton()

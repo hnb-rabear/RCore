@@ -1,4 +1,4 @@
-﻿/**
+﻿/***
  * Author RadBear - nbhung71711 @gmail.com - 2017 - 2020
  **/
 
@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -19,13 +20,9 @@ using Random = UnityEngine.Random;
 namespace RCore.Common
 {
 	public delegate void VoidDelegate();
-
 	public delegate void IntDelegate(int value);
-
 	public delegate void BoolDelegate(bool value);
-
 	public delegate void FloatDelegate(float value);
-
 	public delegate bool ConditionalDelegate();
 
 	public static class RUtil
@@ -137,6 +134,7 @@ namespace RCore.Common
 			return "{ " + d.Select(kv => "(" + kv.Key + ", " + kv.Value + ")").Aggregate("", (current, next) => current + next + ", ") + "}";
 		}
 
+		[Obsolete]
 		public static void CombineMeshes(List<Transform> pMeshObjects, Material pMat, ref GameObject combinedMesh, bool pDestroyOriginal)
 		{
 			if (combinedMesh == null)
@@ -172,6 +170,15 @@ namespace RCore.Common
 			pCallback?.Invoke(w.result == UnityWebRequest.Result.Success ? w.downloadHandler.text : null);
 		}
 
+		public static int GetVersionInt(string appVersion)
+		{
+			int versionInt = 0;
+			string[] numbers = appVersion.Split('.');
+			for (int i = 0; i < numbers.Length; i++)
+				versionInt += int.Parse(numbers[i]) * (int)Mathf.Pow(10, numbers.Length - i);
+			return versionInt;
+		}
+
 		public static int CompareVersionNames(string currentVersion, string remoteVersion)
 		{
 			int res = 0;
@@ -202,7 +209,7 @@ namespace RCore.Common
 			// If versions are the same so far, but they have different length...
 			if (res == 0 && oldNumbers.Length != newNumbers.Length)
 			{
-				res = oldNumbers.Length > newNumbers.Length ? 1 : -1;
+				res = (oldNumbers.Length > newNumbers.Length) ? 1 : -1;
 			}
 
 			return res;
@@ -214,11 +221,11 @@ namespace RCore.Common
 			{
 				var images = g.FindComponentsInChildren<UnityEngine.UI.Image>();
 				foreach (var image in images)
-					PerfectRatioImagesWidth(image);
+					PerfectRatioImagesByWidth(image);
 			}
 		}
 
-		public static void PerfectRatioImagesWidth(UnityEngine.UI.Image image)
+		public static void PerfectRatioImagesByWidth(UnityEngine.UI.Image image)
 		{
 			if (image != null && image.sprite != null && image.type == UnityEngine.UI.Image.Type.Sliced)
 			{
@@ -263,33 +270,114 @@ namespace RCore.Common
 				Debug.Log($"Perfect ratio {image.name}");
 			}
 		}
+
+		public static Vector3[] MakeSmoothCurve(Vector3[] arrayToCurve, float smoothness)
+		{
+			if (smoothness < 1.0f) smoothness = 1.0f;
+
+			int pointsLength = arrayToCurve.Length;
+
+			int curvedLength = (pointsLength * Mathf.RoundToInt(smoothness)) - 1;
+			var curvedPoints = new List<Vector3>(curvedLength);
+
+			for (int pointInTimeOnCurve = 0; pointInTimeOnCurve < curvedLength + 1; pointInTimeOnCurve++)
+			{
+				float t = Mathf.InverseLerp(0, curvedLength, pointInTimeOnCurve);
+
+				var points = new List<Vector3>(arrayToCurve);
+
+				for (int j = pointsLength - 1; j > 0; j--)
+				{
+					for (int i = 0; i < j; i++)
+					{
+						points[i] = (1 - t) * points[i] + t * points[i + 1];
+					}
+				}
+
+				curvedPoints.Add(points[0]);
+			}
+			return (curvedPoints.ToArray());
+		}
+
+		public static int GetStableHashCode(string str)
+		{
+			unchecked
+			{
+				int hash1 = 5381;
+				int hash2 = hash1;
+
+				for (int i = 0; i < str.Length && str[i] != '\0'; i += 2)
+				{
+					hash1 = ((hash1 << 5) + hash1) ^ str[i];
+					if (i == str.Length - 1 || str[i + 1] == '\0')
+						break;
+					hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
+				}
+
+				return hash1 + (hash2 * 1566083941);
+			}
+		}
+
+		public static string LoadResourceTextAsset(string pPath)
+		{
+			var textAsset = Resources.Load<TextAsset>(pPath);
+			if (textAsset != null)
+			{
+				string content = textAsset.text;
+				Resources.UnloadAsset(textAsset);
+				return content;
+			}
+			Debug.LogError($"File {pPath} not found");
+			return "";
+		}
+
+		public static string GetRandomString(int pLength)
+		{
+			const string chars = "abcdefghijklmnopqrstuvwxyz";
+			var stringChars = new char[pLength];
+			var random = new System.Random();
+			for (int i = 0; i < stringChars.Length; i++)
+				stringChars[i] = chars[random.Next(chars.Length)];
+			var finalString = new String(stringChars);
+			return finalString;
+		}
+
+		public static string GetMacAddress()
+		{
+			foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+				if (nic.OperationalStatus == OperationalStatus.Up)
+					return nic.GetPhysicalAddress().ToString();
+			return null;
+		}
 	}
 
 	public static class RUtilExtension
 	{
+#if UNITY_EDITOR
+		[UnityEditor.MenuItem("RCore/Test/Test anything")]
+		public static void TestAnything()
+		{
+			UnityEngine.Debug.Log(ToLowerCaseFirstChar(null));
+		}
+#endif
+		
 		public static string ToSentenceCase(this string pString)
 		{
-			var lowerCase = pString.ToLower();
-			// matches the first sentence of a string, as well as subsequent sentences
-			var r = new Regex(@"(^[a-z])|\.\s+(.)", RegexOptions.ExplicitCapture);
-			// MatchEvaluator delegate defines replacement of setence starts to uppercase
-			var result = r.Replace(lowerCase, s => s.Value.ToUpper());
+			// MatchEvaluator delegate defines replacement of sentence starts to uppercase
+			var result = Regex.Replace(pString, @"(^|\.\s+)([a-z])", match => match.Value.ToUpper());
 			return result;
 		}
 
 		public static string ToCapitalizeEachWord(this string pString)
 		{
-			// Creates a TextInfo based on the "en-US" culture.
-			var textInfo = new CultureInfo("en-US", false).TextInfo;
-			return textInfo.ToTitleCase(pString);
+			return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(pString);
 		}
 
 		public static string ToLowerCaseFirstChar(this string pString)
 		{
 			if (string.IsNullOrEmpty(pString) || char.IsLower(pString[0]))
 				return pString;
-
-			return char.ToLower(pString[0]) + pString.Substring(1);
+			return char.ToLowerInvariant(pString[0]) + pString.Substring(1);
 		}
 
 		public static bool InsideBounds(this Vector2 pPosition, Bounds pBounds)
@@ -421,7 +509,7 @@ namespace RCore.Common
 			return pList;
 		}
 
-		public static List<T> RemoveDuplicate<T>(this List<T> pList) where T : Object
+		public static List<T> RemoveDuplicate<T>(this List<T> pList) where T : UnityEngine.Object
 		{
 			var duplicate = new List<int>();
 			for (int i = 0; i < pList.Count; i++)
@@ -446,7 +534,7 @@ namespace RCore.Common
 			return pList;
 		}
 
-		public static Dictionary<int, int> Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+		public static void Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
 		{
 			foreach (var item in pDict)
 			{
@@ -455,10 +543,9 @@ namespace RCore.Common
 				else
 					pSource.Add(item.Key, item.Value);
 			}
-			return pSource;
 		}
 
-		public static Dictionary<int, int> MinusAndRemove(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
+		public static void MinusAndRemove(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
 		{
 			var removedKeys = new List<int>();
 			foreach (var item in pDict)
@@ -475,7 +562,6 @@ namespace RCore.Common
 				foreach (var key in removedKeys)
 					pSource.Remove(key);
 			}
-			return pSource;
 		}
 
 		public static void AddOrSet<K, V>(this Dictionary<K, V> pSource, K pKey, V pVal)
@@ -538,7 +624,7 @@ namespace RCore.Common
 					keys.Add(item.Key);
 			}
 			if (keys.Count == 0)
-				return default;
+				return default(T1);
 			return keys[Random.Range(0, keys.Count)];
 		}
 
@@ -598,6 +684,25 @@ namespace RCore.Common
 					}
 				}
 			}
+		}
+		
+		public static void Swap<T>(this List<T> list, int index1, int index2)
+		{
+			if (list.Count <= 0)
+				return;
+
+			if (index1 < 0 || index2 < 0 || index1 == index2 || index1 >= list.Count || index2 >= list.Count)
+				return;
+
+			var value = list[index1];
+			list[index1] = list[index2];
+			list[index2] = value;
+		}
+		
+		public static T Clone<T>(this T self)
+		{
+			var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(self);
+			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(serialized);
 		}
 	}
 }

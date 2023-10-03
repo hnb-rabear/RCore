@@ -1,4 +1,4 @@
-﻿/**
+﻿/***
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
@@ -15,13 +15,14 @@ namespace RCore.Framework.Data
         {
             var window = EditorWindow.GetWindow<DataWindow>("Game Data", true);
             window.Show();
-        }
+		}
 
-        [MenuItem("RCore/Data/Clear PlayerPrefs")]
-        private static void ClearPlayerPrefs()
-        {
-            EditorHelper.ConfirmPopup(PlayerPrefs.DeleteAll);
-        }
+		[MenuItem("RCore/Data/Clear PlayerPrefs")]
+		private static void ClearPlayerPrefs()
+		{
+			if (EditorHelper.ConfirmPopup("Clear PlayerPrefs"))
+				PlayerPrefs.DeleteAll();
+		}
 
         /*
         [MenuItem("RCore/Data/Clear Game Data")]

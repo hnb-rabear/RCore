@@ -1,4 +1,4 @@
-﻿/**
+﻿/***
  * Author RadBear - nbhung71711 @gmail.com - 2018
  **/
 
@@ -29,7 +29,7 @@ namespace RCore.Components
             Center,
         }
 
-        protected enum PerfectRatio
+        public enum PerfectRatio
         {
             None,
             Width,

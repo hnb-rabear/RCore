@@ -50,6 +50,7 @@ namespace RCore.Editor
 			{
 				ReplaceGameObjectsInScene();
 				FindGameObjectsMissingScript();
+				FindObjectsByGuid();
 			});
 		}
 
@@ -76,7 +77,7 @@ namespace RCore.Editor
 			if (EditorHelper.HeaderFoldout("Find GameObjects missing script"))
 			{
 				m_AlsoChildren = EditorHelper.Toggle(m_AlsoChildren, "Also Children of children");
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				if (EditorHelper.Button("Scan"))
@@ -120,6 +121,23 @@ namespace RCore.Editor
 			}
 		}
 
+		private string m_Guid;
+		private Object m_FoundObject;
+		private void FindObjectsByGuid()
+		{
+			if (EditorHelper.HeaderFoldout("Find Object by guid"))
+			{
+				m_Guid = EditorHelper.TextField(m_Guid, "Guid");
+				EditorHelper.ObjectField<Object>(m_FoundObject, "Object");
+				if (!string.IsNullOrEmpty(m_Guid) && EditorHelper.Button("Find"))
+				{
+					string path = AssetDatabase.GUIDToAssetPath(m_Guid);
+					if (!string.IsNullOrEmpty(path))
+						m_FoundObject = AssetDatabase.LoadAssetAtPath<Object>(path);
+				}
+			}
+		}
+		
 #endregion
 
 		//===================================================================================================
@@ -219,7 +237,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Combine Meshes"))
 			{
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				bool available = false;
@@ -273,7 +291,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Align Center Mesh Renderer obj"))
 			{
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				foreach (var g in Selection.gameObjects)
@@ -482,7 +500,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 				{
-					if (!SelectedObject())
+					if (!SelectedGameObject())
 					{
 						GUILayout.EndVertical();
 						return;
@@ -589,7 +607,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 				{
 					GUILayout.EndVertical();
 					return;
@@ -671,7 +689,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 				{
 					GUILayout.EndVertical();
 					return;
@@ -731,7 +749,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 				{
 					GUILayout.EndVertical();
 					return;
@@ -782,7 +800,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 				{
 					GUILayout.EndVertical();
 					return;
@@ -828,7 +846,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Replace Text By TextMeshProUGUI"))
 			{
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				if (EditorHelper.Button("Replace Texts"))
@@ -895,7 +913,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Perfect Ratio Images"))
 			{
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				if (EditorHelper.Button("Set Perfect Width"))
@@ -914,7 +932,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Convert Transform To RectTransform"))
 			{
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				if (EditorHelper.Button("Convert"))
@@ -989,6 +1007,7 @@ namespace RCore.Editor
 			{
 				GenerateAnimationsPackScript();
 				GenerateCharactersMap();
+				GenerateJsonListOfFiles();
 			});
 		}
 
@@ -996,7 +1015,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Generate Animations Pack Script"))
 			{
-				if (!SelectedObject())
+				if (!SelectedGameObject())
 					return;
 
 				m_AnimationClipsPackScript = new EditorPrefsString("m_AnimationClipsPackScript");
@@ -1087,6 +1106,30 @@ namespace RCore.Editor
 			}
 		}
 
+		private void GenerateJsonListOfFiles()
+		{
+			if (EditorHelper.HeaderFoldout("Generate json contain list for files"))
+			{
+				if (!SelectedObject())
+					return;
+
+				if (EditorHelper.Button("Generate"))
+				{
+					var names = new List<string>();
+					string folderPath = "";
+					foreach (var t in Selection.objects)
+					{
+						var path = AssetDatabase.GetAssetPath(t);
+						var fileName = Path.GetFileName(path);
+						names.Add(fileName);
+						if (folderPath == "")
+							folderPath = Path.GetDirectoryName(path);
+					}
+					var json = JsonHelper.ToJson(names);
+					EditorHelper.SaveFilePanel(folderPath, "all_files", json, "json");
+				}
+			}
+		}
 #endregion
 
 		//===================================================================================================
@@ -1143,11 +1186,22 @@ namespace RCore.Editor
 
 		//===================================================================================================
 
-		private static bool SelectedObject()
+		private static bool SelectedGameObject()
 		{
 			if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
 			{
 				EditorGUILayout.HelpBox("Select at least one GameObject to see how it work", MessageType.Info);
+				return false;
+			}
+
+			return true;
+		}
+		
+		private static bool SelectedObject()
+		{
+			if (Selection.objects == null || Selection.objects.Length == 0)
+			{
+				EditorGUILayout.HelpBox("Select at least one Object to see how it work", MessageType.Info);
 				return false;
 			}
 

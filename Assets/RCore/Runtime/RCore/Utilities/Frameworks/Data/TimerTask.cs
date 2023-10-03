@@ -1,4 +1,4 @@
-﻿/**
+﻿/***
  *  Based on TimeManager of hnim.
  *  Copyright (c) 2017 RedAntz. All rights reserved.
  */

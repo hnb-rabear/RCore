@@ -60,7 +60,7 @@ public class MeshRendererInspector : Editor
 
         EditorGUILayout.Space();
 
-        /**
+        /***
 		 * SORTING Layer
 		 **/
         EditorGUI.BeginChangeCheck();
@@ -81,7 +81,7 @@ public class MeshRendererInspector : Editor
         }
 
 
-        /**
+        /***
 		 * SORTING ORDER
 		 **/
         EditorGUI.BeginChangeCheck();

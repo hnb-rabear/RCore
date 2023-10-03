@@ -1,8 +1,9 @@
 ﻿/**
- * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2017 - 2020
- **/
+* Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2017 - 2020
+**/
 
 #if UNITY_EDITOR
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,6 +17,7 @@ using UnityEditor.AddressableAssets;
 #endif
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace RCore.Common
@@ -561,8 +563,7 @@ namespace RCore.Common
 	{
 #region File Utilities
 
-		public static string SaveFilePanel(string mainDirectory, string defaultName, string content,
-			string extension = "json,txt")
+		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt")
 		{
 			if (string.IsNullOrEmpty(mainDirectory))
 				mainDirectory = Application.dataPath;
@@ -647,18 +648,19 @@ namespace RCore.Common
 
 		public static void SaveXMLFile<T>(string pPath, T pObj)
 		{
-			var serializer = new XmlSerializer(typeof(T));
-			using TextWriter writer = new StreamWriter(pPath);
 			if (File.Exists(pPath))
 				File.Delete(pPath);
+			var serializer = new XmlSerializer(typeof(T));
+			using TextWriter writer = new StreamWriter(pPath);
 			serializer.Serialize(writer, pObj);
 		}
 
-		public static void LoadXMLFile<T>(string pPath, ref T pObj)
+		public static T LoadXMLFile<T>(string pPath)
 		{
 			var serializer = new XmlSerializer(typeof(T));
 			using TextReader reader = new StreamReader(pPath);
-			pObj = (T)serializer.Deserialize(reader);
+			var pObj = (T)serializer.Deserialize(reader);
+			return pObj;
 		}
 
 #endregion
@@ -714,9 +716,19 @@ namespace RCore.Common
 			return asset;
 		}
 
-		public static string GetObjectPath(Object pObj)
+		private static Dictionary<int, string> m_ObjectFolderCaches;
+		public static string GetObjectFolderName(Object pObj)
 		{
-			return AssetDatabase.GetAssetPath(pObj);
+			m_ObjectFolderCaches ??= new Dictionary<int, string>();
+			if (m_ObjectFolderCaches.ContainsKey(pObj.GetInstanceID()))
+				return m_ObjectFolderCaches[pObj.GetInstanceID()];
+			
+			var path = AssetDatabase.GetAssetPath(pObj);
+			var pathWithoutFilename = Path.GetDirectoryName(path);
+			var pathSplit = pathWithoutFilename.Split(Path.DirectorySeparatorChar);
+			string folder = pathSplit[pathSplit.Length - 1];
+			m_ObjectFolderCaches.Add(pObj.GetInstanceID(), folder);
+			return folder;
 		}
 
 		public static Object LoadAsset(string path)
@@ -753,7 +765,7 @@ namespace RCore.Common
 		public static string ObjectToGuid(Object obj)
 		{
 			string path = AssetDatabase.GetAssetPath(obj);
-			return !string.IsNullOrEmpty(path) ? AssetDatabase.AssetPathToGUID(path) : null;
+			return (!string.IsNullOrEmpty(path)) ? AssetDatabase.AssetPathToGUID(path) : null;
 		}
 
 #endregion
@@ -937,13 +949,17 @@ namespace RCore.Common
 			return rect;
 		}
 
-		public static void GridDraws(int pCell, List<IDraw> pDraws)
+		public static void GridDraws(int pCell, List<IDraw> pDraws, Color color = default)
 		{
 			int row = Mathf.CeilToInt(pDraws.Count * 1f / pCell);
+			var bgColor = GUI.backgroundColor;
+			if (color != default)
+				GUI.backgroundColor = color;
+			EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 			for (int i = 0; i < row; i++)
 			{
 				EditorGUILayout.BeginHorizontal();
-
+				
 				for (int j = 0; j < pCell; j++)
 				{
 					int index = i * pCell + j;
@@ -953,6 +969,9 @@ namespace RCore.Common
 
 				EditorGUILayout.EndHorizontal();
 			}
+			EditorGUILayout.EndVertical();
+			if (color != default)
+				GUI.backgroundColor = bgColor;
 		}
 
 		public static void Separator()
@@ -995,7 +1014,7 @@ namespace RCore.Common
 		//=============================
 
 #region Tools
-
+		
 		public static bool Button(string pLabel, int pWidth = 0)
 		{
 			var button = new EditorButton()
@@ -1195,16 +1214,15 @@ namespace RCore.Common
 			}
 		}
 
-		public static void ConfirmPopup(Action pOnYes, Action pOnNo = null, string pMessage = null)
+		public static bool ConfirmPopup(string pMessage = null, string pYes = null, string pNo = null)
 		{
 			if (string.IsNullOrEmpty(pMessage))
 				pMessage = "Are you sure you want to do this";
-			if (EditorUtility.DisplayDialog("Confirm your action", pMessage, "Yes", "No"))
-				pOnYes();
-			else
-			{
-				pOnNo?.Invoke();
-			}
+			if (string.IsNullOrEmpty(pYes))
+				pYes = "Yes";
+			if (string.IsNullOrEmpty(pNo))
+				pNo = "pNo";
+			return EditorUtility.DisplayDialog("Confirm your action", pMessage, pYes, pNo);
 		}
 
 		public static void ListReadonlyObjects<T>(string pName, List<T> pList, List<string> pLabels = null,
@@ -1396,10 +1414,8 @@ namespace RCore.Common
 							}
 
 							if (ButtonColor("Clear", Color.red, 50))
-								ConfirmPopup(() =>
-								{
+								if (ConfirmPopup())
 									list = new List<T>();
-								});
 						});
 					}
 
@@ -1419,7 +1435,7 @@ namespace RCore.Common
 			return show;
 		}
 
-		public static void PagesForList(int pCount, string pName, Action<int> pOnDraw)
+		public static void PagesForList(int pCount, string pName, Action<int> pOnDraw, IDraw[] p_drawAtFirst = null, IDraw[] p_drawAtLast = null)
 		{
 			GUILayout.Space(3);
 
@@ -1444,15 +1460,22 @@ namespace RCore.Common
 				if (totalPages > 1)
 				{
 					EditorGUILayout.BeginHorizontal();
-					if (Button("<Prev<"))
+					if (Button("\u25c4", 23))
 					{
 						if (page > 0)
 							page--;
 						EditorPrefs.SetInt(pName + "_page", page);
 					}
 
-					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
-					if (Button(">Next>"))
+                    EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
+                    
+                    if (p_drawAtFirst != null)
+                    {
+                        foreach (var draw in p_drawAtFirst)
+                            draw.Draw();
+                    }
+
+					if (Button("\u25ba", 23))
 					{
 						if (page < totalPages - 1)
 							page++;
@@ -1470,15 +1493,22 @@ namespace RCore.Common
 				if (totalPages > 1)
 				{
 					EditorGUILayout.BeginHorizontal();
-					if (Button("<Prev<"))
+					if (Button("\u25c4", 23))
 					{
 						if (page > 0)
 							page--;
 						EditorPrefs.SetInt(pName + "_page", page);
 					}
+                    
+                    EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
+                    
+                    if (p_drawAtLast != null)
+                    {
+                        foreach (var draw in p_drawAtLast)
+                            draw.Draw();
+                    }
 
-					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
-					if (Button(">Next>"))
+                    if (Button("\u25ba", 23))
 					{
 						if (page < totalPages - 1)
 							page++;
@@ -1649,10 +1679,8 @@ namespace RCore.Common
 						}
 
 						if (ButtonColor("Clear", Color.red, 50))
-							ConfirmPopup(() =>
-							{
+							if (ConfirmPopup())
 								list = new List<T>();
-							});
 					});
 				}, default, true);
 			}
@@ -1713,7 +1741,7 @@ namespace RCore.Common
 			var evt = Event.current;
 			var style = new GUIStyle("Toolbar");
 			var dropArea = GUILayoutUtility.GetRect(0.0f, 30, style, GUILayout.ExpandWidth(true));
-			GUI.Box(dropArea, "Drag drop " + pName);
+			GUI.Box(dropArea, $"Drag drop {pName}");
 
 			switch (evt.type)
 			{
@@ -1733,7 +1761,7 @@ namespace RCore.Common
 							if (obj == null)
 								continue;
 
-							if (obj is GameObject gameObject)
+							if (obj is GameObject gameObject && typeof(T).IsSubclassOf(typeof(Component)))
 							{
 								var component = gameObject.GetComponent<T>();
 								if (component != null)
@@ -1741,9 +1769,24 @@ namespace RCore.Common
 							}
 							else
 							{
-								var s = obj as T;
-								if (s != null)
-									objs.Add(s);
+								var path = AssetDatabase.GetAssetPath(obj);
+								if (IsDirectory(path))
+								{
+									var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { path });
+									foreach (var guid in guids)
+									{
+										var subObjPath = AssetDatabase.GUIDToAssetPath(guid);
+										var subObj = AssetDatabase.LoadAssetAtPath<T>(subObjPath);
+										if (subObj != null)
+											objs.Add(subObj);
+									}
+								}
+								else
+								{
+									var s = obj as T;
+									if (s != null)
+										objs.Add(s);
+								}
 							}
 						}
 
@@ -2174,7 +2217,8 @@ namespace RCore.Common
 				if (element.Contains("["))
 				{
 					var elementName = element.Substring(0, element.IndexOf("[", StringComparison.Ordinal));
-					var index = Convert.ToInt32(element.Substring(element.IndexOf("[", StringComparison.Ordinal)).Replace("[", "")
+					var index = Convert.ToInt32(element.Substring(element.IndexOf("[", StringComparison.Ordinal))
+						.Replace("[", "")
 						.Replace("]", ""));
 					obj = GetValue_Imp(obj, elementName, index);
 				}
@@ -2235,6 +2279,8 @@ namespace RCore.Common
 
 		public static void RemoveDirective(string pSymbol, BuildTargetGroup pTarget = BuildTargetGroup.Unknown)
 		{
+			if (string.IsNullOrEmpty(pSymbol))
+				return;
 			var target = pTarget == BuildTargetGroup.Unknown
 				? EditorUserBuildSettings.selectedBuildTargetGroup
 				: pTarget;
@@ -2540,7 +2586,10 @@ namespace RCore.Common
 			return materialPresetNames;
 		}
 
-		public static Dictionary<string, int> SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object
+		private static Dictionary<string, HashSet<string>> m_InverseReferenceMap;
+		private static int m_ReferencesCount;
+
+		public static void BuildReferenceMapCache<T>(string[] assetGUIDs, List<T> cachedObjects) where T : Object
 		{
 			if (assetGUIDs == null)
 			{
@@ -2548,23 +2597,20 @@ namespace RCore.Common
 				string[] searchDirectories = { "Assets" };
 				assetGUIDs = AssetDatabase.FindAssets(searchFilter, searchDirectories);
 			}
-			var updatedAssets = new Dictionary<string, int>();
-			var inverseReferenceMap = new Dictionary<string, HashSet<string>>();
 
-			if (oldObjects.Count == 0)
-				return updatedAssets;
+			m_InverseReferenceMap = new Dictionary<string, HashSet<string>>();
+			m_ReferencesCount = 0;
 
 			// Initialize map to store all paths that have a reference to our selectedGuids
-			foreach (var selectedObj in oldObjects)
+			foreach (var selectedObj in cachedObjects)
 			{
 				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
 				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
-				inverseReferenceMap[selectedGuid] = new HashSet<string>();
+				m_InverseReferenceMap[selectedGuid] = new HashSet<string>();
 			}
 
 			// Scan all assets and store the inverse reference if contains a reference to any selectedGuid...
 			var scanProgress = 0;
-			var referencesCount = 0;
 			foreach (var guid in assetGUIDs)
 			{
 				scanProgress++;
@@ -2577,21 +2623,80 @@ namespace RCore.Common
 				{
 					EditorUtility.DisplayProgressBar($"Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
 
-					var dependencyGUID = AssetDatabase.AssetPathToGUID(dependency);
-					if (inverseReferenceMap.ContainsKey(dependencyGUID))
+					var dependencyGuid = AssetDatabase.AssetPathToGUID(dependency);
+					if (m_InverseReferenceMap.ContainsKey(dependencyGuid))
 					{
-						inverseReferenceMap[dependencyGUID].Add(path);
+						m_InverseReferenceMap[dependencyGuid].Add(path);
 
 						// Also include .meta path. This fixes broken references when an FBX uses external materials
 						// var metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
 						// inverseReferenceMap[dependencyGUID].Add(metaPath);
 
-						referencesCount++;
+						m_ReferencesCount++;
 					}
 				}
 			}
+		}
 
-			
+		public static Dictionary<string, int> SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object
+		{
+			if (assetGUIDs == null)
+			{
+				const string searchFilter = "t:Object";
+				string[] searchDirectories = { "Assets" };
+				assetGUIDs = AssetDatabase.FindAssets(searchFilter, searchDirectories);
+			}
+			var updatedAssets = new Dictionary<string, int>();
+
+			if (oldObjects.Count == 0)
+				return updatedAssets;
+
+			var inverseReferenceMap = new Dictionary<string, HashSet<string>>();
+			int referencesCount = 0;
+			if (m_InverseReferenceMap == null)
+			{
+				// Initialize map to store all paths that have a reference to our selectedGuids
+				foreach (var selectedObj in oldObjects)
+				{
+					string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
+					string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
+					inverseReferenceMap[selectedGuid] = new HashSet<string>();
+				}
+
+				// Scan all assets and store the inverse reference if contains a reference to any selectedGuid...
+				var scanProgress = 0;
+				foreach (var guid in assetGUIDs)
+				{
+					scanProgress++;
+					var path = AssetDatabase.GUIDToAssetPath(guid);
+					if (IsDirectory(path))
+						continue;
+
+					var dependencies = AssetDatabase.GetDependencies(path);
+					foreach (var dependency in dependencies)
+					{
+						EditorUtility.DisplayProgressBar($"Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
+
+						var dependencyGuid = AssetDatabase.AssetPathToGUID(dependency);
+						if (inverseReferenceMap.ContainsKey(dependencyGuid))
+						{
+							inverseReferenceMap[dependencyGuid].Add(path);
+
+							// Also include .meta path. This fixes broken references when an FBX uses external materials
+							// var metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
+							// inverseReferenceMap[dependencyGUID].Add(metaPath);
+
+							referencesCount++;
+						}
+					}
+				}
+			}
+			else
+			{
+				inverseReferenceMap = m_InverseReferenceMap;
+				referencesCount = m_ReferencesCount;
+			}
+
 			string newPath = AssetDatabase.GetAssetPath(newObject);
 			string newGuid = AssetDatabase.AssetPathToGUID(newPath);
 			AssetDatabase.TryGetGUIDAndLocalFileIdentifier(newObject, out string assetId, out long newFileId);
@@ -2599,6 +2704,7 @@ namespace RCore.Common
 			int countReplaced = 0;
 			foreach (var selectedObj in oldObjects)
 			{
+				bool found = false;
 				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
 				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
 				AssetDatabase.TryGetGUIDAndLocalFileIdentifier(selectedObj, out assetId, out long selectedFileId);
@@ -2622,13 +2728,265 @@ namespace RCore.Common
 						contents = contents.Replace($"fileID: {selectedFileId}, guid: {selectedGuid}", $"fileID: {newFileId}, guid: {newGuid}");
 						File.WriteAllText(referencePath, contents);
 						countReplaced++;
+						found = true;
 					}
 				}
 
 				UnityEngine.Debug.Log("Replace GUID in: " + selectedPath);
 				updatedAssets.Add(selectedPath, countReplaced);
+
+				if (found)
+					EditorUtility.SetDirty(selectedObj);
 			}
 			return updatedAssets;
+		}
+
+		public static string[] ReadMetaFile(Object pObject)
+		{
+			string projectPath = Application.dataPath.Replace("/Assets", "");
+			string path = $"{projectPath}\\{AssetDatabase.GetAssetPath(pObject)}";
+			string metaPath = $"{path}.meta";
+			string[] lines = File.ReadAllLines(metaPath);
+			return lines;
+		}
+
+		public static void WriteMetaFile(Object pObject, string[] pLines, bool p_refreshDatabase)
+		{
+			string projectPath = Application.dataPath.Replace("/Assets", "");
+			string path = $"{projectPath}\\{AssetDatabase.GetAssetPath(pObject)}";
+			string metaPath = $"{path}.meta";
+			File.WriteAllLines(metaPath, pLines);
+			if (p_refreshDatabase)
+				AssetDatabase.Refresh();
+		}
+
+		public struct SpriteInfo
+		{
+			public string name;
+			public Vector2 pivot;
+			public Vector4 border;
+			public int alignment;
+		}
+
+		public static Dictionary<string, SpriteInfo> GetPivotsOfSprites(Sprite pSpriteFrom)
+		{
+			var results = new Dictionary<string, SpriteInfo>();
+			var lines = ReadMetaFile(pSpriteFrom);
+			var nameLines = lines.Where(line => line.Trim().StartsWith("name:", StringComparison.OrdinalIgnoreCase)).ToList();
+			if (nameLines.Count > 0) //SpriteFrom is inside a atlas
+			{
+				//Get names of all sprites inside atlas which contain spriteFrom
+				var names = new List<string>();
+				foreach (var line in nameLines)
+				{
+					string name = line.Replace("name: ", "").Trim();
+					names.Add(name);
+				}
+
+				var alignmentLines = lines.Where(line => line.Trim().StartsWith("alignment:", StringComparison.OrdinalIgnoreCase)).ToList();
+				var alignments = new List<int>();
+				for (int i = 0; i < alignmentLines.Count; i++)
+				{
+					if (i == 0)
+						continue;
+					string line = alignmentLines[i];
+					var alignmentStr = line.Replace("alignment: ", "").Trim();
+					alignments.Add(int.Parse(alignmentStr));
+				}
+
+				//Get pivots of all sprites inside atlas which contain spriteFrom
+				var pivotLines = lines.Where(line => line.Trim().StartsWith("pivot:", StringComparison.OrdinalIgnoreCase)).ToList();
+				var pivots = new List<Vector2>();
+				foreach (var line in pivotLines)
+				{
+					var pivotStr = line.Replace("pivot: ", "").Trim();
+					var pivot = JsonConvert.DeserializeObject<Vector2>(pivotStr);
+					pivots.Add(pivot);
+				}
+
+				var borders = new List<Vector4>();
+				var borderLines = lines.Where(line => line.Trim().StartsWith("border:", StringComparison.OrdinalIgnoreCase)).ToList();
+				foreach (var line in borderLines)
+				{
+					var borderStr = line.Replace("border: ", "").Trim();
+					var border = JsonConvert.DeserializeObject<Vector4>(borderStr);
+					borders.Add(border);
+				}
+				for (int i = 0; i < names.Count; i++)
+					results.Add(names[i], new SpriteInfo
+					{
+						name = names[i],
+						pivot = pivots[i],
+						border = borders[i],
+						alignment = alignments[i],
+					});
+			}
+			else
+			{
+				var alignmentLine = lines.First(line => line.Trim().StartsWith("alignment: ", StringComparison.OrdinalIgnoreCase));
+				var alignmentStr = alignmentLine.Replace("alignment: ", "").Trim();
+				var alignment = int.Parse(alignmentStr);
+				
+				var pivotLine = lines.First(line => line.Trim().StartsWith("spritePivot: ", StringComparison.OrdinalIgnoreCase));
+				var pivotStr = pivotLine.Replace("spritePivot: ", "").Trim();
+				var pivot = JsonConvert.DeserializeObject<Vector2>(pivotStr);
+				
+				var borderStr = lines.First(line => line.Trim().StartsWith("spriteBorder: ", StringComparison.OrdinalIgnoreCase));
+				var border = JsonConvert.DeserializeObject<Vector4>(borderStr);
+				
+				results.Add(pSpriteFrom.name, new SpriteInfo
+				{
+					name = pSpriteFrom.name,
+					pivot = pivot,
+					border = border,
+					alignment = alignment,
+				});
+			}
+			return results;
+		}
+
+		public static void SetTextureReadable(Texture2D p_texture2D, bool p_readable)
+		{
+			var lines = ReadMetaFile(p_texture2D);
+			for (int i = 0; i < lines.Length; i++)
+			{
+				if (lines[i].Trim().StartsWith("isReadable:", StringComparison.OrdinalIgnoreCase))
+				{
+					int spaceIndex = lines[i].IndexOf("isReadable:", StringComparison.OrdinalIgnoreCase);
+					string readable = p_readable ? "1" : "0";
+					lines[i] = $"isReadable: {readable}"; //Replace pivot
+					for (int s = 0; s < spaceIndex; s++)
+						lines[i] = lines[i].Insert(0, " ");
+					break;
+				}
+			}
+			WriteMetaFile(p_texture2D, lines, true);
+		}
+
+		public static void CopyPivotAndBorder(Sprite p_original, Sprite p_target, bool p_RefreshDatabase)
+		{
+			var spriteInfo = GetPivotsOfSprites(p_original);
+			var pivotForm = spriteInfo[p_original.name].pivot;
+			var borderFrom = spriteInfo[p_original.name].border;
+			var alignmentFrom = spriteInfo[p_original.name].alignment;
+
+			var lines = ReadMetaFile(p_target);
+			var nameLines = lines.Where(line => line.Trim().StartsWith("name:", StringComparison.OrdinalIgnoreCase)).ToList();
+			if (nameLines.Count > 0) //SpriteTo is inside a atlas
+			{
+				int nameIndex = 0;
+				bool foundName = false;
+				for (int i = 0; i < lines.Length; i++)
+				{
+					bool found = false;
+					int spaceIndex = 0;
+					if (lines[i].Trim().StartsWith("name:", StringComparison.OrdinalIgnoreCase))
+					{
+						string name = lines[i].Replace("name:", "").Trim();
+						if (name == p_target.name)
+						{
+							nameIndex = i;
+							foundName = true;
+						}
+					}
+					if (foundName && i > nameIndex && lines[i].Trim().StartsWith("alignment:", StringComparison.OrdinalIgnoreCase))
+					{
+						spaceIndex = lines[i].IndexOf("alignment:", StringComparison.OrdinalIgnoreCase);
+						lines[i] = $"alignment: {alignmentFrom}"; //Replace pivot
+					}
+					else if (foundName && i > nameIndex && lines[i].Trim().StartsWith("pivot:", StringComparison.OrdinalIgnoreCase))
+					{
+						if (alignmentFrom == 0 && pivotForm == Vector2.zero)
+							continue;
+						spaceIndex = lines[i].IndexOf("pivot:", StringComparison.OrdinalIgnoreCase);
+						lines[i] = $"pivot: {{x: {pivotForm.x}, y: {pivotForm.y}}}"; //Replace pivot
+					}
+					else if (foundName && i > nameIndex && lines[i].Trim().StartsWith("border:", StringComparison.OrdinalIgnoreCase))
+					{
+						spaceIndex = lines[i].IndexOf("border:", StringComparison.OrdinalIgnoreCase);
+						lines[i] = $"border: {{x: {borderFrom.x}, y: {borderFrom.y}, z: {borderFrom.z}, w: {borderFrom.w}}}"; //Replace border
+						found = true;
+					}
+					if (spaceIndex > 0)
+					{
+						for (int s = 0; s < spaceIndex; s++)
+							lines[i] = lines[i].Insert(0, " ");
+					}
+					if (found)
+						break;
+				}
+			}
+			else
+			{
+				for (int i = 0; i < lines.Length; i++)
+				{
+					bool found = false;
+					int spaceIndex = 0;
+					if (lines[i].Trim().StartsWith("alignment:", StringComparison.OrdinalIgnoreCase))
+					{
+						spaceIndex = lines[i].IndexOf("alignment:", StringComparison.OrdinalIgnoreCase);
+						lines[i] = $"alignment: {alignmentFrom}"; //Replace pivot
+					}
+					else if (lines[i].Trim().StartsWith("spritePivot:", StringComparison.OrdinalIgnoreCase))
+					{
+						if (alignmentFrom == 0 && pivotForm == Vector2.zero)
+							continue;
+						spaceIndex = lines[i].IndexOf("spritePivot:", StringComparison.OrdinalIgnoreCase);
+						lines[i] = $"spritePivot: {{x: {pivotForm.x}, y: {pivotForm.y}}}"; //Replace pivot
+					}
+					else if (lines[i].Trim().StartsWith("spriteBorder:", StringComparison.OrdinalIgnoreCase))
+					{
+						spaceIndex = lines[i].IndexOf("spriteBorder:", StringComparison.OrdinalIgnoreCase);
+						lines[i] = $"spriteBorder: {{x: {borderFrom.x}, y: {borderFrom.y}, z: {borderFrom.z}, y: {borderFrom.w}}}"; //Replace border
+						found = true;
+					}
+					if (spaceIndex > 0)
+						for (int s = 0; s < spaceIndex; s++)
+							lines[i] = lines[i].Insert(0, " ");
+					if (found)
+						break;
+				}
+			}
+
+			WriteMetaFile(p_target, lines, p_RefreshDatabase);
+		}
+
+		public static void ExportSpritesFromSpriteSheet(Object p_obj, string p_exportDirectory = null)
+		{
+			string path = AssetDatabase.GetAssetPath(p_obj);
+			var sprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
+			if (sprites.Length > 0)
+			{
+				if (string.IsNullOrEmpty(p_exportDirectory))
+					p_exportDirectory = Path.GetDirectoryName(path);
+				var texture2D = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+				if (!texture2D.isReadable)
+					SetTextureReadable(texture2D, true);
+				foreach (var sprite in sprites)
+				{
+					int x = (int)sprite.rect.x;
+					int y = (int)sprite.rect.y;
+					int width = (int)sprite.rect.width;
+					int height = (int)sprite.rect.height;
+					var newTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+					var pixels = sprite.texture.GetPixels(x, y, width, height);
+					newTexture.SetPixels(pixels);
+					newTexture.Apply();
+					byte[] newTextureData = newTexture.EncodeToPNG();
+
+					string newSpritePath = Path.Combine(p_exportDirectory, sprite.name + ".png");
+					File.WriteAllBytes(newSpritePath, newTextureData);
+					Object.DestroyImmediate(newTexture);
+				}
+				AssetDatabase.Refresh();
+				foreach (var sprite in sprites)
+				{
+					string newSpritePath = Path.Combine(p_exportDirectory, sprite.name + ".png");
+					var newSprite = AssetDatabase.LoadAssetAtPath<Sprite>(newSpritePath);
+					CopyPivotAndBorder(sprite, newSprite, false);
+				}
+				AssetDatabase.Refresh();
+			}
 		}
 
 		private static bool IsDirectory(string path) => File.GetAttributes(path).HasFlag(FileAttributes.Directory);
@@ -2842,10 +3200,12 @@ namespace RCore.Common
 	public class EditorPrefsInt : CustomEditorPrefs
 	{
 		private int mValue;
+
 		public EditorPrefsInt(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
 			mValue = EditorPrefs.GetInt(Key);
 		}
+
 		public EditorPrefsInt(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
 			mValue = EditorPrefs.GetInt(Key);

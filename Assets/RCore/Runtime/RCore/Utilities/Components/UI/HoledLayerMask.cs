@@ -1,4 +1,4 @@
-﻿/**
+﻿/***
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 #pragma warning disable 0649
