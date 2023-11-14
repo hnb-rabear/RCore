@@ -21,7 +21,7 @@ namespace RCore.Common
 
     public class TimeHelper
     {
-        private static StringBuilder mTimeBuilder = new StringBuilder();
+        private static StringBuilder m_TimeBuilder = new StringBuilder();
         private static bool m_CheckingTime;
         private static DateTime? m_StartServerTime;
         private static float m_AppTimeWhenGetServerTime;
@@ -38,7 +38,7 @@ namespace RCore.Common
                 if (showFull || t.Hours > 0)
                 {
                     //00:00:00
-                    return mTimeBuilder.Clear()
+                    return m_TimeBuilder.Clear()
                         .Append(t.Hours.ToString("D2")).Append(":")
                           .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2"))
@@ -49,7 +49,7 @@ namespace RCore.Common
                     if (t.Minutes > 0)
                     {
                         //00:00
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                           .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2"))
                         .ToString();
@@ -57,7 +57,7 @@ namespace RCore.Common
                     else
                     {
                         //00
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                             .Append(t.Seconds.ToString("D2"))
                         .ToString();
                     }
@@ -83,7 +83,7 @@ namespace RCore.Common
                 if (showFull || t.Hours > 0)
                 {
                     //00:00
-                    return mTimeBuilder.Clear()
+                    return m_TimeBuilder.Clear()
                           .Append((t.Hours * 60 + t.Minutes).ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2"))
                         .ToString();
@@ -93,7 +93,7 @@ namespace RCore.Common
                     if (t.Minutes > 0)
                     {
                         //00:00
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                           .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2"))
                         .ToString();
@@ -101,7 +101,7 @@ namespace RCore.Common
                     else
                     {
                         //00
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                             .Append(t.Seconds.ToString("D2"))
                         .ToString();
                     }
@@ -156,7 +156,7 @@ namespace RCore.Common
                 if (showFull || t.Hours > 0)
                 {
                     //00:00:00:000
-                    return mTimeBuilder.Clear()
+                    return m_TimeBuilder.Clear()
                         .Append(t.Hours.ToString("D2")).Append(":")
                           .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2")).Append(":")
@@ -168,7 +168,7 @@ namespace RCore.Common
                     if (t.Minutes > 0)
                     {
                         //00:00:000
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                           .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2")).Append(":")
                               .Append(t.Milliseconds.ToString("D3"))
@@ -177,7 +177,7 @@ namespace RCore.Common
                     else
                     {
                         //00:000
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                             .Append(t.Seconds.ToString("D2")).Append(":")
                               .Append(t.Milliseconds.ToString("D3"))
                         .ToString();
@@ -205,7 +205,7 @@ namespace RCore.Common
                 {
                     string day = t.Days > 0 ? t.Days > 1 ? " days" : " day" : "";
                     //00:00:00:000
-                    return mTimeBuilder.Clear()
+                    return m_TimeBuilder.Clear()
                         .Append(t.Days > 0 ? t.Days + day : "").Append(t.Days > 0 ? " " : "")
                           .Append(t.Hours.ToString("D2")).Append(":")
                             .Append(t.Minutes.ToString("D2")).Append(":")
@@ -217,7 +217,7 @@ namespace RCore.Common
                     if (t.Hours > 0)
                     {
                         //00:00:000
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                           .Append(t.Hours.ToString("D2")).Append(":")
                             .Append(t.Minutes.ToString("D2")).Append(":")
                               .Append(t.Seconds.ToString("D2"))
@@ -226,7 +226,7 @@ namespace RCore.Common
                     else
                     {
                         //00:000
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                             .Append(t.Minutes.ToString("D2")).Append(":")
                               .Append(t.Seconds.ToString("D2"))
                         .ToString();
@@ -249,7 +249,7 @@ namespace RCore.Common
                 if (showFull || t.Hours > 0)
                 {
                     //00h00m00s
-                    return mTimeBuilder.Clear()
+                    return m_TimeBuilder.Clear()
                         .Append(t.Hours).Append("h")
                           .Append(t.Minutes).Append("m")
                             .Append(t.Seconds).Append("s")
@@ -260,7 +260,7 @@ namespace RCore.Common
                     if (t.Minutes > 0)
                     {
                         //00m00s
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                           .Append(t.Minutes).Append("m")
                             .Append(t.Seconds).Append("s")
                         .ToString();
@@ -268,7 +268,7 @@ namespace RCore.Common
                     else
                     {
                         //00s
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                             .Append(t.Seconds).Append("s")
                         .ToString();
                     }
@@ -292,7 +292,7 @@ namespace RCore.Common
                     if (t.Seconds > 0)
                     {
                         //Hour Minute Second
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                             .Append(t.Hours).Append(t.Hours <= 1 ? " Hour " : " Hours ")
                               .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? t.Minutes == 1 ? " Minute " : " Minutes " : "")
                                 .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
@@ -304,7 +304,7 @@ namespace RCore.Common
                     if (t.Minutes > 0)
                     {
                         //Minute Second
-                        return mTimeBuilder.Clear()
+                        return m_TimeBuilder.Clear()
                           .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes == 1 ? " Minute " : " Minutes ")
                             .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
                         .ToString();
@@ -314,7 +314,7 @@ namespace RCore.Common
                         //Second
                         if (t.Seconds > 0)
                         {
-                            return mTimeBuilder.Clear()
+                            return m_TimeBuilder.Clear()
                                 .Append(t.Seconds).Append(t.Seconds <= 1 ? " Second" : " Seconds")
                             .ToString();
                         }
@@ -555,11 +555,11 @@ namespace RCore.Common
 
     public static class TimeExtension
     {
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime m_Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static long ConvertToTimestamp(this DateTime value)
         {
-            var elapsedTime = value - Epoch;
+            var elapsedTime = value - m_Epoch;
             return (long)elapsedTime.TotalSeconds;
         }
     }

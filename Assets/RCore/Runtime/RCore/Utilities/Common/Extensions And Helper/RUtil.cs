@@ -353,14 +353,6 @@ namespace RCore.Common
 
 	public static class RUtilExtension
 	{
-#if UNITY_EDITOR
-		[UnityEditor.MenuItem("RCore/Test/Test anything")]
-		public static void TestAnything()
-		{
-			UnityEngine.Debug.Log(ToLowerCaseFirstChar(null));
-		}
-#endif
-		
 		public static string ToSentenceCase(this string pString)
 		{
 			// MatchEvaluator delegate defines replacement of sentence starts to uppercase

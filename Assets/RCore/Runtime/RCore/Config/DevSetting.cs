@@ -58,7 +58,6 @@ public class DevSetting : ScriptableObject
 	public PlayerPrefBool enableLogSystem;
 	public bool enableLog;
 	public bool enableDraw;
-	public bool showFPS;
 
 	public bool EnableLog
 	{
@@ -75,15 +74,6 @@ public class DevSetting : ScriptableObject
 		set
 		{
 			enableDraw = value;
-			onSettingsChanged?.Invoke();
-		}
-	}
-	public bool ShowFPS
-	{
-		get => showFPS;
-		set
-		{
-			showFPS = value;
 			onSettingsChanged?.Invoke();
 		}
 	}

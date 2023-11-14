@@ -123,7 +123,6 @@ public class DevSettingEditor : Editor
 	{
 		m_target.enableLog = EditorHelper.Toggle(m_target.enableLog, "Show Log", 120, 280);
 		m_target.enableDraw = EditorHelper.Toggle(m_target.enableDraw, "Enable Draw", 120, 280);
-		m_target.showFPS = EditorHelper.Toggle(m_target.showFPS, "Show FPS", 120, 280);
         
 		EditorHelper.BoxVertical("Project Settings" + (m_previewingProfiles ? " Preview" : ""), () =>
 		{
@@ -146,7 +145,7 @@ public class DevSettingEditor : Editor
 		}, Color.white, true);
 	}
 
-    private void InitDirectives(List<DevSetting.Directive> defines)
+    private static void InitDirectives(List<DevSetting.Directive> defines)
     {
         string[] currentDefines = EditorHelper.GetDirectives();
         for (int i = 0; i < currentDefines.Length; i++)
