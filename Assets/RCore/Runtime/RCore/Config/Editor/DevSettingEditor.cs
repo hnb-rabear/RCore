@@ -121,8 +121,8 @@ public class DevSettingEditor : Editor
 
 	private void DrawSettingsProfiles()
 	{
-		m_target.enableLog = EditorHelper.Toggle(m_target.enableLog, "Show Log", 120, 280);
-		m_target.enableDraw = EditorHelper.Toggle(m_target.enableDraw, "Enable Draw", 120, 280);
+		m_target.EnableLog = EditorHelper.Toggle(m_target.EnableLog, "Show Log", 120, 280);
+		m_target.EnableDraw = EditorHelper.Toggle(m_target.EnableDraw, "Enable Draw", 120, 280);
         
 		EditorHelper.BoxVertical("Project Settings" + (m_previewingProfiles ? " Preview" : ""), () =>
 		{

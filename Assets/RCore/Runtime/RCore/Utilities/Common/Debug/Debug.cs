@@ -13,102 +13,103 @@ namespace RCore.Common
 {
 	public static class Debug
 	{
-		private static readonly StringBuilder mStrBuilder = new StringBuilder();
+		private static readonly StringBuilder m_StrBuilder = new StringBuilder();
+		public static bool enabled = true;
 
 		public static void Log(object message)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append(message);
-			UnityEngine.Debug.Log(mStrBuilder);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append(message);
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		public static void Log(object message, bool pShowTime)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
-				mStrBuilder.Append($"[{DateTime.Now}] ").Append(message);
+				m_StrBuilder.Append($"[{DateTime.Now}] ").Append(message);
 			else
-				mStrBuilder.Append("[H] ").Append(message);
-			UnityEngine.Debug.Log(mStrBuilder);
+				m_StrBuilder.Append("[H] ").Append(message);
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		public static void Log(object message, Color pColor = default)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
 			string c = pColor == default ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append($"<color=\"#{c}\">{message}</color>");
-			UnityEngine.Debug.Log(mStrBuilder);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append($"<color=\"#{c}\">{message}</color>");
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		public static void Log(object title, object message, Color pColor = default)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
 			string c = pColor == default ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append($"<b><color=\"#{c}\">{title}</color></b> {message}");
-			UnityEngine.Debug.Log(mStrBuilder);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append($"<b><color=\"#{c}\">{title}</color></b> {message}");
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		public static void LogError(object message, bool pShowTime = false)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
-				mStrBuilder.Append($"[{DateTime.Now}] ").Append(message);
+				m_StrBuilder.Append($"[{DateTime.Now}] ").Append(message);
 			else
-				mStrBuilder.Append("[H] ").Append(message);
-			UnityEngine.Debug.LogError(mStrBuilder);
+				m_StrBuilder.Append("[H] ").Append(message);
+			UnityEngine.Debug.LogError(m_StrBuilder);
 		}
 
 		public static void LogWarning(object message, bool pShowTime = false)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
-				mStrBuilder.Append($"[{DateTime.Now}] ").Append(message);
+				m_StrBuilder.Append($"[{DateTime.Now}] ").Append(message);
 			else
-				mStrBuilder.Append("[H] ").Append(message);
-			UnityEngine.Debug.LogWarning(mStrBuilder);
+				m_StrBuilder.Append("[H] ").Append(message);
+			UnityEngine.Debug.LogWarning(m_StrBuilder);
 		}
 
 		public static void LogException(Exception e, bool pShowTime = false)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
-				mStrBuilder.Append($"[{DateTime.Now}] ").Append(e);
+				m_StrBuilder.Append($"[{DateTime.Now}] ").Append(e);
 			else
-				mStrBuilder.Append("[H] ").Append(e);
-			UnityEngine.Debug.LogError(mStrBuilder);
+				m_StrBuilder.Append("[H] ").Append(e);
+			UnityEngine.Debug.LogError(m_StrBuilder);
 		}
 
 		public static void LogJson<T>(T pObj, Color pColor = default) where T : class
 		{
-			if (!DevSetting.Instance.EnableLog || pObj == null)
+			if (!enabled || pObj == null)
 				return;
 			var jsonStr = JsonUtility.ToJson(pObj);
 			if (jsonStr != "{}")
 			{
 				string c = pColor == default ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
-				mStrBuilder.Remove(0, mStrBuilder.Length);
-				mStrBuilder.Append("[H] ").Append(string.Format("<color=\"#{2}\">{0}</color>{1}", pObj.GetType().FullName, jsonStr, c));
-				UnityEngine.Debug.Log(mStrBuilder);
+				m_StrBuilder.Remove(0, m_StrBuilder.Length);
+				m_StrBuilder.Append("[H] ").Append(string.Format("<color=\"#{2}\">{0}</color>{1}", pObj.GetType().FullName, jsonStr, c));
+				UnityEngine.Debug.Log(m_StrBuilder);
 			}
 		}
 
 		public static void LogNewtonJson(object pObj, Color pColor = default)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
 			/*
 			var jsonStr = Newtonsoft.Json.JsonConvert.SerializeObject(pObj);
@@ -128,16 +129,16 @@ namespace RCore.Common
 		/// <param name="additionalText">Additional text to print.</param>
 		public static void LogArray<T>(T[] array, string additionalText = "")
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append(additionalText).Append("{");
 			for (int i = 0; i < array.Length; i++)
 			{
-				mStrBuilder.Append((array[i] != null ? array[i].ToString() : "null") + (i < array.Length - 1 ? ", " : ""));
+				m_StrBuilder.Append((array[i] != null ? array[i].ToString() : "null") + (i < array.Length - 1 ? ", " : ""));
 			}
-			mStrBuilder.Append("}");
-			UnityEngine.Debug.Log(mStrBuilder);
+			m_StrBuilder.Append("}");
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		/// <summary>
@@ -149,20 +150,20 @@ namespace RCore.Common
 		/// <param name="additionalText">Additional text to print before dict</param>
 		public static void LogDictionary<TKey, TValue>(Dictionary<TKey, TValue> dict, string additionalText = "")
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append(additionalText).Append("{");
 			int i = 0;
 			foreach (var pair in dict)
 			{
 				i++;
-				mStrBuilder.Append("{" + pair.Key + ":" + pair.Value + "}");
+				m_StrBuilder.Append("{" + pair.Key + ":" + pair.Value + "}");
 				if (i < dict.Count - 1)
-					mStrBuilder.Append(",");
+					m_StrBuilder.Append(",");
 			}
-			mStrBuilder.Append("}");
-			UnityEngine.Debug.Log(mStrBuilder);
+			m_StrBuilder.Append("}");
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		/// <summary>
@@ -173,18 +174,18 @@ namespace RCore.Common
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static void LogList<T>(List<T> list, string additionalText = "")
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append(additionalText).Append("{");
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append(additionalText).Append("{");
 			for (int i = 0; i < list.Count; i++)
 			{
-				mStrBuilder.Append(list[i]);
+				m_StrBuilder.Append(list[i]);
 				if (i < list.Count - 1)
-					mStrBuilder.Append(",");
+					m_StrBuilder.Append(",");
 			}
-			mStrBuilder.Append("}");
-			UnityEngine.Debug.Log(mStrBuilder);
+			m_StrBuilder.Append("}");
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		/// <summary>
@@ -193,23 +194,23 @@ namespace RCore.Common
 		/// <param name="objs">Objects to check.</param>
 		public static void LogNull(params object[] objs)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append("[H] ").Append("{");
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append("[H] ").Append("{");
 			for (int i = 0; i < objs.Length; i++)
 			{
-				mStrBuilder.Append(objs[i]);
+				m_StrBuilder.Append(objs[i]);
 				if (i < objs.Length - 1)
-					mStrBuilder.Append(",");
+					m_StrBuilder.Append(",");
 			}
-			UnityEngine.Debug.Log(mStrBuilder);
+			UnityEngine.Debug.Log(m_StrBuilder);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void LogToFile(object context, string fileName, bool deleteAfterQuit = true)
 		{
-			if (DevSetting.Instance.EnableLog && Application.isEditor)
+			if (enabled && Application.isEditor)
 			{
 				var sr = new StreamReader(fileName);
 				var sw = new StreamWriter(fileName, true);
@@ -232,11 +233,11 @@ namespace RCore.Common
 
 		public static void Assert(bool pCondition, string pLog)
 		{
-			if (!DevSetting.Instance.EnableLog)
+			if (!enabled)
 				return;
-			mStrBuilder.Remove(0, mStrBuilder.Length);
-			mStrBuilder.Append(pLog);
-			UnityEngine.Debug.Assert(pCondition, mStrBuilder);
+			m_StrBuilder.Remove(0, m_StrBuilder.Length);
+			m_StrBuilder.Append(pLog);
+			UnityEngine.Debug.Assert(pCondition, m_StrBuilder);
 		}
 	}
 }

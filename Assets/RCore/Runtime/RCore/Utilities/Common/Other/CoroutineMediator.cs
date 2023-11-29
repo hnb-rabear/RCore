@@ -6,7 +6,7 @@ namespace RCore.Common
 {
     public interface IUpdate
     {
-        void Update(float pDetalTime);
+        void Update(float pUnscaledDeltaTime);
     }
 
     public class CoroutineMediator : MonoBehaviour

@@ -59,7 +59,7 @@ namespace RCore.Framework.Data
             }
         }
 
-        public Action<bool> OnFetched;
+        public Action<bool> onFetched;
 
         private DateTime m_DayZero;
         private bool m_LocalTimeSynced;
@@ -161,12 +161,12 @@ namespace RCore.Framework.Data
                 m_TimerTasks.Add(pTimer);
         }
 
-        public void Update(float pUnscaledDetalTime)
+        public void Update(float pUnscaledDeltaTime)
         {
             int count = m_TimerTasks.Count;
             if (count > 0)
             {
-                m_SecondsElapsed += pUnscaledDetalTime;
+                m_SecondsElapsed += pUnscaledDeltaTime;
                 if (m_SecondsElapsed >= 1.0f)
                 {
                     m_SecondsElapsed -= 1.0f;
@@ -236,7 +236,7 @@ namespace RCore.Framework.Data
                         }
                     }
                 }
-                OnFetched?.Invoke(m_TimeServerFetched);
+                onFetched?.Invoke(m_TimeServerFetched);
             }
         }
 

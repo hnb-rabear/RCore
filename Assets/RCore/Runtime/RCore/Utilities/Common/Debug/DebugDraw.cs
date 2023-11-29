@@ -1,6 +1,6 @@
 ﻿/***
- * Author RadBear - nbhung71711 @gmail.com - 2018
- **/
+* Author RadBear - nbhung71711 @gmail.com - 2018
+**/
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,19 +10,21 @@ namespace RCore.Common
 {
 	public static class DebugDraw
 	{
+		public static bool enabled = true;
+
 		//================= BASIC =================
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.5f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			UnityEngine.Debug.DrawLine(start, end, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawLines(Vector3[] points, Color color, float duration = 0.5f)
 		{
-			if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
+			if (!enabled || points.Length < 2) return;
 			for (int i = 0; i < points.Length; i++)
 				UnityEngine.Debug.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0], color, duration);
 		}
@@ -30,7 +32,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawLinesGizmos(Vector3[] points, Color color)
 		{
-			if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
+			if (!enabled || points.Length < 2) return;
 			var colorTemp = Gizmos.color;
 			Gizmos.color = color;
 			for (int i = 0; i < points.Length; i++)
@@ -41,7 +43,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawLinesGizmos(Transform[] points, Color color)
 		{
-			if (!DevSetting.Instance.EnableDraw || points.Length < 2) return;
+			if (!enabled || points.Length < 2) return;
 			var colorTemp = Gizmos.color;
 			Gizmos.color = color;
 			for (int i = 0; i < points.Length; i++)
@@ -54,7 +56,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawLinesGizmos(List<Vector3> points, Color color)
 		{
-			if (!DevSetting.Instance.EnableDraw || points.Count < 2) return;
+			if (!enabled || points.Count < 2) return;
 			var colorTemp = Gizmos.color;
 			Gizmos.color = color;
 			for (int i = 0; i < points.Count; i++)
@@ -65,7 +67,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawLine(Vector3 start, Vector3 dir, float length, Color color, float duration = 0.1f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			var pos = start + dir.normalized * length;
 			DrawLine(start, pos, color, duration);
 		}
@@ -73,7 +75,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawRectangle(Rect pRect, Color color, float duration = 10f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			float xMin = pRect.xMin;
 			float xMax = pRect.xMax;
 			float yMin = pRect.yMin;
@@ -91,7 +93,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawRectangle(Vector2 pCenter, Vector2 pSize, Color color, float duration = 1f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			float xMin = pCenter.x - pSize.x / 2;
 			float xMax = pCenter.x + pSize.x / 2;
 			float yMin = pCenter.y - pSize.y / 2;
@@ -109,7 +111,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawColoredRectangle(Bounds bounds, Color color, float duration)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			float width = bounds.size.x;
 			float height = bounds.size.y;
 
@@ -128,7 +130,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawColoredRectangle(Vector3 center, float width, float height, Color color, float time = 0.5f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			var a = new Vector2(center.x - width / 2, center.y + height / 2);
 			var b = new Vector2(center.x - width / 2, center.y - height / 2);
 			var c = new Vector2(center.x + width / 2, center.y - height / 2);
@@ -142,7 +144,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawColoredRectangle(BoxCollider2D boxCollider2d, Color color, float duration)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			var bounds = boxCollider2d.bounds;
 			float width = bounds.size.x;
 			float height = bounds.size.y;
@@ -155,14 +157,14 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawEllipse(Vector3 center, Vector2 size, Color color, float duration = 0.5f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			DrawEllipse(center, size.x, size.y, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawEllipse(Vector3 center, float width, float height, Color color, float duration = 0.5f)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 			int steps = 100;
 			float interval = 2 * width / steps;
 			var currentPoint = Vector3.zero;
@@ -277,7 +279,6 @@ namespace RCore.Common
 				}
 			}
 		}
-
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawGridIsometricGizmos(Vector2 rootPos, float sizeX, float sizeY, Vector2 cellSize, bool pShowCoordinate = false, Color color = default, int cellOffset = 0)
@@ -422,7 +423,7 @@ namespace RCore.Common
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawFOV(FOVInfo pFovInfo)
 		{
-			if (!DevSetting.Instance.EnableDraw) return;
+			if (!enabled) return;
 
 			if (pFovInfo.usingGizmos)
 				Gizmos.color = pFovInfo.color;

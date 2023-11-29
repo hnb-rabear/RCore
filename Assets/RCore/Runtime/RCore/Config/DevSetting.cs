@@ -47,7 +47,7 @@ public class DevSetting : ScriptableObject
 			if (m_Instance == null)
 			{
 				m_Instance = Resources.Load<DevSetting>("DevSetting");
-				m_Instance.enableLogSystem = new PlayerPrefBool("EnableLogSystem");
+				m_Instance.Init();
 			}
 			return m_Instance;
 		}
@@ -56,24 +56,37 @@ public class DevSetting : ScriptableObject
 	public Action onSettingsChanged;
 	public Profile profile = new Profile();
 	public PlayerPrefBool enableLogSystem;
-	public bool enableLog;
-	public bool enableDraw;
-
+	[SerializeField] private bool m_enableLog;
+	[SerializeField] private bool m_enableDraw;
+	
+	private void Init()
+	{
+		enableLogSystem = new PlayerPrefBool("EnableLogSystem");
+		RCore.Common.Debug.enabled = m_enableLog;
+		RCore.Common.DebugDraw.enabled = m_enableDraw;
+	}
+	
 	public bool EnableLog
 	{
-		get => enableLog || enableLogSystem.Value;
+		get => m_enableLog || enableLogSystem.Value;
 		set
 		{
-			enableLog = value;
+			if (m_enableLog == value)
+				return;
+			m_enableLog = value;
+			RCore.Common.Debug.enabled = value;
 			onSettingsChanged?.Invoke();
 		}
 	}
 	public bool EnableDraw
 	{
-		get => enableDraw;
+		get => m_enableDraw;
 		set
 		{
-			enableDraw = value;
+			if (m_enableDraw == value)
+				return;
+			m_enableDraw = value;
+			RCore.Common.DebugDraw.enabled = value;
 			onSettingsChanged?.Invoke();
 		}
 	}

@@ -50,7 +50,7 @@ namespace RCore.Demo
 
         private void RandomizeData()
         {
-            exampleGroup.intergerdata.Value = Random.Range(0, 100);
+            exampleGroup.integerData.Value = Random.Range(0, 100);
             exampleGroup.floatData.Value = Random.Range(0, 100) * 100;
             exampleGroup.longData.Value = Random.Range(0, 100) * 10000;
             exampleGroup.stringData.Value = Random.Range(0, 100) + "asd";
@@ -61,13 +61,13 @@ namespace RCore.Demo
 
         private void Log()
         {
-            Debug.Log("intergerdata: " + exampleGroup.intergerdata.Value);
+            Debug.Log("intergerdata: " + exampleGroup.integerData.Value);
             Debug.Log("floatData: " + exampleGroup.floatData.Value);
             Debug.Log("longData: " + exampleGroup.longData.Value);
             Debug.Log("stringData: " + exampleGroup.stringData.Value);
             Debug.Log("boolData: " + exampleGroup.boolData.Value);
             Debug.Log("dateTimeData: " + exampleGroup.dateTimeData.Value);
-            Debug.Log("timeCouterData: " + exampleGroup.timeCouterData.GetRemainSeconds());
+            Debug.Log("timeCouterData: " + exampleGroup.timeCounterData.GetRemainSeconds());
             Debug.Log("timerTask: " + exampleGroup.timerTask.RemainSeconds);
         }
 
