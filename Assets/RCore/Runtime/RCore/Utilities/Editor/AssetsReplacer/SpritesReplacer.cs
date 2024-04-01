@@ -258,12 +258,12 @@ namespace RCore.Editor
 														input.spriteOriginal = sprite;
 														break;
 													}
-													if (!spritesNew.Contains(sprite) && input.spriteNew.name.Contains($"{EditorHelper.GetObjectFolderName(sprite)}-{sprite.name}"))
+													if (!spritesNew.Contains(sprite) && input.spriteNew.name.EndsWith($"{EditorHelper.GetObjectFolderName(sprite)}-{sprite.name}"))
 													{
 														input.spriteOriginal = sprite;
 														break;
 													}
-													if (!spritesNew.Contains(sprite) && sprite.name.Contains($"{EditorHelper.GetObjectFolderName(input.spriteNew)}-{input.spriteNew.name}"))
+													if (!spritesNew.Contains(sprite) && sprite.name.EndsWith($"{EditorHelper.GetObjectFolderName(input.spriteNew)}-{input.spriteNew.name}"))
 													{
 														input.spriteOriginal = sprite;
 														break;

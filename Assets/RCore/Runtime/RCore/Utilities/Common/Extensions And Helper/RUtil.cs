@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711 @gmail.com - 2017 - 2020
  **/
 
@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace RCore.Common
@@ -36,6 +35,27 @@ namespace RCore.Common
 
 			pStringPart = pStr.Replace(pNumberPart, "");
 		}
+
+		public static string ToLowerUnderscore(string input)
+		{
+			if (string.IsNullOrEmpty(input))
+				return string.Empty;
+
+			var result = new StringBuilder(input.Length * 2);
+			char prevChar = input[0];
+			result.Append(char.ToLower(prevChar));
+			for (int i = 1; i < input.Length; i++)
+			{
+				char currentChar = input[i];
+				if (char.IsUpper(currentChar) || currentChar == ' ' || currentChar == '-')
+					if (prevChar != ' ' && prevChar != '-')
+						result.Append('_');
+				result.Append(char.ToLower(currentChar));
+				prevChar = currentChar;
+			}
+			return result.ToString().Replace("__", "_");
+		}
+
 
 		public static string JoinString(string separator, params string[] strs)
 		{
@@ -134,33 +154,6 @@ namespace RCore.Common
 			return "{ " + d.Select(kv => "(" + kv.Key + ", " + kv.Value + ")").Aggregate("", (current, next) => current + next + ", ") + "}";
 		}
 
-		[Obsolete]
-		public static void CombineMeshes(List<Transform> pMeshObjects, Material pMat, ref GameObject combinedMesh, bool pDestroyOriginal)
-		{
-			if (combinedMesh == null)
-			{
-				combinedMesh = new GameObject();
-				combinedMesh.GetOrAddComponent<MeshRenderer>();
-				combinedMesh.GetOrAddComponent<MeshFilter>();
-			}
-
-			var meshFilters = new MeshFilter[pMeshObjects.Count];
-			var combine = new CombineInstance[meshFilters.Length];
-			for (int i = 0; i < pMeshObjects.Count; i++)
-			{
-				meshFilters[i] = pMeshObjects[i].GetComponent<MeshFilter>();
-				combine[i].mesh = meshFilters[i].sharedMesh;
-				combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-				pMeshObjects[i].gameObject.SetActive(false);
-				if (pDestroyOriginal)
-					Object.DestroyImmediate(pMeshObjects[i].gameObject);
-			}
-
-			combinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh = new Mesh();
-			combinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh.CombineMeshes(combine);
-			combinedMesh.GetComponent<MeshRenderer>().sharedMaterial = pMat;
-		}
-
 		public static IEnumerator SendWebRequest(string url, WWWForm form, Action<string> pCallback = null)
 		{
 			using var w = form == null ? UnityWebRequest.Get(url) : UnityWebRequest.Post(url, form);
@@ -213,6 +206,34 @@ namespace RCore.Common
 			}
 
 			return res;
+		}
+
+		public static int CompareVersion(string version1, string version2)
+		{
+			if (!int.TryParse(version1.Last().ToString(), out _))
+				version1 = version1.Remove(version1.Length - 1);
+			if (!int.TryParse(version2.Last().ToString(), out _))
+				version2 = version2.Remove(version2.Length - 1);
+			string[] version1s = version1.Split('.');
+			string[] version2s = version2.Split('.');
+			int maxIndex = Mathf.Min(version1s.Length, version2s.Length);
+			int p1 = 0;
+			int p2 = 0;
+			for (int i = 0; i < maxIndex; i++)
+			{
+				p1 += int.Parse(version1s[i]) * (int)Mathf.Pow(100, maxIndex - i - 1);
+				p2 += int.Parse(version2s[i]) * (int)Mathf.Pow(100, maxIndex - i - 1);
+			}
+
+			// 2.10.22 = 2*100^2 + 10*100^1 + 22*100^0 = 20000+1000+22 = 21022
+			// 2.10.26 = 2*100^2 + 10*100^1 + 26*100^0 = 20000+1000+26 = 21026
+			// -4
+
+			// 2.9.22 = 2*100^2 + 9*100^1 + 22*100^0 = 20000+900+22 = 20922
+			// 2.10.26 = 2*100^2 + 10*100^1 + 26*100^0 = 20000+1000+26 = 21026
+			// -104
+
+			return (p1 - p2) % 100;
 		}
 
 		public static void PerfectRatioImagesByWidth(params GameObject[] gameObjects)
@@ -348,6 +369,27 @@ namespace RCore.Common
 				if (nic.OperationalStatus == OperationalStatus.Up)
 					return nic.GetPhysicalAddress().ToString();
 			return null;
+		}
+
+		public static string GetFirstWords(string text, int length)
+		{
+			string[] words = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			int wordCount = Math.Min(words.Length, length);
+			return string.Join(" ", words, 0, wordCount);
+		}
+
+		public static string GetFirstLine(string text)
+		{
+			char[] sentenceEnders = { '\n', '\r' };
+			int index = text.IndexOfAny(sentenceEnders);
+			return index >= 0 ? text.Substring(0, index) : text;
+		}
+		
+		public static string GetFirstSentence(string text)
+		{
+			char[] sentenceEnders = { '.', '?', '!', '\n', '\r' };
+			int index = text.IndexOfAny(sentenceEnders);
+			return index >= 0 ? text.Substring(0, index + 1) : text;
 		}
 	}
 
@@ -695,6 +737,18 @@ namespace RCore.Common
 		{
 			var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(self);
 			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(serialized);
+		}
+
+		public static bool IsChildOfParent(this Transform pItem, Transform pParent)
+		{
+			while (true)
+			{
+				if (pItem.parent == null)
+					return false;
+				if (pItem.parent == pParent)
+					return true;
+				pItem = pItem.parent;
+			}
 		}
 	}
 }

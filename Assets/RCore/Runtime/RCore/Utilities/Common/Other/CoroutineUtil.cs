@@ -1,26 +1,27 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
 using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 namespace RCore.Common
 {
     public class CoroutineUtil
     {
-        private static CoroutineMediator mMediator => CoroutineMediator.Instance;
+        private static CoroutineMediator m_Mediator => CoroutineMediator.Instance;
 
         public static Coroutine StartCoroutine(IEnumerator pCoroutine)
         {
-            return mMediator.StartCoroutine(pCoroutine);
+            return m_Mediator.StartCoroutine(pCoroutine);
         }
 
         public static void StopCoroutine(Coroutine pCoroutine)
         {
             if (pCoroutine != null)
-                mMediator.StopCoroutine(pCoroutine);
+                m_Mediator.StopCoroutine(pCoroutine);
         }
 
         public static IEnumerator WaitForRealSeconds(float time)
@@ -156,7 +157,7 @@ namespace RCore.Common
 
         public float GetProgress()
         {
-            return 1 - remainTime / waitTime;
+            return 1 - (remainTime / waitTime);
         }
 
         public void Kill()

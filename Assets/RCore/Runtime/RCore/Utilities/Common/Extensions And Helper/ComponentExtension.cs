@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
 * Author RadBear - nbhung71711 @gmail.com - 2017
 **/
 
@@ -73,7 +73,7 @@ namespace RCore.Common
 #if UNITY_2019_2_OR_NEWER
 			objRoot.TryGetComponent(out T component);
 #else
-            T component = objRoot.GetComponent<T>();
+            T component = objRoot.GetComponentInChildren<T>(true);
 #endif
 			if (null == component)
 			{
@@ -458,6 +458,135 @@ namespace RCore.Common
 			}
 		}
 
+		public static GameObject Obtain(this List<GameObject> pool, GameObject prefab, Transform parent, string name = null)
+		{
+			for (int i = 0; i < pool.Count; i++)
+			{
+				if (!pool[i].gameObject.activeSelf)
+				{
+					pool[i].transform.SetParent(parent);
+					pool[i].transform.localPosition = Vector3.zero;
+					return pool[i];
+				}
+			}
+
+			var temp = UnityEngine.Object.Instantiate(prefab, parent);
+			temp.name = name ?? prefab.name;
+			temp.transform.localPosition = Vector3.zero;
+			pool.Add(temp);
+			return temp;
+		}
+
+		public static GameObject Obtain(this List<GameObject> pool, Transform parent, string name = null)
+		{
+			for (int i = 0; i < pool.Count; i++)
+			{
+				if (!pool[i].gameObject.activeSelf)
+				{
+					pool[i].transform.SetParent(parent);
+					pool[i].transform.localPosition = Vector3.zero;
+					return pool[i];
+				}
+			}
+
+			var temp = UnityEngine.Object.Instantiate(pool[0].gameObject, parent);
+			temp.name = name ?? $"{pool[0].name}_{pool.Count() + 1}";
+			temp.transform.localPosition = Vector3.zero;
+			pool.Add(temp);
+			return temp;
+		}
+
+		public static GameObject Obtain(this List<GameObject> pool, Transform pParent, int max, string pName = null)
+		{
+			for (int i = pool.Count - 1; i >= 0; i--)
+			{
+				if (!pool[i].gameObject.activeSelf)
+				{
+					var obj = pool[i];
+					pool.RemoveAt(i); //Temporary remove to push this item to bottom of list latter
+					Transform transform;
+					(transform = obj.transform).SetParent(pParent);
+					transform.localPosition = Vector3.zero;
+					transform.localScale = Vector3.one;
+					pool.Add(obj);
+					return obj;
+				}
+			}
+
+			if (max > 1 && max > pool.Count)
+			{
+				var temp = UnityEngine.Object.Instantiate(pool[0], pParent);
+				pool.Add(temp);
+				var transform = temp.transform;
+				transform.localPosition = Vector3.zero;
+				transform.localScale = Vector3.one;
+				if (!string.IsNullOrEmpty(pName))
+					temp.name = pName;
+				return temp;
+			}
+			else
+			{
+				var obj = pool[pool.Count - 1];
+				pool.RemoveAt(pool.Count - 1);
+				pool.Add(obj);
+				return obj;
+			}
+		}
+
+		public static void Free(this List<GameObject> pool)
+		{
+			foreach (var t in pool)
+				t.SetActive(false);
+		}
+
+		public static void Free(this List<GameObject> pool, Transform pParent)
+		{
+			for (int i = 0; i < pool.Count; i++)
+			{
+				pool[i].transform.SetParent(pParent);
+				pool[i].SetActive(false);
+			}
+		}
+
+		public static void Prepare(this List<GameObject> pool, GameObject prefab, Transform parent, int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				var temp = UnityEngine.Object.Instantiate(prefab, parent);
+				temp.SetActive(false);
+				pool.Add(temp);
+			}
+		}
+
+		public static GameObject Obtain(this List<GameObject> pool, GameObject prefab, Transform parent)
+		{
+			for (int i = 0; i < pool.Count; i++)
+			{
+				if (!pool[i].gameObject.activeSelf)
+				{
+					pool[i].transform.SetParent(parent);
+					return pool[i];
+				}
+			}
+
+			var temp = UnityEngine.Object.Instantiate(prefab, parent);
+			temp.name = prefab.name;
+			pool.Add(temp);
+
+			return temp;
+		}
+
+		public static void Prepare(this List<GameObject> pool, GameObject prefab, Transform parent, int count, string name = "")
+		{
+			for (int i = 0; i < count; i++)
+			{
+				var temp = UnityEngine.Object.Instantiate(prefab, parent);
+				temp.SetActive(false);
+				if (!string.IsNullOrEmpty(name))
+					temp.name = name;
+				pool.Add(temp);
+			}
+		}
 #endregion
 
 		public static T Find<T>(this List<T> pList, string pName) where T : Component
