@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
+using TMPro;
 using UnityEditor;
 #if ADDRESSABLES
 using UnityEditor.AddressableAssets;
@@ -354,12 +355,12 @@ namespace RCore.Common
 
 		public void Draw(GUIStyle style = null)
 		{
-			IsFoldout = EditorPrefs.GetBool(label + "foldout", false);
+			IsFoldout = EditorPrefs.GetBool($"{label}foldout", false);
 			IsFoldout = EditorGUILayout.Foldout(IsFoldout, label);
 			if (IsFoldout && onFoldout != null)
 				onFoldout();
 			if (GUI.changed)
-				EditorPrefs.SetBool(label + "foldout", IsFoldout);
+				EditorPrefs.SetBool($"{label}foldout", IsFoldout);
 		}
 	}
 
@@ -424,8 +425,8 @@ namespace RCore.Common
 
 			if (minimalistic)
 			{
-				if (IsFoldout) label = "\u25BC" + (char)0x200a + label;
-				else label = "\u25BA" + (char)0x200a + label;
+				if (IsFoldout) label = $"\u25BC{(char)0x200a}{label}";
+				else label = $"\u25BA{(char)0x200a}{label}";
 
 				style ??= new GUIStyle("PreToolbar2");
 
@@ -440,8 +441,8 @@ namespace RCore.Common
 			}
 			else
 			{
-				if (IsFoldout) label = "\u25BC " + label;
-				else label = "\u25BA " + label;
+				if (IsFoldout) label = $"\u25BC {label}";
+				else label = $"\u25BA {label}";
 				if (style == null)
 				{
 					string styleString = IsFoldout ? "Button" : "DropDownButton";
@@ -624,16 +625,32 @@ namespace RCore.Common
 			return LoadJsonFromFile(path, ref pOutput);
 		}
 
-		public static string LoadFilePanel(string pMainDirectory)
+		private static string m_CacheMainDirectory;
+		public static string LoadFilePanel(string pMainDirectory, string extensions = "json,txt")
 		{
 			if (string.IsNullOrEmpty(pMainDirectory))
 				pMainDirectory = Application.dataPath;
 
-			string path = EditorUtility.OpenFilePanel("Open File", pMainDirectory, "json,txt");
+			string path = EditorUtility.OpenFilePanel("Open File", string.IsNullOrEmpty(m_CacheMainDirectory) ? pMainDirectory : m_CacheMainDirectory, extensions);
 			if (string.IsNullOrEmpty(path))
 				return null;
 
+			m_CacheMainDirectory = Path.GetDirectoryName(path);
 			return File.ReadAllText(path);
+		}
+
+		public static KeyValuePair<string, string> LoadFilePanel2(string pMainDirectory, string extensions = "json,txt")
+		{
+			if (string.IsNullOrEmpty(pMainDirectory))
+				pMainDirectory = Application.dataPath;
+
+			string path = EditorUtility.OpenFilePanel("Open File", string.IsNullOrEmpty(m_CacheMainDirectory) ? pMainDirectory : m_CacheMainDirectory, extensions);
+			if (string.IsNullOrEmpty(path))
+				return new KeyValuePair<string, string>();
+
+			m_CacheMainDirectory = Path.GetDirectoryName(path);
+			string content = File.ReadAllText(path);
+			return new KeyValuePair<string, string>(path, content);
 		}
 
 		public static bool LoadJsonFromFile<T>(string pPath, ref T pOutput)
@@ -731,6 +748,8 @@ namespace RCore.Common
 			m_ObjectFolderCaches.Add(pObj.GetInstanceID(), folder);
 			return folder;
 		}
+
+		public static void ClearObjectFolderCaches() => m_ObjectFolderCaches = new Dictionary<int, string>();
 
 		public static Object LoadAsset(string path)
 		{
@@ -1269,7 +1288,7 @@ namespace RCore.Common
 			var show = HeaderFoldout($"{pName} ({pObjects.Count})", pName);
 			if (show)
 			{
-				int page = EditorPrefs.GetInt(pName + "_page", 0);
+				int page = EditorPrefs.GetInt($"{pName}_page", 0);
 				int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
 				if (totalPages == 0)
 					totalPages = 1;
@@ -1287,11 +1306,11 @@ namespace RCore.Common
 					int boxSize = 34;
 					if (pShowObjectBox)
 					{
-						boxSize = EditorPrefs.GetInt(pName + "_Slider", 34);
+						boxSize = EditorPrefs.GetInt($"{pName}_Slider", 34);
 						int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
 						if (boxSize != boxSizeNew)
 						{
-							EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
+							EditorPrefs.SetInt($"{pName}_Slider", boxSizeNew);
 							boxSize = boxSizeNew;
 						}
 					}
@@ -1311,7 +1330,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1319,7 +1338,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1363,7 +1382,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1371,7 +1390,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1385,7 +1404,7 @@ namespace RCore.Common
 							{
 								list.Add(null);
 								page = totalPages - 1;
-								EditorPrefs.SetInt(pName + "_page", page);
+								EditorPrefs.SetInt($"{pName}_page", page);
 							}
 
 							if (Button("Sort By Name"))
@@ -1443,7 +1462,7 @@ namespace RCore.Common
 			var prevColor = GUI.color;
 			GUI.backgroundColor = new Color(1, 1, 0.5f);
 
-			int page = EditorPrefs.GetInt(pName + "_page", 0);
+			int page = EditorPrefs.GetInt($"{pName}_page", 0);
 			int totalPages = Mathf.CeilToInt(pCount * 1f / 20f);
 			if (totalPages == 0)
 				totalPages = 1;
@@ -1465,7 +1484,7 @@ namespace RCore.Common
 					{
 						if (page > 0)
 							page--;
-						EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt($"{pName}_page", page);
 					}
 
 					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
@@ -1480,7 +1499,7 @@ namespace RCore.Common
 					{
 						if (page < totalPages - 1)
 							page++;
-						EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt($"{pName}_page", page);
 					}
 
 					EditorGUILayout.EndHorizontal();
@@ -1498,7 +1517,7 @@ namespace RCore.Common
 					{
 						if (page > 0)
 							page--;
-						EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt($"{pName}_page", page);
 					}
 
 					EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({pCount})");
@@ -1513,7 +1532,7 @@ namespace RCore.Common
 					{
 						if (page < totalPages - 1)
 							page++;
-						EditorPrefs.SetInt(pName + "_page", page);
+						EditorPrefs.SetInt($"{pName}_page", page);
 					}
 
 					EditorGUILayout.EndHorizontal();
@@ -1536,11 +1555,11 @@ namespace RCore.Common
 			//show = EditorGUILayout.Foldout(show, content, style);
 
 			var list = pList;
-			string search = EditorPrefs.GetString(pName + "_search");
+			string search = EditorPrefs.GetString($"{pName}_search");
 			var show = HeaderFoldout($"{pName} ({pList.Count})", pName);
 			if (show)
 			{
-				int page = EditorPrefs.GetInt(pName + "_page", 0);
+				int page = EditorPrefs.GetInt($"{pName}_page", 0);
 				int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
 				if (totalPages == 0)
 					totalPages = 1;
@@ -1558,11 +1577,11 @@ namespace RCore.Common
 					int boxSize = 34;
 					if (pShowObjectBox)
 					{
-						boxSize = EditorPrefs.GetInt(pName + "_Slider", 34);
+						boxSize = EditorPrefs.GetInt($"{pName}_Slider", 34);
 						int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
 						if (boxSize != boxSizeNew)
 						{
-							EditorPrefs.SetInt(pName + "_Slider", boxSizeNew);
+							EditorPrefs.SetInt($"{pName}_Slider", boxSizeNew);
 							boxSize = boxSizeNew;
 						}
 					}
@@ -1579,7 +1598,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1587,7 +1606,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1630,7 +1649,7 @@ namespace RCore.Common
 						{
 							if (page > 0)
 								page--;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
@@ -1638,7 +1657,7 @@ namespace RCore.Common
 						{
 							if (page < totalPages - 1)
 								page++;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						EditorGUILayout.EndHorizontal();
@@ -1650,7 +1669,7 @@ namespace RCore.Common
 						{
 							list.Add(null);
 							page = totalPages - 1;
-							EditorPrefs.SetInt(pName + "_page", page);
+							EditorPrefs.SetInt($"{pName}_page", page);
 						}
 
 						if (Button("Sort By Name"))
@@ -1691,7 +1710,7 @@ namespace RCore.Common
 			if (GUI.changed)
 			{
 				EditorPrefs.SetBool(pName, show);
-				EditorPrefs.SetString(pName + "_search", search);
+				EditorPrefs.SetString($"{pName}_search", search);
 			}
 
 			GUI.backgroundColor = prevColor;
@@ -2188,7 +2207,7 @@ namespace RCore.Common
 			var property = pObj.FindProperty(pPropertyName);
 			if (property == null)
 			{
-				Debug.Log("Not found property " + pPropertyName);
+				Debug.Log($"Not found property {pPropertyName}");
 				return null;
 			}
 
@@ -2300,8 +2319,8 @@ namespace RCore.Common
 			string directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
 			foreach (var s in pSymbols)
 			{
-				if (directives.Contains(s + ";"))
-					directives = directives.Replace(s + ";", "");
+				if (directives.Contains($"{s};"))
+					directives = directives.Replace($"{s};", "");
 				else if (directives.Contains(s))
 					directives = directives.Replace(s, "");
 			}
@@ -2325,7 +2344,7 @@ namespace RCore.Common
 			if (string.IsNullOrEmpty(directivesStr))
 				directivesStr += pSymbol;
 			else
-				directivesStr += ";" + pSymbol;
+				directivesStr += $";{pSymbol}";
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directivesStr);
 		}
 
@@ -2352,7 +2371,7 @@ namespace RCore.Common
 				if (string.IsNullOrEmpty(directivesStr))
 					directivesStr += s;
 				else
-					directivesStr += ";" + s;
+					directivesStr += $";{s}";
 			}
 
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, directivesStr);
@@ -2424,7 +2443,7 @@ namespace RCore.Common
 					if (i == paths.Length - 1)
 						realPath += paths[i];
 					else
-						realPath += paths[i] + "/";
+						realPath += $"{paths[i]}/";
 				}
 			}
 
@@ -2573,6 +2592,8 @@ namespace RCore.Common
 		}
 
 #endregion
+
+#region Misc
 
 		public static string[] GetTMPMaterialPresets(TMPro.TMP_FontAsset fontAsset)
 		{
@@ -2737,7 +2758,7 @@ namespace RCore.Common
 					}
 				}
 
-				UnityEngine.Debug.Log("Replace GUID in: " + selectedPath);
+				UnityEngine.Debug.Log($"Replace GUID in: {selectedPath}");
 				updatedAssets.Add(selectedPath, countReplaced);
 
 				if (found)
@@ -3007,7 +3028,7 @@ namespace RCore.Common
 							customName = pNamePattern + numberStr;
 						}
 					}
-					string newSpritePath = Path.Combine(pExportDirectory, customName + ".png");
+					string newSpritePath = Path.Combine(pExportDirectory, $"{customName}.png");
 					File.WriteAllBytes(newSpritePath, newTextureData);
 					Object.DestroyImmediate(newTexture);
 				}
@@ -3033,7 +3054,7 @@ namespace RCore.Common
 							customName = pNamePattern + numberStr;
 						}
 					}
-					string newSpritePath = Path.Combine(pExportDirectory, customName + ".png");
+					string newSpritePath = Path.Combine(pExportDirectory, $"{customName}.png");
 					var newSprite = AssetDatabase.LoadAssetAtPath<Sprite>(newSpritePath);
 					CopyPivotAndBorder(sprite, newSprite, false);
 					results.Add(newSprite);
@@ -3042,7 +3063,7 @@ namespace RCore.Common
 					{
 						for (int line = 0; line < metaFileContent.Length; line++)
 						{
-							string pattern = @"\b" + sprite.name + @"\b";
+							string pattern = $@"\b{sprite.name}\b";
 							metaFileContent[line] = Regex.Replace(metaFileContent[line], pattern, customName);
 						}
 					}
@@ -3058,6 +3079,94 @@ namespace RCore.Common
 		}
 
 		private static bool IsDirectory(string path) => File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+
+		public static Dictionary<GameObject, List<T>> FindComponents<T>(ConditionalDelegate<T> pValidCondition) where T : UnityEngine.Component
+		{
+			var allComponents = new Dictionary<GameObject, List<T>>();
+			var objs = Selection.gameObjects;
+			for (int i = 0; i < objs.Length; i++)
+			{
+				var components = objs[i].gameObject.GetComponentsInChildren<T>(true);
+				if (components.Length > 0)
+				{
+					allComponents.Add(objs[i], new List<T>());
+					foreach (var component in components)
+					{
+						if (pValidCondition != null && !pValidCondition(component))
+							continue;
+
+						if (!allComponents[objs[i]].Contains(component))
+							allComponents[objs[i]].Add(component);
+					}
+				}
+			}
+
+			return allComponents;
+		}
+
+		public static void ReplaceTextsByTextTMP()
+		{
+			var textsDict = FindComponents<Text>(null);
+			if (textsDict != null)
+				foreach (var item in textsDict)
+				{
+					for (int i = item.Value.Count - 1; i >= 0; i--)
+					{
+						var gameObj = item.Value[i].gameObject;
+						var content = item.Value[i].text;
+						var fontSize = item.Value[i].fontSize;
+						var alignment = item.Value[i].alignment;
+						var bestFit = item.Value[i].resizeTextForBestFit;
+						var color = item.Value[i].color;
+						if (item.Value[i].gameObject.TryGetComponent(out UnityEngine.UI.Outline outline))
+							Object.DestroyImmediate(outline);
+						if (item.Value[i].gameObject.TryGetComponent(out Shadow shadow))
+							Object.DestroyImmediate(shadow);
+						Object.DestroyImmediate(item.Value[i]);
+						var textTMP = gameObj.AddComponent<TextMeshProUGUI>();
+						textTMP.text = content;
+						textTMP.fontSize = fontSize;
+						textTMP.enableAutoSizing = bestFit;
+						textTMP.color = color;
+						switch (alignment)
+						{
+							case TextAnchor.MiddleLeft:
+								textTMP.alignment = TextAlignmentOptions.Left;
+								break;
+							case TextAnchor.MiddleCenter:
+								textTMP.alignment = TextAlignmentOptions.Center;
+								break;
+							case TextAnchor.MiddleRight:
+								textTMP.alignment = TextAlignmentOptions.Right;
+								break;
+
+							case TextAnchor.LowerLeft:
+								textTMP.alignment = TextAlignmentOptions.BottomLeft;
+								break;
+							case TextAnchor.LowerCenter:
+								textTMP.alignment = TextAlignmentOptions.Bottom;
+								break;
+							case TextAnchor.LowerRight:
+								textTMP.alignment = TextAlignmentOptions.BottomRight;
+								break;
+
+							case TextAnchor.UpperLeft:
+								textTMP.alignment = TextAlignmentOptions.TopLeft;
+								break;
+							case TextAnchor.UpperCenter:
+								textTMP.alignment = TextAlignmentOptions.Top;
+								break;
+							case TextAnchor.UpperRight:
+								textTMP.alignment = TextAlignmentOptions.TopRight;
+								break;
+						}
+
+						Debug.Log($"Replace Text in GameObject {gameObj.name}");
+					}
+				}
+		}
+
+#endregion
 	}
 
 	//===================================================================
@@ -3069,16 +3178,16 @@ namespace RCore.Common
 		protected string mainKey;
 		protected int subKey;
 
-		protected string Key => mainKey + "_" + subKey;
+		protected string Key => $"{mainKey}_{subKey}";
 
 		public CustomEditorPrefs(int pMainKey, int pSubKey = 0)
 		{
-			mainKey = pMainKey + "_" + pSubKey;
+			mainKey = $"{pMainKey}_{pSubKey}";
 		}
 
 		public CustomEditorPrefs(string pMainKey, int pSubKey = 0)
 		{
-			mainKey = pMainKey + "_" + pSubKey;
+			mainKey = $"{pMainKey}_{pSubKey}";
 		}
 	}
 
@@ -3086,14 +3195,14 @@ namespace RCore.Common
 	{
 		private bool mValue;
 
-		public EditorPrefsBool(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsBool(int pMainKey, bool pDefault = false, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetBool(Key);
+			mValue = EditorPrefs.GetBool(Key, pDefault);
 		}
 
-		public EditorPrefsBool(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsBool(string pMainKey, bool pDefault = false, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetBool(Key);
+			mValue = EditorPrefs.GetBool(Key, pDefault);
 		}
 
 		public bool Value
@@ -3119,14 +3228,14 @@ namespace RCore.Common
 	{
 		private string mValue;
 
-		public EditorPrefsString(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsString(int pMainKey, string pDefault = "", int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetString(Key);
+			mValue = EditorPrefs.GetString(Key, pDefault);
 		}
 
-		public EditorPrefsString(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsString(string pMainKey, string pDefault = "", int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetString(Key);
+			mValue = EditorPrefs.GetString(Key, pDefault);
 		}
 
 		public string Value
@@ -3154,17 +3263,17 @@ namespace RCore.Common
 
 		public EditorPrefsVector(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			float x = EditorPrefs.GetFloat(Key + "x");
-			float y = EditorPrefs.GetFloat(Key + "y");
-			float z = EditorPrefs.GetFloat(Key + "z");
+			float x = EditorPrefs.GetFloat($"{Key}x");
+			float y = EditorPrefs.GetFloat($"{Key}y");
+			float z = EditorPrefs.GetFloat($"{Key}z");
 			mValue = new Vector3(x, y, z);
 		}
 
 		public EditorPrefsVector(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			float x = EditorPrefs.GetFloat(Key + "x");
-			float y = EditorPrefs.GetFloat(Key + "y");
-			float z = EditorPrefs.GetFloat(Key + "z");
+			float x = EditorPrefs.GetFloat($"{Key}x");
+			float y = EditorPrefs.GetFloat($"{Key}y");
+			float z = EditorPrefs.GetFloat($"{Key}z");
 			mValue = new Vector3(x, y, z);
 		}
 
@@ -3176,9 +3285,9 @@ namespace RCore.Common
 				if (mValue != value)
 				{
 					mValue = value;
-					EditorPrefs.SetFloat(Key + "x", value.x);
-					EditorPrefs.SetFloat(Key + "y", value.y);
-					EditorPrefs.SetFloat(Key + "z", value.z);
+					EditorPrefs.SetFloat($"{Key}x", value.x);
+					EditorPrefs.SetFloat($"{Key}y", value.y);
+					EditorPrefs.SetFloat($"{Key}z", value.z);
 				}
 			}
 		}
@@ -3236,14 +3345,14 @@ namespace RCore.Common
 	{
 		private float mValue;
 
-		public EditorPrefsFloat(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsFloat(int pMainKey, float pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetFloat(Key);
+			mValue = EditorPrefs.GetFloat(Key, pDefault);
 		}
 
-		public EditorPrefsFloat(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsFloat(string pMainKey, float pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetFloat(Key);
+			mValue = EditorPrefs.GetFloat(Key, pDefault);
 		}
 
 		public float Value
@@ -3269,14 +3378,14 @@ namespace RCore.Common
 	{
 		private int mValue;
 
-		public EditorPrefsInt(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsInt(int pMainKey, int pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetInt(Key);
+			mValue = EditorPrefs.GetInt(Key, pDefault);
 		}
 
-		public EditorPrefsInt(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
+		public EditorPrefsInt(string pMainKey, int pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
 		{
-			mValue = EditorPrefs.GetInt(Key);
+			mValue = EditorPrefs.GetInt(Key, pDefault);
 		}
 
 		public int Value

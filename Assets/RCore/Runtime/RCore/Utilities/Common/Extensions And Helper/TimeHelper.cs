@@ -1,8 +1,9 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711 @gmail.com - 2018
  **/
 
 using System;
+using System.Globalization;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -21,10 +22,13 @@ namespace RCore.Common
 
     public class TimeHelper
     {
+        public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static StringBuilder m_TimeBuilder = new StringBuilder();
-        private static bool m_CheckingTime;
-        private static DateTime? m_StartServerTime;
-        private static float m_AppTimeWhenGetServerTime;
+        private static bool m_WaitingRequest;
+        private static int m_RequestTimeAttempt;
+        private static float m_GetServerTimeAt;
+        private static DateTime m_ServerTime;
+        public static bool FetchedTime => m_GetServerTimeAt > 0;
 
         /// <summary>
         /// 00:00:00
@@ -34,32 +38,32 @@ namespace RCore.Common
             if (seconds > 0)
             {
                 var t = TimeSpan.FromSeconds(seconds);
-
-                if (showFull || t.Hours > 0)
+                var hours = t.Hours + t.Days * 24;
+                if (showFull || hours > 0)
                 {
                     //00:00:00
                     return m_TimeBuilder.Clear()
-                        .Append(t.Hours.ToString("D2")).Append(":")
-                          .Append(t.Minutes.ToString("D2")).Append(":")
-                            .Append(t.Seconds.ToString("D2"))
+                        .Append(hours.ToString("D2")).Append(":")
+                        .Append(t.Minutes.ToString("D2")).Append(":")
+                        .Append(t.Seconds.ToString("D2"))
                         .ToString();
                 }
-                else if (t.Hours == 0)
+                else if (hours == 0)
                 {
                     if (t.Minutes > 0)
                     {
                         //00:00
                         return m_TimeBuilder.Clear()
-                          .Append(t.Minutes.ToString("D2")).Append(":")
+                            .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2"))
-                        .ToString();
+                            .ToString();
                     }
                     else
                     {
                         //00
                         return m_TimeBuilder.Clear()
                             .Append(t.Seconds.ToString("D2"))
-                        .ToString();
+                            .ToString();
                     }
                 }
             }
@@ -84,8 +88,8 @@ namespace RCore.Common
                 {
                     //00:00
                     return m_TimeBuilder.Clear()
-                          .Append((t.Hours * 60 + t.Minutes).ToString("D2")).Append(":")
-                            .Append(t.Seconds.ToString("D2"))
+                        .Append((t.Hours * 60 + t.Minutes).ToString("D2")).Append(":")
+                        .Append(t.Seconds.ToString("D2"))
                         .ToString();
                 }
                 else if (t.Hours == 0)
@@ -94,16 +98,16 @@ namespace RCore.Common
                     {
                         //00:00
                         return m_TimeBuilder.Clear()
-                          .Append(t.Minutes.ToString("D2")).Append(":")
+                            .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2"))
-                        .ToString();
+                            .ToString();
                     }
                     else
                     {
                         //00
                         return m_TimeBuilder.Clear()
                             .Append(t.Seconds.ToString("D2"))
-                        .ToString();
+                            .ToString();
                     }
                 }
             }
@@ -158,9 +162,9 @@ namespace RCore.Common
                     //00:00:00:000
                     return m_TimeBuilder.Clear()
                         .Append(t.Hours.ToString("D2")).Append(":")
-                          .Append(t.Minutes.ToString("D2")).Append(":")
-                            .Append(t.Seconds.ToString("D2")).Append(":")
-                              .Append(t.Milliseconds.ToString("D3"))
+                        .Append(t.Minutes.ToString("D2")).Append(":")
+                        .Append(t.Seconds.ToString("D2")).Append(":")
+                        .Append(t.Milliseconds.ToString("D3"))
                         .ToString();
                 }
                 else if (t.Hours == 0)
@@ -169,24 +173,118 @@ namespace RCore.Common
                     {
                         //00:00:000
                         return m_TimeBuilder.Clear()
-                          .Append(t.Minutes.ToString("D2")).Append(":")
+                            .Append(t.Minutes.ToString("D2")).Append(":")
                             .Append(t.Seconds.ToString("D2")).Append(":")
-                              .Append(t.Milliseconds.ToString("D3"))
-                        .ToString();
+                            .Append(t.Milliseconds.ToString("D3"))
+                            .ToString();
                     }
                     else
                     {
                         //00:000
                         return m_TimeBuilder.Clear()
                             .Append(t.Seconds.ToString("D2")).Append(":")
-                              .Append(t.Milliseconds.ToString("D3"))
-                        .ToString();
+                            .Append(t.Milliseconds.ToString("D3"))
+                            .ToString();
                     }
                 }
             }
             else if (showFull)
             {
                 return "00:00:00:000";
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// d h m s
+        /// </summary>
+        public static string FormatDayHMs(double seconds, int pMaxSplits = 2)
+        {
+            int split = 0;
+            if (seconds > 0)
+            {
+                m_TimeBuilder.Clear();
+                var t = TimeSpan.FromSeconds(seconds);
+
+                if (t.Days > 0)
+                {
+                    split++;
+                    m_TimeBuilder.Append(t.Days).Append("d");
+                }
+
+                if ((t.Hours > 0 || t.Minutes > 0 || t.Seconds > 0) && split < pMaxSplits)
+                {
+                    if (split > 0)
+                        m_TimeBuilder.Append(" ");
+
+                    if (split > 0 || t.Hours > 0)
+                    {
+                        split++;
+                        m_TimeBuilder.Append(t.Hours.ToString("D2")).Append("h");
+                    }
+
+                    if ((t.Minutes > 0 || t.Seconds > 0) && split < pMaxSplits)
+                    {
+                        if (split > 0)
+                            m_TimeBuilder.Append(" ");
+
+                        if (split > 0 || t.Minutes > 0)
+                        {
+                            split++;
+                            m_TimeBuilder.Append(t.Minutes.ToString("D2")).Append("m");
+                        }
+
+                        if (t.Seconds > 0 && split < pMaxSplits)
+                        {
+                            if (split > 0)
+                                m_TimeBuilder.Append(" ");
+
+                            m_TimeBuilder.Append(t.Seconds.ToString("D2")).Append("s");
+                        }
+                    }
+                }
+                return m_TimeBuilder.ToString();
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// d 00:00:00
+        /// </summary>
+        public static string FormatDHMs(double seconds, int pMaxSplits)
+        {
+            int split = 0;
+            if (seconds > 0)
+            {
+                m_TimeBuilder.Clear();
+                var t = TimeSpan.FromSeconds(seconds);
+
+                if (t.Days > 0)
+                {
+                    split++;
+                    m_TimeBuilder.Append(t.Days).Append("d");
+                }
+
+                if (split < pMaxSplits)
+                {
+                    if (split > 0)
+                        m_TimeBuilder.Append(" ");
+
+                    split++;
+                    m_TimeBuilder.Append(t.Hours.ToString("D2"));
+
+                    if (split < pMaxSplits)
+                    {
+                        split++;
+                        m_TimeBuilder.Append(":").Append(t.Minutes.ToString("D2"));
+
+                        if (split < pMaxSplits)
+                            m_TimeBuilder.Append(":").Append(t.Seconds.ToString("D2"));
+                    }
+                }
+                return m_TimeBuilder.ToString();
             }
 
             return "";
@@ -200,16 +298,15 @@ namespace RCore.Common
             if (seconds > 0)
             {
                 var t = TimeSpan.FromSeconds(seconds);
-
                 if (showFull || t.Days > 0)
                 {
-                    string day = t.Days > 0 ? t.Days > 1 ? " days" : " day" : "";
                     //00:00:00:000
+                    string day = t.Days > 0 ? (t.Days > 1 ? " days" : " day") : "";
                     return m_TimeBuilder.Clear()
-                        .Append(t.Days > 0 ? t.Days + day : "").Append(t.Days > 0 ? " " : "")
-                          .Append(t.Hours.ToString("D2")).Append(":")
-                            .Append(t.Minutes.ToString("D2")).Append(":")
-                              .Append(t.Seconds.ToString("D2"))
+                        .Append(t.Days > 0 ? (t.Days + day) : "").Append(t.Days > 0 ? " " : "")
+                        .Append(t.Hours.ToString("D2")).Append(":")
+                        .Append(t.Minutes.ToString("D2")).Append(":")
+                        .Append(t.Seconds.ToString("D2"))
                         .ToString();
                 }
                 else if (t.Days == 0)
@@ -218,18 +315,18 @@ namespace RCore.Common
                     {
                         //00:00:000
                         return m_TimeBuilder.Clear()
-                          .Append(t.Hours.ToString("D2")).Append(":")
+                            .Append(t.Hours.ToString("D2")).Append(":")
                             .Append(t.Minutes.ToString("D2")).Append(":")
-                              .Append(t.Seconds.ToString("D2"))
-                        .ToString();
+                            .Append(t.Seconds.ToString("D2"))
+                            .ToString();
                     }
                     else
                     {
                         //00:000
                         return m_TimeBuilder.Clear()
                             .Append(t.Minutes.ToString("D2")).Append(":")
-                              .Append(t.Seconds.ToString("D2"))
-                        .ToString();
+                            .Append(t.Seconds.ToString("D2"))
+                            .ToString();
                     }
                 }
             }
@@ -238,7 +335,7 @@ namespace RCore.Common
         }
 
         /// <summary>
-        /// 6h15m7s
+        /// 6h 15m 7s
         /// </summary>
         public static string FormatHMs(double seconds, bool showFull)
         {
@@ -250,9 +347,9 @@ namespace RCore.Common
                 {
                     //00h00m00s
                     return m_TimeBuilder.Clear()
-                        .Append(t.Hours).Append("h")
-                          .Append(t.Minutes).Append("m")
-                            .Append(t.Seconds).Append("s")
+                        .Append(t.Hours).Append("h ")
+                        .Append(t.Minutes).Append("m ")
+                        .Append(t.Seconds).Append("s")
                         .ToString();
                 }
                 else if (t.Hours == 0)
@@ -261,16 +358,16 @@ namespace RCore.Common
                     {
                         //00m00s
                         return m_TimeBuilder.Clear()
-                          .Append(t.Minutes).Append("m")
+                            .Append(t.Minutes).Append("m ")
                             .Append(t.Seconds).Append("s")
-                        .ToString();
+                            .ToString();
                     }
                     else
                     {
                         //00s
                         return m_TimeBuilder.Clear()
                             .Append(t.Seconds).Append("s")
-                        .ToString();
+                            .ToString();
                     }
                 }
             }
@@ -294,8 +391,8 @@ namespace RCore.Common
                         //Hour Minute Second
                         return m_TimeBuilder.Clear()
                             .Append(t.Hours).Append(t.Hours <= 1 ? " Hour " : " Hours ")
-                              .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? t.Minutes == 1 ? " Minute " : " Minutes " : "")
-                                .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
+                            .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? (t.Minutes == 1 ? " Minute " : " Minutes ") : "")
+                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? (t.Seconds == 1 ? " Second" : " Seconds") : "")
                             .ToString();
                     }
                 }
@@ -305,9 +402,9 @@ namespace RCore.Common
                     {
                         //Minute Second
                         return m_TimeBuilder.Clear()
-                          .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes == 1 ? " Minute " : " Minutes ")
-                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
-                        .ToString();
+                            .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes == 1 ? " Minute " : " Minutes ")
+                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? (t.Seconds == 1 ? " Second" : " Seconds") : "")
+                            .ToString();
                     }
                     else
                     {
@@ -316,7 +413,7 @@ namespace RCore.Common
                         {
                             return m_TimeBuilder.Clear()
                                 .Append(t.Seconds).Append(t.Seconds <= 1 ? " Second" : " Seconds")
-                            .ToString();
+                                .ToString();
                         }
                         return "";
                     }
@@ -326,41 +423,35 @@ namespace RCore.Common
             return "";
         }
 
+        public static double GetSecondsTillMidNight()
+        {
+            var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
+            var secondsTillMidNight = GetSecondsTillMidNight(utcNow);
+            return secondsTillMidNight;
+        }
+
         public static double GetSecondsTillMidNight(DateTime pFrom)
         {
             var midNight = pFrom.Date.AddDays(1);
             var remainingTime = (midNight - pFrom).TotalSeconds;
-
             return remainingTime;
         }
 
-        public static DateTime ConvertToLocalTime(DateTime pVietNamTime)
-        {
-            var utcTime = pVietNamTime.AddHours(-7);
-            var zone = TimeZoneInfo.Local.GetUtcOffset(utcTime);
-            var time = utcTime + zone;
-            return time;
-        }
-
         /// <summary>
-        /// Get start of week of date
+        /// Get start of week from date
         /// </summary>
         public static DateTime GetStartTimeOfWeekDay(DateTime pDate, DayOfWeek pDay)
         {
-            //NOTE: by the default a week starts at 0:00 of the sunday
-
-            if (pDate.DayOfWeek == pDay)
-                return pDate.Date;
             int dayOfWeek = (int)pDate.DayOfWeek;
             var startTimeOfMonday = pDate.AddDays(-dayOfWeek + 1).Date;
-            //if (pDay > DayOfWeek.Sunday)
+            if (pDay > DayOfWeek.Sunday)
                 return startTimeOfMonday.AddDays((int)pDay - 1);
-            //else
-                //return startTimeOfMonday.AddDays(6);
+            else
+                return startTimeOfMonday.AddDays(6);
         }
 
         /// <summary>
-        /// Get end of week of date
+        /// Get end of week from date
         /// </summary>
         public static DateTime GetEndTimeOfWeekDay(DateTime pDate, DayOfWeek pDay)
         {
@@ -369,7 +460,7 @@ namespace RCore.Common
         }
 
         /// <summary>
-        /// Get start time of month next of date
+        /// Get start time of month next from date
         /// </summary>
         public static DateTime GetStartTimeOfMonth(DateTime pDate)
         {
@@ -377,7 +468,7 @@ namespace RCore.Common
         }
 
         /// <summary>
-        /// Get end of moneth next of date
+        /// Get end of month next from date
         /// </summary>
         public static DateTime GetEndTimeOfMonth(DateTime pDate)
         {
@@ -387,63 +478,53 @@ namespace RCore.Common
             return lastTimeOfMonth;
         }
 
-        /// <summary>
-        /// UTC server time
-        /// </summary>
-        public static DateTime? GetServerTime()
+        public static DateTime? GetServerTimeUtc()
         {
-            if (m_AppTimeWhenGetServerTime != 0)
-                return m_StartServerTime.Value.AddSeconds(Time.unscaledTime - m_AppTimeWhenGetServerTime);
-            else
-                return null;
+            if (m_GetServerTimeAt > 0)
+                return m_ServerTime.AddSeconds(Time.unscaledTime - m_GetServerTimeAt);
+            return null;
         }
 
-        public static void CheckServerTime(Action<bool> pOnFinished)
+        public static void RequestServerTime(bool renew = false, Action<bool> pCallback = null)
         {
-            if (m_StartServerTime != null && m_AppTimeWhenGetServerTime > 0)
+            if (m_GetServerTimeAt > 0 && !renew)
             {
-                pOnFinished.Raise(true);
+                pCallback?.Invoke(true);
                 return;
             }
-
-            if (m_CheckingTime)
+            
+            if (m_WaitingRequest)
                 return;
 
-            string url = "http://divmob.com/api/zombieage/time.php";
-            var form = new WWWForm();
-            var request = UnityWebRequest.Post(url, form);
-            request.SendWebRequest();
+            string url = "https://farmcityer.com/gettime.php";
 
-            m_CheckingTime = true;
-            WaitUtil.Start(() => request.isDone, () =>
+            var w = UnityWebRequest.Get(url);
+            w.SendWebRequest();
+
+            m_WaitingRequest = true;
+            WaitUtil.Start(() => w.isDone, () =>
             {
-                m_CheckingTime = false;
-                if (request.isNetworkError)
+                m_WaitingRequest = false;
+                bool success = false;
+                if (w.result == UnityWebRequest.Result.Success)
                 {
-                    pOnFinished.Raise(false);
-                }
-                else
-                {
-                    if (request.responseCode == 200)
+                    if (w.responseCode == 200)
                     {
-                        var text = request.downloadHandler.text;
-                        if (TryParse(text, out var time))
+                        var text = w.downloadHandler.text;
+                        if (int.TryParse(text, out int timestamp))
                         {
-                            m_StartServerTime = time;
-                            m_AppTimeWhenGetServerTime = Time.unscaledTime;
-                            pOnFinished.Raise(true);
+                            m_ServerTime = UnixTimeStampToDateTime(timestamp);
+                            m_GetServerTimeAt = Time.unscaledTime;
+                            success = true;
                         }
-                        else
-                            pOnFinished.Raise(false);
-                    }
-                    else
-                    {
-                        pOnFinished.Raise(false);
                     }
                 }
+                if (!success && m_RequestTimeAttempt < 5)
+                    WaitUtil.Start(30, _ => RequestServerTime()); // Retry after 30 seconds
+                m_RequestTimeAttempt++;
+                pCallback?.Invoke(success);
             });
         }
-
 
         /// <summary>
         /// Get mod in seconds from amount of time
@@ -457,7 +538,7 @@ namespace RCore.Common
             pModSeconds = pIntervalInSeconds;
             if (pPassedSeconds > 0)
             {
-                stepPassed += Mathf.FloorToInt(pPassedSeconds / pIntervalInSeconds);
+                stepPassed += Mathf.FloorToInt(pPassedSeconds * 1f / pIntervalInSeconds);
                 pModSeconds = pPassedSeconds % pIntervalInSeconds;
             }
             return stepPassed;
@@ -466,53 +547,29 @@ namespace RCore.Common
         /// <summary>
         /// Server time have format type MM/dd/yyyy HH:mm:ss
         /// </summary>
-        public static bool TryParse(string pServerTime, out DateTime pTime)
+        public static bool TryParse(string pTimeString, out DateTime pOutput, DateTime pFallback)
         {
-            string[] formats =
+            if (string.IsNullOrEmpty(pTimeString))
             {
-                "MM/dd/yyyy hh:mm:ss",
-                "MM/dd/yyyy HH:mm:ss",
-                "MM/dd/yyyy hh:mm:ss tt",
-                "MM/dd/yyyy hh:mm:ss tt zzz",
-                "MM/dd/yyyy hh:mm",
-                "MM/dd/yyyy HH:mm",
-            };
+                pOutput = pFallback;
+                return false;
+            }
 
-            var enUS = new System.Globalization.CultureInfo("en-US");
-            pTime = DateTime.MinValue;
-            foreach (var format in formats)
-                if (DateTime.TryParseExact(pServerTime, format, enUS, System.Globalization.DateTimeStyles.None, out pTime))
-                    return true;
+            if (DateTime.TryParse(pTimeString, out pOutput))
+                return true;
+
+            if (DateTime.TryParse(pTimeString, CultureInfo.InvariantCulture, DateTimeStyles.None, out pOutput))
+                return true;
+
+            UnityEngine.Debug.LogError($"String was not recognized as a valid DateTime {pTimeString}");
+            pOutput = pFallback;
+
             return false;
         }
 
         public static double GetSecondsTillDayOfWeek(DayOfWeek pDayOfWeek, DateTime pNow)
         {
-            int dayCount = 0;
-            switch (pDayOfWeek)
-            {
-                case DayOfWeek.Sunday:
-                    dayCount = (int)DayOfWeek.Sunday - (int)pNow.DayOfWeek;
-                    break;
-                case DayOfWeek.Monday:
-                    dayCount = (int)DayOfWeek.Monday - (int)pNow.DayOfWeek;
-                    break;
-                case DayOfWeek.Tuesday:
-                    dayCount = (int)DayOfWeek.Tuesday - (int)pNow.DayOfWeek;
-                    break;
-                case DayOfWeek.Wednesday:
-                    dayCount = (int)DayOfWeek.Wednesday - (int)pNow.DayOfWeek;
-                    break;
-                case DayOfWeek.Thursday:
-                    dayCount = (int)DayOfWeek.Thursday - (int)pNow.DayOfWeek;
-                    break;
-                case DayOfWeek.Friday:
-                    dayCount = (int)DayOfWeek.Friday - (int)pNow.DayOfWeek;
-                    break;
-                case DayOfWeek.Saturday:
-                    dayCount = (int)DayOfWeek.Saturday - (int)pNow.DayOfWeek;
-                    break;
-            }
+            int dayCount = pDayOfWeek.GetHashCode() - pNow.DayOfWeek.GetHashCode();
             if (dayCount <= 0)
                 dayCount += 7;
             double seconds = (pNow.AddDays(dayCount).Date - pNow).TotalSeconds;
@@ -521,46 +578,67 @@ namespace RCore.Common
 
         public static double GetSecondsTillEndDayOfWeek(DayOfWeek pDayOfWeek, DateTime pNow)
         {
-            int dayCount = 0;
-            switch (pDayOfWeek)
-            {
-                case DayOfWeek.Sunday:
-                    dayCount = (int)DayOfWeek.Sunday - (int)pNow.DayOfWeek + 1;
-                    break;
-                case DayOfWeek.Monday:
-                    dayCount = (int)DayOfWeek.Monday - (int)pNow.DayOfWeek + 1;
-                    break;
-                case DayOfWeek.Tuesday:
-                    dayCount = (int)DayOfWeek.Tuesday - (int)pNow.DayOfWeek + 1;
-                    break;
-                case DayOfWeek.Wednesday:
-                    dayCount = (int)DayOfWeek.Wednesday - (int)pNow.DayOfWeek + 1;
-                    break;
-                case DayOfWeek.Thursday:
-                    dayCount = (int)DayOfWeek.Thursday - (int)pNow.DayOfWeek + 1;
-                    break;
-                case DayOfWeek.Friday:
-                    dayCount = (int)DayOfWeek.Friday - (int)pNow.DayOfWeek + 1;
-                    break;
-                case DayOfWeek.Saturday:
-                    dayCount = (int)DayOfWeek.Saturday - (int)pNow.DayOfWeek + 1;
-                    break;
-            }
+            int dayCount = pDayOfWeek.GetHashCode() - pNow.DayOfWeek.GetHashCode() + 1;
             if (dayCount <= 0)
                 dayCount += 7;
             double seconds = (pNow.AddDays(dayCount).Date - pNow).TotalSeconds;
             return seconds;
         }
+
+        public static DateTime UnixTimeStampToDateTime(float unixTimeStamp)
+        {
+            var dtDateTime = Epoch.AddSeconds(unixTimeStamp);
+            return dtDateTime;
+        }
+
+        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            var dtDateTime = Epoch.AddSeconds(unixTimeStamp);
+            return dtDateTime;
+        }
+
+        public static DateTime UnixTimeStampToDateTime(int unixTimeStamp)
+        {
+            var dtDateTime = Epoch.AddSeconds(unixTimeStamp);
+            return dtDateTime;
+        }
+
+        public static long DateTimeToUnixTimestamp(DateTime value)
+        {
+            var elapsedTime = value - Epoch;
+            return (long)elapsedTime.TotalSeconds;
+        }
+
+        public static int DateTimeToUnixTimestampInt(DateTime value)
+        {
+            var elapsedTime = value - Epoch;
+            return (int)elapsedTime.TotalSeconds;
+        }
+
+        public static void LogCulture()
+        {
+            var culture = CultureInfo.CurrentCulture;
+            UnityEngine.Debug.Log($"[{culture.Name}]"
+                + $"\n Now: \t {DateTime.Now}"
+                + $"\n ShortDatePattern: \t {culture.DateTimeFormat.ShortDatePattern} \t {DateTime.Now.ToString(culture.DateTimeFormat.ShortDatePattern)}"
+                + $"\n LongTimePattern: \t {culture.DateTimeFormat.LongTimePattern} \t {DateTime.Now.ToString(culture.DateTimeFormat.LongTimePattern)}"
+                + $"\n ShortTimePattern: \t {culture.DateTimeFormat.ShortTimePattern} \t {DateTime.Now.ToString(culture.DateTimeFormat.ShortTimePattern)}"
+                + $"\n SortableDateTimePattern: \t {culture.DateTimeFormat.SortableDateTimePattern} \t {DateTime.Now.ToString(culture.DateTimeFormat.SortableDateTimePattern)}"
+                + $"\n UniversalSortableDateTimePattern: \t {culture.DateTimeFormat.UniversalSortableDateTimePattern} \t {DateTime.Now.ToString(culture.DateTimeFormat.UniversalSortableDateTimePattern)}");
+        }
     }
 
     public static class TimeExtension
     {
-        private static readonly DateTime m_Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        public static long ConvertToTimestamp(this DateTime value)
+        public static long ToUnixTimestamp(this DateTime value)
         {
-            var elapsedTime = value - m_Epoch;
+            var elapsedTime = value - TimeHelper.Epoch;
             return (long)elapsedTime.TotalSeconds;
+        }
+        public static int ToUnixTimestampInt(this DateTime value)
+        {
+            var elapsedTime = value - TimeHelper.Epoch;
+            return (int)elapsedTime.TotalSeconds;
         }
     }
 }

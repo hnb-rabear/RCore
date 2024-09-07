@@ -208,7 +208,7 @@ namespace RCore.Editor
 								}
 								else if (m_findSpritesInPrefab && obj is GameObject)
 								{
-									var images = (obj as GameObject).GetComponentsInChildren<Image>();
+									var images = (obj as GameObject).GetComponentsInChildren<Image>(true);
 									foreach (var img in images)
 									{
 										if (img.sprite != null && !spritesNew.Contains(img.sprite) && !spritesOriginal.Contains(img.sprite))
@@ -240,6 +240,7 @@ namespace RCore.Editor
 						{
 							EditorHelper.DragDropBox<Object>("Right Textures or Sprites", objs =>
 							{
+								EditorHelper.ClearObjectFolderCaches();
 								var spritesNew = m_inputs.Select(x => x.spriteNew).ToList();
 								foreach (var obj in objs)
 								{
@@ -258,12 +259,12 @@ namespace RCore.Editor
 														input.spriteOriginal = sprite;
 														break;
 													}
-													if (!spritesNew.Contains(sprite) && input.spriteNew.name.Contains($"{EditorHelper.GetObjectFolderName(sprite)}-{sprite.name}"))
+													if (!spritesNew.Contains(sprite) && input.spriteNew.name.EndsWith($"{EditorHelper.GetObjectFolderName(sprite)}-{sprite.name}"))
 													{
 														input.spriteOriginal = sprite;
 														break;
 													}
-													if (!spritesNew.Contains(sprite) && sprite.name.Contains($"{EditorHelper.GetObjectFolderName(input.spriteNew)}-{input.spriteNew.name}"))
+													if (!spritesNew.Contains(sprite) && sprite.name.EndsWith($"{EditorHelper.GetObjectFolderName(input.spriteNew)}-{input.spriteNew.name}"))
 													{
 														input.spriteOriginal = sprite;
 														break;

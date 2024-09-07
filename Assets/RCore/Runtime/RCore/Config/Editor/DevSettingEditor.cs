@@ -12,7 +12,7 @@ using RCore.Editor;
 using EditorPrefs = UnityEditor.EditorPrefs;
 
 [CustomEditor(typeof(DevSetting))]
-public class DevSettingEditor : Editor
+public class DevSettingEditor : UnityEditor.Editor
 {
 	private DevSetting m_target;
 
@@ -145,7 +145,7 @@ public class DevSettingEditor : Editor
 		}, Color.white, true);
 	}
 
-    private static void InitDirectives(List<DevSetting.Directive> defines)
+    private void InitDirectives(List<DevSetting.Directive> defines)
     {
         string[] currentDefines = EditorHelper.GetDirectives();
         for (int i = 0; i < currentDefines.Length; i++)

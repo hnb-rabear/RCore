@@ -24,6 +24,7 @@ namespace RCore.Common
 	public delegate void BoolDelegate(bool value);
 	public delegate void FloatDelegate(float value);
 	public delegate bool ConditionalDelegate();
+	public delegate bool ConditionalDelegate<in T>(T pComponent) where T : Component;
 
 	public static class RUtil
 	{

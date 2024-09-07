@@ -30,7 +30,7 @@ namespace RCore.Editor
         {
 	        string folderPath = EditorHelper.OpenFolderPanel();
 	        folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
-	        var assetGUIDs = AssetDatabase.FindAssets("t:GameObject", new string[] { folderPath });
+	        var assetGUIDs = AssetDatabase.FindAssets("t:GameObject", new[] { folderPath });
 	        foreach (string guid in assetGUIDs)
 	        {
 		        var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -46,7 +46,7 @@ namespace RCore.Editor
         {
 	        string folderPath = EditorHelper.OpenFolderPanel();
 	        folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
-	        var assetGUIDs = AssetDatabase.FindAssets("t:ScriptableObject", new string[] { folderPath });
+	        var assetGUIDs = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
 	        foreach (string guid in assetGUIDs)
 	        {
 		        var path = AssetDatabase.GUIDToAssetPath(guid);

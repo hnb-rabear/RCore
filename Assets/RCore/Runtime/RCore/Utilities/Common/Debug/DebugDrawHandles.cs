@@ -27,9 +27,9 @@ namespace RCore.Common
 
             Handles.color = pWireColor;
             Handles.DrawPolyLine(topLeft, topRight, botRight, botLeft, topLeft);
-            var newTopRight = Handles.FreeMoveHandle(topRight, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newTopRight = Handles.FreeMoveHandle(topRight, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
             Handles.color = pWireColor.Invert();
-            var newBotLeft = Handles.FreeMoveHandle(botLeft, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newBotLeft = Handles.FreeMoveHandle(botLeft, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
 
             newTopRight = RoundVector(newTopRight, 2);
             newBotLeft = RoundVector(newBotLeft, 2);
@@ -54,8 +54,8 @@ namespace RCore.Common
 
             Handles.color = pWireColor;
             Handles.DrawPolyLine(topLeft, pTopRight, botRight, pBotLeft, topLeft);
-            var newTopRight = Handles.FreeMoveHandle(pTopRight, Quaternion.identity, 1, Vector3.zero, Handles.SphereHandleCap);
-            var newBotLeft = Handles.FreeMoveHandle(pBotLeft, Quaternion.identity, 1, Vector3.zero, Handles.SphereHandleCap);
+            var newTopRight = Handles.FreeMoveHandle(pTopRight, 1, Vector3.zero, Handles.SphereHandleCap);
+            var newBotLeft = Handles.FreeMoveHandle(pBotLeft, 1, Vector3.zero, Handles.SphereHandleCap);
 
             pTopRight = RoundVector(newTopRight, 0);
             pBotLeft = RoundVector(newBotLeft, 0);
@@ -77,9 +77,9 @@ namespace RCore.Common
 
             Handles.color = pWireColor;
             Handles.DrawPolyLine(topLeft, topRight, botRight, botLeft, topLeft);
-            var newTopRight = Handles.FreeMoveHandle(topRight, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newTopRight = Handles.FreeMoveHandle(topRight, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
             Handles.color = pWireColor.Invert();
-            var newBotLeft = Handles.FreeMoveHandle(botLeft, Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
+            var newBotLeft = Handles.FreeMoveHandle(botLeft, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
 
             newTopRight = RoundVector(newTopRight, 2);
             newBotLeft = RoundVector(newBotLeft, 2);
@@ -102,7 +102,7 @@ namespace RCore.Common
 
             var right = pRoot.position + new Vector3(pSize.x, 0f, 0f);
             var up = pRoot.position + new Vector3(0f, pSize.y, 0f);
-            var foward = pRoot.position + new Vector3(0f, 0f, pSize.z);
+            var forward = pRoot.position + new Vector3(0f, 0f, pSize.z);
             Handles.color = Handles.xAxisColor;
             Handles.ArrowHandleCap(
                 0,
@@ -111,7 +111,7 @@ namespace RCore.Common
                 6,
                 EventType.Repaint
             );
-            var newRight = Handles.FreeMoveHandle(right, Quaternion.identity, 1, Vector3.zero, Handles.CubeHandleCap);
+            var newRight = Handles.FreeMoveHandle(right, 1, Vector3.zero, Handles.CubeHandleCap);
             if (newRight != right)
                 pSize.x = newRight.x - pRoot.position.x;
 
@@ -123,21 +123,21 @@ namespace RCore.Common
                 6,
                 EventType.Repaint
             );
-            var newUp = Handles.FreeMoveHandle(up, Quaternion.identity, 1, Vector3.zero, Handles.CubeHandleCap);
+            var newUp = Handles.FreeMoveHandle(up, 1, Vector3.zero, Handles.CubeHandleCap);
             if (newUp != up)
                 pSize.y = newUp.y - pRoot.position.y;
 
             Handles.color = Handles.zAxisColor;
             Handles.ArrowHandleCap(
                 0,
-                foward,
+                forward,
                 pRoot.rotation * Quaternion.LookRotation(Vector3.forward),
                 6,
                 EventType.Repaint
             );
-            var newFoward = Handles.FreeMoveHandle(foward, Quaternion.identity, 1, Vector3.zero, Handles.CubeHandleCap);
-            if (newFoward != foward)
-                pSize.z = newFoward.z - pRoot.position.z;
+            var newForward = Handles.FreeMoveHandle(forward, 1, Vector3.zero, Handles.CubeHandleCap);
+            if (newForward != forward)
+                pSize.z = newForward.z - pRoot.position.z;
 #endif
             return pSize;
         }
@@ -222,7 +222,7 @@ namespace RCore.Common
 #endif
         }
 
-        public static Vector3 MouseWolrdPosition(Event e)
+        public static Vector3 MouseWordPosition(Event e)
         {
 #if UNITY_EDITOR
             Vector3 mousePosition = e.mousePosition;

@@ -6,22 +6,20 @@ namespace RCore.Framework.Data
     /// <summary>
     /// Note: this can not not prevent time cheating
     /// </summary>
+    [Obsolete("Need to rewrite logic")]
     public class TimeCounterData : DataGroup
     {
         private Action<double> m_OnFinished;
         private DateTimeData m_LocalStart;
         private DateTimeData m_ServerStart;
         private LongData m_Duration;
-        private LongData m_SecondsSinceBoot;
         private WaitUtil.CountdownEvent m_Counter;
 
         public TimeCounterData(int pId) : base(pId)
         {
-            m_LocalStart = AddData(new DateTimeData(0, null));
-            m_ServerStart = AddData(new DateTimeData(1, null));
+            m_LocalStart = AddData(new DateTimeData(0));
+            m_ServerStart = AddData(new DateTimeData(1));
             m_Duration = AddData(new LongData(2));
-
-            TimeHelper.CheckServerTime(null);
         }
 
         public override void PostLoad()
@@ -39,7 +37,7 @@ namespace RCore.Framework.Data
 
         public double GetRemainSeconds()
         {
-            var now = TimeHelper.GetServerTime();
+            var now = TimeHelper.GetServerTimeUtc();
             if (now != null && m_ServerStart.Value == null)
             {
                 double offset = 0;
@@ -69,7 +67,7 @@ namespace RCore.Framework.Data
             m_Duration.Value = pSeconds;
             m_LocalStart.Value = DateTime.UtcNow;
 
-            var now = TimeHelper.GetServerTime();
+            var now = TimeHelper.GetServerTimeUtc();
             if (now != null)
             {
                 m_ServerStart.Value = now;
@@ -113,15 +111,7 @@ namespace RCore.Framework.Data
         {
             if (m_LocalStart.Value == null)
                 return false;
-            else
-                return GetRemainSeconds() > 0;
-        }
-
-        public override void OnApplicationPaused(bool pPaused)
-        {
-            base.OnApplicationPaused(pPaused);
-
-            TimeHelper.CheckServerTime(null);
+            return GetRemainSeconds() > 0;
         }
     }
 }

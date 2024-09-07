@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 using RCore.Common;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -48,6 +49,7 @@ namespace RCore.Components
         [SerializeField] protected bool mImgSwapEnabled;
         [SerializeField] public Sprite mImgActive;
         [SerializeField] public Sprite mImgInactive;
+        [FormerlySerializedAs("m_SFXClip")]
         [SerializeField] protected string m_SfxClip = "sfx_button_click";
 
         public Image img

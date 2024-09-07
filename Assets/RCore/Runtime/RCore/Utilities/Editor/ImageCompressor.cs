@@ -109,7 +109,7 @@ namespace RCore.Editor
 				Debug.Log($"[{nameof(ImageCompressor)}] File {fileName} was compressed.");
 				return;
 			}
-			var bytes = File.ReadAllBytes(filePath);
+			var bytes = await File.ReadAllBytesAsync(filePath);
 			var www = UnityWebRequest.Put("https://api.tinify.com/shrink", bytes);
 			www.SetRequestHeader("Authorization", AuthKey);
 			www.method = UnityWebRequest.kHttpVerbPOST;
@@ -282,49 +282,6 @@ namespace RCore.Editor
 			DestroyImmediate(newTexture);
 			Debug.Log($"[{nameof(ImageCompressor)}] Processed image: {imagePath}");
 		}
-
-		private static void RemoveExifAndCompressImage2(string imagePath)
-		{
-			var originalTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(imagePath);
-			// Create a new Texture2D to remove EXIF data
-			var newTexture = new Texture2D(originalTexture.width, originalTexture.height, originalTexture.format, false);
-			newTexture.SetPixels(originalTexture.GetPixels());
-			newTexture.Apply();
-			// Encode the new Texture2D as a PNG or JPEG (based on file extension)
-			var extension = Path.GetExtension(imagePath).ToLower();
-			byte[] newImageData = null;
-			if (extension == ".jpg")
-				newImageData = newTexture.EncodeToJPG();
-			else if (extension == ".png")
-				newImageData = newTexture.EncodeToPNG();
-			if (newImageData != null)
-				// Save the new image data back to the file
-				File.WriteAllBytes(imagePath, newImageData);
-			// Destroy the temporary textures
-			DestroyImmediate(newTexture);
-			Debug.Log($"[{nameof(ImageCompressor)}] Processed image: {imagePath}");
-		}
-
-		private static Texture2D CloneTexture2D(Texture2D texture)
-		{
-			// Create a temporary RenderTexture with the same dimensions and format as the texture
-			var tempRenderTexture = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
-			// Set the active RenderTexture to the temporary RenderTexture
-			RenderTexture.active = tempRenderTexture;
-			// Copy the texture data to the temporary RenderTexture
-			Graphics.Blit(texture, tempRenderTexture);
-			// Create a new Texture2D to read the pixel data
-			var tempTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
-			// Read the pixel data from the temporary RenderTexture to the new Texture2D
-			tempTexture.ReadPixels(new Rect(0, 0, tempRenderTexture.width, tempRenderTexture.height), 0, 0);
-			// Apply the changes to the new Texture2D
-			tempTexture.Apply();
-			// Clean up temporary objects
-			RenderTexture.active = null;
-			RenderTexture.ReleaseTemporary(tempRenderTexture);
-			return tempTexture;
-		}
-
 #endregion
 	}
 }

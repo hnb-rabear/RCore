@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  *  Based on TimeManager of hnim.
  *  Copyright (c) 2017 RedAntz. All rights reserved.
  */
@@ -18,8 +18,6 @@ namespace RCore.Framework.Data
         private LongData m_TaskDurationSeconds;
 
         public long RemainSeconds => m_RemainSeconds.Value;
-        public long Seconds => m_LocalSeconds.Value;
-        public long TaskDurationSeconds => m_TaskDurationSeconds.Value;
         public bool IsRunning => m_RemainSeconds.Value > 0;
 
         public TimerTask(int pId) : base(pId)
@@ -96,45 +94,45 @@ namespace RCore.Framework.Data
             timeManager.AddTimerTask(this);
         }
 
-        public void Update(long pCurServerSeconds, long pCurLocalSeconds, long pDeltaOnlineSeconds)
+        public void Update(long curServerSeconds, long curLocalSeconds)
         {
             if (IsRunning)
             {
-                if (pCurServerSeconds > 0)
+                if (curServerSeconds > 0)
                 {
                     //If server time was saved, count directly, otherwise record it
-                    long dServerSeconds = pCurServerSeconds - m_ServerSeconds.Value;// this value should never be negative
+                    long dServerSeconds = curServerSeconds - m_ServerSeconds.Value;// this value should never be negative
                     if (m_ServerSeconds.Value > 0 && dServerSeconds > 0)
                     {
                         m_ServerRemainSeconds.Value -= dServerSeconds;
-                        m_ServerSeconds.Value = pCurServerSeconds;
+                        m_ServerSeconds.Value = curServerSeconds;
 
-                        m_LocalSeconds.Value = pCurLocalSeconds;
+                        m_LocalSeconds.Value = curLocalSeconds;
                         m_RemainSeconds.Value = m_ServerRemainSeconds.Value;
                     }
                     else
                     {
-                        m_ServerSeconds.Value = pCurServerSeconds;
+                        m_ServerSeconds.Value = curServerSeconds;
                         m_ServerRemainSeconds.Value = m_RemainSeconds.Value;
                     }
                 }
                 //
                 if (m_LocalSeconds.Value <= 0)
                 {
-                    m_LocalSeconds.Value = pCurLocalSeconds;
+                    m_LocalSeconds.Value = curLocalSeconds;
                 }
                 //
-                long dt = pCurLocalSeconds - m_LocalSeconds.Value;
+                long dt = curLocalSeconds - m_LocalSeconds.Value;
                 //
                 if (dt < 0)
                 {
                     // means user turn off device then switch on
-                    dt = pCurLocalSeconds;
+                    dt = curLocalSeconds;
                 }
 
                 if (dt > 0)
                 {
-                    m_LocalSeconds.Value = pCurLocalSeconds;
+                    m_LocalSeconds.Value = curLocalSeconds;
                     m_RemainSeconds.Value -= dt;
                 }
 
