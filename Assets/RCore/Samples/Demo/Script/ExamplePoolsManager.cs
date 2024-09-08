@@ -216,7 +216,7 @@ namespace RCore.Demo
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(ExamplePoolsManager))]
-		public class ExamplePoolsManagerEditor : Editor
+		public class ExamplePoolsManagerEditor : UnityEditor.Editor
 		{
 			private ExamplePoolsManager mTarget;
 

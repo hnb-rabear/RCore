@@ -18,12 +18,63 @@ MonoBehaviour:
     enableDraw: 0
     showFPS: 0
     defines:
-    - name: UNITY_MONETIZATION
+    - name: ACTIVE_FIREBASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_ANALYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_AUTH
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_CRASHLYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_DATABASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_FIRESTORE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_MESSAGING
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_REMOTE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_FIREBASE_STORAGE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ADDRESSABLES
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: APPLOVINE
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
     - name: DEVELOPMENT
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
+    - name: GPGS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: IRONSOURCE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
     - name: UNITY_IAP
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: UNITY_MONETIZATION
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: USE_DOTWEEN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: ACTIVE_ADJUST
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: APPLOVIN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: BUILD_CHEAT
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0

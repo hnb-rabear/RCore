@@ -1,2 +1,0 @@
-These shaders are useless in real situation
-Just keeps it for learning purpose

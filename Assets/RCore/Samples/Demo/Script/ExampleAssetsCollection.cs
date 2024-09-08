@@ -24,7 +24,7 @@ namespace RCore.Demo
 
 #if UNITY_EDITOR
         [CustomEditor(typeof(ExampleAssetsCollection))]
-        public class ExampleAssetsCollectionEditor : Editor
+        public class ExampleAssetsCollectionEditor : UnityEditor.Editor
         {
             private ExampleAssetsCollection mScript;
 
