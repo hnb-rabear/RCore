@@ -1,7 +1,8 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711 @gmail.com - 2018
  **/
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,28 +28,23 @@ namespace RCore.Common
 			var angleDegree = angleRadian * 180 / Mathf.PI;
 			return angleDegree;
 		}
-
 		public static float CalcAngle(Vector2 direction)
 		{
 			float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 			return angle;
 		}
-
 		public static Vector3 CalcAngle360(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.forward, toDir - fromDir).eulerAngles;
 		}
-
 		public static float CalcAngle360X(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.right, toDir - fromDir).eulerAngles.z;
 		}
-
 		public static float CalcAngle360Z(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.up, toDir - fromDir).eulerAngles.z;
 		}
-
 		public static float CalcAngle360Y(Vector3 fromDir, Vector3 toDir)
 		{
 			return Quaternion.FromToRotation(Vector3.forward, toDir - fromDir).eulerAngles.y;
@@ -79,19 +75,19 @@ namespace RCore.Common
 
 		public static Vector3 RandomPointOnCircleEdge_XZ(Vector3 pCenter, float pRadius)
 		{
-			var pos = Random.insideUnitCircle.normalized * pRadius;
+			var pos = UnityEngine.Random.insideUnitCircle.normalized * pRadius;
 			return new Vector3(pCenter.x + pos.x, pCenter.y, pCenter.z + pos.y);
 		}
 
 		public static Vector3 RandomPointOnCircle_XZ(Vector3 pCenter, float pRadius)
 		{
-			var pos = Random.insideUnitCircle.normalized * Random.Range(0, pRadius);
+			var pos = UnityEngine.Random.insideUnitCircle.normalized * UnityEngine.Random.Range(0, pRadius);
 			return new Vector3(pCenter.x + pos.x, pCenter.y, pCenter.z + pos.y);
 		}
 
 		public static Vector3 RandomPointOnCircleEdge_XY(Vector2 pCenter, float pRadius)
 		{
-			var pos = Random.insideUnitCircle.normalized * pRadius;
+			var pos = UnityEngine.Random.insideUnitCircle.normalized * pRadius;
 			return new Vector3(pCenter.x + pos.x, pCenter.y + pos.y);
 		}
 
@@ -119,9 +115,7 @@ namespace RCore.Common
 		/// </summary>
 		private static float Area(Vector2 a, Vector2 b, Vector2 c)
 		{
-			return Mathf.Abs((a.x * (b.y - c.y) +
-				b.x * (c.y - a.y) +
-				c.x * (a.y - b.y)) / 2.0f);
+			return Mathf.Abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.0f);
 		}
 
 		/// <summary>
@@ -443,14 +437,14 @@ namespace RCore.Common
 
 			if (!oddNodes)
 			{
-				float dist, closestDist = -1f;
+				float closestDist = -1f;
 
 				for (int i = 0; i < 4; i++)
 				{
 					Vector3 v0 = screenPoints[i];
 					Vector3 v1 = screenPoints[RepeatIndex(i + 1, 4)];
 
-					dist = DistancePointToLineSegment(mousePos, v0, v1);
+					var dist = DistancePointToLineSegment(mousePos, v0, v1);
 
 					if (dist < closestDist || closestDist < 0f) closestDist = dist;
 				}
@@ -497,7 +491,7 @@ namespace RCore.Common
 		public static bool InsideAngle(float angle, float minAngle, float maxAngle)
 		{
 			if (Mathf.Cos(angle / 180f) < Mathf.Cos(minAngle / 180f)
-				|| Mathf.Cos(angle / 180f) < Mathf.Cos(maxAngle / 180f))
+			    || Mathf.Cos(angle / 180f) < Mathf.Cos(maxAngle / 180f))
 				return false;
 			return true;
 		}
@@ -513,49 +507,40 @@ namespace RCore.Common
 		{
 			return Mathf.Sin(pRadiant);
 		}
-
 		public static float CosRad(float pRadiant)
 		{
 			return Mathf.Cos(pRadiant);
 		}
-
 		public static float SinDeg(float pDegree)
 		{
 			return Mathf.Sin(Ded2Rad(pDegree));
 		}
-
 		public static float CosDeg(float pDegree)
 		{
 			return Mathf.Cos(Ded2Rad(pDegree));
 		}
-
 		public static float TanDeg(float pDegree)
 		{
 			return Mathf.Tan(Ded2Rad(pDegree));
 		}
-
 		public static float Ded2Rad(float pDegree)
 		{
 			//Tradition way
 			//pDegree *= Mathf.PI / 180;
 			return pDegree * Mathf.Deg2Rad;
 		}
-
 		public static float Tad2Deg(float pRadiant)
 		{
 			return pRadiant * Mathf.Rad2Deg;
 		}
-
 		public static float AngleDeg(Vector2 pFrom, Vector2 pTo)
 		{
 			return AtanDeg(pTo.y - pFrom.y, pTo.x - pFrom.x);
 		}
-
 		public static float AtanDeg(float dy, float dx)
 		{
 			return Tad2Deg(AtanRad(dy, dx));
 		}
-
 		public static float AtanRad(float dy, float dx)
 		{
 			return Mathf.Atan2(dy, dx);
@@ -575,7 +560,7 @@ namespace RCore.Common
 			for (int i = 0; i < chances.Count; i++)
 				totalRatios += chances[i];
 
-			float random = Random.Range(0, totalRatios);
+			float random = UnityEngine.Random.Range(0, totalRatios);
 			float temp2 = 0;
 			for (int i = 0; i < chances.Count; i++)
 			{
@@ -596,7 +581,7 @@ namespace RCore.Common
 			for (int i = 0; i < chances.Length; i++)
 				totalRatios += chances[i];
 
-			float random = Random.Range(0, totalRatios);
+			float random = UnityEngine.Random.Range(0, totalRatios);
 			float temp2 = 0;
 			for (int i = 0; i < chances.Length; i++)
 			{
@@ -617,7 +602,7 @@ namespace RCore.Common
 			for (int i = 0; i < chances.Length; i++)
 				totalRatios += chances[i];
 
-			float random = Random.Range(0, totalRatios);
+			float random = UnityEngine.Random.Range(0, totalRatios);
 			float temp2 = 0;
 			for (int i = 0; i < chances.Length; i++)
 			{
@@ -639,11 +624,33 @@ namespace RCore.Common
 			return sum;
 		}
 
+		public static int GCD(int a, int b)
+		{
+			while (b > 0)
+			{
+				int temp = b;
+				b = a % b;
+				a = temp;
+			}
+			return a;
+		}
+		/// <summary>
+		/// Find greatest common divisor
+		/// </summary>
+		public static int GCD(List<int> arr)
+		{
+			if (arr.Count == 1)
+				return 1;
+			int gcd = arr[0];
+			for (int i = 1; i < arr.Count; i++)
+				gcd = GCD(gcd, arr[i]);
+			return gcd;
+		}
+
 		public static bool IsPointInsideEllipse(Vector2 pointToCheck, Vector2 ellipsePos, Vector2 ellipseSize)
 		{
 			return IsPointInsideEllipse(pointToCheck, ellipsePos, ellipseSize.x, ellipseSize.y);
 		}
-
 		public static bool IsPointInsideEllipse(Vector2 pointToCheck, Vector2 ellipsePos, float ellipseWidth, float ellipseHeight)
 		{
 			if (ellipseWidth <= 0 || ellipseHeight <= 0)
@@ -662,7 +669,6 @@ namespace RCore.Common
 			}
 			return false;
 		}
-
 		public static bool CheckLineIntersect(Vector2 pLineStart, Vector2 pLineEnd, Rect pRect)
 		{
 			// check if the line has hit any of the rectangle's sides
@@ -688,7 +694,6 @@ namespace RCore.Common
 			}
 			return false;
 		}
-
 		public static bool LineLine(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
 		{
 			// calculate the direction of the lines
@@ -702,11 +707,9 @@ namespace RCore.Common
 			}
 			return false;
 		}
-
 		private const int Intersection_OUT_SIDE = 0;
 		private const int Intersection_IN_SIDE = 1;
 		private const int Intersection_CUT = 2;
-
 		public static int IntersectEllipseLine(Vector2 center, float rx, float ry, Vector2 a1, Vector2 a2)
 		{
 			int result;
@@ -758,7 +761,6 @@ namespace RCore.Common
 
 			return result;
 		}
-
 		public static bool IntersectEllipseRectangle(Vector2 c, float rx, float ry, Rect pRect)
 		{
 			var tL = new Vector2(pRect.x, pRect.y + pRect.height);
@@ -770,7 +772,6 @@ namespace RCore.Common
 				|| IntersectEllipseLine(c, rx, ry, bL, bR) == Intersection_CUT
 				|| IntersectEllipseLine(c, rx, ry, bR, tR) == Intersection_CUT;
 		}
-
 		public static bool RectInsideEllipse(Vector2 c, float rx, float ry, Rect pRect)
 		{
 			var tL = new Vector2(pRect.x, pRect.y + pRect.height);
@@ -782,13 +783,11 @@ namespace RCore.Common
 				&& IntersectEllipseLine(c, rx, ry, bL, bR) == Intersection_IN_SIDE
 				&& IntersectEllipseLine(c, rx, ry, bR, tR) == Intersection_IN_SIDE;
 		}
-
 		private static bool InAngle(Vector2 v1, Vector2 v2, float pFromDeg, float pToDeg)
 		{
 			float deg = AngleDeg(v1, v2);
 			return deg >= pFromDeg && deg <= pToDeg || deg + 360 >= pFromDeg && deg + 360 <= pToDeg;
 		}
-
 		public static bool IntersectOrOverlapEllipseRectangle(Vector2 c, float rx, float ry, Rect pRect, float pFromAngle = 0, float pToAngle = 360, bool pRightSide = true, bool drawBox = false)
 		{
 			var tL = new Vector2(pRect.x, pRect.y + pRect.height);
@@ -807,8 +806,8 @@ namespace RCore.Common
 			if (pToAngle - pFromAngle != 360)
 			{
 				// check if any angle from center to rect point in angle range
-				inAngleRange = (pRightSide ? pRect.xMax > c.x : pRect.xMin < c.x) &&
-					(InAngle(c, tL, pFromAngle, pToAngle)
+				inAngleRange = (pRightSide ? pRect.xMax > c.x : pRect.xMin < c.x)
+					&& (InAngle(c, tL, pFromAngle, pToAngle)
 						|| InAngle(c, tR, pFromAngle, pToAngle)
 						|| InAngle(c, bL, pFromAngle, pToAngle)
 						|| InAngle(c, bR, pFromAngle, pToAngle));
@@ -917,6 +916,55 @@ namespace RCore.Common
 			}
 			return cost;
 		}
+
+		public static Vector3Int[] CalcIsometricCells(Vector2 pPosition, Vector2Int pTileSize, int pFlip = 1)
+		{
+			return CalcIsometricCells(new Vector3(2, 1), pPosition, pTileSize, pFlip);
+		}
+
+		public static Vector3Int[] CalcIsometricCells(Vector2 pCellSize, Vector2 pPosition, Vector2Int pTileSize, int pFlip)
+		{
+			var tileSize = pTileSize;
+			if (pFlip == -1)
+			{
+				var temp = tileSize.x;
+				tileSize.x = tileSize.y;
+				tileSize.y = temp;
+			}
+			var yOffset = Mathf.Min(tileSize.x, tileSize.y) / 2f;
+			var rootPos = pPosition.AddY(-yOffset);
+
+			var cells = new Vector3Int[tileSize.x * tileSize.y];
+			var offsetX = pCellSize.x / 2f;
+			var offsetY = pCellSize.y / 2f;
+			int index = 0;
+			for (int y = 0; y < tileSize.y; y++)
+			{
+				for (int x = 0; x < tileSize.x; x++)
+				{
+					var pos = new Vector2(x * offsetX - y * offsetX, y * offsetY + x * offsetY);
+					pos.x += rootPos.x;
+					pos.y += rootPos.y;
+					cells[index] = WorldToIsometricCell(pos, pCellSize.x, pCellSize.y);
+					index++;
+				}
+			}
+			return cells;
+		}
+
+		public static Vector3Int WorldToIsometricCell(Vector2 worldPosition, float cellWidth, float cellHeight)
+		{
+			float isoX = worldPosition.x / cellWidth + worldPosition.y / cellHeight;
+			float isoY = (worldPosition.x / cellWidth - worldPosition.y / cellHeight) * -1f;
+			return new Vector3Int(Mathf.FloorToInt(isoX), Mathf.FloorToInt(isoY), 0);
+		}
+
+		public static Vector3 IsometricCellToWorld(Vector3Int cellPosition, float cellWidth, float cellHeight)
+		{
+			float worldX = (cellPosition.x - cellPosition.y) * cellWidth / 2;
+			float worldY = (cellPosition.x + cellPosition.y) * cellHeight / 2;
+			return new Vector3(worldX, worldY, 0);
+		}
 	}
 
 	public static class MathExtension
@@ -1014,6 +1062,11 @@ namespace RCore.Common
 				MathHelper.Round(pVector.y, pDecimal),
 				MathHelper.Round(pVector.z, pDecimal));
 			return pVector;
+		}
+
+		public static Vector3 Sign(this Vector3 pVal)
+		{
+			return new Vector3(Mathf.Sign(pVal.x), Mathf.Sign(pVal.y), Mathf.Sign(pVal.z));
 		}
 	}
 }

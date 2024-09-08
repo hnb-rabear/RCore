@@ -2,7 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-//#define USE_LEANTWEEN
 //#define USE_DOTWEEN
 
 #pragma warning disable 0649
@@ -184,38 +183,7 @@ namespace RCore.Components
 			}
 		}
 
-#if USE_LEANTWEEN
-        public IEnumerator IE_MoveEmitsEase(Transform pDestination, float pDuration, float pDelay = 0)
-        {
-            if (pDelay > 0)
-                yield return new WaitForSeconds(pDelay);
-
-            GetEmits();
-            GetEmitsPosition();
-
-            bool process = true;
-
-            LeanTween.value(0, 1f, pDuration)
-                .setEase(LeanTweenType.easeInCirc)
-                .setOnUpdate((float perc) =>
-                {
-                    for (int i = 0; i < mParticles.Length; i++)
-                    {
-                        mParticles[i].position = Vector3.Lerp(mParticlesPos[i], pDestination.position, perc);
-                    }
-
-                    mControllableParticle.SetParticles(mParticles, mParticles.Length);
-                })
-                .setOnComplete(() =>
-                {
-                    process = false;
-                });
-
-            yield return new WaitUntil(() => !process);
-
-            if (onFinishedMovement != null) onFinishedMovement();
-        }
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
         public IEnumerator IE_MoveEmitsEase(Transform pDestination, float pDuration, float pDelay = 0)
         {
             if (pDelay > 0)
@@ -307,46 +275,7 @@ namespace RCore.Components
 			onFinishedMovement?.Invoke();
 		}
 
-#if USE_LEANTWEEN
-        private void MoveEmit(Transform pDestination, float pDuration, int pIndex)
-        {
-            if (mParticles.Length > pIndex)
-            {
-                bool tweenBreaked = false;
-                LeanTween.value(0, 1f, pDuration)
-                    .setEase(LeanTweenType.easeInCirc)
-                    .setOnUpdate((float perc) =>
-                    {
-                        if (tweenBreaked)
-                            return;
-
-                        try
-                        {
-                            mParticles[pIndex].position = Vector3.Lerp(mParticlesPos[pIndex], pDestination.position, perc);
-                            mControllableParticle.SetParticles(mParticles, mParticles.Length);
-                        }
-                        catch (Exception ex)
-                        {
-                            tweenBreaked = true;
-
-                            Debug.LogError(ex.ToString());
-                        }
-                    })
-                    .setOnComplete(() =>
-                    {
-                        try
-                        {
-                            mParticles[pIndex].startColor = Color.clear;
-                            if (onFinishedMovementSeparately != null) onFinishedMovementSeparately();
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError(ex.ToString());
-                        }
-                    });
-            }
-        }
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
         private void MoveEmit(Transform pDestination, float pDuration, int pIndex)
         {
             if (mParticles.Length > pIndex)

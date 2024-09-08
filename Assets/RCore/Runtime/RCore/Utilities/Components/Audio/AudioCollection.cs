@@ -14,6 +14,7 @@ namespace RCore.Components
 	[CreateAssetMenu(fileName = "AudioCollection", menuName = "RCore/Audio Collection")]
 	public class AudioCollection : ScriptableObject
 	{
+		[SerializeField] private bool m_ImportFromFolder = true;
 		[SerializeField] private string m_Namespace;
 		[SerializeField] private string m_NameClassMusic = "MusicIDs";
 		[SerializeField] private string m_NameClassSFX = "SfxIDs";
@@ -115,23 +116,28 @@ namespace RCore.Components
 						sfxsSourcePath = Application.dataPath + sfxsSourcePath;
 						exportConfigPath = Application.dataPath + exportConfigPath;
 
-						var musicFiles = EditorHelper.GetObjects<AudioClip>(musicsSourcePath, "t:AudioClip");
-						var sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxsSourcePath, "t:AudioClip");
+						var musicFiles = m_Script.musicClips;
+						var sfxFiles = m_Script.sfxClips;
+						if (m_Script.m_ImportFromFolder)
+						{
+							musicFiles = EditorHelper.GetObjects<AudioClip>(musicsSourcePath, "t:AudioClip").ToArray();
+							sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxsSourcePath, "t:AudioClip").ToArray();
+						}
 						string result = GetConfigTemplate();
 
 						//Musics
-						m_Script.musicClips = new AudioClip[musicFiles.Count];
+						m_Script.musicClips = new AudioClip[musicFiles.Length];
 						string stringKeys = "";
 						string intKeys = "";
 						string enumKeys = "";
-						for (int i = 0; i < musicFiles.Count; i++)
+						for (int i = 0; i < musicFiles.Length; i++)
 						{
 							m_Script.musicClips[i] = musicFiles[i];
 
 							stringKeys += $"\"{musicFiles[i].name}\"";
 							intKeys += $"{musicFiles[i].name.ToUpper()} = {i}";
 							enumKeys += $"{musicFiles[i].name} = {i}";
-							if (i < musicFiles.Count - 1)
+							if (i < musicFiles.Length - 1)
 							{
 								stringKeys += $",{Environment.NewLine}\t\t";
 								intKeys += $",{Environment.NewLine}\t\t";
@@ -141,18 +147,18 @@ namespace RCore.Components
 						result = result.Replace("<M_CONSTANT_INT_KEYS>", intKeys).Replace("<M_CONSTANT_STRING_KEYS>", stringKeys).Replace("<M_CONSTANTS_ENUM_KEYS>", enumKeys);
 
 						//SFXs
-						m_Script.sfxClips = new AudioClip[sfxFiles.Count];
+						m_Script.sfxClips = new AudioClip[sfxFiles.Length];
 						stringKeys = "";
 						intKeys = "";
 						enumKeys = "";
-						for (int i = 0; i < sfxFiles.Count; i++)
+						for (int i = 0; i < sfxFiles.Length; i++)
 						{
 							m_Script.sfxClips[i] = sfxFiles[i];
 
 							stringKeys += $"\"{sfxFiles[i].name}\"";
 							intKeys += $"{sfxFiles[i].name.ToUpper()} = {i}";
 							enumKeys += $"{sfxFiles[i].name} = {i}";
-							if (i < sfxFiles.Count - 1)
+							if (i < sfxFiles.Length - 1)
 							{
 								stringKeys += $",{Environment.NewLine}\t\t";
 								intKeys += $",{Environment.NewLine}\t\t";

@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711 @gmail.com - 2017 - 2020
  **/
 
@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace RCore.Common
@@ -37,6 +36,27 @@ namespace RCore.Common
 
 			pStringPart = pStr.Replace(pNumberPart, "");
 		}
+
+		public static string ToLowerUnderscore(string input)
+		{
+			if (string.IsNullOrEmpty(input))
+				return string.Empty;
+
+			var result = new StringBuilder(input.Length * 2);
+			char prevChar = input[0];
+			result.Append(char.ToLower(prevChar));
+			for (int i = 1; i < input.Length; i++)
+			{
+				char currentChar = input[i];
+				if (char.IsUpper(currentChar) || currentChar == ' ' || currentChar == '-')
+					if (prevChar != ' ' && prevChar != '-')
+						result.Append('_');
+				result.Append(char.ToLower(currentChar));
+				prevChar = currentChar;
+			}
+			return result.ToString().Replace("__", "_");
+		}
+
 
 		public static string JoinString(string separator, params string[] strs)
 		{
@@ -154,7 +174,7 @@ namespace RCore.Common
 				combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
 				pMeshObjects[i].gameObject.SetActive(false);
 				if (pDestroyOriginal)
-					Object.DestroyImmediate(pMeshObjects[i].gameObject);
+					UnityEngine.Object.DestroyImmediate(pMeshObjects[i].gameObject);
 			}
 
 			combinedMesh.GetOrAddComponent<MeshFilter>().sharedMesh = new Mesh();
@@ -171,49 +191,44 @@ namespace RCore.Common
 			pCallback?.Invoke(w.result == UnityWebRequest.Result.Success ? w.downloadHandler.text : null);
 		}
 
-		public static int GetVersionInt(string appVersion)
+		public static int GetVersionInt(string version)
 		{
+			if (!int.TryParse(version.Last().ToString(), out _))
+				version = version.Remove(version.Length - 1);
+			string[] split = version.Split('.');
+			int length = split.Length;
 			int versionInt = 0;
-			string[] numbers = appVersion.Split('.');
-			for (int i = 0; i < numbers.Length; i++)
-				versionInt += int.Parse(numbers[i]) * (int)Mathf.Pow(10, numbers.Length - i);
+			for (int i = 0; i < length; i++)
+				versionInt += int.Parse(split[i]) * (int)Mathf.Pow(100, length - i - 1);
 			return versionInt;
 		}
 
-		public static int CompareVersionNames(string currentVersion, string remoteVersion)
+		public static int CompareVersion(string version1, string version2)
 		{
-			int res = 0;
-
-			string[] oldNumbers = currentVersion.Split('.');
-			string[] newNumbers = remoteVersion.Split('.');
-
-			// To avoid IndexOutOfBounds
-			int maxIndex = Mathf.Min(oldNumbers.Length, newNumbers.Length);
-
+			if (!int.TryParse(version1.Last().ToString(), out _))
+				version1 = version1.Remove(version1.Length - 1);
+			if (!int.TryParse(version2.Last().ToString(), out _))
+				version2 = version2.Remove(version2.Length - 1);
+			string[] version1s = version1.Split('.');
+			string[] version2s = version2.Split('.');
+			int maxIndex = Mathf.Min(version1s.Length, version2s.Length);
+			int p1 = 0;
+			int p2 = 0;
 			for (int i = 0; i < maxIndex; i++)
 			{
-				int oldVersionPart = int.Parse(oldNumbers[i]);
-				int newVersionPart = int.Parse(newNumbers[i]);
-
-				if (oldVersionPart < newVersionPart)
-				{
-					res = -1;
-					break;
-				}
-				if (oldVersionPart > newVersionPart)
-				{
-					res = 1;
-					break;
-				}
+				p1 += int.Parse(version1s[i]) * (int)Mathf.Pow(100, maxIndex - i - 1);
+				p2 += int.Parse(version2s[i]) * (int)Mathf.Pow(100, maxIndex - i - 1);
 			}
 
-			// If versions are the same so far, but they have different length...
-			if (res == 0 && oldNumbers.Length != newNumbers.Length)
-			{
-				res = (oldNumbers.Length > newNumbers.Length) ? 1 : -1;
-			}
+			// 2.10.22 = 2*100^2 + 10*100^1 + 22*100^0 = 20000+1000+22 = 21022
+			// 2.10.26 = 2*100^2 + 10*100^1 + 26*100^0 = 20000+1000+26 = 21026
+			// -4
 
-			return res;
+			// 2.9.22 = 2*100^2 + 9*100^1 + 22*100^0 = 20000+900+22 = 20922
+			// 2.10.26 = 2*100^2 + 10*100^1 + 26*100^0 = 20000+1000+26 = 21026
+			// -104 % 100 = -4
+
+			return (p1 - p2) % 100;
 		}
 
 		public static void PerfectRatioImagesByWidth(params GameObject[] gameObjects)
@@ -278,7 +293,7 @@ namespace RCore.Common
 
 			int pointsLength = arrayToCurve.Length;
 
-			int curvedLength = (pointsLength * Mathf.RoundToInt(smoothness)) - 1;
+			int curvedLength = pointsLength * Mathf.RoundToInt(smoothness) - 1;
 			var curvedPoints = new List<Vector3>(curvedLength);
 
 			for (int pointInTimeOnCurve = 0; pointInTimeOnCurve < curvedLength + 1; pointInTimeOnCurve++)
@@ -297,7 +312,7 @@ namespace RCore.Common
 
 				curvedPoints.Add(points[0]);
 			}
-			return (curvedPoints.ToArray());
+			return curvedPoints.ToArray();
 		}
 
 		public static int GetStableHashCode(string str)
@@ -309,13 +324,13 @@ namespace RCore.Common
 
 				for (int i = 0; i < str.Length && str[i] != '\0'; i += 2)
 				{
-					hash1 = ((hash1 << 5) + hash1) ^ str[i];
+					hash1 = (hash1 << 5) + hash1 ^ str[i];
 					if (i == str.Length - 1 || str[i + 1] == '\0')
 						break;
-					hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
+					hash2 = (hash2 << 5) + hash2 ^ str[i + 1];
 				}
 
-				return hash1 + (hash2 * 1566083941);
+				return hash1 + hash2 * 1566083941;
 			}
 		}
 
@@ -349,6 +364,27 @@ namespace RCore.Common
 				if (nic.OperationalStatus == OperationalStatus.Up)
 					return nic.GetPhysicalAddress().ToString();
 			return null;
+		}
+
+		public static string GetFirstWords(string text, int length)
+		{
+			string[] words = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			int wordCount = Math.Min(words.Length, length);
+			return string.Join(" ", words, 0, wordCount);
+		}
+
+		public static string GetFirstLine(string text)
+		{
+			char[] sentenceEnders = { '\n', '\r' };
+			int index = text.IndexOfAny(sentenceEnders);
+			return index >= 0 ? text.Substring(0, index) : text;
+		}
+		
+		public static string GetFirstSentence(string text)
+		{
+			char[] sentenceEnders = { '.', '?', '!', '\n', '\r' };
+			int index = text.IndexOfAny(sentenceEnders);
+			return index >= 0 ? text.Substring(0, index + 1) : text;
 		}
 	}
 
@@ -391,29 +427,9 @@ namespace RCore.Common
 			pAction?.Invoke();
 		}
 
-		public static void Raise(this UnityAction pAction)
-		{
-			pAction?.Invoke();
-		}
-
 		public static void Raise<T>(this Action<T> pAction, T pParam)
 		{
 			pAction?.Invoke(pParam);
-		}
-
-		public static void Raise<T>(this UnityAction<T> pAction, T pParam)
-		{
-			pAction?.Invoke(pParam);
-		}
-
-		public static void Raise<T, M>(this Action<T, M> pAction, T pParam1, M pParam2)
-		{
-			pAction?.Invoke(pParam1, pParam2);
-		}
-
-		public static void Raise<T, M>(this UnityAction<T, M> pAction, T pParam1, M pParam2)
-		{
-			pAction?.Invoke(pParam1, pParam2);
 		}
 
 		public static List<T> ToList<T>(this T[] pArray)
@@ -432,54 +448,119 @@ namespace RCore.Common
 			return false;
 		}
 
-		public static T[] Add<T>(this T[] pArray, T pObj)
+#region Array Extensions
+
+		public static bool Exists<T>(this T[] pArray, Predicate<T> match)
 		{
-			var newArray = new T[pArray.Length + 1];
 			for (int i = 0; i < pArray.Length; i++)
-				newArray[i] = pArray[i];
-			newArray[pArray.Length] = pObj;
-			return newArray;
+				if (match(pArray[i]))
+					return true;
+			return false;
+		}
+		
+		public static T Find<T>(this T[] pArray, Predicate<T> match)
+		{
+			for (int i = 0; i < pArray.Length; i++)
+				if (match(pArray[i]))
+					return pArray[i];
+			return default;
 		}
 
-		public static T[] AddRange<T>(this T[] pArray, T[] pObj)
+		public static T FindLast<T>(this T[] pArray, Predicate<T> match)
 		{
-			var newArray = new T[pArray.Length + pObj.Length];
-
-			for (int i = 0; i < pArray.Length; i++)
-				newArray[i] = pArray[i];
-
-			for (int i = 0; i < pObj.Length; i++)
-				newArray[pArray.Length + i] = pObj[i];
-
-			return newArray;
+			for (int i = pArray.Length - 1; i >= 0; i--)
+				if (match(pArray[i]))
+					return pArray[i];
+			return default;
 		}
 
-		public static T[] Remove<T>(this T[] pArray, T pObj)
+		public static T[] FindAll<T>(this T[] pArray, Predicate<T> match)
+		{
+			var indexes = new List<int>();
+			for (int i = 0; i < pArray.Length; i++)
+				if (match(pArray[i]))
+					indexes.Add(i);
+			var result = new T[indexes.Count];
+			for (int i = 0; i < indexes.Count; i++)
+				result[i] = pArray[indexes[i]];
+			return result;
+		}
+
+		public static int Count<T>(this T[] pArray, Predicate<T> match)
 		{
 			int count = 0;
 			for (int i = 0; i < pArray.Length; i++)
-				if (EqualityComparer<T>.Default.Equals(pArray[i], pObj))
+				if (match(pArray[i]))
 					count++;
-			int j = 0;
-			var newArray = new T[pArray.Length - count];
-			for (int i = 0; i < pArray.Length; i++)
-				if (!EqualityComparer<T>.Default.Equals(pArray[i], pObj))
-				{
-					newArray[j] = pArray[i];
-					j++;
-				}
-			return newArray;
+			return count;
 		}
 
-		public static int IndexOf<T>(this T[] pArray, T pObj)
+		public static void Add<T>(this T[] pArray, T pObj, out T[] output)
 		{
-			for (int i = 0; i < pArray.Length; i++)
-				if (EqualityComparer<T>.Default.Equals(pArray[i], pObj))
-					return i;
-			return -1;
+			var newArray = new T[pArray.Length + 1];
+			Array.Copy(pArray, newArray, pArray.Length);
+			newArray[pArray.Length] = pObj;
+			output = newArray;
 		}
 
-		public static T[] RemoveAt<T>(this T[] pArray, int pIndex)
+		public static void AddRange<T>(this T[] pArray1, T[] pArray2, out T[] output)
+		{
+			var newArray = new T[pArray1.Length + pArray2.Length];
+			Array.Copy(pArray1, 0, newArray, 0, pArray1.Length);
+			Array.Copy(pArray2, 0, newArray, pArray1.Length, pArray2.Length);
+			output = newArray;
+		}
+
+		public static void Remove<T>(this T[] pArray, T pObj, out T[] output)
+		{
+			var comparer = EqualityComparer<T>.Default;
+			int count = 0;
+
+			// First pass: count how many elements need to be removed
+			for (int i = 0; i < pArray.Length; i++)
+				if (comparer.Equals(pArray[i], pObj))
+					count++;
+
+			// If no elements need to be removed, return the original array
+			if (count == 0)
+				output = (T[])pArray.Clone();
+
+			T[] newArray = new T[pArray.Length - count];
+			int j = 0;
+
+			// Second pass: copy the elements that are not equal to pObj
+			for (int i = 0; i < pArray.Length; i++)
+				if (!comparer.Equals(pArray[i], pObj))
+					newArray[j++] = pArray[i];
+
+			output = newArray;
+		}
+
+		public static void RemoveAll<T>(this T[] pArray, Predicate<T> match, out T[] output)
+		{
+			// Count the number of elements that don't match the condition
+			int count = 0;
+			for (int i = 0; i < pArray.Length; i++)
+			{
+				if (!match(pArray[i]))
+					count++;
+			}
+
+			// Create a new array with the non-matching elements
+			T[] result = new T[count];
+			int index = 0;
+			for (int i = 0; i < pArray.Length; i++)
+			{
+				if (!match(pArray[i]))
+				{
+					result[index] = pArray[i];
+					index++;
+				}
+			}
+			output = result;
+		}
+
+		public static void RemoveAt<T>(this T[] pArray, int pIndex, out T[] output)
 		{
 			int j = 0;
 			var newArray = new T[pArray.Length - 1];
@@ -489,8 +570,27 @@ namespace RCore.Common
 					newArray[j] = pArray[i];
 					j++;
 				}
-			return newArray;
+			output = newArray;
 		}
+		
+		public static int IndexOf<T>(this T[] pArray, T pObj)
+		{
+			var comparer = EqualityComparer<T>.Default;
+			for (int i = 0; i < pArray.Length; i++)
+				if (comparer.Equals(pArray[i], pObj))
+					return i;
+			return -1;
+		}
+		
+		public static int FindIndex<T>(this T[] pArray, Predicate<T> match)
+		{
+			for (int i = 0; i < pArray.Length; i++)
+				if (match(pArray[i]))
+					return i;
+			return -1;
+		}
+
+#endregion
 
 		public static List<T> RemoveNull<T>(this List<T> pList)
 		{
@@ -639,11 +739,6 @@ namespace RCore.Common
 				}
 		}
 
-		public static void RemoveLast<T>(this List<T> list)
-		{
-			if (list.Count != 0) list.RemoveAt(list.Count - 1);
-		}
-
 		public static string RemoveSpecialCharacters(this string str, string replace = "")
 		{
 			return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);
@@ -696,6 +791,18 @@ namespace RCore.Common
 		{
 			var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(self);
 			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(serialized);
+		}
+
+		public static bool IsChildOfParent(this Transform pItem, Transform pParent)
+		{
+			while (true)
+			{
+				if (pItem.parent == null)
+					return false;
+				if (pItem.parent == pParent)
+					return true;
+				pItem = pItem.parent;
+			}
 		}
 	}
 }

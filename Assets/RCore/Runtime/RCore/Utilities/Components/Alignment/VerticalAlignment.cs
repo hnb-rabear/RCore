@@ -98,7 +98,7 @@ namespace RCore.Components
                     {
                         if (!moveFromRoot)
                             mChildrenPrePosition[i] = mChildren[i].localPosition;
-                        mChildrenNewPosition[i] = (mChildrenNewPosition.Length - 1 - i) * new Vector3(xOffset, rowDistance, 0) * -1;
+                        mChildrenNewPosition[i] = new Vector3(xOffset, rowDistance, 0) * ((mChildrenNewPosition.Length - 1 - i) * -1);
                     }
                     break;
 

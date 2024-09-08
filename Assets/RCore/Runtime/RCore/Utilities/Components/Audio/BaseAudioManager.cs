@@ -294,7 +294,7 @@ namespace RCore.Components
 			var obj = new GameObject("SFX_" + mSFXSources.Length);
 			obj.transform.SetParent(transform);
 			var newAudioSource = obj.AddComponent<AudioSource>();
-			mSFXSources = mSFXSources.Add(newAudioSource);
+			mSFXSources.Add(newAudioSource, out mSFXSources);
 			return newAudioSource;
 		}
 
@@ -312,7 +312,7 @@ namespace RCore.Components
 			pOnFinished.Raise();
 		}
 
-		protected AudioSource GetSfxSource(AudioClip pClip, int pLimitNumber, bool pLoop)
+		protected AudioSource GetSFXSouce(AudioClip pClip, int pLimitNumber, bool pLoop)
 		{
 			try
 			{
@@ -370,9 +370,7 @@ namespace RCore.Components
 			if (pClip == null)
 				return;
 
-			bool play = true;
-			if (mMusicSource.clip == pClip && mMusicSource.isPlaying)
-				play = false;
+			bool play = !(mMusicSource.clip == pClip && mMusicSource.isPlaying);
 
 			mMusicSource.clip = pClip;
 			mMusicSource.loop = pLoop;
@@ -435,7 +433,7 @@ namespace RCore.Components
 		{
 			if (pClip == null)
 				return null;
-			var source = GetSfxSource(pClip, limitNumber, pLoop);
+			var source = GetSFXSouce(pClip, limitNumber, pLoop);
 			if (source == null)
 				return null;
 			source.volume = m_MasterVolume * m_SFXVolume;
@@ -461,7 +459,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
 		protected virtual void OnValidate()
 		{
-			mSFXSources ??= Array.Empty<AudioSource>();
+			mSFXSources ??= new AudioSource[0];
 			var audioSources = gameObject.FindComponentsInChildren<AudioSource>();
 			for (int i = mSFXSources.Length - 1; i >= 0; i--)
 			{
@@ -508,7 +506,7 @@ namespace RCore.Components
 		}
 
 		[CustomEditor(typeof(BaseAudioManager), true)]
-		protected class BaseAudioManagerEditor : Editor
+		protected class BaseAudioManagerEditor : UnityEditor.Editor
 		{
 			private BaseAudioManager m_Script;
 			private EditorPrefsString m_AudioCollectionPath;

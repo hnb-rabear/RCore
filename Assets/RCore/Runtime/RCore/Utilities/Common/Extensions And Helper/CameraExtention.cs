@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
@@ -58,7 +58,7 @@ namespace RCore.Common
 
         public static bool InsideOrthographicCamera(this Camera pCamera, Vector3 pWorldPosition)
         {
-            float screenAspect = Screen.width / Screen.height;
+            float screenAspect = Screen.width * 1f / Screen.height;
             float cameraHeight = pCamera.orthographicSize * 2;
             var bounds = new Bounds(pCamera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
 

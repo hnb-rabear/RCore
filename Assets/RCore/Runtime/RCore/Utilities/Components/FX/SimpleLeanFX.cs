@@ -2,7 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
-//#define USE_LEANTWEEN
 //#define USE_DOTWEEN
 
 using System;
@@ -52,20 +51,7 @@ namespace RCore.Components
         {
             var defaultAlpha = Color.white.a;
             int id = 0;
-#if USE_LEANTWEEN
-            id = LeanTween.value(0, 1, time)
-                .setOnUpdate((float val) =>
-                {
-                    float curve = instance.mHightLightAnim.Evaluate(val);
-                    Color color = pTarget.color;
-                    color.a = defaultAlpha * curve;
-                    pTarget.color = color;
-                })
-                .setOnComplete(() =>
-                {
-                    if (pOnFinished != null) pOnFinished();
-                }).id;
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
             float val = 0;
             DOTween.Kill(pTarget.GetInstanceID() + GetInstanceID());
             //var tween = DOTween.To(() => val, x => val = x, 1f, time)
@@ -90,21 +76,7 @@ namespace RCore.Components
         private int SimulateBubble(Component pTarget, Vector3 defaultScale, float pFrom, float pTo, AnimationCurve pAnim, float time, Action pOnFinished)
         {
             int id = 0;
-#if USE_LEANTWEEN
-            id = LeanTween.value(pTarget.gameObject, pFrom, pTo, time)
-                .setOnUpdate((float val) =>
-                {
-                    float curve = pAnim.Evaluate(val);
-
-                    pTarget.transform.localScale = defaulScale * curve;
-                })
-                .setOnComplete(() =>
-                {
-                    pTarget.transform.localScale = defaulScale;
-
-                    if (pOnFinished != null) pOnFinished();
-                }).id;
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
             float val = 0;
             DOTween.Kill(pTarget.GetInstanceID() + GetInstanceID());
             //var tween = DOTween.To(() => val, x => val = x, 1f, time)
@@ -133,30 +105,7 @@ namespace RCore.Components
             var defaultScale = pTarget.localScale;
             var defaultRotaion = pTarget.rotation;
 
-#if USE_LEANTWEEN
-            LeanTween.cancel(pTarget.gameObject);
-            LeanTween.value(pTarget.gameObject, 1, 0, pTime)
-                .setOnUpdate((float val) =>
-                {
-                    float curve = instance.mShakeAnim.Evaluate(val);
-                    float intensity = pIntensity * curve;
-
-                    var shakingPos = defaultPos + Random.insideUnitSphere * intensity;
-                    pTarget.position = shakingPos;
-
-                    var z = defaultRotaion.z + Random.Range(-intensity, intensity);
-                    var w = defaultRotaion.w + Random.Range(-intensity, intensity);
-                    pTarget.rotation = new Quaternion(0, 0, z, w);
-                })
-                .setOnComplete(() =>
-                {
-                    pTarget.position = defaultPos;
-                    pTarget.localScale = defaultScale;
-                    pTarget.rotation = defaultRotaion;
-
-                    if (pOnFinished != null) pOnFinished();
-                });
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
             float val = 0;
             DOTween.Kill(pTarget.GetInstanceID() + GetInstanceID());
             //var tween = DOTween.To(() => val, x => val = x, 1f, time)
@@ -188,19 +137,7 @@ namespace RCore.Components
         public void FadeIn(Image pImage, float pTime, Action pOnFinished = null)
         {
             var color = pImage.color;
-#if USE_LEANTWEEN
-            LeanTween.value(pImage.gameObject, 0f, 1f, pTime)
-                .setOnUpdate((float val) =>
-                {
-                    color.a = val;
-                    pImage.color = color;
-                })
-                .setOnComplete(() =>
-                {
-                    if (pOnFinished != null)
-                        pOnFinished();
-                });
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
             color.a = 0f;
             pImage.color = color;
             pImage.DOFade(1f, pTime)
@@ -215,19 +152,7 @@ namespace RCore.Components
         public void FadeOut(Image pImage, float pTime, Action pOnFinished = null)
         {
             var color = pImage.color;
-#if USE_LEANTWEEN
-            LeanTween.value(pImage.gameObject, 1f, 0f, pTime)
-                .setOnUpdate((float val) =>
-                {
-                    color.a = val;
-                    pImage.color = color;
-                })
-                .setOnComplete(() =>
-                {
-                    if (pOnFinished != null)
-                        pOnFinished();
-                });
-#elif USE_DOTWEEN
+#if USE_DOTWEEN
             color.a = 1f;
             pImage.color = color;
             pImage.DOFade(0f, pTime)

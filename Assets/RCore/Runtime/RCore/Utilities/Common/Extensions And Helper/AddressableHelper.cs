@@ -1,6 +1,6 @@
-﻿/***
- * Author RadBear - nbhung71711 @gmail.com - 2020
- **/
+﻿/**
+* Author RadBear - nbhung71711 @gmail.com - 2020
+**/
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.U2D;
 using Object = UnityEngine.Object;
 using Cysharp.Threading.Tasks;
+using UnityEngine.Serialization;
 
 namespace RCore.Common
 {
@@ -486,6 +487,19 @@ namespace RCore.Common
 			var result = await operation;
 			return result;
 		}
+		public static async Task<Sprite[]> LoadSpriteAsync(AssetReferenceSprite[] pReferences)
+		{
+			var results = new Sprite[pReferences.Length];
+			for (int i = 0; i < pReferences.Length; i++)
+			{
+				var operation = pReferences[i].IsValid()
+					? pReferences[i].OperationHandle.Convert<Sprite>()
+					: pReferences[i].LoadAssetAsync();
+				var result = await operation;
+				results[i] = result;
+			}
+			return results;
+		}
 		public static AsyncOperationHandle<IList<Sprite>> LoadSpritesAsync(AssetReference pReference, Action<IList<Sprite>> pOnComplete, Action<float> pProgress = null)
 		{
 			var operation = pReference.IsValid() ? pReference.OperationHandle.Convert<IList<Sprite>>() : pReference.LoadAssetAsync<IList<Sprite>>();
@@ -648,7 +662,7 @@ namespace RCore.Common
 		}
 
 #endregion
-		
+
 #if UNITY_EDITOR
 		public static bool IncludedInBuild(Object obj)
 		{
@@ -678,7 +692,7 @@ namespace RCore.Common
 		}
 #endif
 	}
-	
+
 	[Serializable]
 	public class AssetBundleWrap<T> where T : Component
 	{
@@ -724,10 +738,16 @@ namespace RCore.Common
 			}
 			return asset;
 		}
-		public bool Preloaded()
+		public bool InstanceLoaded(bool p_active = false)
 		{
+			if (instance == null && asset != null)
+			{
+				instance = Object.Instantiate(asset, parent);
+				instance.SetActive(p_active);
+				instance.name = asset.name;
+			}
 			if (instance == null)
-				InstantiateAsync();
+				InstantiateAsync(p_active);
 			return instance != null;
 		}
 		public void Unload()
@@ -746,6 +766,51 @@ namespace RCore.Common
 			}
 		}
 	}
-	
+
+	public class AssetBundleRef<M> where M : Object
+	{
+		public AssetReferenceT<M> reference;
+		public M asset { get; set; }
+		public async UniTask<M> LoadAsync() //NOTE: this function should be awaited in an async, Coroutine does not working correctly
+		{
+			if (asset != null)
+				return asset;
+			var operation = Addressables.LoadAssetAsync<M>(reference);
+			await operation;
+			asset = operation.Result;
+			Debug.Log($"Load Asset Bundle {asset.name}");
+			return asset;
+		}
+		public void Unload()
+		{
+			if (asset == null)
+				return;
+			Debug.Log($"Unload Asset Bundle {asset.name}");
+			Addressables.Release(asset);
+		}
+	}
+
+	[Serializable]
+	public class AssetBundleWithEnumKey<T, M> : AssetBundleRef<M> where T : Enum where M : Object
+	{
+		public T key;
+	}
+
+	[Serializable]
+	public class AssetBundleWith2EnumKeys<T1, T2, M> : AssetBundleRef<M>
+		where T1 : Enum
+		where T2 : Enum
+		where M : Object
+	{
+		public T1 key1;
+		public T2 key2;
+	}
+
+	[Serializable]
+	public class AssetBundleWithIntKey<M> : AssetBundleRef<M> where M : Object
+	{
+		[FormerlySerializedAs("id")] public int key;
+	}
+
 #endif
 }

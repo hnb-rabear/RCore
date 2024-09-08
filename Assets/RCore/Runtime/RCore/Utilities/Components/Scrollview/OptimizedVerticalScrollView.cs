@@ -241,13 +241,6 @@ namespace RCore.Components
                     time = 0.4f;
 
                 content.anchoredPosition = new Vector2(0, fromY);
-#if USE_LEANTWEEN
-                LeanTween.value(gameObject, fromY, toY, time)
-                    .setOnUpdate((float val) =>
-                    {
-                        content.anchoredPosition = new Vector2(0, val);
-                    });
-#endif
 #if USE_DOTWEEN
                 float val = fromY;
                 DOTween.To(() => val, x => val = x, toY, time)
