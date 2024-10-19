@@ -261,7 +261,6 @@ namespace RCore.Service
             // Banners are automatically sized to 320×50 on phones and 728×90 on tablets
             // You may call the utility method MaxSdkUtils.isTablet() to help with view sizing adjustments
             MaxSdk.CreateBanner(AD_UNIT_BANNER, MaxSdkBase.BannerPosition.TopCenter);
-            MaxSdk.SetBannerExtraParameter(AD_UNIT_BANNER, "adaptive_banner", _AH.RemoteConfig.AdaptiveBanner ? "true" : "false");
 
             // Set background or background color for banners to be fully functional
             MaxSdk.SetBannerBackgroundColor(AD_UNIT_BANNER, Color.clear);
