@@ -13,19 +13,7 @@
     "com.unity.addressables": "1.21.21",
 	"com.unity.purchasing": "4.12.2",
 	"com.unity.textmeshpro": "3.0.9",
-      "com.cysharp.unitask": {
-          "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-          "depth": 0,
-          "source": "git",
-          "dependencies": {},
-          "hash": "50a67d8f419b6cea0398eff6c19cf0bbe11ed609"
-      },
-      "com.unity.nuget.newtonsoft-json": {
-          "version": "3.2.1",
-          "depth": 2,
-          "source": "registry",
-          "dependencies": {},
-          "url": "https://packages.unity.com"
-      }
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
   }
 }
