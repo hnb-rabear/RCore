@@ -20,36 +20,6 @@ using UnityEditor;
 
 namespace RCore.Service
 {
-	public class WaitForTask : CustomYieldInstruction
-	{
-		Task task;
-
-		public WaitForTask(Task task)
-		{
-			this.task = task;
-		}
-
-		public override bool keepWaiting
-		{
-			get
-			{
-				if (task.IsCompleted)
-				{
-					if (task.IsFaulted)
-						LogException(task.Exception);
-
-					return false;
-				}
-				return true;
-			}
-		}
-
-		protected virtual void LogException(Exception exception)
-		{
-			Debug.LogError(exception.ToString());
-		}
-	}
-
 	public class RFirebaseManager : MonoBehaviour
 	{
 #region Members

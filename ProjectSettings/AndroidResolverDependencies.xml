@@ -1,77 +1,70 @@
 <dependencies>
   <packages>
-    <package>androidx.core:core:1.7.0+</package>
-    <package>com.google.android.play:core:1.10.3+</package>
-    <package>com.google.firebase:firebase-messaging:23.0.2+</package>
+    <package>androidx.constraintlayout:constraintlayout:2.1.4</package>
+    <package>com.applovin:applovin-sdk:12.6.0</package>
+    <package>com.google.android.gms:play-services-ads:23.2.0</package>
+    <package>com.google.android.gms:play-services-base:18.5.0</package>
+    <package>com.google.android.play:app-update:2.1.0</package>
+    <package>com.google.android.play:core-common:2.0.4</package>
+    <package>com.google.android.play:review:2.0.0</package>
+    <package>com.google.android.ump:user-messaging-platform:2.2.0</package>
+    <package>com.google.firebase:firebase-analytics:22.0.2</package>
+    <package>com.google.firebase:firebase-analytics-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-app-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-auth:23.0.0</package>
+    <package>com.google.firebase:firebase-auth-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-common:21.0.0</package>
+    <package>com.google.firebase:firebase-config:22.0.0</package>
+    <package>com.google.firebase:firebase-config-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-crashlytics-ndk:19.0.3</package>
+    <package>com.google.firebase:firebase-crashlytics-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-database:21.0.0</package>
+    <package>com.google.firebase:firebase-database-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-firestore:25.0.0</package>
+    <package>com.google.firebase:firebase-firestore-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-iid:21.1.0</package>
+    <package>com.google.firebase:firebase-messaging:24.0.0</package>
+    <package>com.google.firebase:firebase-messaging-unity:12.2.0</package>
+    <package>com.google.firebase:firebase-storage:21.0.0</package>
+    <package>com.google.firebase:firebase-storage-unity:12.2.0</package>
+    <package>com.google.flatbuffers:flatbuffers-java:1.12.0</package>
+    <package>com.google.games:gpgs-plugin-support:0.11.01</package>
   </packages>
   <files>
-    <file>Assets/Plugins/Android/androidx.annotation.annotation-1.2.0.jar</file>
-    <file>Assets/Plugins/Android/androidx.annotation.annotation-experimental-1.1.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.arch.core.core-common-2.1.0.jar</file>
-    <file>Assets/Plugins/Android/androidx.arch.core.core-runtime-2.1.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.asynclayoutinflater.asynclayoutinflater-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.collection.collection-1.0.0.jar</file>
-    <file>Assets/Plugins/Android/androidx.concurrent.concurrent-futures-1.0.0.jar</file>
-    <file>Assets/Plugins/Android/androidx.coordinatorlayout.coordinatorlayout-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.core.core-1.7.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.cursoradapter.cursoradapter-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.customview.customview-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.documentfile.documentfile-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.drawerlayout.drawerlayout-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.fragment.fragment-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.interpolator.interpolator-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.legacy.legacy-support-core-ui-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.legacy.legacy-support-core-utils-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-common-2.3.1.jar</file>
-    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-livedata-2.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-livedata-core-2.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-runtime-2.3.1.aar</file>
-    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-viewmodel-2.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.loader.loader-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.localbroadcastmanager.localbroadcastmanager-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.print.print-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.slidingpanelayout.slidingpanelayout-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.swiperefreshlayout.swiperefreshlayout-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/androidx.versionedparcelable.versionedparcelable-1.1.1.aar</file>
-    <file>Assets/Plugins/Android/androidx.viewpager.viewpager-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.datatransport.transport-api-3.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.datatransport.transport-backend-cct-3.1.2.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.datatransport.transport-runtime-3.1.2.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-base-18.0.1.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-basement-18.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-cloud-messaging-17.0.1.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-stats-17.0.2.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-tasks-18.0.1.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.play.core-1.10.3.aar</file>
-    <file>Assets/Plugins/Android/com.google.errorprone.error_prone_annotations-2.9.0.jar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-annotations-16.0.0.jar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-common-20.1.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-components-17.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-datatransport-18.1.1.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-encoders-17.0.0.jar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-encoders-json-18.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-encoders-proto-16.0.0.jar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-iid-interop-17.1.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-installations-17.0.1.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-installations-interop-17.0.1.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-measurement-connector-19.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.firebase.firebase-messaging-23.0.2.aar</file>
-    <file>Assets/Plugins/Android/com.google.guava.listenablefuture-1.0.jar</file>
-    <file>Assets/Plugins/Android/javax.inject.javax.inject-1.jar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-analytics-unity/12.2.0/firebase-analytics-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-analytics-unity/12.2.0/firebase-analytics-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-app-unity/12.2.0/firebase-app-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-app-unity/12.2.0/firebase-app-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-auth-unity/12.2.0/firebase-auth-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-auth-unity/12.2.0/firebase-auth-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-config-unity/12.2.0/firebase-config-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-config-unity/12.2.0/firebase-config-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-crashlytics-unity/12.2.0/firebase-crashlytics-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-crashlytics-unity/12.2.0/firebase-crashlytics-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-database-unity/12.2.0/firebase-database-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-database-unity/12.2.0/firebase-database-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-firestore-unity/12.2.0/firebase-firestore-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-firestore-unity/12.2.0/firebase-firestore-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/12.2.0/firebase-messaging-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/12.2.0/firebase-messaging-unity-12.2.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-storage-unity/12.2.0/firebase-storage-unity-12.2.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-storage-unity/12.2.0/firebase-storage-unity-12.2.0.pom</file>
   </files>
   <settings>
-    <setting name="androidAbis" value="armeabi-v7a" />
-    <setting name="bundleId" value="com.DefaultCompany.RCore" />
+    <setting name="androidAbis" value="arm64-v8a,armeabi-v7a" />
+    <setting name="bundleId" value="com.zenstone.rcore" />
     <setting name="explodeAars" value="True" />
     <setting name="gradleBuildEnabled" value="True" />
-    <setting name="gradlePropertiesTemplateEnabled" value="False" />
-    <setting name="gradleTemplateEnabled" value="False" />
+    <setting name="gradlePropertiesTemplateEnabled" value="True" />
+    <setting name="gradleTemplateEnabled" value="True" />
     <setting name="installAndroidPackages" value="True" />
     <setting name="localMavenRepoDir" value="Assets/GeneratedLocalRepo" />
     <setting name="packageDir" value="Assets/Plugins/Android" />
     <setting name="patchAndroidManifest" value="True" />
     <setting name="patchMainTemplateGradle" value="True" />
     <setting name="projectExportEnabled" value="False" />
+    <setting name="useFullCustomMavenRepoPathWhenExport" value="True" />
+    <setting name="useFullCustomMavenRepoPathWhenNotExport" value="False" />
     <setting name="useJetifier" value="True" />
   </settings>
 </dependencies>

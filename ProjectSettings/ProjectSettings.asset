@@ -139,7 +139,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.20
+  bundleVersion: 1
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -161,17 +161,17 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.DefaultCompany.RCore
+    Android: com.zenstone.rcore
     Standalone: com.DefaultCompany.RCore
   buildNumber:
     Standalone: 0
     VisionOS: 0
     iPhone: 0
     tvOS: 0
-  overrideDefaultApplicationIdentifier: 0
-  AndroidBundleVersionCode: 20
-  AndroidMinSdkVersion: 22
-  AndroidTargetSdkVersion: 0
+  overrideDefaultApplicationIdentifier: 1
+  AndroidBundleVersionCode: 1
+  AndroidMinSdkVersion: 24
+  AndroidTargetSdkVersion: 33
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   stripEngineCode: 1
@@ -798,7 +798,7 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Android: ADDRESSABLES
+    Android: DEVELOPMENT;UNITY_IAP;ADDRESSABLES;FIREBASE;FIREBASE_REMOTE;FIREBASE_DATABASE;FIREBASE_CRASHLYTICS;FIREBASE_ANALYTICS;FIREBASE_AUTH;FIREBASE_STORAGE;GPGS;APPLOVINE
     EmbeddedLinux: EASY_MOBILE;EASY_MOBILE_PRO
     GameCoreXboxOne: UNITY_IAP;USE_DOTWEEN;BUILD_CHEAT;ACTIVE_FIREBASE;ACTIVE_FIREBASE_CRASHLYTICS;ACTIVE_FIREBASE_ANALYTICS;ACTIVE_FIREBASE_REMOTE;ACTIVE_FIREBASE_AUTH;ACTIVE_ADJUST;ADDRESSABLES;APPLOVIN;GPGS
     Lumin: DEVELOPMENT;BUILD_CHEAT;ACTIVE_IRONSOURCE;ACTIVE_FB;ACTIVE_ADJUST;EASY_MOBILE;EASY_MOBILE_PRO

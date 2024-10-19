@@ -21,7 +21,7 @@ namespace RCore.Service
 
         private static FirebaseAuth auth => FirebaseAuth.DefaultInstance;
         public static bool initialized { get; private set; }
-        public static bool authenticated { get { return auth.CurrentUser != null; } }
+        public static bool authenticated => auth.CurrentUser != null;
 
         public static void Initialize()
         {
@@ -238,12 +238,11 @@ namespace RCore.Service
 
             else if (task.IsFaulted)
             {
-                Debug.Log($"RFirebaseAuth:{operation} encounted an error.");
+                Debug.Log($"RFirebaseAuth:{operation} encounter an error.");
                 foreach (var exception in task.Exception.Flatten().InnerExceptions)
                 {
                     string authErrorCode = "";
-                    var firebaseEx = exception as FirebaseException;
-                    if (firebaseEx != null)
+                    if (exception is FirebaseException firebaseEx)
                         authErrorCode = string.Format("AuthError.{0}: ", ((AuthError)firebaseEx.ErrorCode).ToString());
 
                     Debug.Log($"RFirebaseAuth:{operation} {authErrorCode}");

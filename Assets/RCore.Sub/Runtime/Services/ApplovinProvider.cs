@@ -18,15 +18,7 @@ namespace RCore.Service
         private ApplovinProvider() { }
 
         private static ApplovinProvider instance;
-        public static ApplovinProvider Instance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = new ApplovinProvider();
-                return instance;
-            }
-        }
+        public static ApplovinProvider Instance => instance ??= new ApplovinProvider();
 
 #if APPLOVINE
         public void Init()

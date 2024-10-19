@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using MyNamespace;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -19,7 +20,6 @@ namespace RCore.Editor.Tool
 	{
 #region TinyPNG Compression
 
-		private const string API_KEY = "7yGJHbBnvVdwCclFT1Z5Ywk2K5Mqy7qB";
 		private static List<string> m_FilesCompressed;
 		private static int m_ImagesProcessedCount;
 
@@ -27,7 +27,7 @@ namespace RCore.Editor.Tool
 		{
 			get
 			{
-				var key = "api:" + API_KEY;
+				var key = "api:" + RConfig.Instance.tinyPngApiKey;
 				key = Convert.ToBase64String(Encoding.UTF8.GetBytes(key));
 				return $"Basic {key}";
 			}
