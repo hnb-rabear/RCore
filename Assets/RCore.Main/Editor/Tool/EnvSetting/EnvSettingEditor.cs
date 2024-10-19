@@ -55,7 +55,7 @@ namespace RCore.Editor.Tool
 			m_typedProfileName = m_target.profile.name;
 
 			m_removingProfile = false;
-			SwitchMode(false);
+			EditProfile(false);
 			InitDirectives(m_target.profile);
 
 			CheckFirebaseConfigPaths();
@@ -82,7 +82,7 @@ namespace RCore.Editor.Tool
 
 		public override void OnInspectorGUI()
 		{
-			var tab = EditorHelper.Tabs("dev_setting_tabs", "Default", "Custom", "Firebase");
+			var tab = EditorHelper.Tabs("dev_setting_tabs", "Default", "Custom");
 			GUILayout.Space(5);
 			switch (tab)
 			{
@@ -99,7 +99,7 @@ namespace RCore.Editor.Tool
 			if (tab != "Custom")
 			{
 				m_removingProfile = false;
-				SwitchMode(false);
+				EditProfile(false);
 			}
 			GUILayout.Space(10);
 			EditorHelper.BoxHorizontal(() =>
@@ -126,20 +126,13 @@ namespace RCore.Editor.Tool
 			m_target.EnableLog = EditorHelper.Toggle(m_target.EnableLog, "Show Log", 120, 280);
 			m_target.EnableDraw = EditorHelper.Toggle(m_target.EnableDraw, "Enable Draw", 120, 280);
 
-			EditorHelper.BoxVertical("Project Settings" + (m_previewingProfiles ? " Preview" : ""), () =>
+			EditorHelper.BoxVertical(m_previewingProfiles ? "Profiles" : m_target.profile.name, () =>
 			{
-				if (m_envProfileCollections != null && m_envProfileCollections.profiles.Count > 0 && m_envProfileCollections.profiles[0].name != "do_not_remove")
-				{
-					m_envProfileCollections.profiles.Insert(0, new EnvSetting.Profile()
-					{
-						name = "do_not_remove",
-					});
-				}
-
 				if (!m_previewingProfiles)
 				{
+					EditorGUILayout.BeginVertical("box");
 					DrawSettingsProfile(m_target.profile);
-					GUILayout.Space(10);
+					EditorGUILayout.EndVertical();
 					DrawProfilesSelection();
 				}
 				else
@@ -174,10 +167,16 @@ namespace RCore.Editor.Tool
 
 		private void DrawSettingsProfile(EnvSetting.Profile pProfile)
 		{
-			if (!m_previewingProfiles)
-				EditorGUILayout.LabelField(pProfile.name, GUIStyleHelper.headerTitle);
-			else
-				pProfile.name = EditorHelper.TextField(pProfile.name, "Name", 120, 280);
+			if (m_previewingProfiles && pProfile.name != "do_not_remove")
+			{
+				var newName = EditorHelper.TextField(pProfile.name, "Name", 120, 280);
+				if (pProfile.name != newName)
+				{
+					bool validName = !m_envProfileCollections.profiles.Exists(x => x.name == newName && x != pProfile);
+					if (validName)
+						pProfile.name = newName;
+				}
+			}
 
 			if (pProfile.defines != null)
 			{
@@ -218,14 +217,17 @@ namespace RCore.Editor.Tool
 				EditorGUILayout.BeginHorizontal();
 				if (EditorHelper.Button("Apply"))
 					ApplyDirectives(pProfile.defines);
-				if (EditorHelper.Button("Clone"))
+				if (m_previewingProfiles)
 				{
-					var cloneProfile = CloneProfile(pProfile);
-					cloneProfile.name += "(clone)";
-					m_envProfileCollections.profiles.Add(cloneProfile);
+					if (EditorHelper.Button("Clone"))
+					{
+						var cloneProfile = CloneProfile(pProfile);
+						cloneProfile.name += "(clone)";
+						m_envProfileCollections.profiles.Add(cloneProfile);
+					}
+					if (pProfile.name != "do_not_remove" && EditorHelper.ButtonColor("Remove", Color.red))
+						m_envProfileCollections.profiles.Remove(pProfile);
 				}
-				if (m_previewingProfiles && EditorHelper.ButtonColor("Remove", Color.red))
-					m_envProfileCollections.profiles.Remove(pProfile);
 				EditorGUILayout.EndHorizontal();
 			}
 		}
@@ -240,19 +242,16 @@ namespace RCore.Editor.Tool
 			{
 				if (EditorHelper.HeaderFoldout($"{profiles[i].name} ({profiles[i].defines.Count})", "PreviewProfile" + i))
 				{
-					EditorGUILayout.BeginVertical();
+					EditorGUILayout.BeginVertical("box");
 					DrawSettingsProfile(profiles[i]);
 					EditorGUILayout.EndVertical();
 				}
-				if (i < profiles.Count - 1)
-					EditorHelper.Separator();
 			}
-			EditorHelper.Separator();
 			if (EditorHelper.ButtonColor("Back", Color.yellow))
-				SwitchMode(false);
+				EditProfile(false);
 		}
 
-		private void SwitchMode(bool pMode)
+		private void EditProfile(bool pMode)
 		{
 			if (m_previewingProfiles == pMode)
 				return;
@@ -333,8 +332,8 @@ namespace RCore.Editor.Tool
 						}
 						else
 						{
-							if (EditorHelper.ButtonColor("Preview", Color.yellow))
-								SwitchMode(true);
+							if (EditorHelper.ButtonColor("Edit", Color.yellow))
+								EditProfile(true);
 							if (EditorHelper.ButtonColor("Apply", Color.green))
 								ApplyProfile(m_selectedProfile);
 						}

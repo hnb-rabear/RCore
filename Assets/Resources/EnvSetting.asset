@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4dc09feedce3f444bfd79c7ee5a0bb5, type: 3}
+  m_Name: EnvSetting
+  m_EditorClassIdentifier: 
+  profile:
+    name: do_not_remove
+    defines:
+    - name: DEVELOPMENT
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: UNITY_IAP
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ADDRESSABLES
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+  m_enableLog: 1
+  m_enableDraw: 0

@@ -6,6 +6,7 @@ using RCore.Common;
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;
+using MyNamespace;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,6 +29,12 @@ namespace RCore.Editor
 		private static void OpenEnvSetting()
 		{
 			Selection.activeObject = EnvSetting.Instance;
+		}
+		
+		[MenuItem("RCore/RConfig", priority = GROUP_1 + 2)]
+		private static void OpenRConfig()
+		{
+			Selection.activeObject = RConfig.Instance;
 		}
 		
 		//==========================================================

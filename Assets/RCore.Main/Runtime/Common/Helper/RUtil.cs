@@ -185,7 +185,7 @@ namespace RCore.Common
 			return versionInt;
 		}
 
-		public static int CompareVersion(string curVersion, string newVersion)
+		public static int CompareVersion(string curVersion, string newVersion, int maxSubVersionLength = 2)
 		{
 			if (!int.TryParse(curVersion.Last().ToString(), out _))
 				curVersion = curVersion.Remove(curVersion.Length - 1);
@@ -196,11 +196,16 @@ namespace RCore.Common
 			int maxIndex = Mathf.Min(version1s.Length, version2s.Length);
 			int p1 = 0;
 			int p2 = 0;
+			int maxSubVersion = (int)Mathf.Pow(10, maxSubVersionLength);
 			for (int i = 0; i < maxIndex; i++)
 			{
-				p1 += int.Parse(version1s[i]) * (int)Mathf.Pow(100, maxIndex - i - 1);
-				p2 += int.Parse(version2s[i]) * (int)Mathf.Pow(100, maxIndex - i - 1);
+				p1 += int.Parse(version1s[i]) * (int)Mathf.Pow(maxSubVersion, maxIndex - i - 1);
+				p2 += int.Parse(version2s[i]) * (int)Mathf.Pow(maxSubVersion, maxIndex - i - 1);
 			}
+            
+			// 2.1.2 = 2*10^2 + 1*10^1 + 2*10^0 = 200+10+2 = 212
+			// 2.2.6 = 2*10^2 + 2*10^1 + 6*10^0 = 200+20+6 = 226
+			// -4 
 
 			// 2.10.22 = 2*100^2 + 10*100^1 + 22*100^0 = 20000+1000+22 = 21022
 			// 2.10.26 = 2*100^2 + 10*100^1 + 26*100^0 = 20000+1000+26 = 21026
@@ -210,7 +215,7 @@ namespace RCore.Common
 			// 2.10.26 = 2*100^2 + 10*100^1 + 26*100^0 = 20000+1000+26 = 21026
 			// -104 % 100 = -4
 
-			return (p1 - p2) % 100;
+			return (p1 - p2) % maxSubVersion;
 		}
 
 		public static void PerfectRatioImagesByWidth(params GameObject[] gameObjects)

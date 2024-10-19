@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "304027977317",
+    "firebase_url": "https://my-kingdom-25868.firebaseio.com",
+    "project_id": "my-kingdom-25868",
+    "storage_bucket": "my-kingdom-25868.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304027977317:android:127dcf584383dd1e4e288c",
+        "android_client_info": {
+          "package_name": "com.zenstone.rcore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304027977317-ubelb65o83vrmmu2j8jt7u68g0h1mdip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAO6lCzZDu8-CTzwtIdBMXl8q6yV75VndM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304027977317-ubelb65o83vrmmu2j8jt7u68g0h1mdip.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

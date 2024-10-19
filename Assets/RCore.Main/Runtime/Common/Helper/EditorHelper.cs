@@ -96,6 +96,7 @@ namespace RCore.Editor
         public string OutputValue { get; private set; }
         public bool readOnly;
         public bool textArea;
+        public Color color;
 
         public void Draw(GUIStyle style = null)
         {
@@ -115,6 +116,8 @@ namespace RCore.Editor
                     margin = new RectOffset(0, 0, 4, 4)
                 };
                 var normalColor = style.normal.textColor;
+                if (color != default)
+	                normalColor = color;
                 normalColor.a = readOnly ? 0.5f : 1;
                 style.normal.textColor = normalColor;
             }
@@ -1947,7 +1950,7 @@ namespace RCore.Editor
 
 #region Input Fields
 
-        public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false)
+        public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, Color color = default)
         {
             var text = new EditorText()
             {
@@ -1956,6 +1959,7 @@ namespace RCore.Editor
                 labelWidth = labelWidth,
                 valueWidth = valueWidth,
                 readOnly = readOnly,
+                color = color,
             };
             text.Draw();
             return text.OutputValue;
