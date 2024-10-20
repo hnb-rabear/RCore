@@ -20,7 +20,7 @@ namespace RCore.Data.KeyValue
                 m_defaultValue = TimeHelper.DateTimeToUnixTimestampInt(pDefaultValue.Value);
         }
 
-        public DateTime Get() => TimeHelper.UnixTimestampToDateTime(m_value);
+        public DateTime Get() => m_value > 0 ? TimeHelper.UnixTimestampToDateTime(m_value) : default;
 
         public void Set(DateTime time)
         {
