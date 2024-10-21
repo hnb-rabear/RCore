@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.coffee.upm-git-extension": {
+      "version": "https://github.com/mob-sakai/UpmGitExtension.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "8fc54a2cdf0c2169dd26852ea0fe202e11158f43"
+    },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
       "depth": 0,

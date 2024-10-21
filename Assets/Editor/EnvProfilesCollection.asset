@@ -56,3 +56,12 @@ MonoBehaviour:
     - name: FIREBASE_STORAGE
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
+    - name: DOTWEEN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: IN_APP_UPDATE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: GPGS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
