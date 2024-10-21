@@ -15,11 +15,11 @@ namespace RCore
         private static readonly int MAX_READ_LENGTH = 15;
         private static readonly decimal MAX_READ_VALUE = decimal.Parse("999999999999999"); //increase length of this number will increase the precision
 
-        //internal static BigNumberAlpha Zero { get { return new BigNumberAlpha(0); } }
-        internal static BigNumberD One => new(1);
-        internal static BigNumberD Two => new(2);
-        internal static BigNumberD Ten => new(10);
-        internal static BigNumberD OneHundred => new(100);
+        //public static BigNumberAlpha Zero { get { return new BigNumberAlpha(0); } }
+        public static BigNumberD One => new(1);
+        public static BigNumberD Two => new(2);
+        public static BigNumberD Ten => new(10);
+        public static BigNumberD OneHundred => new(100);
 
         public decimal readableValue;
         public int pow;

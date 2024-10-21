@@ -12,7 +12,7 @@ namespace RCore.UI
 		protected Stack<PanelController> panelStack = new Stack<PanelController>();
 		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
 
-		internal PanelStack parentPanel;
+		public PanelStack parentPanel;
 		/// <summary>
 		/// Top child
 		/// </summary>

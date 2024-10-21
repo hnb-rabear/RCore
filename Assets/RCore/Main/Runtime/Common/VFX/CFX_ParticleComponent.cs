@@ -159,7 +159,7 @@ namespace RCore
 			mControllableParticle.SetParticles(mParticles, mParticles.Length);
 		}
 
-		internal void Loop(bool pValue)
+		public void Loop(bool pValue)
 		{
 			if (!initialized)
 				Initialize();

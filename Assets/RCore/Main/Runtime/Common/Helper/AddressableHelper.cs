@@ -681,9 +681,9 @@ namespace RCore
 	{
 		public Transform parent;
 		public ComponentRef<T> reference;
-		internal bool loading { get; private set; }
-		internal T asset { get; private set; }
-		internal T instance;
+		public bool loading { get; private set; }
+		public T asset { get; private set; }
+		public T instance;
 		private AsyncOperationHandle<GameObject> m_operation;
 		public async UniTask<T> InstantiateAsync(bool defaultActive = false)
 		{

@@ -16,11 +16,11 @@ namespace RCore
         private static readonly int MAX_READ_LENGTH = 12; 
         private static readonly float MAX_READ_VALUE = float.Parse("999999999999"); //increase length of this number will increase the precision
 
-        internal static BigNumberF Zero => new(0);
-        internal static BigNumberF One => new(1);
-        internal static BigNumberF Two => new(2);
-        internal static BigNumberF Ten => new(10);
-        internal static BigNumberF OneHundred => new(100);
+        public static BigNumberF Zero => new(0);
+        public static BigNumberF One => new(1);
+        public static BigNumberF Two => new(2);
+        public static BigNumberF Ten => new(10);
+        public static BigNumberF OneHundred => new(100);
 
         public float readableValue;
         public int pow;

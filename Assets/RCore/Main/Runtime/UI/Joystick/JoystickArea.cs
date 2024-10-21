@@ -30,7 +30,7 @@ namespace RCore.UI
             joystick.OnBeginDrag(eventData);
         }
 
-        internal void SetCanvas(Canvas pSanvas)
+        public void SetCanvas(Canvas pSanvas)
         {
             canvas = pSanvas;
         }

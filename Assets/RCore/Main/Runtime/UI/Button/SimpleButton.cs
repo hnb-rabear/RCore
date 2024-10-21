@@ -39,7 +39,7 @@ namespace RCore.UI
 
 		[CanEditMultipleObjects]
 		[CustomEditor(typeof(SimpleButton), true)]
-		internal class SimpleButtonEditor : JustButtonEditor
+		public class SimpleButtonEditor : JustButtonEditor
 		{
 			public override void OnInspectorGUI()
 			{

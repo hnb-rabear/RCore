@@ -269,7 +269,7 @@ namespace SimpleJSON
         {
             private JSONNode m_Node;
             private Enumerator m_Enumerator;
-            internal LinqEnumerator(JSONNode aNode)
+            public LinqEnumerator(JSONNode aNode)
             {
                 m_Node = aNode;
                 if (m_Node != null)
@@ -385,7 +385,7 @@ namespace SimpleJSON
             WriteToStringBuilder(sb, 0, aIndent, JSONTextMode.Indent);
             return sb.ToString();
         }
-        internal abstract void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode);
+        public abstract void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode);
 
         public abstract Enumerator GetEnumerator();
         public IEnumerable<KeyValuePair<string, JSONNode>> Linq => new LinqEnumerator(this);
@@ -521,7 +521,7 @@ namespace SimpleJSON
 
         [ThreadStatic]
         private static StringBuilder m_EscapeBuilder;
-        internal static StringBuilder EscapeBuilder
+        public static StringBuilder EscapeBuilder
         {
             get
             {
@@ -530,7 +530,7 @@ namespace SimpleJSON
                 return m_EscapeBuilder;
             }
         }
-        internal static string Escape(string aText)
+        public static string Escape(string aText)
         {
             var sb = EscapeBuilder;
             sb.Length = 0;
@@ -842,7 +842,7 @@ namespace SimpleJSON
         }
 
 
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append('[');
             int count = m_List.Count;
@@ -981,7 +981,7 @@ namespace SimpleJSON
             }
         }
 
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append('{');
             bool first = true;
@@ -1032,7 +1032,7 @@ namespace SimpleJSON
             m_Data = aData;
         }
 
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append('\"').Append(Escape(m_Data)).Append('\"');
         }
@@ -1090,7 +1090,7 @@ namespace SimpleJSON
             Value = aData;
         }
 
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append(m_Data);
         }
@@ -1157,7 +1157,7 @@ namespace SimpleJSON
             Value = aData;
         }
 
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append(m_Data ? "true" : "false");
         }
@@ -1212,14 +1212,14 @@ namespace SimpleJSON
             return 0;
         }
 
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append("null");
         }
     }
     // End of JSONNull
 
-    internal partial class JSONLazyCreator : JSONNode
+    public partial class JSONLazyCreator : JSONNode
     {
         private JSONNode m_Node = null;
         private string m_Key = null;
@@ -1390,7 +1390,7 @@ namespace SimpleJSON
                 return tmp;
             }
         }
-        internal override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
+        public override void WriteToStringBuilder(StringBuilder aSB, int aIndent, int aIndentInc, JSONTextMode aMode)
         {
             aSB.Append("null");
         }

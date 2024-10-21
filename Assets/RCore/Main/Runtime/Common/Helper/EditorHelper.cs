@@ -349,7 +349,7 @@ namespace RCore.Editor
     {
         public string label;
         public Action onFoldout;
-        internal bool IsFoldout { get; private set; }
+        public bool IsFoldout { get; private set; }
 
         public void Draw(GUIStyle style = null)
         {

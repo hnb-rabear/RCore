@@ -59,7 +59,7 @@ namespace RCore
             onFinished?.Invoke();
         }
 
-        internal void SetElapsedTime(float pValue)
+        public void SetElapsedTime(float pValue)
         {
             m_elapsedTime = pValue;
         }
