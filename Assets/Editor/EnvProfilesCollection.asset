@@ -62,6 +62,12 @@ MonoBehaviour:
     - name: IN_APP_UPDATE
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
+    - name: IN_APP_REVIEW
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
     - name: GPGS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: APPLOVINE
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1

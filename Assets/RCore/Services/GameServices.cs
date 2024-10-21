@@ -3,6 +3,10 @@
  **/
 
 #pragma warning disable 0649
+using Cysharp.Threading.Tasks;
+#if UNITY_ANDROID && IN_APP_UPDATE
+using Google.Play.AppUpdate;
+#endif
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -13,6 +17,9 @@ using UnityEngine.SocialPlatforms.GameCenter;
 #if UNITY_ANDROID && GPGS
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
+#endif
+#if UNITY_ANDROID && IN_APP_REVIEW
+using Google.Play.Review;
 #endif
 
 namespace RCore.Service
@@ -514,5 +521,63 @@ namespace RCore.Service
 			};
 		}
 #endif
+
+		public static async void ShowInAppUpdate(bool forceUpdate)
+		{
+#if UNITY_EDITOR
+			return;
+#endif
+#if UNITY_ANDROID && IN_APP_UPDATE
+			var updateManager = new AppUpdateManager();
+			var updateInfoOp = updateManager.GetAppUpdateInfo();
+			await updateInfoOp;
+			if (!updateInfoOp.IsSuccessful)
+				return;
+
+			var result = updateInfoOp.GetResult();
+			if (result.UpdateAvailability != UpdateAvailability.UpdateAvailable)
+				return;
+
+			//If after syncing remote data, user has converted to new map, but the game is still on old map, then force update
+			//This case happens when user plays on multi devices, one have new version and the other have old version
+			var updateOption = AppUpdateOptions.ImmediateAppUpdateOptions();
+            
+			if (forceUpdate)
+				updateOption = AppUpdateOptions.ImmediateAppUpdateOptions();
+
+			var startUpdateRequest = updateManager.StartUpdate(result, updateOption);
+			await startUpdateRequest;
+			updateManager.CompleteUpdate();
+#endif
+		}
+
+        private static async void ShowInAppReview()
+        {
+#if UNITY_EDITOR
+	        Application.OpenURL("market://details?id=" + Application.identifier);
+	        return;
+#endif
+#if UNITY_ANDROID && IN_APP_REVIEW
+	        var reviewManager = new ReviewManager();
+	        var requestFlowOperation = reviewManager.RequestReviewFlow();
+	        await requestFlowOperation;
+	        if (requestFlowOperation.Error != ReviewErrorCode.NoError)
+	        {
+		        Application.OpenURL("market://details?id=" + Application.identifier);
+		        UnityEngine.Debug.LogError(requestFlowOperation.Error.ToString());
+	        }
+	        else
+	        {
+		        var playReviewInfo = requestFlowOperation.GetResult();
+		        var launchFlowOperation = reviewManager.LaunchReviewFlow(playReviewInfo);
+		        await launchFlowOperation;
+		        if (launchFlowOperation.Error != ReviewErrorCode.NoError)
+		        {
+			        Application.OpenURL("market://details?id=" + Application.identifier);
+			        UnityEngine.Debug.LogError(launchFlowOperation.Error.ToString());
+		        }
+	        }
+#endif
+        }
 	}
 }
