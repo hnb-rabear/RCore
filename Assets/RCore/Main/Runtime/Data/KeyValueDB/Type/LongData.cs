@@ -23,7 +23,7 @@ namespace RCore.Data.KeyValue
             }
         }
 
-        public LongData(int pId, long pDefaultValue = 0, string pAlias = null) : base(pId)
+        public LongData(int pId, long pDefaultValue = 0) : base(pId)
         {
             m_defaultValue = pDefaultValue;
         }

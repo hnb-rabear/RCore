@@ -35,7 +35,7 @@ namespace RCore.Data.KeyValue
 			}
 		}
 
-		public ObjectData(int pId, T pDefaultValue, string pAlias = null) : base(pId)
+		public ObjectData(int pId, T pDefaultValue) : base(pId)
 		{
 			m_DefaultValue = pDefaultValue;
 		}

@@ -23,7 +23,7 @@ namespace RCore.Data.KeyValue
             }
         }
 
-        public StringData(int pId, string pDefaultValue = "", string pAlias = null) : base(pId)
+        public StringData(int pId, string pDefaultValue = "") : base(pId)
         {
             m_defaultValue = pDefaultValue;
         }

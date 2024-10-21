@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace RCore
 {
-    static class RandomExtension
+	public static class RandomExtension
     {
         public static void Shuffle<T>(this T[] array)
         {
@@ -16,9 +16,7 @@ namespace RCore
             while (n > 1)
             {
                 int k = rng.Next(n--);
-                var temp = array[n];
-                array[n] = array[k];
-                array[k] = temp;
+                (array[n], array[k]) = (array[k], array[n]);
             }
         }
 
@@ -29,9 +27,7 @@ namespace RCore
             while (n > 1)
             {
                 int k = rng.Next(n--);
-                var temp = array[n];
-                array[n] = array[k];
-                array[k] = temp;
+                (array[n], array[k]) = (array[k], array[n]);
             }
         }
     }

@@ -44,12 +44,12 @@ namespace RCore.Data.KeyValue
             }
         }
 
-        public ListData(int pId, List<T> pDefaultValues = null, string pAlias = null) : base(pId)
+        public ListData(int pId, List<T> pDefaultValues = null) : base(pId)
         {
             m_defaultValues = pDefaultValues;
         }
 
-        public ListData(int pId, T[] pDefaultValues, string pAlias = null) : base(pId)
+        public ListData(int pId, T[] pDefaultValues) : base(pId)
         {
             m_defaultValues = new List<T>();
             m_defaultValues.AddRange(pDefaultValues);
