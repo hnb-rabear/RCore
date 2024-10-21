@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using RCore.Inspector;
-using RCore.Common;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR

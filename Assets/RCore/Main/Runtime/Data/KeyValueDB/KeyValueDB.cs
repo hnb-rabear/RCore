@@ -1,9 +1,7 @@
-﻿using RCore.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Data.KeyValue
 {

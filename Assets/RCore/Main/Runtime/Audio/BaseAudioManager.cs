@@ -1,14 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
 using System;
 using UnityEngine.Serialization;
 #if DOTWEEN
 using DG.Tweening;
 #endif
 using Random = UnityEngine.Random;
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Audio
 {

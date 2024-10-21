@@ -2,11 +2,9 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2018
  **/
 
-using RCore.Common;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Data.KeyValue
 {

@@ -7,7 +7,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using RCore.Common;
 using UnityEngine.Serialization;
 
 namespace RCore.UI

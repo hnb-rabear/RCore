@@ -5,7 +5,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using RCore.Common;
 using RCore.Inspector;
 using UnityEngine.Serialization;
 

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
 	public static class RPlayerPrefContainer
 	{

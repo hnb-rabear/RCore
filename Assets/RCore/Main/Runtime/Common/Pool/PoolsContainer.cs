@@ -8,7 +8,7 @@ using RCore.Editor;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
 	public class PoolsContainer<T> where T : Component
 	{

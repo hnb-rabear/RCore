@@ -11,7 +11,6 @@ using MyNamespace;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool

@@ -9,7 +9,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
 	public static class Debug
 	{

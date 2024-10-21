@@ -1,5 +1,3 @@
-using RCore.Common;
-
 namespace RCore.Data.JObject
 {
 	public class UserSessionHandler : JObjectHandler<JObjectDBManager>

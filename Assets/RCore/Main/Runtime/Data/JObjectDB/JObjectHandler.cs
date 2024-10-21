@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace RCore.Data.JObject
 {
 	public interface IJObjectHandler

@@ -1,8 +1,7 @@
 using Cysharp.Threading.Tasks;
-#if UNITY_ANDROID && GOOGLE_UPDATE
+#if UNITY_ANDROID && IN_APP_UPDATE
 using Google.Play.AppUpdate;
 #endif
-using RCore.Common;
 using System;
 using UnityEngine;
 
@@ -18,7 +17,7 @@ namespace RCore.Service
 #if UNITY_EDITOR
             return;
 #endif
-#if UNITY_ANDROID && GOOGLE_UPDATE
+#if UNITY_ANDROID && IN_APP_UPDATE
             var timestampUtcNow = TimeHelper.DateTimeToUnixTimestampInt(DateTime.UtcNow);
             if (timestampUtcNow - LastCheckUpdate < CHECK_UPDATE_INTERVAL)
                 return;

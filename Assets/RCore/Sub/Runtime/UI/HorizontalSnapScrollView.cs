@@ -2,11 +2,9 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
 using System;
 using UnityEngine.UI;
 using RCore.Inspector;
-using Debug = UnityEngine.Debug;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 #if DOTWEEN

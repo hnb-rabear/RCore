@@ -4,12 +4,10 @@ using GooglePlayGames.BasicApi;
 using GooglePlayGames.BasicApi.SavedGame;
 #endif
 using UnityEngine.SocialPlatforms;
-using RCore.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Service
 {

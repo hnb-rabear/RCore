@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
 	[Serializable]
 	public struct RVector2 : IEquatable<RVector2>

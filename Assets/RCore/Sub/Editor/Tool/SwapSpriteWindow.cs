@@ -1,10 +1,8 @@
-﻿using RCore.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
 using EditorPrefs = UnityEditor.EditorPrefs;
 
 namespace RCore.Editor.Tool

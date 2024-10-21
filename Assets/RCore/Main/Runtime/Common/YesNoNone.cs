@@ -1,4 +1,4 @@
-namespace RCore.Common
+namespace RCore
 {
 	public enum YesNoNone
 	{

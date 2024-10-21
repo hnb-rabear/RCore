@@ -1,6 +1,4 @@
-﻿using RCore.Common;
-using RCore.Editor;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +6,6 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 #if !TPS_BYTE_DECIMAL && !TPS_DECIMAL_BYTE
 using tpsByteByte;

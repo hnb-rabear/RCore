@@ -8,8 +8,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using RCore.Editor;
-using System;
 using EditorPrefs = UnityEditor.EditorPrefs;
 
 namespace RCore.Editor.Tool

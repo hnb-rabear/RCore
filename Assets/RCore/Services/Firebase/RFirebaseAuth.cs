@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 #endif
-using RCore.Common;
 
 namespace RCore.Service
 {

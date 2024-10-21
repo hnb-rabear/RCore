@@ -2,7 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-using RCore.Common;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;

@@ -4,7 +4,6 @@ using UnityEditor;
 using UnityEditor.Events;
 using UnityEngine;
 using UnityEngine.Events;
-using RCore.Common;
 
 namespace RCore.Editor.Audio
 {

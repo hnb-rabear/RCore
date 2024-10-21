@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using RCore.Data.JObject;
 
 namespace RCore.Example.Data.JObject
 {

@@ -6,7 +6,6 @@
 using Firebase;
 using Firebase.Storage;
 #endif
-using RCore.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +14,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Service
 {

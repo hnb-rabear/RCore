@@ -23,7 +23,7 @@ using Object = UnityEngine.Object;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Serialization;
 
-namespace RCore.Common
+namespace RCore
 {
 #if ADDRESSABLES
 

@@ -8,7 +8,7 @@ using RCore.Editor;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
     [System.Serializable]
     public class AssetsList<T> where T : Object

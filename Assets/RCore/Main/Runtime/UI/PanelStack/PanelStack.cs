@@ -4,8 +4,6 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.UI
 {

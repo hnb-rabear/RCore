@@ -7,16 +7,12 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEngine.SocialPlatforms;
-using Debug = RCore.Common.Debug;
-
 #if UNITY_IOS
 using UnityEngine.SocialPlatforms.GameCenter;
 #endif
-
 #if UNITY_ANDROID && GPGS
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
-using GPGSSavedGame = GooglePlayGames.BasicApi.SavedGame;
 #endif
 
 namespace RCore.Service

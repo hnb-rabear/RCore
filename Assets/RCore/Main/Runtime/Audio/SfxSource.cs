@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Audio
 {

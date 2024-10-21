@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using RCore.UI;
 using RCore.Inspector;
-using RCore.Common;
 
 namespace RCore.Example.UI
 {

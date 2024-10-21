@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RCore.Common
+namespace RCore
 {
 	/// <summary>
 	/// Event Manager manages publishing raised events to subscribing/listening classes.

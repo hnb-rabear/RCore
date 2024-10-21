@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 /***
  * This template for the Inventory Module boasts all the essential functions you need.

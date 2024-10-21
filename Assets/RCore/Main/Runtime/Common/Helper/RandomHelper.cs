@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RCore.Common
+namespace RCore
 {
     static class RandomExtension
     {

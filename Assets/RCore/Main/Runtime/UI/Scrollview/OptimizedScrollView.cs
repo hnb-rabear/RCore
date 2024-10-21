@@ -5,8 +5,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using RCore.Common;
-using System;
 
 namespace RCore.UI
 {

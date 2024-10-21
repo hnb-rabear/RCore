@@ -3,7 +3,6 @@
 **/
 
 #if UNITY_EDITOR
-using RCore.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +15,6 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace RCore.Editor

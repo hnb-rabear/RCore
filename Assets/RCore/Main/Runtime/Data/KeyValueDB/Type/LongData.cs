@@ -2,8 +2,6 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
-using UnityEngine;
-
 namespace RCore.Data.KeyValue
 {
     public class LongData : FunData

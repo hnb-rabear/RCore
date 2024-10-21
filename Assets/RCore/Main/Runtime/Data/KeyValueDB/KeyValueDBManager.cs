@@ -5,7 +5,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using Debug = RCore.Common.Debug;
 using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;

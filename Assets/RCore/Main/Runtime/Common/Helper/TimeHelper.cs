@@ -8,7 +8,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RCore.Common
+namespace RCore
 {
     public static class StringBuilderExtension
     {

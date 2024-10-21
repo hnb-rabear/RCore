@@ -7,7 +7,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace RCore.Common
+namespace RCore
 {
     public class SceneLoader
     {

@@ -1,6 +1,5 @@
 using RCore.Editor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace MyNamespace
 {

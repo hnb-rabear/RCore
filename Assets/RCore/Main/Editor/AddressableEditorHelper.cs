@@ -1,5 +1,4 @@
 #if ADDRESSABLES
-using RCore.Common;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.AddressableAssets;

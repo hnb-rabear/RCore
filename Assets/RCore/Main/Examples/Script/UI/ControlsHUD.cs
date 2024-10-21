@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using RCore.UI;
-using UnityEngine.Serialization;
 
 namespace RCore.Example.UI
 {

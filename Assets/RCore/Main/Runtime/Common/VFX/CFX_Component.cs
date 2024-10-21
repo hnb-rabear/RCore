@@ -4,9 +4,8 @@
 
 using System;
 using UnityEngine;
-using RCore.Common;
 
-namespace RCore.Common
+namespace RCore
 {
     public abstract class CFX_Component : MonoBehaviour
     {

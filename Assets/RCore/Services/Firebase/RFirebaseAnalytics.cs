@@ -5,7 +5,6 @@
 #if FIREBASE_ANALYTICS
 using Firebase.Analytics;
 #endif
-using RCore.Common;
 
 namespace RCore.Service
 {

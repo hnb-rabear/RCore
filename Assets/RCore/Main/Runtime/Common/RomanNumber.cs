@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 
-namespace RCore.Common
+namespace RCore
 {
     public static class Roman
     {

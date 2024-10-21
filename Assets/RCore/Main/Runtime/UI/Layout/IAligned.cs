@@ -5,7 +5,6 @@
 using UnityEngine;
 using System;
 #if UNITY_EDITOR
-using UnityEditor;
 #endif
 
 namespace RCore.UI

@@ -2,7 +2,6 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com
  **/
 
-using RCore.Common;
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;

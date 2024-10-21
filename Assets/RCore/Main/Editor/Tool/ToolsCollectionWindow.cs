@@ -1,15 +1,11 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using RCore.Common;
-using RCore.Editor;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
-using System;
 using System.IO;
 using System.Linq;
 using UnityEngine.Rendering;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
@@ -605,7 +601,7 @@ namespace RCore.Editor.Tool
 									colors.disabledColor = m_ButtonColors.disabledColor;
 
 								button.colors = colors;
-								Common.Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+								Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
 							}
 
 							EditorUtility.SetDirty(buttons.Key);
@@ -659,7 +655,7 @@ namespace RCore.Editor.Tool
 
 								button.transition = Selectable.Transition.Animation;
 								animator.runtimeAnimatorController = m_ButtonAnimation;
-								Common.Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+								Debug.Log($"{button.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
 							}
 
 							EditorUtility.SetDirty(buttons.Key);
@@ -705,11 +701,11 @@ namespace RCore.Editor.Tool
 							foreach (var text in texts.Value)
 							{
 								if (text.font == m_Font)
-									Common.Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
+									Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
 								else
 								{
 									text.font = m_Font;
-									Common.Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+									Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
 								}
 							}
 
@@ -756,11 +752,11 @@ namespace RCore.Editor.Tool
 							foreach (var text in texts.Value)
 							{
 								if (text.font == m_TMPFont)
-									Common.Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
+									Debug.Log($"{text.name} unchanged!", EditorGUIUtility.isProSkin ? Color.yellow : ColorHelper.DarkOrange);
 								else
 								{
 									text.font = m_TMPFont;
-									Common.Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
+									Debug.Log($"{text.name} updated!", EditorGUIUtility.isProSkin ? Color.green : ColorHelper.DarkGreenX11);
 								}
 							}
 

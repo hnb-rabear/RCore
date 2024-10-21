@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using RCore.Common;
 
 namespace RCore.UI
 {

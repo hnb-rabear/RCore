@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using RCore.Common;
 
 namespace RCore.UI
 {

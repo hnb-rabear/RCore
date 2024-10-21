@@ -1,5 +1,3 @@
-using RCore.Common;
-using RCore.Editor;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -9,7 +7,6 @@ using UnityEditor.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Editor.Tool
 {

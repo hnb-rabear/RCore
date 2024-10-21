@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
 #if UNITY_EDITOR
 using RCore.Editor;
 #endif
@@ -90,8 +89,8 @@ namespace RCore
 		private void Init()
 		{
 			enableLogSystem = new RPlayerPrefBool("EnableLogSystem");
-			RCore.Common.Debug.enabled = m_enableLog;
-			RCore.Common.DebugDraw.enabled = m_enableDraw;
+			RCore.Debug.enabled = m_enableLog;
+			RCore.DebugDraw.enabled = m_enableDraw;
 		}
 		public bool EnableLog
 		{
@@ -101,7 +100,7 @@ namespace RCore
 				if (m_enableLog == value)
 					return;
 				m_enableLog = value;
-				RCore.Common.Debug.enabled = value;
+				RCore.Debug.enabled = value;
 				onSettingsChanged?.Invoke();
 			}
 		}

@@ -2,12 +2,10 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
 #endif
-using Debug = UnityEngine.Debug;
 using RCore.Inspector;
 #if DOTWEEN
 using DG.Tweening;

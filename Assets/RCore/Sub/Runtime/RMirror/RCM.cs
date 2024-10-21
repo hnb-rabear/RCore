@@ -8,7 +8,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using RCore.Common;
+using RCore;
 
 namespace RCore.RCM
 {

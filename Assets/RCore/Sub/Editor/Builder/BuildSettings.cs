@@ -8,8 +8,6 @@ using System.IO;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using RCore.Common;
-using RCore.Editor;
 
 namespace RCore.Editor
 {

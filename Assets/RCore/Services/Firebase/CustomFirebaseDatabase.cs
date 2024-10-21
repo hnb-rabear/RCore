@@ -1,7 +1,6 @@
 ﻿#if FIREBASE_DATABASE
 using Firebase;
 using Firebase.Database;
-using RCore.Common;
 #endif
 using System;
 

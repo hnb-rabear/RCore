@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using RCore.Common;
 using RCore.Inspector;
-using UnityEngine.Serialization;
 #if DOTWEEN
 using DG.Tweening;
 #endif

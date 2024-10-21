@@ -3,9 +3,7 @@
 using UnityEditor;
 #endif
 using UnityEngine;
-using RCore.Common;
 using RCore.Data.KeyValue;
-using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace RCore.Example.Data.KeyValue

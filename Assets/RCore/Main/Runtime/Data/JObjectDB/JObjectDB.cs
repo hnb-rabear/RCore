@@ -1,12 +1,10 @@
 using Newtonsoft.Json;
-using RCore.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Data.JObject
 {

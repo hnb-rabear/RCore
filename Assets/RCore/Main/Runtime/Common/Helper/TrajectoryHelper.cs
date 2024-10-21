@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
     /// <summary>
     /// Helper class for trajectory calculations.

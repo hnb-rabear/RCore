@@ -15,11 +15,9 @@ using RCore.Editor;
 using UnityEditor;
 #endif
 using UnityEngine;
-using RCore.Common;
 using UnityEngine.Serialization;
-using Debug = UnityEngine.Debug;
 
-namespace RCore.FX
+namespace RCore
 {
 	public class CFX_ParticleComponent : CFX_Component
 	{

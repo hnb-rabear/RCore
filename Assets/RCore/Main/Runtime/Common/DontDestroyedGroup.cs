@@ -5,7 +5,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
     /// <summary>
     /// Place gameObjects which never be destroyed as children of this gameObject

@@ -5,7 +5,7 @@
 using System;
 using System.Text;
 
-namespace RCore.Common
+namespace RCore
 {
     public class BigNumberD : IComparable<BigNumberD>
     {

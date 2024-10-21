@@ -1,6 +1,4 @@
-﻿using RCore.Common;
-
-namespace RCore.Audio
+﻿namespace RCore.Audio
 {
     public class AudioManager : BaseAudioManager
     {

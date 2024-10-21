@@ -4,7 +4,6 @@
 
 using UnityEngine;
 using UnityEngine.EventSystems;
-using RCore.Common;
 using System;
 
 namespace RCore.UI

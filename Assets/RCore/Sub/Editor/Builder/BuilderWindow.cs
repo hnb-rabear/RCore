@@ -4,13 +4,10 @@
 
 using System;
 using System.Diagnostics;
-using RCore.Common;
-using RCore.Editor;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Editor
 {

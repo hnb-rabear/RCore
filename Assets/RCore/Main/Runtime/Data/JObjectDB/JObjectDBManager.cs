@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
 
 namespace RCore.Data.JObject
 {

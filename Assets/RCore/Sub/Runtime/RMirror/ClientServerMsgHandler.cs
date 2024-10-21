@@ -2,12 +2,12 @@
 using Cysharp.Threading.Tasks;
 using Mirror;
 using Newtonsoft.Json;
-using RCore.Common;
+using RCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Debug = RCore.Common.Debug;
+using Debug = RCore.Debug;
 
 namespace RCore.RCM
 {

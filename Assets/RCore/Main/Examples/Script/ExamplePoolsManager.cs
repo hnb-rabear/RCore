@@ -2,8 +2,6 @@
 using UnityEditor;
 #endif
 using UnityEngine;
-using RCore.Common;
-using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace RCore.Example

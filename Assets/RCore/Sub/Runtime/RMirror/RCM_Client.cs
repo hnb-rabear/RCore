@@ -10,10 +10,10 @@ using Mirror;
 using Newtonsoft.Json;
 using System;
 using Random = UnityEngine.Random;
-using RCore.Common;
+using RCore;
 #if UNITY_EDITOR
 using UnityEditor;
-using Debug = RCore.Common.Debug;
+using Debug = RCore.Debug;
 #endif
 
 namespace RCore.RCM

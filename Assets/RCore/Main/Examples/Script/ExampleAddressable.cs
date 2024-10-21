@@ -4,7 +4,6 @@ using UnityEngine;
 #if ADDRESSABLES
 using UnityEngine.AddressableAssets;
 #endif
-using RCore.Common;
 using RCore.Inspector;
 
 namespace RCore.Example

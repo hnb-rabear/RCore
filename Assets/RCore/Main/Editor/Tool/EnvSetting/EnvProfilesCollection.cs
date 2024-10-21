@@ -2,11 +2,9 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
  **/
 
-using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using RCore.Editor;
 
 namespace RCore.Editor.Tool
 {

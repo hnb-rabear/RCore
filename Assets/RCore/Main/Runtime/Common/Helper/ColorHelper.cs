@@ -4,7 +4,7 @@
 
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
     public static class ColorExtension
     {

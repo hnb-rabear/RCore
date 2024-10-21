@@ -2,7 +2,6 @@
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2020
  **/
 
-using RCore.Common;
 using RCore.Data.KeyValue;
 using System.Collections.Generic;
 using UnityEditor;

@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
-using RCore.Common;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using RCore.Editor;

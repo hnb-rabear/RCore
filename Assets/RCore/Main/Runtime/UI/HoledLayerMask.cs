@@ -7,8 +7,6 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using RCore.Common;
-using Debug = UnityEngine.Debug;
 #if DOTWEEN
 using DG.Tweening;
 #endif

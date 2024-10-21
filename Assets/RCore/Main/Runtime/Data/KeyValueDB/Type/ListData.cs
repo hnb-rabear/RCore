@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using RCore.Common;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.Data.KeyValue
 {

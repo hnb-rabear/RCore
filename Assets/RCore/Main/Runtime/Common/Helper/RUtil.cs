@@ -17,7 +17,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Random = UnityEngine.Random;
 
-namespace RCore.Common
+namespace RCore
 {
 	public delegate void VoidDelegate();
 	public delegate void IntDelegate(int value);

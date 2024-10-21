@@ -4,10 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore
 {
     public class CountdownEvent
     {

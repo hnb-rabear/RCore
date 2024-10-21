@@ -5,9 +5,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Common;
-using System.Threading.Tasks;
-using Debug = UnityEngine.Debug;
 #if FIREBASE
 using Firebase;
 using Firebase.Extensions;

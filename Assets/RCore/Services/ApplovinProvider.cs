@@ -1,10 +1,8 @@
 ﻿#if APPLOVINE
 using GoogleMobileAds.Ump.Api;
 #endif
-using RCore.Common;
 using System;
 using UnityEngine;
-using Debug = RCore.Common.Debug;
 
 namespace RCore.Service
 {

@@ -12,7 +12,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using RCore.Common;
 
 namespace RCore.UI
 {
