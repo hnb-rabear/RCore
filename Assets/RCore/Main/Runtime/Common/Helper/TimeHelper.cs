@@ -529,19 +529,19 @@ namespace RCore
         /// <summary>
         /// Get mod in seconds from amount of time
         /// </summary>
-        /// <param name="pIntervalInSeconds"></param>
-        /// <param name="pPassedSeconds"></param>
+        /// <param name="pIntervalSeconds"></param>
+        /// <param name="pTotalSeconds"></param>
         /// <returns>Step Count and Remain Seconds</returns>
-        public static int CalcTimeStepsPassed(long pPassedSeconds, long pIntervalInSeconds, out long pModSeconds)
+        public static int CalcStepsPassed(int pTotalSeconds, int pIntervalSeconds, out int pModSeconds)
         {
-            int stepPassed = 0;
-            pModSeconds = pIntervalInSeconds;
-            if (pPassedSeconds > 0)
+            int stepsPassed = 0;
+            pModSeconds = pIntervalSeconds;
+            if (pTotalSeconds > 0)
             {
-                stepPassed += Mathf.FloorToInt(pPassedSeconds * 1f / pIntervalInSeconds);
-                pModSeconds = pPassedSeconds % pIntervalInSeconds;
+                stepsPassed += Mathf.FloorToInt(pTotalSeconds * 1f / pIntervalSeconds);
+                pModSeconds = pTotalSeconds % pIntervalSeconds;
             }
-            return stepPassed;
+            return stepsPassed;
         }
 
         /// <summary>
