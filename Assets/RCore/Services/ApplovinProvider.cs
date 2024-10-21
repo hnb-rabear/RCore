@@ -8,10 +8,10 @@ namespace RCore.Service
 {
     public class ApplovinProvider
     {
-        private const string SDK_KEY = "ehsUh1_c6REUy8wBTa64LPkgFNOSC6x-7A2ze0KUVFdl2T7c6NcPfpe7MZxd8Zk4Ea6Zqli-OcAD2KOpuVvDAn";
-        private const string AD_UNIT_INTERSTITIAL = "9c6587cd1df9d99d";
-        private const string AD_UNIT_REWARDED = "631f64ceb8b1842c";
-        private const string AD_UNIT_BANNER = "24ac9334b796ec0e"; // Retrieve the ID from your account
+        private static string SDK_KEY => RConfig.Instance.maxSdkKey;
+        private static string AD_UNIT_INTERSTITIAL => RConfig.Instance.maxInterstitial;
+        private static string AD_UNIT_REWARDED => RConfig.Instance.maxRewarded;
+        private static string AD_UNIT_BANNER => RConfig.Instance.maxBanner;
 
         private ApplovinProvider() { }
 

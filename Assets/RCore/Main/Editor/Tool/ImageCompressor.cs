@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using MyNamespace;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;

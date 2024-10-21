@@ -1,7 +1,7 @@
 using RCore.Editor;
 using UnityEngine;
 
-namespace MyNamespace
+namespace RCore
 {
 	public class RConfig : ScriptableObject
 	{

@@ -62,9 +62,9 @@ namespace RCore.Service
             void InitAds()
             {
 #if UNITY_ANDROID
-                string appKey = "1153ce325";
+                string appKey = RConfig.Instance.isAndroidAppKey;
 #elif UNITY_IPHONE
-				string appKey = "1153ce325";
+				string appKey = RConfig.Instance.isIosAppKey;
 #endif
                 IronSourceConfig.Instance.setClientSideCallbacks(true);
 

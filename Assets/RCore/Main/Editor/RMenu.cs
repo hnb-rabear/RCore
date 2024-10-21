@@ -5,7 +5,6 @@
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;
-using MyNamespace;
 using UnityEditor;
 using UnityEngine;
 
