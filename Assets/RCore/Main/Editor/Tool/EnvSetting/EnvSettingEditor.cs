@@ -176,7 +176,7 @@ namespace RCore.Editor.Tool
 				}
 			}
 
-			if (pProfile.defines != null)
+			if (pProfile.defines != null && pProfile.name != null)
 			{
 				string[] defaultDirectives = { "DEVELOPMENT", "UNITY_IAP", "ADDRESSABLES" };
 				foreach (string directive in defaultDirectives)

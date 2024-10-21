@@ -13,43 +13,7 @@ MonoBehaviour:
   m_Name: EnvSetting
   m_EditorClassIdentifier: 
   profile:
-    name: live
-    defines:
-    - name: DEVELOPMENT
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: UNITY_IAP
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: ADDRESSABLES
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE_REMOTE
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE_DATABASE
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE_CRASHLYTICS
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE_ANALYTICS
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE_AUTH
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: FIREBASE_STORAGE
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: IN_APP_UPDATE
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-    - name: DOTWEEN
-      color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 1
-  m_enableLog: 1
+    name: 
+    defines: []
+  m_enableLog: 0
   m_enableDraw: 0
