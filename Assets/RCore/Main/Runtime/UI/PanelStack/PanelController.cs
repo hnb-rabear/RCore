@@ -91,8 +91,6 @@ namespace RCore.UI
 #endif
 					if (m_canvas == null)
 						m_canvas = gameObject.AddComponent<Canvas>();
-
-					//WaitUtil.Enqueue(() => { mCanvas.overrideSorting = true; }); //Quick-fix
 				}
 				return m_canvas;
 			}

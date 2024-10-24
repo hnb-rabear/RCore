@@ -25,7 +25,7 @@ namespace RCore.Editor.Tool
 		{
 			get
 			{
-				var key = "api:" + RConfig.Instance.tinyPngApiKey;
+				var key = "api:" + RCoreEditorConfig.Instance.tinyPngApiKey;
 				key = Convert.ToBase64String(Encoding.UTF8.GetBytes(key));
 				return $"Basic {key}";
 			}

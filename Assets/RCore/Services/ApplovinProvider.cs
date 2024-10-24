@@ -8,10 +8,10 @@ namespace RCore.Service
 {
     public class ApplovinProvider
     {
-        private static string SDK_KEY => RConfig.Instance.maxSdkKey;
-        private static string AD_UNIT_INTERSTITIAL => RConfig.Instance.maxInterstitial;
-        private static string AD_UNIT_REWARDED => RConfig.Instance.maxRewarded;
-        private static string AD_UNIT_BANNER => RConfig.Instance.maxBanner;
+        private static string SDK_KEY => RCoreConfig.Instance.maxSdkKey;
+        private static string AD_UNIT_INTERSTITIAL => RCoreConfig.Instance.maxInterstitial;
+        private static string AD_UNIT_REWARDED => RCoreConfig.Instance.maxRewarded;
+        private static string AD_UNIT_BANNER => RCoreConfig.Instance.maxBanner;
 
         private ApplovinProvider() { }
 

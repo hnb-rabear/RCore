@@ -29,10 +29,16 @@ namespace RCore.Editor
 			Selection.activeObject = EnvSetting.Instance;
 		}
 		
-		[MenuItem("RCore/RConfig", priority = GROUP_1 + 2)]
-		private static void OpenRConfig()
+		[MenuItem("RCore/Config/Runtime", priority = GROUP_1 + 2)]
+		private static void OpenRCoreConfig()
 		{
-			Selection.activeObject = RConfig.Instance;
+			Selection.activeObject = RCoreConfig.Instance;
+		}
+		
+		[MenuItem("RCore/Config/Editor", priority = GROUP_1 + 3)]
+		private static void OpenRCoreEditorConfig()
+		{
+			Selection.activeObject = RCoreEditorConfig.Instance;
 		}
 		
 		//==========================================================
