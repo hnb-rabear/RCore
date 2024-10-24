@@ -4,6 +4,18 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
+	public class Module<TCollection, THandler>
+	{
+		public TCollection Collection { get; }
+		public THandler Handler { get; }
+
+		public Module(TCollection collection, THandler handler)
+		{
+			Collection = collection;
+			Handler = handler;
+		}
+	}
+	
 	public abstract class JObjectDBManager : MonoBehaviour
 	{
 		[SerializeField, Range(1, 10)] private int m_saveDelay = 3;
@@ -13,9 +25,9 @@ namespace RCore.Data.JObject
 
 		protected List<JObjectCollection> m_collections = new List<JObjectCollection>();
 		protected List<IJObjectHandler> m_handlers = new List<IJObjectHandler>();
-	
-		public UserSessionCollection userSession;
-		public UserSessionHandler userSessionHandler;
+		
+		public UserSessionCollection session;
+		public UserSessionHandler sessionHandler;
 		
 		protected bool m_initialized;
 		private float m_saveCountdown;
@@ -69,18 +81,17 @@ namespace RCore.Data.JObject
 		/// <summary>
 		/// Initialize DB Manager
 		/// </summary>
-		public virtual void Init()
+		public void Init()
 		{
 			if (m_initialized)
 				return;
 
-			userSession = CreateCollection<UserSessionCollection>("UserSession");
-			userSessionHandler = CreateController<UserSessionHandler, JObjectDBManager>();
+			(session, sessionHandler) = CreateModule<UserSessionCollection, UserSessionHandler, JObjectDBManager>("UserSession");
 			Load();
 			PostLoad();
 			m_initialized = true;
 		}
-
+		
 		public virtual void Save(bool now = false, float saveDelayCustom = 0)
 		{
 			if (!m_enabledSave)
@@ -132,10 +143,10 @@ namespace RCore.Data.JObject
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
-			if (userSession.lastActive > 0)
+			if (session.lastActive > 0)
 			{
 				int utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
-				offlineSeconds = utcNowTimestamp - userSession.lastActive;
+				offlineSeconds = utcNowTimestamp - session.lastActive;
 			}
 			return offlineSeconds;
 		}
@@ -149,25 +160,38 @@ namespace RCore.Data.JObject
 		/// </summary>
 		protected abstract void Load();
 		
-		protected T CreateCollection<T>(string key, T defaultVal = null) where T : JObjectCollection, new()
+		protected TCollection CreateCollection<TCollection>(string key, TCollection defaultVal = null)
+			where TCollection : JObjectCollection, new()
 		{
 			if (string.IsNullOrEmpty(key))
-				key = typeof(T).Name;
+				key = typeof(TCollection).Name;
 			var newCollection = JObjectDB.CreateCollection(key, defaultVal);
 			if (newCollection != null)
 				m_collections.Add(newCollection);
 			return newCollection;
 		}
 		
-		protected T CreateController<T, M>() where T : JObjectHandler<M> where M : JObjectDBManager
+		protected THandler CreateController<THandler, TManager>()
+			where THandler : JObjectHandler<TManager>
+			where TManager : JObjectDBManager
 		{
-			var newController = Activator.CreateInstance<T>();
-			newController.manager = this as M;
+			var newController = Activator.CreateInstance<THandler>();
+			newController.manager = this as TManager;
 			
 			m_handlers.Add(newController);
 			return newController;
 		}
 
+		protected (TCollection, THandler) CreateModule<TCollection, THandler, TManager>(string key, TCollection defaultVal = null) 
+			where TCollection : JObjectCollection, new()
+			where THandler : JObjectHandler<TManager>
+			where TManager : JObjectDBManager
+		{
+			var collection = CreateCollection(key, defaultVal);
+			var controller = CreateController<THandler, TManager>();
+			return (collection, controller);
+		}
+		
 		protected void PostLoad()
 		{
 			int offlineSeconds = GetOfflineSeconds();

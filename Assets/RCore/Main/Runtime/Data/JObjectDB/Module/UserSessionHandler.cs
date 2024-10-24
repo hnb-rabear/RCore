@@ -4,7 +4,7 @@ namespace RCore.Data.JObject
 	{
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
-			var sessionData = manager.userSession;
+			var sessionData = manager.session;
 			if (sessionData.firstActive == 0)
 				sessionData.firstActive = utcNowTimestamp;
 			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive);
@@ -28,17 +28,19 @@ namespace RCore.Data.JObject
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{
+			var sessionData = manager.session;
 			if (!pause)
-				manager.userSession.lastActive = utcNowTimestamp;
+				sessionData.lastActive = utcNowTimestamp;
 		}
 		public override void OnUpdate(float deltaTime)
 		{
-			var sessionData = manager.userSession;
+			var sessionData = manager.session;
 			sessionData.activeTime += deltaTime;
 		}
 		public override void OnPreSave(int utcNowTimestamp)
 		{
-			manager.userSession.lastActive = utcNowTimestamp;
+			var sessionData = manager.session;
+			sessionData.lastActive = utcNowTimestamp;
 		}
 	}
 }

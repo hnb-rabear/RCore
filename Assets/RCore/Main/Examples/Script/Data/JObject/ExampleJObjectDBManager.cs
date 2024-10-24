@@ -1,4 +1,5 @@
 using RCore.Data.JObject;
+using System;
 
 namespace RCore.Example.Data.JObject
 {
@@ -15,29 +16,27 @@ namespace RCore.Example.Data.JObject
 
 		public DailyRewardCollection dailyReward;
 		public DailyRewardHandler dailyRewardHandler;
-		
+
 		private void Start()
 		{
 			Init();
 		}
-		
+
 		protected override void Load()
 		{
-			// Example of basic inventory collection
-			inventory = CreateCollection<InventoryCollection<InvItemData>>("Inventory");
-			inventoryHandler = CreateController<InventoryHandler, ExampleJObjectDBManager>();
+			// Example of basic inventory module
+			(inventory, inventoryHandler) = CreateModule<InventoryCollection<InvItemData>, InventoryHandler, ExampleJObjectDBManager>("Inventory");
 			
-			// Example of a rpg inventory collection
+			// Example of a rpg inventory module
 			inventoryRpg = CreateCollection<InventoryRPGCollection<InvRPGItemData>>("InventoryRPG");
 			inventoryRpgHandler = CreateController<InventoryRPGHandler, ExampleJObjectDBManager>();
 
-			// Example of Achievement collection
+			// Example of Achievement module
 			achievement = CreateCollection<AchievementCollection>("Achievement");
 			achievementHandler = CreateController<AchievementHandler, ExampleJObjectDBManager>();
 			
-			// Example of DailyReward collection
-			dailyReward = CreateCollection<DailyRewardCollection>("DailyReward");
-			dailyRewardHandler = CreateController<DailyRewardHandler, ExampleJObjectDBManager>();
+			// Example of Daily reward module
+			(dailyReward, dailyRewardHandler) = CreateModule<DailyRewardCollection, DailyRewardHandler, ExampleJObjectDBManager>("DailyReward");
 		}
 	}
 }

@@ -341,7 +341,7 @@ MonoBehaviour:
   m_enabledSave: 1
   m_saveOnPause: 1
   m_saveOnQuit: 1
-  userSession:
+  session:
     sessions: 00000000000000000000000000000000
     days: 0
     daysStreak: 0
@@ -368,7 +368,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1761243716}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 544.45, y: 141, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
