@@ -6,7 +6,7 @@ using Object = System.Object;
 
 namespace RCore.Editor
 {
-	public static partial class RMenu
+	public static class RMenu
 	{
 		public const int GROUP_6 = 100;
 

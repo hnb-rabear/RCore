@@ -14,7 +14,7 @@ namespace RCore.Editor.Tool
 
 		public List<EnvSetting.Profile> profiles = new List<EnvSetting.Profile>();
 
-		public static EnvProfilesCollection LoadOrCreateCollection()
+		public static EnvProfilesCollection Load()
 		{
 			var collection = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(EnvProfilesCollection)) as EnvProfilesCollection;
 			if (collection == null)

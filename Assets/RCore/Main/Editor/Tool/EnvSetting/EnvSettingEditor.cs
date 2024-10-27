@@ -47,7 +47,7 @@ namespace RCore.Editor.Tool
 			
 			m_target = EnvSetting.Instance;
 			if (m_envProfileCollections == null)
-				m_envProfileCollections = EnvProfilesCollection.LoadOrCreateCollection();
+				m_envProfileCollections = EnvProfilesCollection.Load();
 			m_removingProfile = false;
 			m_selectedProfile = m_target.profile.name;
 			m_typedProfileName = m_target.profile.name;

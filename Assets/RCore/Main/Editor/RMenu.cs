@@ -5,6 +5,7 @@
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;
+using RCore.Editor.Tool.ExcelToUnity;
 using UnityEditor;
 using UnityEngine;
 
@@ -198,6 +199,14 @@ namespace RCore.Editor
 		{
 			SearchAndReplaceAssetWindow.ShowWindow();
 		}
+
+		[MenuItem("RCore/Tools/Excel To Unity", priority = GROUP_6 + 6)]
+		public static void OpenExcelToUnityWindow()
+		{
+			ExcelToUnityWindow.ShowWindow();
+		}
+		
+		//==============================================
 		
 		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (W)")]
 		public static void PerfectRatioImagesByWidth()
