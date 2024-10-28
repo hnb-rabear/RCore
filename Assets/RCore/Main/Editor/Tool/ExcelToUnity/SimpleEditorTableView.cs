@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using RCore.Editor.Tool.ExcelToUnity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,13 @@ namespace RCore.Editor
 		private Vector2 _scrollPosition;
 		private bool _columnResized;
 		private bool _sortingDirty;
+		private EditorWindow m_editorWindow;
+		private string m_header;
+
+		public float viewWidth;
+		public float viewHeight;
+		public float viewWidthFillRatio;
+		public float viewHeightFillRatio;
 
 		public delegate void DrawItem(Rect rect, TData item);
 
@@ -85,6 +93,12 @@ namespace RCore.Editor
 		}
 
 		private readonly List<ColumnDef> _columnDefs = new List<ColumnDef>();
+		
+		public SimpleEditorTableView(EditorWindow pWindow, string header = null)
+		{
+			m_editorWindow = pWindow;
+			m_header = header;
+		}
 
 		public void ClearColumns()
 		{
@@ -126,16 +140,38 @@ namespace RCore.Editor
 			_columnResized = false;
 		}
 
-		public void DrawTableGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1, float viewWidth = 0, float viewHeight = 0)
+		public void DrawTableGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
 		{
 			if (_multiColumnHeader == null || _columnResized)
 				ReBuild();
 
 			var style = new GUIStyle(EditorStyles.helpBox);
-			if (viewWidth > 0) style.fixedWidth = viewWidth;
-			if (viewHeight > 0) style.fixedHeight = viewHeight;
-			if (viewWidth > 0 || viewHeight > 0)
+
+			float _viewWidth = viewWidth;
+			float _viewHeight = viewHeight;
+
+			if (viewWidthFillRatio > 0 && viewWidthFillRatio < 1 && m_editorWindow.position.width > 0)
+				_viewWidth = viewWidthFillRatio * m_editorWindow.position.width * 0.99f;
+			if (viewHeightFillRatio > 0 && viewHeightFillRatio < 1 && m_editorWindow.position.height > 0)
+				_viewHeight = viewHeightFillRatio * m_editorWindow.position.height * 0.99f;
+			
+			if (_viewWidth > 0) style.fixedWidth = _viewWidth;
+			if (_viewHeight > 0) style.fixedHeight = _viewHeight;
+			if (_viewWidth > 0 || _viewHeight > 0)
 				EditorGUILayout.BeginVertical(style);
+			
+			if (!string.IsNullOrEmpty(m_header))
+			{
+				var headerStyle = new GUIStyle(EditorStyles.boldLabel)
+				{
+					alignment = TextAnchor.MiddleCenter,
+					margin = new RectOffset(0, 0, 0, 0),
+					fontSize = 15,
+					fontStyle = FontStyle.Bold,
+					padding = new RectOffset(0, 0, 3, 3)
+				};
+				GUILayout.Label(m_header, headerStyle);
+			}
 			
 			float rowWidth = _multiColumnHeaderState.widthOfAllVisibleColumns;
 			if (rowHeight < 0)
@@ -159,7 +195,7 @@ namespace RCore.Editor
 			    alwaysShowHorizontal: false,
 			    alwaysShowVertical: false
 			);
-
+			
 			for (int row = 0; row < data.Count; row++)
 			{
 				var rowRect = new Rect(0, rowHeight * row, rowWidth, rowHeight);
@@ -179,7 +215,7 @@ namespace RCore.Editor
 
 			GUI.EndScrollView(handleScrollWheel: true);
 			
-			if (viewWidth > 0 || viewHeight > 0)
+			if (_viewWidth > 0 || _viewHeight > 0)
 				EditorGUILayout.EndVertical();
 		}
 

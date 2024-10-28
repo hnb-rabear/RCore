@@ -62,7 +62,7 @@ namespace RCore.Editor
 
 		private SimpleEditorTableView<LightItem> CreateTable()
 		{
-			var tableView = new SimpleEditorTableView<LightItem>();
+			var tableView = new SimpleEditorTableView<LightItem>(this);
 
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{

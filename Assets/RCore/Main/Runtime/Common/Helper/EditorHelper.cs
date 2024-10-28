@@ -2598,7 +2598,7 @@ namespace RCore.Editor
         
         public static List<string> OpenFilePanelWithFilters(string title, string[] filter)
         {
-	        string path = EditorUtility.OpenFilePanelWithFilters("Select Excel Files", LastOpenedDirectory, new[] { "Excel", "xlsx" });
+	        string path = EditorUtility.OpenFilePanelWithFilters(title, LastOpenedDirectory, filter);
 	        var paths = new List<string>();
 	        if (!string.IsNullOrEmpty(path))
 	        {
@@ -2607,6 +2607,14 @@ namespace RCore.Editor
 	        }
 			return paths;
         }
+        
+        public static string OpenFilePanel(string title, string extension)
+        {
+	        string path = EditorUtility.OpenFilePanel(title, LastOpenedDirectory, extension);
+	        if (!string.IsNullOrEmpty(path))
+		        LastOpenedDirectory = Path.GetDirectoryName(path);
+	        return path;
+        } 
         
 #endregion
 

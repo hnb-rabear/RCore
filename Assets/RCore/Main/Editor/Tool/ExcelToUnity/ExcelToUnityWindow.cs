@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using NPOI.SS;
+using NPOI.SS.UserModel;
+using NPOI.XSSF;
+using NPOI.XSSF.UserModel;
 
 namespace RCore.Editor.Tool.ExcelToUnity
 {
@@ -12,6 +16,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 		private ExcelToUnitySettings m_excelToUnitySettings;
 		private SimpleEditorTableView<ExcelFile> m_tableExcelFiles;
 		private SimpleEditorTableView<Spreadsheet> m_tableSpreadSheet;
+		private IWorkbook m_workbook;
 
 		private void OnEnable()
 		{
@@ -58,17 +63,20 @@ namespace RCore.Editor.Tool.ExcelToUnity
 				EditorHelper.LabelField("Bad", 50, false, TextAnchor.MiddleCenter, Color.red);
 			if (EditorHelper.Button("Select File", 100))
 			{
-				string path = EditorUtility.OpenFilePanel("Select File", Application.dataPath, "xlsx");
+				string path = EditorHelper.OpenFilePanel("Select File", "xlsx");
 				if (!string.IsNullOrEmpty(path))
+				{
 					m_excelToUnitySettings.excelFile.path = path;
+					m_excelToUnitySettings.excelFile.Load();
+				}
 			}
 			GUILayout.EndHorizontal();
 			if (validExcelPath)
 			{
 				m_tableSpreadSheet ??= CreateSpreadsheetTable();
-				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets, viewWidth:370, viewHeight:370);
-				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets, viewWidth:370, viewHeight:370);
-				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets, viewWidth:370, viewHeight:370);
+				m_tableSpreadSheet.viewWidthFillRatio = 0.5f;
+				m_tableSpreadSheet.viewHeightFillRatio = 0.5f;
+				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets);
 			}
 		}
 		
@@ -90,7 +98,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 
 		private SimpleEditorTableView<Spreadsheet> CreateSpreadsheetTable()
 		{
-			var table = new SimpleEditorTableView<Spreadsheet>();
+			var table = new SimpleEditorTableView<Spreadsheet>(this, "Spreadsheets");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
@@ -121,7 +129,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 		
 		private SimpleEditorTableView<ExcelFile> CreateExcelTable()
 		{
-			var table = new SimpleEditorTableView<ExcelFile>();
+			var table = new SimpleEditorTableView<ExcelFile>(this, "Excel files");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
