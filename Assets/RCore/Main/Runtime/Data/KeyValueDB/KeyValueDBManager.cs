@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Globalization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -14,8 +15,6 @@ namespace RCore.Data.KeyValue
 {
 	public class KeyValueDBManager : MonoBehaviour
 	{
-#region Members
-
 		private const float MIN_TIME_BETWEEN_SAVES = 5;
 
 		private bool m_EnabledAutoSave = true;
@@ -26,11 +25,7 @@ namespace RCore.Data.KeyValue
 		private Dictionary<string, List<DataGroup>> m_mainGroups = new Dictionary<string, List<DataGroup>>();
 		private Coroutine m_saveCoroutine;
 
-#endregion
-
 		//===========================================
-
-#region MonoBehaviour
 
 		public void OnApplicationPause(bool paused)
 		{
@@ -50,11 +45,7 @@ namespace RCore.Data.KeyValue
 			Save(true);
 		}
 
-#endregion
-
 		//===========================================
-
-#region Public
 
 		/// <summary>
 		/// Step 0: Preparation, add all main data groups to the manager
@@ -145,11 +136,7 @@ namespace RCore.Data.KeyValue
 			m_EnabledAutoSave = pValue;
 		}
 
-#endregion
-
 		//=================================================
-
-#region Private
 
 		/// <summary>
 		/// Step 2: Load Data Saver
@@ -170,9 +157,6 @@ namespace RCore.Data.KeyValue
 				foreach (var g in item.Value)
 					g.PostLoad();
 		}
-
-#endregion
-
 	}
 #if UNITY_EDITOR
 	[CustomEditor(typeof(KeyValueDBManager), true)]

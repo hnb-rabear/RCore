@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace RCore.Data.JObject
 {
 	public interface IJObjectHandler
@@ -8,7 +10,7 @@ namespace RCore.Data.JObject
 		public void OnPreSave(int utcNowTimestamp);
 	}
 	
-	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectDBManager
+	public abstract class JObjectHandler<T> : MonoBehaviour, IJObjectHandler where T : JObjectDBManager
 	{
 		public T manager;
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);

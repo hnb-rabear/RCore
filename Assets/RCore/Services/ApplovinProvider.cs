@@ -8,17 +8,14 @@ namespace RCore.Service
 {
     public class ApplovinProvider
     {
-        private static string SDK_KEY => RCoreConfig.Instance.maxSdkKey;
-        private static string AD_UNIT_INTERSTITIAL => RCoreConfig.Instance.maxInterstitial;
-        private static string AD_UNIT_REWARDED => RCoreConfig.Instance.maxRewarded;
-        private static string AD_UNIT_BANNER => RCoreConfig.Instance.maxBanner;
-
-        private ApplovinProvider() { }
-
         private static ApplovinProvider instance;
         public static ApplovinProvider Instance => instance ??= new ApplovinProvider();
 
 #if APPLOVINE
+        private static string SDK_KEY => RCoreConfig.Instance.maxSdkKey;
+        private static string AD_UNIT_INTERSTITIAL => RCoreConfig.Instance.maxInterstitial;
+        private static string AD_UNIT_REWARDED => RCoreConfig.Instance.maxRewarded;
+        private static string AD_UNIT_BANNER => RCoreConfig.Instance.maxBanner;
         public void Init()
         {
             // Create a ConsentRequestParameters object     
