@@ -1,6 +1,6 @@
 /***
  * Copyright (c) 2024 Red Games
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -32,167 +32,176 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
-    public class SimpleEditorTableView<TData>
-    {
-        private MultiColumnHeaderState _multiColumnHeaderState;
-        private MultiColumnHeader _multiColumnHeader;
-        private MultiColumnHeaderState.Column[] _columns;
-        private readonly Color _lighterColor = Color.white * 0.3f;
-        private readonly Color _darkerColor = Color.white * 0.1f;
+	public class SimpleEditorTableView<TData>
+	{
+		private MultiColumnHeaderState _multiColumnHeaderState;
+		private MultiColumnHeader _multiColumnHeader;
+		private MultiColumnHeaderState.Column[] _columns;
+		private readonly Color _lighterColor = Color.white * 0.3f;
+		private readonly Color _darkerColor = Color.white * 0.1f;
 
-        private Vector2 _scrollPosition;
-        private bool _columnResized;
-        private bool _sortingDirty;
-        
-        public delegate void DrawItem(Rect rect, TData item);
-       
-        public class ColumnDef
-        {
-            internal MultiColumnHeaderState.Column column;
-            internal DrawItem onDraw;
-            internal Comparison<TData> onSort;
-            
-            public ColumnDef SetMaxWidth(float maxWidth)
-            {
-                column.maxWidth = maxWidth;
-                return this;
-            }
-            
-            public ColumnDef SetTooltip(string tooltip)
-            {
-                column.headerContent.tooltip = tooltip;
-                return this;
-            }
+		private Vector2 _scrollPosition;
+		private bool _columnResized;
+		private bool _sortingDirty;
 
-            public ColumnDef SetAutoResize(bool autoResize)
-            {
-                column.autoResize = autoResize;
-                return this;
-            }
+		public delegate void DrawItem(Rect rect, TData item);
 
-            public ColumnDef SetAllowToggleVisibility(bool allow)
-            {
-                column.allowToggleVisibility = allow;
-                return this;
-            }
-            
-            public ColumnDef SetSorting(Comparison<TData> onSort)
-            {
-                this.onSort = onSort;
-                column.canSort = true;
-                return this;
-            }
-        }
+		public class ColumnDef
+		{
+			internal MultiColumnHeaderState.Column column;
+			internal DrawItem onDraw;
+			internal Comparison<TData> onSort;
 
-        private readonly List<ColumnDef> _columnDefs = new List<ColumnDef>();
-        
-        public void ClearColumns()
-        {
-            _columnDefs.Clear();
-            _columnResized = true;
-        }
-        
-        public ColumnDef AddColumn(string title, int minWidth, int maxWidth, DrawItem onDrawItem)
-        {
-            var columnDef = new ColumnDef()
-            {
-                column = new MultiColumnHeaderState.Column()
-                {
-                    allowToggleVisibility = false,
-                    autoResize = true,
-                    minWidth = minWidth,
-                    maxWidth = maxWidth > 0 ? maxWidth : 1000000f,
-                    canSort = false,
-                    sortingArrowAlignment = TextAlignment.Right,
-                    headerContent = new GUIContent(title),
-                    headerTextAlignment = TextAlignment.Left,
-                },
-                onDraw = onDrawItem
-            };
-            
-            _columnDefs.Add(columnDef);
-            _columnResized = true;
-            return columnDef;
-        }
+			public ColumnDef SetMaxWidth(float maxWidth)
+			{
+				column.maxWidth = maxWidth;
+				return this;
+			}
 
-        private void ReBuild()
-        {
-            _columns = _columnDefs.Select((def) => def.column).ToArray();
-            _multiColumnHeaderState = new MultiColumnHeaderState(_columns);
-            _multiColumnHeader = new MultiColumnHeader(_multiColumnHeaderState);
-            _multiColumnHeader.visibleColumnsChanged += (multiColumnHeader) => multiColumnHeader.ResizeToFit();
-            _multiColumnHeader.sortingChanged += (multiColumnHeader) => _sortingDirty = true;
-            _multiColumnHeader.ResizeToFit();
-            _columnResized = false;
-        }
-        
-        public void DrawTableGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
-        {
-            if (_multiColumnHeader == null || _columnResized)
-                ReBuild();
-            
-            float rowWidth = _multiColumnHeaderState.widthOfAllVisibleColumns;
-            if (rowHeight < 0)
-                rowHeight = EditorGUIUtility.singleLineHeight;
-            
-            var headerRect = GUILayoutUtility.GetRect(rowWidth, rowHeight);
-            _multiColumnHeader!.OnGUI(headerRect, xScroll: 0.0f);
+			public ColumnDef SetTooltip(string tooltip)
+			{
+				column.headerContent.tooltip = tooltip;
+				return this;
+			}
 
-            float sumWidth = rowWidth;
-            float sumHeight = rowHeight * data.Count + GUI.skin.horizontalScrollbar.fixedHeight;
+			public ColumnDef SetAutoResize(bool autoResize)
+			{
+				column.autoResize = autoResize;
+				return this;
+			}
 
-            UpdateSorting(data);
+			public ColumnDef SetAllowToggleVisibility(bool allow)
+			{
+				column.allowToggleVisibility = allow;
+				return this;
+			}
 
-            var scrollViewPos = GUILayoutUtility.GetRect(0, sumWidth, 0, maxHeight);
-            var viewRect = new Rect(0, 0, sumWidth, sumHeight);
-            
-            _scrollPosition = GUI.BeginScrollView(
-                position: scrollViewPos,
-                scrollPosition: _scrollPosition,
-                viewRect: viewRect,
-                alwaysShowHorizontal: false,
-                alwaysShowVertical: false
-            );
-            
-            for (int row = 0; row < data.Count; row++)
-            {
-                var rowRect = new Rect(0, rowHeight * row, rowWidth, rowHeight);
+			public ColumnDef SetSorting(Comparison<TData> onSort)
+			{
+				this.onSort = onSort;
+				column.canSort = true;
+				return this;
+			}
+		}
 
-                EditorGUI.DrawRect(rect: rowRect, color: row % 2 == 0 ? _darkerColor : _lighterColor);
-                
-                for (int col = 0; col < _columns.Length; col++)
-                {
-                    if (_multiColumnHeader.IsColumnVisible(col))
-                    {
-                        int visibleColumnIndex = _multiColumnHeader.GetVisibleColumnIndex(col);
-                        var cellRect = _multiColumnHeader.GetCellRect(visibleColumnIndex, rowRect);
-                        _columnDefs[col].onDraw(cellRect, data[row]);
-                    }
-                }
-            }
+		private readonly List<ColumnDef> _columnDefs = new List<ColumnDef>();
 
-            GUI.EndScrollView(handleScrollWheel: true);
-        }
+		public void ClearColumns()
+		{
+			_columnDefs.Clear();
+			_columnResized = true;
+		}
 
-        private void UpdateSorting(List<TData> data)
-        {
-            if (_sortingDirty)
-            {
-                int sortIndex = _multiColumnHeader.sortedColumnIndex;
-                if (sortIndex >= 0)
-                {
-                    var sortCompare = _columnDefs[sortIndex].onSort;
-                    bool ascending = _multiColumnHeader.IsSortedAscending(sortIndex);
-                    
-                    data.Sort((a, b) =>
-                    {
-	                    int result = sortCompare(a, b);
-	                    return ascending ? result : -result;
-                    });
-                }
+		public ColumnDef AddColumn(string title, int minWidth, int maxWidth, DrawItem onDrawItem)
+		{
+			var columnDef = new ColumnDef()
+			{
+				column = new MultiColumnHeaderState.Column()
+				{
+					allowToggleVisibility = false,
+					autoResize = true,
+					minWidth = minWidth,
+					maxWidth = maxWidth > 0 ? maxWidth : 1000000f,
+					canSort = false,
+					sortingArrowAlignment = TextAlignment.Right,
+					headerContent = new GUIContent(title),
+					headerTextAlignment = TextAlignment.Left,
+				},
+				onDraw = onDrawItem
+			};
 
-                _sortingDirty = false;
-            }
-        }
-    }
+			_columnDefs.Add(columnDef);
+			_columnResized = true;
+			return columnDef;
+		}
+
+		private void ReBuild()
+		{
+			_columns = _columnDefs.Select((def) => def.column).ToArray();
+			_multiColumnHeaderState = new MultiColumnHeaderState(_columns);
+			_multiColumnHeader = new MultiColumnHeader(_multiColumnHeaderState);
+			_multiColumnHeader.visibleColumnsChanged += (multiColumnHeader) => multiColumnHeader.ResizeToFit();
+			_multiColumnHeader.sortingChanged += (multiColumnHeader) => _sortingDirty = true;
+			_multiColumnHeader.ResizeToFit();
+			_columnResized = false;
+		}
+
+		public void DrawTableGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1, float viewWidth = 0, float viewHeight = 0)
+		{
+			if (_multiColumnHeader == null || _columnResized)
+				ReBuild();
+
+			var style = new GUIStyle(EditorStyles.helpBox);
+			if (viewWidth > 0) style.fixedWidth = viewWidth;
+			if (viewHeight > 0) style.fixedHeight = viewHeight;
+			if (viewWidth > 0 || viewHeight > 0)
+				EditorGUILayout.BeginVertical(style);
+			
+			float rowWidth = _multiColumnHeaderState.widthOfAllVisibleColumns;
+			if (rowHeight < 0)
+				rowHeight = EditorGUIUtility.singleLineHeight;
+
+			var headerRect = GUILayoutUtility.GetRect(rowWidth, rowHeight);
+			_multiColumnHeader!.OnGUI(headerRect, xScroll: 0.0f);
+
+			float sumWidth = rowWidth;
+			float sumHeight = rowHeight * data.Count + GUI.skin.horizontalScrollbar.fixedHeight;
+
+			UpdateSorting(data);
+
+			var scrollViewPos = GUILayoutUtility.GetRect(0, sumWidth, 0, maxHeight);
+			var viewRect = new Rect(0, 0, sumWidth, sumHeight);
+
+			_scrollPosition = GUI.BeginScrollView(
+			    position: scrollViewPos,
+			    scrollPosition: _scrollPosition,
+			    viewRect: viewRect,
+			    alwaysShowHorizontal: false,
+			    alwaysShowVertical: false
+			);
+
+			for (int row = 0; row < data.Count; row++)
+			{
+				var rowRect = new Rect(0, rowHeight * row, rowWidth, rowHeight);
+
+				EditorGUI.DrawRect(rect: rowRect, color: row % 2 == 0 ? _darkerColor : _lighterColor);
+
+				for (int col = 0; col < _columns.Length; col++)
+				{
+					if (_multiColumnHeader.IsColumnVisible(col))
+					{
+						int visibleColumnIndex = _multiColumnHeader.GetVisibleColumnIndex(col);
+						var cellRect = _multiColumnHeader.GetCellRect(visibleColumnIndex, rowRect);
+						_columnDefs[col].onDraw(cellRect, data[row]);
+					}
+				}
+			}
+
+			GUI.EndScrollView(handleScrollWheel: true);
+			
+			if (viewWidth > 0 || viewHeight > 0)
+				EditorGUILayout.EndVertical();
+		}
+
+		private void UpdateSorting(List<TData> data)
+		{
+			if (_sortingDirty)
+			{
+				int sortIndex = _multiColumnHeader.sortedColumnIndex;
+				if (sortIndex >= 0)
+				{
+					var sortCompare = _columnDefs[sortIndex].onSort;
+					bool ascending = _multiColumnHeader.IsSortedAscending(sortIndex);
+
+					data.Sort((a, b) =>
+					{
+						int result = sortCompare(a, b);
+						return ascending ? result : -result;
+					});
+				}
+
+				_sortingDirty = false;
+			}
+		}
+	}
 }

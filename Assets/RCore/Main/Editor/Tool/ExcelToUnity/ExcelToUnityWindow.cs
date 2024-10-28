@@ -8,6 +8,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 {
 	public class ExcelToUnityWindow : EditorWindow
 	{
+		private Vector2 m_scrollPosition;
 		private ExcelToUnitySettings m_excelToUnitySettings;
 		private SimpleEditorTableView<ExcelFile> m_tableExcelFiles;
 		private SimpleEditorTableView<Spreadsheet> m_tableSpreadSheet;
@@ -19,6 +20,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 
 		private void OnGUI()
 		{
+			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 			var tab = EditorHelper.Tabs($"{nameof(ExcelToUnityWindow)}", "Export Excel", "Export Multi Excel");
 			switch (tab)
 			{
@@ -34,6 +36,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 					GUILayout.EndVertical();
 					break;
 			}
+			GUILayout.EndScrollView();
 		}
 
 		private bool ValidateExcelPath(string path)
@@ -63,7 +66,9 @@ namespace RCore.Editor.Tool.ExcelToUnity
 			if (validExcelPath)
 			{
 				m_tableSpreadSheet ??= CreateSpreadsheetTable();
-				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets);
+				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets, viewWidth:370, viewHeight:370);
+				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets, viewWidth:370, viewHeight:370);
+				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets, viewWidth:370, viewHeight:370);
 			}
 		}
 		
