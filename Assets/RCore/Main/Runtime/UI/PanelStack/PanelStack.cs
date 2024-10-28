@@ -2,7 +2,9 @@
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
+using RCore.Editor;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace RCore.UI
@@ -12,10 +14,7 @@ namespace RCore.UI
 		protected Stack<PanelController> panelStack = new Stack<PanelController>();
 		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
 
-		public PanelStack parentPanel;
-		/// <summary>
-		/// Top child
-		/// </summary>
+		internal PanelStack parentPanel;
 		public PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 		/// <summary>
 		/// Index in stack
@@ -39,7 +38,7 @@ namespace RCore.UI
 		/// <summary>
 		/// Order base-on active sibling
 		/// </summary>
-		public int PanelOrder
+		public int DisplayOrder
 		{
 			get
 			{
@@ -56,7 +55,7 @@ namespace RCore.UI
 		protected virtual void Awake()
 		{
 			if (parentPanel == null)
-				parentPanel = GetComponentInParent<PanelController>();
+				parentPanel = GetComponentInParent<PanelStack>();
 			if (parentPanel == this)
 				parentPanel = null;
 		}
@@ -518,5 +517,56 @@ namespace RCore.UI
 		{
 			Debug.LogError($"<color=red><b>[{gameObject.name}]:</b></color>{pMessage}");
 		}
+		
+		//==============================================================
+		
+#if UNITY_EDITOR
+		[CustomEditor(typeof(PanelStack), true)]
+		public class PanelStackEditor : UnityEditor.Editor
+		{
+			private PanelStack m_script;
+			protected virtual void OnEnable()
+			{
+				m_script = target as PanelStack;
+			}
+			public override void OnInspectorGUI()
+			{
+				base.OnInspectorGUI();
+
+				EditorGUILayout.Space();
+				EditorGUILayout.BeginVertical("box");
+				EditorGUILayout.LabelField("Children Count: " + m_script.StackCount, EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("Index: " + m_script.Index, EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("Display Order: " + m_script.DisplayOrder, EditorStyles.boldLabel);
+				if (m_script.GetComponent<Canvas>() != null)
+					GUILayout.Label("NOTE: sub-panel should not have Canvas component!\nIt should be inherited from parent panel");
+
+				EditorGUILayout.BeginVertical("box");
+				EditorGUILayout.LabelField(m_script.TopPanel == null ? $"TopPanel: Null" : $"TopPanel: {m_script.TopPanel.name}");
+				ShowChildrenList(m_script, 0);
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.EndVertical();
+			}
+			private void ShowChildrenList(PanelStack panel, int pLevelIndent)
+			{
+				if (panel.panelStack == null)
+					return;
+				int levelIndent = EditorGUI.indentLevel;
+				EditorGUI.indentLevel = pLevelIndent;
+				foreach (var p in panel.panelStack)
+				{
+					if (EditorHelper.ButtonColor($"{p.Index}: {p.name}", ColorHelper.LightAzure))
+						Selection.activeObject = p.gameObject;
+					if (p.StackCount > 0)
+					{
+						EditorGUI.indentLevel++;
+						levelIndent = EditorGUI.indentLevel;
+						ShowChildrenList(p, levelIndent);
+					}
+				}
+			}
+		}
+#endif
 	}
 }

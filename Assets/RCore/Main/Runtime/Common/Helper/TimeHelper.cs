@@ -6,7 +6,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace RCore
 {
@@ -24,11 +23,7 @@ namespace RCore
     {
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static StringBuilder m_TimeBuilder = new StringBuilder();
-        private static bool m_WaitingRequest;
-        private static int m_RequestTimeAttempt;
-        private static float m_GetServerTimeAt;
-        private static DateTime m_ServerTime;
-        public static bool FetchedTime => m_GetServerTimeAt > 0;
+        private static bool m_HasInternet;
 
         /// <summary>
         /// 00:00:00
@@ -478,54 +473,6 @@ namespace RCore
             return lastTimeOfMonth;
         }
 
-        public static DateTime? GetServerTimeUtc()
-        {
-            if (m_GetServerTimeAt > 0)
-                return m_ServerTime.AddSeconds(Time.unscaledTime - m_GetServerTimeAt);
-            return null;
-        }
-
-        public static void RequestServerTime(bool renew = false, Action<bool> pCallback = null)
-        {
-            if (m_GetServerTimeAt > 0 && !renew)
-            {
-                pCallback?.Invoke(true);
-                return;
-            }
-            
-            if (m_WaitingRequest)
-                return;
-
-            string url = "https://farmcityer.com/gettime.php";
-
-            var w = UnityWebRequest.Get(url);
-            w.SendWebRequest();
-
-            m_WaitingRequest = true;
-            TimerEventsGlobal.Instance.WaitForCondition(() => w.isDone, () =>
-            {
-                m_WaitingRequest = false;
-                bool success = false;
-                if (w.result == UnityWebRequest.Result.Success)
-                {
-                    if (w.responseCode == 200)
-                    {
-                        var text = w.downloadHandler.text;
-                        if (int.TryParse(text, out int timestamp))
-                        {
-                            m_ServerTime = UnixTimestampToDateTime(timestamp);
-                            m_GetServerTimeAt = Time.unscaledTime;
-                            success = true;
-                        }
-                    }
-                }
-                if (!success && m_RequestTimeAttempt < 5)
-                    TimerEventsGlobal.Instance.WaitForSeconds(30, _ => RequestServerTime()); // Retry after 30 seconds
-                m_RequestTimeAttempt++;
-                pCallback?.Invoke(success);
-            });
-        }
-
         /// <summary>
         /// Get mod in seconds from amount of time
         /// </summary>
@@ -627,6 +574,8 @@ namespace RCore
                 + $"\n UniversalSortableDateTimePattern: \t {culture.DateTimeFormat.UniversalSortableDateTimePattern} \t {DateTime.Now.ToString(culture.DateTimeFormat.UniversalSortableDateTimePattern)}");
         }
         
+        public static DateTime? GetServerTimeUtc() => WebRequestHelper.GetServerTimeUtc();
+
         public static int GetUtcNowTimestamp()
         {
             var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;

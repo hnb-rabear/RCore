@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 #if UNITY_EDITOR
 using RCore.Editor;
@@ -115,6 +116,23 @@ namespace RCore
 				DebugDraw.enabled = value;
 				onSettingsChanged?.Invoke();
 			}
+		}
+		
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		private static void RunOnGameStart()
+		{
+			var culture = CultureInfo.CreateSpecificCulture("en-US");
+			var dateTimeFormat = new DateTimeFormatInfo
+			{
+				ShortDatePattern = "dd-MM-yyyy",
+				LongTimePattern = "HH:mm:ss",
+				ShortTimePattern = "HH:mm"
+			};
+			culture.DateTimeFormat = dateTimeFormat;
+			CultureInfo.CurrentCulture = culture;
+			CultureInfo.CurrentUICulture = culture;
+			CultureInfo.DefaultThreadCurrentCulture = culture;
+			CultureInfo.DefaultThreadCurrentUICulture = culture;
 		}
 	}
 }

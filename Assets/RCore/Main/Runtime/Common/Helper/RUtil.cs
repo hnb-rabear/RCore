@@ -58,7 +58,6 @@ namespace RCore
 			return result.ToString().Replace("__", "_");
 		}
 
-
 		public static string JoinString(string separator, params string[] strs)
 		{
 			var list = new List<string>();
@@ -414,18 +413,6 @@ namespace RCore
 			{
 				return 0;
 			}
-		}
-		
-		public static async void GetIpInfo(Action<string> pCallBack)
-		{
-			const string uri = "https://ipinfo.io/json";
-			using var w = UnityWebRequest.Get(uri);
-			await w.SendWebRequest();
-			bool requestSuccess = w.result == UnityWebRequest.Result.Success;
-			if (!requestSuccess)
-				Debug.LogError(w.error);
-			else
-				pCallBack(w.downloadHandler.text);
 		}
 		
 		public static string LoadTextFile(string pPath, IEncryption pEncryption)

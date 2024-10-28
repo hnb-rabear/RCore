@@ -10,6 +10,7 @@
     "url": "https://github.com/hnb-rabear"
   },
   "dependencies": {
+    "com.rabear.rcore.main": "https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Main",
     "com.unity.addressables": "1.21.21",
     "com.unity.textmeshpro": "3.0.9"
   }

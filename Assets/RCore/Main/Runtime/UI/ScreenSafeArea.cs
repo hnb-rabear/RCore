@@ -107,13 +107,5 @@ namespace RCore.UI
 		{
 			SetTopOffsetForBannerAd(143);
 		}
-
-#if UNITY_EDITOR
-		private void Update()
-		{
-			if (m_CurrentOrientation != Screen.orientation || m_CurrentSafeArea != Screen.safeArea)
-				CheckSafeArea();
-		}
-#endif
 	}
 }

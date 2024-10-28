@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace RCore.Data.JObject
@@ -33,6 +33,7 @@ namespace RCore.Data.JObject
 		private float m_saveCountdown;
 		private float m_saveDelayCustom;
 		private float m_lastSave;
+		private int m_pauseState = -1;
 
 		public bool Initialzied => m_initialized;
 
@@ -55,9 +56,10 @@ namespace RCore.Data.JObject
 
 		private void OnApplicationPause(bool pause)
 		{
-			if (!m_initialized)
+			if (!m_initialized || m_pauseState == (pause ? 0 : 1))
 				return;
 
+			m_pauseState = pause ? 0 : 1;
 			int utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
 			int offlineSeconds = 0;
 			if (!pause)
@@ -68,9 +70,14 @@ namespace RCore.Data.JObject
 				Save(true);
 		}
 
+		private void OnApplicationFocus(bool hasFocus)
+		{
+			OnApplicationPause(!hasFocus);
+		}
+
 		private void OnApplicationQuit()
 		{
-			if (m_saveOnQuit)
+			if (m_initialized && m_saveOnQuit)
 				Save(true);
 		}
 
@@ -94,7 +101,7 @@ namespace RCore.Data.JObject
 		
 		public virtual void Save(bool now = false, float saveDelayCustom = 0)
 		{
-			if (!m_enabledSave)
+			if (!m_enabledSave || !m_initialized)
 				return;
 			
 			if (now)
@@ -175,7 +182,7 @@ namespace RCore.Data.JObject
 			where THandler : JObjectHandler<TManager>
 			where TManager : JObjectDBManager
 		{
-			var newController = Activator.CreateInstance<THandler>();
+			var newController = gameObject.AddComponent<THandler>();
 			newController.manager = this as TManager;
 			
 			m_handlers.Add(newController);
