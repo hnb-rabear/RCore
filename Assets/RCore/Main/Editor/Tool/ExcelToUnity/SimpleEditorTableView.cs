@@ -151,9 +151,9 @@ namespace RCore.Editor
 			float _viewHeight = viewHeight;
 
 			if (viewWidthFillRatio > 0 && viewWidthFillRatio < 1 && m_editorWindow.position.width > 0)
-				_viewWidth = viewWidthFillRatio * m_editorWindow.position.width * 0.99f;
+				_viewWidth = viewWidthFillRatio * m_editorWindow.position.width - 7;
 			if (viewHeightFillRatio > 0 && viewHeightFillRatio < 1 && m_editorWindow.position.height > 0)
-				_viewHeight = viewHeightFillRatio * m_editorWindow.position.height * 0.99f;
+				_viewHeight = viewHeightFillRatio * m_editorWindow.position.height;
 			
 			if (_viewWidth > 0) style.fixedWidth = _viewWidth;
 			if (_viewHeight > 0) style.fixedHeight = _viewHeight;

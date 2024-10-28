@@ -27,7 +27,7 @@ namespace RCore.Editor.Tool.ExcelToUnity
 	public class Excel
 	{
 		public string path;
-		public List<Spreadsheet> sheets;
+		public List<Spreadsheet> sheets = new();
 		public void Load()
 		{
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);

@@ -71,13 +71,44 @@ namespace RCore.Editor.Tool.ExcelToUnity
 				}
 			}
 			GUILayout.EndHorizontal();
-			if (validExcelPath)
+			//-----
+			GUILayout.BeginHorizontal();
+			m_tableSpreadSheet ??= CreateSpreadsheetTable();
+			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
+			m_tableSpreadSheet.viewHeight = 200f;
+			m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets);
+				
+			var style = new GUIStyle(EditorStyles.helpBox);
+			style.fixedWidth = position.width * 0.2f - 7;
+			style.fixedHeight = 200f;
+			EditorGUILayout.BeginVertical(style);
+			if (EditorHelper.Button("Reload"))
 			{
-				m_tableSpreadSheet ??= CreateSpreadsheetTable();
-				m_tableSpreadSheet.viewWidthFillRatio = 0.5f;
-				m_tableSpreadSheet.viewHeightFillRatio = 0.5f;
-				m_tableSpreadSheet.DrawTableGUI(m_excelToUnitySettings.excelFile.sheets);
+				if (ValidateExcelPath(m_excelToUnitySettings.excelFile.path))
+					m_excelToUnitySettings.excelFile.Load();
 			}
+			if (EditorHelper.Button("Export All"))
+			{
+					
+			}
+			if (EditorHelper.Button("Export IDs"))
+			{
+					
+			}
+			if (EditorHelper.Button("Export Constants"))
+			{
+					
+			}
+			if (EditorHelper.Button("Export Json"))
+			{
+					
+			}
+			if (EditorHelper.Button("Export Localizations"))
+			{
+					
+			}
+			EditorGUILayout.EndVertical();
+			GUILayout.EndHorizontal();
 		}
 		
 		private void MultiExcelFilesOnGUI()
