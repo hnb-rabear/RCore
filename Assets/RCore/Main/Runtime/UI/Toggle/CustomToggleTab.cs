@@ -80,6 +80,9 @@ namespace RCore.UI
 
             m_customToggleGroup = group as CustomToggleGroup;
 			m_isOn2 = isOn;
+            
+            if (isOn && m_customToggleGroup != null)
+                m_customToggleGroup.SetTarget(transform as RectTransform);
 		}
 
 #if UNITY_EDITOR
@@ -171,7 +174,16 @@ namespace RCore.UI
                 imgBackground.sprite = isOn ? sptActiveBackground : sptInactiveBackground;
 
             if (enableSizeSwitch)
-                ((RectTransform)transform).sizeDelta = isOn ? sizeActive : sizeInactive;
+            {
+                var size = isOn ? sizeActive : sizeInactive;
+                if (gameObject.TryGetComponent(out LayoutElement layoutElement))
+                {
+                    layoutElement.minWidth = size.x;
+                    layoutElement.minHeight = size.y;
+                }
+                else
+                    ((RectTransform)transform).sizeDelta = size;
+            }
 
             if (enableBgColorSwitch)
                 imgBackground.color = isOn ? colorActiveBackground : colorInactiveBackground;
@@ -225,7 +237,8 @@ namespace RCore.UI
                 }
                 if (enableSizeSwitch || enableTextColorSwitch || enableBgColorSwitch || enableFontSizeSwitch)
                 {
-
+                    m_customToggleGroup.SetToggleInteractable(false);
+                    var layoutElement = gameObject.GetComponent<LayoutElement>();
                     var txtFromColor = !isOn ? colorActiveText : colorInactiveText;
                     var txtToColor = isOn ? colorActiveText : colorInactiveText;
                     var bgFromColor = !isOn ? colorActiveBackground : colorInactiveBackground;
@@ -243,7 +256,15 @@ namespace RCore.UI
                             if (enableSizeSwitch)
                             {
                                 var size = Vector2.Lerp(sizeFrom, sizeTo, val);
-                                rectTransform.sizeDelta = size;
+                                if (layoutElement == null)
+                                {
+                                    rectTransform.sizeDelta = size;
+                                }
+                                else
+                                {
+                                    layoutElement.minWidth = size.x;
+                                    layoutElement.minHeight = size.y;
+                                }
                             }
                             if (enableTextColorSwitch)
                             {
@@ -272,8 +293,20 @@ namespace RCore.UI
                         })
                         .OnComplete(() =>
                         {
+                            m_customToggleGroup.SetToggleInteractable(true);
                             if (enableSizeSwitch)
-                                rectTransform.sizeDelta = isOn ? sizeActive : sizeInactive; 
+                            {
+                                var size = isOn ? sizeActive : sizeInactive;
+                                if (layoutElement == null)
+                                {
+                                    rectTransform.sizeDelta = size;
+                                }
+                                else
+                                {
+                                    layoutElement.minWidth = size.x;
+                                    layoutElement.minHeight = size.y;
+                                }
+                            }
                             if (enableTextColorSwitch)
                             {
                                 if (txtLabel != null)
@@ -297,10 +330,9 @@ namespace RCore.UI
                         })
                         .SetId(GetInstanceID())
                         .SetEase(Ease.OutCubic);
-
-                    if (m_customToggleGroup != null)
-                        m_customToggleGroup.SetTarget(rectTransform, tweenTime);
                 }
+                if (m_customToggleGroup != null)
+                    m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
             }
 #endif
         }

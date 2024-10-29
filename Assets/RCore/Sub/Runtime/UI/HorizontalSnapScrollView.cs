@@ -19,13 +19,10 @@ namespace RCore.UI
 {
 	public class HorizontalSnapScrollView : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
 	{
-		#region Members
-
 		public Action<int> onIndexChanged;
 		public Action onScrollEnd;
 		public Action onScrollStart;
 
-#pragma warning disable 0649
 		[SerializeField] private int m_StartIndex;
 		[SerializeField] private float m_MinSpringTime = 0.5f;
 		[SerializeField] private float m_MaxSpringTime = 1f;
@@ -35,10 +32,9 @@ namespace RCore.UI
 		[SerializeField] private float m_MinScrollReaction = 10;
 		[SerializeField] private Vector2 m_TargetPosOffset;
 		[SerializeField] private ScrollRect m_ScrollView;
-		[SerializeField] private List<MainMenuScrollItem> m_Items;
-		[SerializeField] private bool m_ReverseList;  //TRUE: If the items are ordered from right to left
+		[SerializeField] private SnapScrollItem[] m_Items;
+		[SerializeField] private bool m_ReverseList; //TRUE: If the items are ordered from right to left
 		[SerializeField] private RectTransform m_PointToCheckDistanceToCenter; //To find the nearest item
-#pragma warning disable 0649
 
 		[SerializeField, ReadOnly] private float m_ContentAnchoredXMin;
 		[SerializeField, ReadOnly] private float m_ContentAnchoredXMax;
@@ -60,16 +56,15 @@ namespace RCore.UI
 
 		private RectTransform Content => m_ScrollView.content;
 		public int FocusedItemIndex => m_FocusedItemIndex;
-		public int TotalItems => m_Items.Count;
+		public int TotalItems => m_Items.Length;
 		public bool IsSnapping => m_IsSnapping;
 		public bool IsDragging => m_IsDragging;
-		public List<MainMenuScrollItem> Items => m_Items;
-
-		#endregion
+		public SnapScrollItem[] Items => m_Items;
+		public SnapScrollItem FocusedItem => m_Items[m_FocusedItemIndex];
 
 		//=============================================
 
-		#region MonoBehaviour
+#region MonoBehaviour
 
 		private void Start()
 		{
@@ -80,10 +75,7 @@ namespace RCore.UI
 			MoveToItem(m_StartIndex, true);
 		}
 
-		public void SetStartIndex(int pIndex)
-		{
-
-		}
+		public void SetStartIndex(int pIndex) { }
 
 		private void OnEnable()
 		{
@@ -111,13 +103,9 @@ namespace RCore.UI
 				}
 				return;
 			}
-			else
-				m_checkStop = true;
+			m_checkStop = true;
 
-			if (m_checkBoundary && OutOfBoundary())
-			{
-
-			}
+			if (m_checkBoundary && OutOfBoundary()) { }
 			else
 			{
 				if (speedX > 0 && speedX <= m_SpringThreshold)
@@ -147,8 +135,8 @@ namespace RCore.UI
 					}
 					if (index < 0)
 						index = 0;
-					else if (index >= m_Items.Count - 1)
-						index = m_Items.Count - 1;
+					else if (index >= m_Items.Length - 1)
+						index = m_Items.Length - 1;
 					SetFocusedIndex(index);
 					MoveToFocusedItem(false, speedX);
 				}
@@ -177,6 +165,9 @@ namespace RCore.UI
 			m_IsSnapping = false;
 			m_beginDragPosition = Content.anchoredPosition;
 			onScrollStart?.Invoke();
+			foreach (var item in m_Items)
+				if (item.gameObject.activeSelf)
+					item.OnBeginDrag();
 		}
 
 		public void OnDrag(PointerEventData eventData)
@@ -184,14 +175,19 @@ namespace RCore.UI
 			if (!m_ScrollView.horizontal)
 				return;
 			if (!m_IsDragging)
+			{
 				onScrollStart?.Invoke();
+				foreach (var item in m_Items)
+					if (item.gameObject.activeSelf)
+						item.OnBeginDrag();
+			}
 			m_IsDragging = true;
 			FindNearestItem();
 
 			if (m_beginDragPosition.x < Content.anchoredPosition.x)
-				m_Items[Mathf.Clamp(m_PreviousItemIndex - 1, 0, m_Items.Count - 1)].Show();
+				m_Items[Mathf.Clamp(m_PreviousItemIndex - 1, 0, m_Items.Length - 1)].Show();
 			else if (m_beginDragPosition.x > Content.anchoredPosition.x)
-				m_Items[Mathf.Clamp(m_PreviousItemIndex + 1, 0, m_Items.Count - 1)].Show();
+				m_Items[Mathf.Clamp(m_PreviousItemIndex + 1, 0, m_Items.Length - 1)].Show();
 		}
 
 		public void OnEndDrag(PointerEventData eventData)
@@ -207,15 +203,18 @@ namespace RCore.UI
 			m_dragFromLeft = m_beginDragPosition.x < endDragPosition.x;
 		}
 
-		#endregion
+#endregion
 
-		//=============================================
-
-		#region Public
-
-		public void MoveToItem(int pIndex, bool pImmediately)
+		public void MoveToItem(SnapScrollItem item, bool pImmediately = false)
 		{
-			if (pIndex < 0 || pIndex >= m_Items.Count || !m_Validated)
+			int index = m_Items.IndexOf(item);
+			if (index >= 0)
+				MoveToItem(index, pImmediately);
+		}
+		
+		public void MoveToItem(int pIndex, bool pImmediately = false)
+		{
+			if (pIndex < 0 || pIndex >= m_Items.Length || !m_Validated)
 				return;
 
 #if UNITY_EDITOR
@@ -230,21 +229,22 @@ namespace RCore.UI
 			MoveToFocusedItem(pImmediately, m_SpringThreshold);
 		}
 
-		#endregion
-
-		//==============================================
-
-		#region Private
-
 		private void Validate()
 		{
+			m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
 #if UNITY_EDITOR
-			string str = "Cotent Top Right: " + Content.TopRight()
-				+ "\nContent Bot Lert: " + Content.BotLeft()
-				+ "\nContent Center: " + Content.Center()
-				+ "\nContent Size" + Content.sizeDelta
-				+ "\nContent Pivot" + Content.pivot
-				+ "\nViewPort Size" + m_ScrollView.viewport.rect.size;
+			string str = "Cotent Top Right: "
+				+ Content.TopRight()
+				+ "\nContent Bot Lert: "
+				+ Content.BotLeft()
+				+ "\nContent Center: "
+				+ Content.Center()
+				+ "\nContent Size"
+				+ Content.sizeDelta
+				+ "\nContent Pivot"
+				+ Content.pivot
+				+ "\nViewPort Size"
+				+ m_ScrollView.viewport.rect.size;
 			//Debug.Log(str);
 #endif
 			Content.TryGetComponent(out ContentSizeFitter contentFilter);
@@ -262,7 +262,7 @@ namespace RCore.UI
 					paddingRight = horizontalLayout.padding.right;
 					spacing = horizontalLayout.spacing;
 				}
-				for (int i = 0; i < m_Items.Count; i++)
+				for (int i = 0; i < m_Items.Length; i++)
 				{
 					if (m_Items[i].gameObject.activeSelf)
 					{
@@ -273,7 +273,7 @@ namespace RCore.UI
 					}
 				}
 				contentWidth += paddingLeft + paddingRight;
-				contentWidth += spacing * (m_Items.Count - 1);
+				contentWidth += spacing * (m_Items.Length - 1);
 			}
 			else
 				contentWidth = Content.rect.width;
@@ -309,7 +309,7 @@ namespace RCore.UI
 				contentAnchored.x = targetAnchored.x;
 				Content.anchoredPosition = contentAnchored;
 				onScrollEnd?.Invoke();
-				for (int i = 0; i < m_Items.Count; i++)
+				for (int i = 0; i < m_Items.Length; i++)
 				{
 					if (i == m_FocusedItemIndex)
 						m_Items[i].Show();
@@ -334,7 +334,7 @@ namespace RCore.UI
 					time = m_MaxSpringTime;
 
 				bool moveToLeft = Content.anchoredPosition.x < targetAnchored.x;
-				for (int i = 0; i < m_Items.Count; i++)
+				for (int i = 0; i < m_Items.Length; i++)
 				{
 					if (moveToLeft && i > m_PreviousItemIndex || !moveToLeft && i < m_PreviousItemIndex || moveToLeft && i < m_FocusedItemIndex || !moveToLeft && i > m_FocusedItemIndex)
 						m_Items[i].Hide();
@@ -350,6 +350,9 @@ namespace RCore.UI
 					{
 						m_IsSnapping = true;
 						onScrollStart?.Invoke();
+						foreach (var item in m_Items)
+							if (item.gameObject.activeSelf)
+								item.OnBeginDrag();
 					})
 					.OnUpdate(() =>
 					{
@@ -358,7 +361,7 @@ namespace RCore.UI
 					})
 					.OnComplete(() =>
 					{
-						for (int i = 0; i < m_Items.Count; i++)
+						for (int i = 0; i < m_Items.Length; i++)
 						{
 							if (i == m_FocusedItemIndex)
 								m_Items[i].Show();
@@ -374,7 +377,7 @@ namespace RCore.UI
 					})
 					.SetId(GetInstanceID());
 #else
-				for (int i = 0; i < m_Items.Count; i++)
+				for (int i = 0; i < m_Items.Length; i++)
 				{
 					if (i == m_FocusedItemIndex)
 						m_Items[i].Show();
@@ -394,7 +397,10 @@ namespace RCore.UI
 		/// </summary>
 		private void MoveToFocusedItem()
 		{
-			for (int i = 0; i < m_Items.Count; i++)
+			if (m_Items.Length == 0)
+				return;
+
+			for (int i = 0; i < m_Items.Length; i++)
 				m_Items[i].Show();
 
 			var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
@@ -446,8 +452,8 @@ namespace RCore.UI
 				}
 				if (index < 0)
 					index = 0;
-				else if (index >= m_Items.Count - 1)
-					index = m_Items.Count - 1;
+				else if (index >= m_Items.Length - 1)
+					index = m_Items.Length - 1;
 				SetFocusedIndex(index);
 			}
 		}
@@ -456,7 +462,7 @@ namespace RCore.UI
 		{
 			m_distance = 1000000;
 			int nearestItemIndex = 0;
-			for (int i = 0; i < m_Items.Count; i++)
+			for (int i = 0; i < m_Items.Length; i++)
 			{
 				float distance = Vector2.Distance(m_PointToCheckDistanceToCenter.position, m_Items[i].RectTransform.position);
 				distance = Mathf.Abs(distance);
@@ -485,19 +491,17 @@ namespace RCore.UI
 			return false;
 		}
 
-		#endregion
-
 #if UNITY_EDITOR
 		[CustomEditor(typeof(HorizontalSnapScrollView))]
 		private class HorizontalSnapScrollViewEditor : UnityEditor.Editor
 		{
-			private HorizontalSnapScrollView m_Target;
+			private HorizontalSnapScrollView m_target;
 			private int m_ItemIndex;
 
 			private void OnEnable()
 			{
-				m_Target = target as HorizontalSnapScrollView;
-				m_Target.Validate();
+				m_target = target as HorizontalSnapScrollView;
+				m_target.Validate();
 			}
 
 			public override void OnInspectorGUI()
@@ -505,12 +509,12 @@ namespace RCore.UI
 				base.OnInspectorGUI();
 
 				if (EditorHelper.Button("Validate"))
-					m_Target.Validate();
+					m_target.Validate();
 
 				GUILayout.BeginHorizontal();
 				m_ItemIndex = EditorHelper.IntField(m_ItemIndex, "Item Index");
 				if (EditorHelper.Button("MoveToItem"))
-					m_Target.MoveToItem(m_ItemIndex, false);
+					m_target.MoveToItem(m_ItemIndex, false);
 				GUILayout.EndHorizontal();
 			}
 		}

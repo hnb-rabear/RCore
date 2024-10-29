@@ -2,15 +2,15 @@
 
 namespace RCore.UI
 {
-    public abstract class MainMenuScrollItem : MonoBehaviour
+    public abstract class SnapScrollItem : MonoBehaviour
     {
         [SerializeField] protected RectTransform m_Main;
         [SerializeField] protected Canvas m_MainCanvas;
 
         protected RectTransform m_RectTransform;
-        protected bool m_Staged;
+        protected bool m_refreshed;
 
-        public bool Showed => m_Main.gameObject.activeSelf;
+        public bool Showing => m_Main.gameObject.activeSelf;
         public RectTransform RectTransform
         {
             get
@@ -23,32 +23,30 @@ namespace RCore.UI
 
         protected virtual void Update()
         {
-            if (m_Staged)
+            if (m_refreshed)
             {
-                Commit();
-                m_Staged = false;
+                Refresh();
+                m_refreshed = false;
                 enabled = false;
             }
         }
 
         public virtual void Hide()
         {
-            m_Main.SetActive(false);
+            m_Main.gameObject.SetActive(false);
         }
 
         public virtual void Show()
         {
-            m_Main.SetActive(true);
+            m_Main.gameObject.SetActive(true);
         }
 
-        public abstract void Init();
-
-        public void Stage()
+        public abstract void Refresh();
+        
+        internal void OnBeginDrag()
         {
-            m_Staged = true;
+            m_refreshed = true;
             enabled = true;
         }
-
-        public abstract void Commit();
     }
 }

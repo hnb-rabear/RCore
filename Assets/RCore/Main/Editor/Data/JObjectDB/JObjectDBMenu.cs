@@ -9,8 +9,7 @@ namespace RCore.Editor.Data.JObject
 		[MenuItem("RCore/JObjectDB/JObjectDB Editor %_#_'", priority = RMenu.GROUP_4 + 1)]
 		private static void OpenDataWindow()
 		{
-			var window = EditorWindow.GetWindow<JObjectDBWindow>("JObjectDB", true);
-			window.Show();
+			JObjectDBWindow.ShowWindow();
 		}
 
 		[MenuItem("RCore/JObjectDB/Clear", priority = RMenu.GROUP_4 + 2)]

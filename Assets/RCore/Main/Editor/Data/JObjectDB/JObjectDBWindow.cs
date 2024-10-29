@@ -103,5 +103,11 @@ namespace RCore.Editor.Data.JObject
 				m_data = JObjectDB.GetAllData();
 			});
 		}
+
+		public static void ShowWindow()
+		{
+			var window = GetWindow<JObjectDBWindow>("JObjectDB", true);
+			window.Show();
+		}
 	}
 }

@@ -47,7 +47,7 @@ namespace RCore.Editor.Tool
 			
 			m_target = EnvSetting.Instance;
 			if (m_envProfileCollections == null)
-				m_envProfileCollections = EnvProfilesCollection.LoadOrCreateCollection();
+				m_envProfileCollections = EnvProfilesCollection.Load();
 			m_removingProfile = false;
 			m_selectedProfile = m_target.profile.name;
 			m_typedProfileName = m_target.profile.name;
@@ -370,9 +370,9 @@ namespace RCore.Editor.Tool
 		{
 			EditorHelper.BoxVertical("Firebase", () =>
 			{
-				FirebaseDevConfigPath = EditorHelper.FileSelector("Dev Config Fire", "FirebaseDevConfigPath" + GetInstanceID(), "json,txt");
-				FirebaseLiveConfigPath = EditorHelper.FileSelector("Live Config Fire", "FirebaseLiveConfigPath" + GetInstanceID(), "json,txt");
-				FirebaseConfigOutputFolder = EditorHelper.FolderSelector("Output Folder", "FirebaseConfigOutputFolder" + GetInstanceID());
+				FirebaseDevConfigPath = EditorHelper.FileField(FirebaseDevConfigPath, "Dev Config Fire", "json,txt");
+				FirebaseLiveConfigPath = EditorHelper.FileField(FirebaseLiveConfigPath, "Live Config Fire", "json,txt");
+				FirebaseConfigOutputFolder = EditorHelper.FolderField(FirebaseConfigOutputFolder, "Output Folder");
 
 				string testPath = Application.dataPath + FirebaseDevConfigPath;
 				string livePath = Application.dataPath + FirebaseLiveConfigPath;

@@ -199,6 +199,8 @@ namespace RCore.Editor
 			SearchAndReplaceAssetWindow.ShowWindow();
 		}
 		
+		//==============================================
+		
 		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (W)")]
 		public static void PerfectRatioImagesByWidth()
 		{

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,13 +11,43 @@ namespace RCore.Editor
 		{
 			if (fontAsset == null) return null;
 
-			var materialReferences = TMPro.EditorUtilities.TMP_EditorUtility.FindMaterialReferences(fontAsset);
+			var materialReferences = FindMaterialReferences(fontAsset);
 			var materialPresetNames = new string[materialReferences.Length];
 
 			for (int i = 0; i < materialPresetNames.Length; i++)
 				materialPresetNames[i] = materialReferences[i].name;
 
 			return materialPresetNames;
+		}
+		
+		public static Material[] FindMaterialReferences(TMP_FontAsset fontAsset)
+		{
+			var refs = new List<Material>();
+			var mat = fontAsset.material;
+			refs.Add(mat);
+
+			// Get materials matching the search pattern.
+			string searchPattern = "t:Material" + " " + fontAsset.name.Split(new char[] { ' ' })[0];
+			string[] materialAssetGUIDs = AssetDatabase.FindAssets(searchPattern);
+
+			for (int i = 0; i < materialAssetGUIDs.Length; i++)
+			{
+				string materialPath = AssetDatabase.GUIDToAssetPath(materialAssetGUIDs[i]);
+				var targetMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+
+				if (targetMaterial.HasProperty(ShaderUtilities.ID_MainTex) && targetMaterial.GetTexture(ShaderUtilities.ID_MainTex) != null && mat.GetTexture(ShaderUtilities.ID_MainTex) != null && targetMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID() == mat.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
+				{
+					if (!refs.Contains(targetMaterial))
+						refs.Add(targetMaterial);
+				}
+				else
+				{
+					// TODO: Find a more efficient method to unload resources.
+					//Resources.UnloadAsset(targetMaterial.GetTexture(ShaderUtilities.ID_MainTex));
+				}
+			}
+
+			return refs.ToArray();
 		}
 
 		[MenuItem("GameObject/RCore/Remove Missing Script In GameObject")]

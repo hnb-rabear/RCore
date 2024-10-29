@@ -23,15 +23,15 @@ namespace RCore.Editor.Audio
 
 			EditorHelper.BoxVertical(() =>
 			{
-				string musicSourcePath = EditorHelper.FolderSelector("Musics Sources Path", $"{m_Script.name}musicsSourcePath", m_Script.m_MusicsPath, true);
-				string sfxSourcePath = EditorHelper.FolderSelector("SFX Sources Path", $"{m_Script.name}sfxsSourcePath", m_Script.m_SfxsPath, true);
-				string exportConfigPath = EditorHelper.FolderSelector("Export Config Path", $"{m_Script.name}exportConfigPath", m_Script.m_ConfigPath, true);
+				m_Script.m_MusicsPath = EditorHelper.FolderField(m_Script.m_MusicsPath, "Musics Sources Path");
+				m_Script.m_SfxsPath = EditorHelper.FolderField(m_Script.m_SfxsPath, "SFX Sources Path");
+				m_Script.m_ConfigPath = EditorHelper.FolderField(m_Script.m_ConfigPath, "Export Config Path");
 
 				if (EditorHelper.Button("Build"))
 				{
-					musicSourcePath = Application.dataPath + musicSourcePath;
-					sfxSourcePath = Application.dataPath + sfxSourcePath;
-					exportConfigPath = Application.dataPath + exportConfigPath;
+					string musicSourcePath = Application.dataPath + m_Script.m_MusicsPath;
+					string sfxSourcePath = Application.dataPath + m_Script.m_SfxsPath;
+					string exportConfigPath = Application.dataPath + m_Script.m_ConfigPath;
 
 					var musicFiles = m_Script.musicClips;
 					var sfxFiles = m_Script.sfxClips;
