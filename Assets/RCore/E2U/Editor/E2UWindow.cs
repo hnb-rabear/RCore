@@ -108,6 +108,10 @@ namespace RCore.E2U
 			{
 				m_e2USettings.ExportLocalizations();
 			}
+			if (EditorHelper.Button("Open Settings"))
+			{
+				E2USettingsWindow.ShowWindow();
+			}
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}

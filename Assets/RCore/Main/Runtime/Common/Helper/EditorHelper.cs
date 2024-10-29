@@ -1132,92 +1132,40 @@ namespace RCore.Editor
             return button.IsPressed;
         }
 
-        public static string FolderSelector(string label, string pSavingKey, string defaultPath = null, bool pFormatToUnityPath = true)
-        {
-            defaultPath ??= Application.dataPath;
-            if (pFormatToUnityPath)
-                defaultPath = FormatPathToUnityPath(defaultPath).Replace("Assets", "");
-            string saveKey = label + pSavingKey + Application.productName;
-            string savedPath = EditorPrefs.GetString(saveKey, defaultPath);
-            if (string.IsNullOrEmpty(savedPath))
-                savedPath = defaultPath;
-            var text = new EditorText()
-            {
-                label = label,
-                value = savedPath,
-                labelWidth = label.Length * 8
-            };
-            var button = new EditorButton()
-            {
-                label = "...",
-                width = 25,
-                onPressed = () =>
-                {
-                    string path = EditorUtility.OpenFolderPanel("Select Folder", Application.dataPath, "");
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        if (pFormatToUnityPath)
-                            path = FormatPathToUnityPath(path).Replace("Assets", "");
-                        EditorPrefs.SetString(saveKey, path);
-                        savedPath = path;
-                    }
-                }
-            };
-
-            EditorGUILayout.BeginHorizontal();
-            text.Draw();
-            button.Draw();
-            EditorGUILayout.EndHorizontal();
-            return savedPath;
-        }
-        
-        public static string FolderField(string defaultPath, string label, bool pFormatToUnityPath = true)
+        public static string FolderField(string defaultPath, string label, int labelWidth = 0, bool pFormatToUnityPath = true)
         {
 	        EditorGUILayout.BeginHorizontal();
-	        var newPath = TextField(defaultPath, label, label.Length * 7);
+	        var newPath = TextField(defaultPath, label, labelWidth > 0 ? labelWidth : label.Length * 7);
 	        if (Button("...", 25))
 	        {
-		        newPath = EditorUtility.OpenFolderPanel("Select Folder", defaultPath ?? LastOpenedDirectory, "");
+		        newPath = EditorUtility.OpenFolderPanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, "");
 		        if (!string.IsNullOrEmpty(newPath))
 		        {
 			        if (pFormatToUnityPath)
 				        newPath = FormatPathToUnityPath(newPath).Replace("Assets", "");
 		        }
+		        LastOpenedDirectory = newPath;
 	        }
 	        EditorGUILayout.EndHorizontal();
 	        return string.IsNullOrEmpty(newPath) ? defaultPath : newPath;
         }
         
-        public static string FileSelector(string label, string pSavingKey, string extension, bool pFormatToUnityPath = true)
+        public static string FileField(string defaultPath, string label, string extension, int labelWidth = 0, bool pFormatToUnityPath = true)
         {
-            string savedPath = EditorPrefs.GetString(label + pSavingKey);
-            var text = new EditorText()
-            {
-                label = label,
-                value = savedPath,
-                labelWidth = label.Length * 8,
-            };
-            var button = new EditorButton()
-            {
-                label = "...",
-                width = 25,
-                onPressed = () =>
-                {
-                    string path = EditorUtility.OpenFilePanel("Select File", Application.dataPath, extension);
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        if (pFormatToUnityPath)
-                            path = FormatPathToUnityPath(path).Replace("Assets", "");
-                        EditorPrefs.SetString(label + pSavingKey, path);
-                        savedPath = path;
-                    }
-                }
-            };
-            GUILayout.BeginHorizontal();
-            text.Draw();
-            button.Draw();
-            GUILayout.EndHorizontal();
-            return savedPath;
+	        EditorGUILayout.BeginHorizontal();
+	        var newPath = TextField(defaultPath, label, labelWidth > 0 ? labelWidth : label.Length * 7);
+	        if (Button("...", 25))
+	        {
+		        newPath = EditorUtility.OpenFilePanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, extension);
+		        if (!string.IsNullOrEmpty(newPath))
+		        {
+			        if (pFormatToUnityPath)
+				        newPath = FormatPathToUnityPath(newPath).Replace("Assets", "");
+		        }
+				LastOpenedDirectory = Path.GetDirectoryName(newPath);
+	        }
+	        EditorGUILayout.EndHorizontal();
+	        return string.IsNullOrEmpty(newPath) ? defaultPath : newPath;
         }
 
         public static bool Foldout(string label)
@@ -2057,8 +2005,7 @@ namespace RCore.Editor
             return selectedObj;
         }
 
-        public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0,
-            Color color = default)
+        public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0, Color color = default)
         {
             var toggle = new EditorToggle()
             {

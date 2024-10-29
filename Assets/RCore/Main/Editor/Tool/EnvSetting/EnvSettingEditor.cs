@@ -370,9 +370,9 @@ namespace RCore.Editor.Tool
 		{
 			EditorHelper.BoxVertical("Firebase", () =>
 			{
-				FirebaseDevConfigPath = EditorHelper.FileSelector("Dev Config Fire", "FirebaseDevConfigPath" + GetInstanceID(), "json,txt");
-				FirebaseLiveConfigPath = EditorHelper.FileSelector("Live Config Fire", "FirebaseLiveConfigPath" + GetInstanceID(), "json,txt");
-				FirebaseConfigOutputFolder = EditorHelper.FolderSelector("Output Folder", "FirebaseConfigOutputFolder" + GetInstanceID());
+				FirebaseDevConfigPath = EditorHelper.FileField(FirebaseDevConfigPath, "Dev Config Fire", "json,txt");
+				FirebaseLiveConfigPath = EditorHelper.FileField(FirebaseLiveConfigPath, "Live Config Fire", "json,txt");
+				FirebaseConfigOutputFolder = EditorHelper.FolderField(FirebaseConfigOutputFolder, "Output Folder");
 
 				string testPath = Application.dataPath + FirebaseDevConfigPath;
 				string livePath = Application.dataPath + FirebaseLiveConfigPath;
