@@ -5,7 +5,6 @@
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;
-using RCore.Editor.Tool.ExcelToUnity;
 using UnityEditor;
 using UnityEngine;
 
@@ -198,12 +197,6 @@ namespace RCore.Editor
 		public static void OpenSearchAndReplaceAssetWindow()
 		{
 			SearchAndReplaceAssetWindow.ShowWindow();
-		}
-
-		[MenuItem("RCore/Tools/Excel To Unity", priority = GROUP_6 + 6)]
-		public static void OpenExcelToUnityWindow()
-		{
-			ExcelToUnityWindow.ShowWindow();
 		}
 		
 		//==============================================

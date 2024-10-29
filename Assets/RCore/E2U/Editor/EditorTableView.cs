@@ -1,29 +1,3 @@
-/***
- * Copyright (c) 2024 Red Games
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLRDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USER OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-using RCore.Editor.Tool.ExcelToUnity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,17 +7,17 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
-	public class SimpleEditorTableView<TData>
+	public class EditorTableView<TData>
 	{
-		private MultiColumnHeaderState _multiColumnHeaderState;
-		private MultiColumnHeader _multiColumnHeader;
-		private MultiColumnHeaderState.Column[] _columns;
-		private readonly Color _lighterColor = Color.white * 0.3f;
-		private readonly Color _darkerColor = Color.white * 0.1f;
+		private MultiColumnHeaderState m_multiColumnHeaderState;
+		private MultiColumnHeader m_multiColumnHeader;
+		private MultiColumnHeaderState.Column[] m_columns;
+		private readonly Color m_lighterColor = Color.white * 0.3f;
+		private readonly Color m_darkerColor = Color.white * 0.1f;
 
-		private Vector2 _scrollPosition;
-		private bool _columnResized;
-		private bool _sortingDirty;
+		private Vector2 m_scrollPosition;
+		private bool m_columnResized;
+		private bool m_sortingDirty;
 		private EditorWindow m_editorWindow;
 		private string m_header;
 
@@ -92,9 +66,9 @@ namespace RCore.Editor
 			}
 		}
 
-		private readonly List<ColumnDef> _columnDefs = new List<ColumnDef>();
+		private readonly List<ColumnDef> m_columnDefs = new List<ColumnDef>();
 		
-		public SimpleEditorTableView(EditorWindow pWindow, string header = null)
+		public EditorTableView(EditorWindow pWindow, string header = null)
 		{
 			m_editorWindow = pWindow;
 			m_header = header;
@@ -102,8 +76,8 @@ namespace RCore.Editor
 
 		public void ClearColumns()
 		{
-			_columnDefs.Clear();
-			_columnResized = true;
+			m_columnDefs.Clear();
+			m_columnResized = true;
 		}
 
 		public ColumnDef AddColumn(string title, int minWidth, int maxWidth, DrawItem onDrawItem)
@@ -124,25 +98,25 @@ namespace RCore.Editor
 				onDraw = onDrawItem
 			};
 
-			_columnDefs.Add(columnDef);
-			_columnResized = true;
+			m_columnDefs.Add(columnDef);
+			m_columnResized = true;
 			return columnDef;
 		}
 
 		private void ReBuild()
 		{
-			_columns = _columnDefs.Select((def) => def.column).ToArray();
-			_multiColumnHeaderState = new MultiColumnHeaderState(_columns);
-			_multiColumnHeader = new MultiColumnHeader(_multiColumnHeaderState);
-			_multiColumnHeader.visibleColumnsChanged += (multiColumnHeader) => multiColumnHeader.ResizeToFit();
-			_multiColumnHeader.sortingChanged += (multiColumnHeader) => _sortingDirty = true;
-			_multiColumnHeader.ResizeToFit();
-			_columnResized = false;
+			m_columns = m_columnDefs.Select((def) => def.column).ToArray();
+			m_multiColumnHeaderState = new MultiColumnHeaderState(m_columns);
+			m_multiColumnHeader = new MultiColumnHeader(m_multiColumnHeaderState);
+			m_multiColumnHeader.visibleColumnsChanged += (multiColumnHeader) => multiColumnHeader.ResizeToFit();
+			m_multiColumnHeader.sortingChanged += (multiColumnHeader) => m_sortingDirty = true;
+			m_multiColumnHeader.ResizeToFit();
+			m_columnResized = false;
 		}
 
-		public void DrawTableGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
+		public void DrawOnGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
 		{
-			if (_multiColumnHeader == null || _columnResized)
+			if (m_multiColumnHeader == null || m_columnResized)
 				ReBuild();
 
 			var style = new GUIStyle(EditorStyles.helpBox);
@@ -173,12 +147,12 @@ namespace RCore.Editor
 				GUILayout.Label(m_header, headerStyle);
 			}
 			
-			float rowWidth = _multiColumnHeaderState.widthOfAllVisibleColumns;
+			float rowWidth = m_multiColumnHeaderState.widthOfAllVisibleColumns;
 			if (rowHeight < 0)
 				rowHeight = EditorGUIUtility.singleLineHeight;
 
 			var headerRect = GUILayoutUtility.GetRect(rowWidth, rowHeight);
-			_multiColumnHeader!.OnGUI(headerRect, xScroll: 0.0f);
+			m_multiColumnHeader!.OnGUI(headerRect, xScroll: 0.0f);
 
 			float sumWidth = rowWidth;
 			float sumHeight = rowHeight * data.Count + GUI.skin.horizontalScrollbar.fixedHeight;
@@ -188,9 +162,9 @@ namespace RCore.Editor
 			var scrollViewPos = GUILayoutUtility.GetRect(0, sumWidth, 0, maxHeight);
 			var viewRect = new Rect(0, 0, sumWidth, sumHeight);
 
-			_scrollPosition = GUI.BeginScrollView(
+			m_scrollPosition = GUI.BeginScrollView(
 			    position: scrollViewPos,
-			    scrollPosition: _scrollPosition,
+			    scrollPosition: m_scrollPosition,
 			    viewRect: viewRect,
 			    alwaysShowHorizontal: false,
 			    alwaysShowVertical: false
@@ -200,15 +174,15 @@ namespace RCore.Editor
 			{
 				var rowRect = new Rect(0, rowHeight * row, rowWidth, rowHeight);
 
-				EditorGUI.DrawRect(rect: rowRect, color: row % 2 == 0 ? _darkerColor : _lighterColor);
+				EditorGUI.DrawRect(rect: rowRect, color: row % 2 == 0 ? m_darkerColor : m_lighterColor);
 
-				for (int col = 0; col < _columns.Length; col++)
+				for (int col = 0; col < m_columns.Length; col++)
 				{
-					if (_multiColumnHeader.IsColumnVisible(col))
+					if (m_multiColumnHeader.IsColumnVisible(col))
 					{
-						int visibleColumnIndex = _multiColumnHeader.GetVisibleColumnIndex(col);
-						var cellRect = _multiColumnHeader.GetCellRect(visibleColumnIndex, rowRect);
-						_columnDefs[col].onDraw(cellRect, data[row]);
+						int visibleColumnIndex = m_multiColumnHeader.GetVisibleColumnIndex(col);
+						var cellRect = m_multiColumnHeader.GetCellRect(visibleColumnIndex, rowRect);
+						m_columnDefs[col].onDraw(cellRect, data[row]);
 					}
 				}
 			}
@@ -221,13 +195,13 @@ namespace RCore.Editor
 
 		private void UpdateSorting(List<TData> data)
 		{
-			if (_sortingDirty)
+			if (m_sortingDirty)
 			{
-				int sortIndex = _multiColumnHeader.sortedColumnIndex;
+				int sortIndex = m_multiColumnHeader.sortedColumnIndex;
 				if (sortIndex >= 0)
 				{
-					var sortCompare = _columnDefs[sortIndex].onSort;
-					bool ascending = _multiColumnHeader.IsSortedAscending(sortIndex);
+					var sortCompare = m_columnDefs[sortIndex].onSort;
+					bool ascending = m_multiColumnHeader.IsSortedAscending(sortIndex);
 
 					data.Sort((a, b) =>
 					{
@@ -236,7 +210,7 @@ namespace RCore.Editor
 					});
 				}
 
-				_sortingDirty = false;
+				m_sortingDirty = false;
 			}
 		}
 	}

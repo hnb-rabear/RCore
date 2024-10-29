@@ -1170,7 +1170,24 @@ namespace RCore.Editor
             EditorGUILayout.EndHorizontal();
             return savedPath;
         }
-
+        
+        public static string FolderField(string defaultPath, string label, bool pFormatToUnityPath = true)
+        {
+	        EditorGUILayout.BeginHorizontal();
+	        var newPath = TextField(defaultPath, label, label.Length * 7);
+	        if (Button("...", 25))
+	        {
+		        newPath = EditorUtility.OpenFolderPanel("Select Folder", defaultPath ?? LastOpenedDirectory, "");
+		        if (!string.IsNullOrEmpty(newPath))
+		        {
+			        if (pFormatToUnityPath)
+				        newPath = FormatPathToUnityPath(newPath).Replace("Assets", "");
+		        }
+	        }
+	        EditorGUILayout.EndHorizontal();
+	        return string.IsNullOrEmpty(newPath) ? defaultPath : newPath;
+        }
+        
         public static string FileSelector(string label, string pSavingKey, string extension, bool pFormatToUnityPath = true)
         {
             string savedPath = EditorPrefs.GetString(label + pSavingKey);
