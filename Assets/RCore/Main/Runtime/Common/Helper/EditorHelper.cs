@@ -419,11 +419,13 @@ namespace RCore.Editor
                 if (IsFoldout) label = $"\u25BC{(char)0x200a}{label}";
                 else label = $"\u25BA{(char)0x200a}{label}";
 
+                style ??= new GUIStyle("PreToolbar2");
+
                 GUILayout.BeginHorizontal();
                 GUI.contentColor = EditorGUIUtility.isProSkin
                     ? new Color(1f, 1f, 1f, 0.7f)
                     : new Color(0f, 0f, 0f, 0.7f);
-                if (!GUILayout.Toggle(true, label))
+                if (!GUILayout.Toggle(true, label, style, GUILayout.MinWidth(20f)))
                     IsFoldout = !IsFoldout;
                 GUI.contentColor = Color.white;
                 GUILayout.EndHorizontal();
@@ -614,6 +616,7 @@ namespace RCore.Editor
             return LoadJsonFromFile(path, ref pOutput);
         }
 
+        private static string m_CacheMainDirectory;
         public static string LoadFilePanel(string pMainDirectory, string extensions = "json,txt")
         {
             if (string.IsNullOrEmpty(pMainDirectory))

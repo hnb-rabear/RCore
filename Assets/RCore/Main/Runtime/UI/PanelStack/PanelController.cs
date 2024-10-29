@@ -17,10 +17,6 @@ namespace RCore.UI
 {
 	public class PanelController : PanelStack
 	{
-		//==============================
-
-#region Members
-
 		[Tooltip("Set True if this panel is prefab and rarely use in game")]
 		public bool useOnce = false;
 
@@ -98,8 +94,6 @@ namespace RCore.UI
 
 		public bool Displayed => m_showed || m_isShowing;
 		public bool Transiting => m_isShowing || m_isHiding;
-
-#endregion
 
 		//=================================
 
@@ -220,8 +214,6 @@ namespace RCore.UI
 
 		//===================================
 
-#region Monobehaviour
-
 		protected override void Awake()
 		{
 			base.Awake();
@@ -250,11 +242,7 @@ namespace RCore.UI
 			}
 		}
 
-#endregion
-
 		//======================================================
-
-#region Methods
 
 		private void LockWhileTransiting(bool value)
 		{
@@ -325,20 +313,32 @@ namespace RCore.UI
 			return false;
 		}
 
-		public bool IsSubsidiary() => parentPanel.parentPanel != null;
+		public bool IsChildPanel() => parentPanel.parentPanel != null;
 
 		public bool Contains<T>(T popupConvertCoin) where T : PanelController
 		{
 			return panelStack.Contains(popupConvertCoin);
 		}
-		
-#endregion
 
 		//======================================================
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(PanelController), true)]
-		public class PanelControllerEditor : PanelStackEditor { }
+		public class PanelControllerEditor : PanelStackEditor
+		{
+			public override void OnInspectorGUI()
+			{
+				base.OnInspectorGUI();
+
+				// Create a layer to block user taps on DimmerOverlay, preventing the panel from closing
+				if (EditorHelper.Button("Add DimmerOverlay Block"))
+				{
+					var img = m_script.gameObject.GetOrAddComponent<Image>();
+					if (img.color != Color.clear)
+						img.color = Color.clear;
+				}
+			}
+		}
 #endif
 	}
 }

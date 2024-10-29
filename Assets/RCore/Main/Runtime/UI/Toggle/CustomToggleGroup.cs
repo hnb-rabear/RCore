@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 #if DOTWEEN
 using DG.Tweening;
@@ -14,19 +16,15 @@ namespace RCore.UI
         {
             if (dynamicBackground == null)
                 return;
-
+            
+            float lerp = 0;
             var oldPos = dynamicBackground.anchoredPosition;
             var oldSize = dynamicBackground.sizeDelta;
 
             if (!Application.isPlaying || pTweenDuration == 0)
-            {
-                dynamicBackground.anchoredPosition = pTarget.anchoredPosition;
-                dynamicBackground.sizeDelta = pTarget.sizeDelta;
-                return;
-            }
+                StartCoroutine(IESetTarget(pTarget));
 
 #if DOTWEEN
-            float lerp = 0;
             DOTween.Kill(GetInstanceID());
             DOTween.To(() => lerp, x => lerp = x, 1f, pTweenDuration)
                 .OnUpdate(() =>
@@ -45,9 +43,26 @@ namespace RCore.UI
                 .SetEase(Ease.OutCubic)
                 .SetId(GetInstanceID());
 #else
-            dynamicBackground.anchoredPosition = pTarget.anchoredPosition;
-            dynamicBackground.sizeDelta = pTarget.sizeDelta;
+            StartCoroutine(IESetTarget(pTarget));
 #endif
+        }
+
+        private IEnumerator IESetTarget(RectTransform pTarget)
+        {
+            float time = 0.2f;
+            while (time > 0)
+            {
+                dynamicBackground.anchoredPosition = pTarget.anchoredPosition;
+                dynamicBackground.sizeDelta = pTarget.sizeDelta;
+                time -= Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        public void SetToggleInteractable(bool value)
+        {
+            foreach (var toggle in m_Toggles)
+                toggle.interactable = value;
         }
     }
 }

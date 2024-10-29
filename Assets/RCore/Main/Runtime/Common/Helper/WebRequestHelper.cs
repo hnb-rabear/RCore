@@ -18,12 +18,6 @@ namespace RCore
 	
 	public static class WebRequestHelper
 	{
-		public struct RequestState
-		{
-			public bool processing;
-			public bool finished;
-		}
-		
 		private static bool m_RequestingServerTime;
 		private static float m_GetServerTimeAt;
 		private static DateTime m_ServerTime;

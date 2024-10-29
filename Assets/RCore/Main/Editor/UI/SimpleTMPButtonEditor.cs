@@ -24,7 +24,7 @@ namespace RCore.Editor.UI
             m_labelMats = Array.Empty<Material>();
             if (m_target.Label != null)
             {
-                m_labelMats = TMPro.EditorUtilities.TMP_EditorUtility.FindMaterialReferences(m_target.Label.font);
+                m_labelMats = EditorHelperUtils.FindMaterialReferences(m_target.Label.font);
                 m_matsName = new string[m_labelMats.Length];
                 for (int i = 0; i < m_labelMats.Length; i++)
                     m_matsName[i] = m_labelMats[i].name;

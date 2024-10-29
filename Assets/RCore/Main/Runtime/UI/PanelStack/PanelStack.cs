@@ -524,7 +524,7 @@ namespace RCore.UI
 		[CustomEditor(typeof(PanelStack), true)]
 		public class PanelStackEditor : UnityEditor.Editor
 		{
-			private PanelStack m_script;
+			protected PanelStack m_script;
 			protected virtual void OnEnable()
 			{
 				m_script = target as PanelStack;
