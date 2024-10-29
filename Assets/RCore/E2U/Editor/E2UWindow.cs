@@ -64,7 +64,8 @@ namespace RCore.E2U
 				EditorHelper.LabelField("Bad", 50, false, TextAnchor.MiddleCenter, Color.red);
 			if (EditorHelper.Button("Select File", 100))
 			{
-				string path = EditorHelper.OpenFilePanel("Select File", "xlsx");
+				string directory = string.IsNullOrEmpty(m_e2USettings.excelFile.path) ? null : Path.GetDirectoryName(m_e2USettings.excelFile.path);
+				string path = EditorHelper.OpenFilePanel("Select File", "xlsx", directory);
 				if (!string.IsNullOrEmpty(path))
 				{
 					m_e2USettings.excelFile.path = path;

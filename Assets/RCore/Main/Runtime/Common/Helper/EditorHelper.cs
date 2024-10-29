@@ -1144,10 +1144,10 @@ namespace RCore.Editor
 		        newPath = EditorUtility.OpenFolderPanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, "");
 		        if (!string.IsNullOrEmpty(newPath))
 		        {
-			        if (pFormatToUnityPath)
-				        newPath = FormatPathToUnityPath(newPath).Replace("Assets", "");
+			        LastOpenedDirectory = newPath;
+			        if (pFormatToUnityPath && newPath.StartsWith(Application.dataPath))
+				        newPath = FormatPathToUnityPath(newPath);
 		        }
-		        LastOpenedDirectory = newPath;
 	        }
 	        EditorGUILayout.EndHorizontal();
 	        return string.IsNullOrEmpty(newPath) ? defaultPath : newPath;
@@ -1162,10 +1162,10 @@ namespace RCore.Editor
 		        newPath = EditorUtility.OpenFilePanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, extension);
 		        if (!string.IsNullOrEmpty(newPath))
 		        {
-			        if (pFormatToUnityPath)
-				        newPath = FormatPathToUnityPath(newPath).Replace("Assets", "");
+			        LastOpenedDirectory = Path.GetDirectoryName(newPath);
+			        if (pFormatToUnityPath && newPath.StartsWith(Application.dataPath))
+				        newPath = FormatPathToUnityPath(newPath);
 		        }
-				LastOpenedDirectory = Path.GetDirectoryName(newPath);
 	        }
 	        EditorGUILayout.EndHorizontal();
 	        return string.IsNullOrEmpty(newPath) ? defaultPath : newPath;
@@ -2575,9 +2575,9 @@ namespace RCore.Editor
 			return paths;
         }
         
-        public static string OpenFilePanel(string title, string extension)
+        public static string OpenFilePanel(string title, string extension, string directory = null)
         {
-	        string path = EditorUtility.OpenFilePanel(title, LastOpenedDirectory, extension);
+	        string path = EditorUtility.OpenFilePanel(title, directory ?? LastOpenedDirectory, extension);
 	        if (!string.IsNullOrEmpty(path))
 		        LastOpenedDirectory = Path.GetDirectoryName(path);
 	        return path;

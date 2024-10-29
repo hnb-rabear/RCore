@@ -27,8 +27,8 @@ namespace RCore.E2U
 				Directory.CreateDirectory(pFolderPath);
 
 			string filePath = $"{pFolderPath}\\{pFileName}";
-			if (!System.IO.File.Exists(filePath))
-				using (System.IO.File.Create(filePath)) { }
+			if (!File.Exists(filePath))
+				using (File.Create(filePath)) { }
 
 			using var sw = new StreamWriter(filePath);
 			sw.WriteLine(pContent);

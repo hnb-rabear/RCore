@@ -20,9 +20,9 @@ namespace RCore.E2U
 		{
 			EditorGUI.BeginChangeCheck();
 			GUILayout.BeginVertical("box");
-			m_e2USettings.constantsOutputFolder = EditorHelper.FolderField(m_e2USettings.constantsOutputFolder, "Constants output folder", 200, false);
-			m_e2USettings.jsonOutputFolder = EditorHelper.FolderField(m_e2USettings.jsonOutputFolder, "Json output folder", 200, false);
-			m_e2USettings.localizationOutputFolder = EditorHelper.FolderField(m_e2USettings.localizationOutputFolder, "Localization output folder", 200, false);
+			m_e2USettings.constantsOutputFolder = EditorHelper.FolderField(m_e2USettings.constantsOutputFolder, "Constants output folder", 200);
+			m_e2USettings.jsonOutputFolder = EditorHelper.FolderField(m_e2USettings.jsonOutputFolder, "Json output folder", 200);
+			m_e2USettings.localizationOutputFolder = EditorHelper.FolderField(m_e2USettings.localizationOutputFolder, "Localization output folder", 200);
 			m_e2USettings.@namespace = EditorHelper.TextField(m_e2USettings.@namespace, "Namespace", 200);
 			m_e2USettings.separateIDs = EditorHelper.Toggle(m_e2USettings.separateIDs, "Separate IDs Sheets", 200);
 			m_e2USettings.separateConstants = EditorHelper.Toggle(m_e2USettings.separateConstants, "Separate Constants Sheets", 200);

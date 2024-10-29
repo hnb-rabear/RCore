@@ -451,11 +451,11 @@ namespace RCore.Editor.Tool
 			string liveFilePath = Application.dataPath + "/" + FirebaseLiveConfigPath;
 			string outputFolder = Application.dataPath + "/" + FirebaseConfigOutputFolder;
 			if (!Directory.Exists(outputFolder))
-				FirebaseConfigOutputFolder = FirebaseConfigOutputFolder.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseConfigOutputFolder).Replace("Assets/", "") : "";
+				FirebaseConfigOutputFolder = FirebaseConfigOutputFolder.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseConfigOutputFolder) : "";
 			if (!File.Exists(devFilePath))
-				FirebaseDevConfigPath = FirebaseDevConfigPath.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseDevConfigPath).Replace("Assets/", "") : "";
+				FirebaseDevConfigPath = FirebaseDevConfigPath.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseDevConfigPath) : "";
 			if (!File.Exists(liveFilePath))
-				FirebaseLiveConfigPath = FirebaseLiveConfigPath.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseLiveConfigPath).Replace("Assets/", "") : "";
+				FirebaseLiveConfigPath = FirebaseLiveConfigPath.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseLiveConfigPath) : "";
 		}
 	}
 }
