@@ -120,42 +120,6 @@ namespace RCore.UI
 				transform.localScale = m_initialScale;
 		}
 
-#if UNITY_EDITOR
-		protected override void OnValidate()
-		{
-			if (Application.isPlaying)
-				return;
-
-			base.OnValidate();
-
-			if (targetGraphic == null)
-			{
-				var images = gameObject.GetComponentsInChildren<Image>();
-				if (images.Length > 0)
-				{
-					targetGraphic = images[0];
-					m_img = (Image)targetGraphic;
-				}
-			}
-			if (targetGraphic != null && m_img == null)
-				m_img = targetGraphic as Image;
-
-			if (transition == Transition.Animation && GetComponent<Animator>() != null)
-			{
-				GetComponent<Animator>().updateMode = AnimatorUpdateMode.UnscaledTime;
-				m_scaleBounceEffect = false;
-			}
-
-			if (m_scaleBounceEffect)
-				m_initialScale = transform.localScale;
-
-			RefreshPivot();
-
-			m_PerfectSpriteId = 0;
-			CheckPerfectRatio();
-		}
-#endif
-
 		protected override void OnEnable()
 		{
 			base.OnEnable();
@@ -163,7 +127,7 @@ namespace RCore.UI
 			if (m_scaleBounceEffect)
 				transform.localScale = m_initialScale;
 
-			if (m_img.sprite != null && m_PerfectSpriteId != m_img.sprite.GetInstanceID())
+			if (m_img != null && m_img.sprite != null && m_PerfectSpriteId != m_img.sprite.GetInstanceID())
 				CheckPerfectRatio();
 		}
 
@@ -268,7 +232,6 @@ namespace RCore.UI
 		public Material GetGreyMat()
 		{
 			if (m_GreyMat == null)
-				//mGreyMat = new Material(Shader.Find("NBCustom/Sprites/Greyscale"));
 				m_GreyMat = Resources.Load<Material>("Greyscale");
 			return m_GreyMat;
 		}
@@ -327,6 +290,51 @@ namespace RCore.UI
 		}
 
 #if UNITY_EDITOR
+
+		protected override void OnValidate()
+		{
+			if (Application.isPlaying)
+				return;
+
+			base.OnValidate();
+
+			if (targetGraphic == null)
+			{
+				var images = gameObject.GetComponentsInChildren<Image>();
+				if (images.Length > 0)
+				{
+					targetGraphic = images[0];
+					m_img = (Image)targetGraphic;
+				}
+			}
+			if (targetGraphic != null && m_img == null)
+				m_img = targetGraphic as Image;
+
+			if (transition == Transition.Animation)
+			{
+				var _animator = gameObject.GetOrAddComponent<Animator>();
+				_animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+				m_scaleBounceEffect = false;
+				if (_animator.runtimeAnimatorController == null)
+				{
+					string _animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
+					if (!string.IsNullOrEmpty(_animatorCtrlPath))
+					{
+						 var _animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(_animatorCtrlPath);
+						 if (_animatorCtrl != null)
+							 _animator.runtimeAnimatorController = _animatorCtrl;
+					}
+				}
+			}
+
+			if (m_scaleBounceEffect)
+				m_initialScale = transform.localScale;
+
+			RefreshPivot();
+
+			m_PerfectSpriteId = 0;
+			CheckPerfectRatio();
+		}
 
 		[CanEditMultipleObjects]
 		[CustomEditor(typeof(JustButton), true)]
