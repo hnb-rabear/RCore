@@ -2,7 +2,6 @@
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
-#pragma warning disable 0649
 using System;
 using System.Collections;
 #if UNITY_EDITOR
@@ -44,7 +43,8 @@ namespace RCore.UI
 		private bool m_locked;
 
 		private CanvasGroup m_canvasGroup;
-		private Canvas m_canvas;
+		private static readonly int m_AnimClose = Animator.StringToHash("close");
+		private static readonly int m_AnimOpen = Animator.StringToHash("open");
 
 		public CanvasGroup CanvasGroup
 		{
@@ -61,34 +61,6 @@ namespace RCore.UI
 						m_canvasGroup = gameObject.AddComponent<CanvasGroup>();
 				}
 				return m_canvasGroup;
-			}
-		}
-		/// <summary>
-		/// Optional, in case we need to control sorting order
-		/// </summary>
-		public Canvas Canvas
-		{
-			get
-			{
-				if (m_canvas == null)
-				{
-#if UNITY_2019_2_OR_NEWER
-					TryGetComponent(out GraphicRaycaster rayCaster);
-#else
-                    var rayCaster = GetComponent<GraphicRaycaster>();
-#endif
-					if (rayCaster == null)
-						rayCaster = gameObject.AddComponent<GraphicRaycaster>();
-
-#if UNITY_2019_2_OR_NEWER
-					TryGetComponent(out m_canvas);
-#else
-                    mCanvas = gameObject.GetComponent<Canvas>();
-#endif
-					if (m_canvas == null)
-						m_canvas = gameObject.AddComponent<Canvas>();
-				}
-				return m_canvas;
 			}
 		}
 
@@ -143,7 +115,16 @@ namespace RCore.UI
 			onDidHide?.Invoke();
 		}
 
-		protected virtual IEnumerator IE_HideFX() { yield break; }
+		protected virtual IEnumerator IE_HideFX()
+		{
+			if (TryGetComponent(out Animator animator) && animator.parameters.Exists(x => x.name == "close"))
+			{
+				animator.SetTrigger(m_AnimClose);
+				yield return null;
+				var info = animator.GetCurrentAnimatorStateInfo(0);
+				yield return new WaitForSecondsRealtime(info.length - Time.deltaTime);
+			}
+		}
 
 		protected virtual void BeforeHiding() { }
 
@@ -194,7 +175,16 @@ namespace RCore.UI
 			onDidShow?.Invoke();
 		}
 
-		protected virtual IEnumerator IE_ShowFX() { yield break; }
+		protected virtual IEnumerator IE_ShowFX()
+		{
+			if (TryGetComponent(out Animator animator) && animator.parameters.Exists(x => x.name == "open"))
+			{
+				animator.SetTrigger(m_AnimOpen);
+				yield return null;
+				var info = animator.GetCurrentAnimatorStateInfo(0);
+				yield return new WaitForSecondsRealtime(info.length - Time.deltaTime);
+			}
+		}
 
 		protected virtual void BeforeShowing() { }
 
@@ -331,11 +321,29 @@ namespace RCore.UI
 				base.OnInspectorGUI();
 
 				// Create a layer to block user taps on DimmerOverlay, preventing the panel from closing
-				if (EditorHelper.Button("Add DimmerOverlay Block"))
+				if (EditorHelper.Button("Add a layer that blocks DimmerOverlay"))
 				{
 					var img = m_script.gameObject.GetOrAddComponent<Image>();
 					if (img.color != Color.clear)
 						img.color = Color.clear;
+				}
+				if (EditorHelper.Button("Add Transition Animation"))
+				{
+					var animator = m_script.gameObject.GetOrAddComponent<Animator>();
+					if (animator.runtimeAnimatorController == null)
+					{
+						string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("7d5f83b914c1a9b4ca7b5203f47e50c0");
+						if (!string.IsNullOrEmpty(animatorCtrlPath))
+						{
+							var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
+							if (animatorCtrl != null)
+							{
+								animator.runtimeAnimatorController = animatorCtrl;
+								animator.gameObject.GetOrAddComponent<CanvasGroup>();
+							}
+						}
+						((PanelController)target).enableFXTransition = true;
+					}
 				}
 			}
 		}

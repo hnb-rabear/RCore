@@ -102,25 +102,38 @@ namespace RCore.UI
                 imgBackground = images[0];
             }
 
-            if (enableBgColorSwitch)
+            if (imgBackground != null)
             {
-                if (colorActiveBackground.a == 0 && imgBackground != null)
-                    colorActiveBackground = imgBackground.color;
+	            if (enableBgColorSwitch)
+	            {
+		            if (colorActiveBackground == default)
+			            colorActiveBackground = imgBackground.color;
+	            }
+	            else if (imgBackground.color == default && colorActiveBackground != default)
+	            {
+		            imgBackground.color = colorActiveBackground;
+	            }
+	            if (enableBgSpriteSwitch)
+	            {
+		            if (sptActiveBackground == null && imgBackground.sprite != null)
+			            sptActiveBackground = imgBackground.sprite;
+	            }
+	            else if (imgBackground.sprite == null && sptActiveBackground != null)
+	            {
+		            imgBackground.sprite = sptActiveBackground;
+	            }
             }
-            if (enableBgSpriteSwitch)
+            if (txtLabel != null)
             {
-                if (imgBackground != null && sptActiveBackground == null && imgBackground.sprite != null)
-                    sptActiveBackground = imgBackground.sprite;
-            }
-            if (enableFontSizeSwitch)
-            {
-                if (fontSizeActive == 0 && txtLabel != null)
-                    fontSizeActive = txtLabel.fontSize;
-            }
-            if (enableTextColorSwitch)
-            {
-                if (colorActiveText.a == 0 && txtLabel != null)
-                    colorActiveText = txtLabel.color;
+	            if (enableFontSizeSwitch && fontSizeActive == 0)
+		            fontSizeActive = txtLabel.fontSize;
+	            if (enableTextColorSwitch)
+	            {
+		            if (colorActiveText == default)
+			            colorActiveText = txtLabel.color;
+	            }
+	            else if (txtLabel.color == default && colorActiveText != default)
+		            txtLabel.color = colorActiveText;
             }
             if (enableSizeSwitch)
             {
@@ -130,6 +143,22 @@ namespace RCore.UI
 
             if (group == null)
                 group = gameObject.GetComponentInParent<ToggleGroup>();
+            
+            if (transition == Transition.Animation)
+            {
+	            var _animator = gameObject.GetOrAddComponent<Animator>();
+	            _animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+	            if (_animator.runtimeAnimatorController == null)
+	            {
+		            string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
+		            if (!string.IsNullOrEmpty(animatorCtrlPath))
+		            {
+			            var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
+			            if (animatorCtrl != null)
+				            _animator.runtimeAnimatorController = animatorCtrl;
+		            }
+	            }
+            }
         }
 #endif
 

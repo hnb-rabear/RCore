@@ -317,12 +317,12 @@ namespace RCore.UI
 				m_scaleBounceEffect = false;
 				if (_animator.runtimeAnimatorController == null)
 				{
-					string _animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
-					if (!string.IsNullOrEmpty(_animatorCtrlPath))
+					string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
+					if (!string.IsNullOrEmpty(animatorCtrlPath))
 					{
-						 var _animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(_animatorCtrlPath);
-						 if (_animatorCtrl != null)
-							 _animator.runtimeAnimatorController = _animatorCtrl;
+						 var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
+						 if (animatorCtrl != null)
+							 _animator.runtimeAnimatorController = animatorCtrl;
 					}
 				}
 			}

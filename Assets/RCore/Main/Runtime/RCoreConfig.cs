@@ -5,8 +5,6 @@ namespace RCore
 {
 	public class RCoreConfig : ScriptableObject
 	{
-		private static readonly string m_FilePath = $"Resources/{nameof(RCoreConfig)}.asset";
-		
 		private static RCoreConfig m_Instance;
 		public static RCoreConfig Instance
 		{
@@ -16,12 +14,11 @@ namespace RCore
 					m_Instance = Resources.Load<RCoreConfig>(nameof(RCoreConfig));
 #if UNITY_EDITOR
 				if (m_Instance == null)
-					m_Instance = EditorHelper.CreateScriptableAsset<RCoreConfig>($"Assets/{m_FilePath}");
+					m_Instance = EditorHelper.CreateScriptableAsset<RCoreConfig>($"Assets/Resources/{nameof(RCoreConfig)}.asset");
 #endif
 				return m_Instance;
 			}
 		}
-
 #if APPLOVINE
 		public string maxSdkKey;
 		public string maxInterstitial;
