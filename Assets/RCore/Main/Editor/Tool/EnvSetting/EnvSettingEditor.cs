@@ -100,21 +100,21 @@ namespace RCore.Editor.Tool
 				EditProfile(false);
 			}
 			GUILayout.Space(10);
-			EditorHelper.BoxHorizontal(() =>
+			if (m_previewingProfiles && EditorHelper.ButtonColor("Back", Color.yellow))
+				EditProfile(false);
+			if (EditorHelper.ButtonColor("Save", Color.green))
 			{
-				EditorHelper.TextArea(m_buildName, "Build Name", readOnly:true);
-				if (EditorHelper.Button("Copy", 50))
-					GUIUtility.systemCopyBuffer = m_buildName;
-			});
-			EditorHelper.BoxVertical(() =>
-			{
-				if (EditorHelper.ButtonColor("Save", Color.green))
-				{
-					EditorUtility.SetDirty(m_envProfileCollections);
-					EditorUtility.SetDirty(m_target);
-					AssetDatabase.SaveAssets();
-				}
-			}, Color.white, true);
+				EditorUtility.SetDirty(m_envProfileCollections);
+				EditorUtility.SetDirty(m_target);
+				AssetDatabase.SaveAssets();
+			}
+			GUILayout.Space(10);
+
+			GUILayout.BeginHorizontal();
+			EditorHelper.TextArea(m_buildName, "Build Name", readOnly:true);
+			if (EditorHelper.Button("Copy", 50))
+				GUIUtility.systemCopyBuffer = m_buildName;
+			GUILayout.EndHorizontal();
 		}
 
 		//========= SETTINGS PROFILE
@@ -126,6 +126,8 @@ namespace RCore.Editor.Tool
 
 			EditorHelper.BoxVertical(m_previewingProfiles ? "Profiles" : m_target.profile.name, () =>
 			{
+				GUILayout.Space(5);
+				
 				if (!m_previewingProfiles)
 				{
 					EditorGUILayout.BeginVertical("box");
@@ -213,18 +215,21 @@ namespace RCore.Editor.Tool
 					pProfile.defines = (List<EnvSetting.Directive>)m_reorderDirectivesDict[pProfile.name].list;
 
 				EditorGUILayout.BeginHorizontal();
-				if (EditorHelper.Button("Apply"))
-					ApplyDirectives(pProfile.defines);
 				if (m_previewingProfiles)
 				{
-					if (EditorHelper.Button("Clone"))
+					if (EditorHelper.Button("Duplicate"))
 					{
 						var cloneProfile = CloneProfile(pProfile);
-						cloneProfile.name += "(clone)";
+						cloneProfile.name += " (new)";
 						m_envProfileCollections.profiles.Add(cloneProfile);
 					}
 					if (pProfile.name != "do_not_remove" && EditorHelper.ButtonColor("Remove", Color.red))
 						m_envProfileCollections.profiles.Remove(pProfile);
+				}
+				else
+				{
+					if (EditorHelper.Button("Apply"))
+						ApplyDirectives(pProfile.defines);
 				}
 				EditorGUILayout.EndHorizontal();
 			}
@@ -244,9 +249,8 @@ namespace RCore.Editor.Tool
 					DrawSettingsProfile(profiles[i]);
 					EditorGUILayout.EndVertical();
 				}
+				GUILayout.Space(5);
 			}
-			if (EditorHelper.ButtonColor("Back", Color.yellow))
-				EditProfile(false);
 		}
 
 		private void EditProfile(bool pMode)
