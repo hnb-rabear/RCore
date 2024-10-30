@@ -5,34 +5,34 @@ using UnityEngine;
 using NPOI.SS.UserModel;
 using RCore.Editor;
 
-namespace RCore.E2U
+namespace RCore.SheetX
 {
-	public class E2UWindow : EditorWindow
+	public class SheetXWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;
-		private E2USettings m_e2USettings;
+		private SheetXSettings m_sheetXSettings;
 		private EditorTableView<ExcelFile> m_tableExcelFiles;
 		private EditorTableView<Spreadsheet> m_tableSpreadSheet;
 		private IWorkbook m_workbook;
 
 		private void OnEnable()
 		{
-			m_e2USettings = E2USettings.Load();
+			m_sheetXSettings = SheetXSettings.Load();
 		}
 
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-			var tab = EditorHelper.Tabs($"{nameof(E2UWindow)}", "Export Excel", "Export Multi Excel");
+			var tab = EditorHelper.Tabs($"{nameof(SheetXWindow)}", "Export Excel Spreadsheet", "Export Multi Excel Spreadsheets");
 			switch (tab)
 			{
-				case "Export Excel":
+				case "Export Excel Spreadsheet":
 					GUILayout.BeginVertical("box");
 					SingleExcelOnGUI();
 					GUILayout.EndVertical();
 					break;
 				
-				case "Export Multi Excel":
+				case "Export Multi Excel Spreadsheets":
 					GUILayout.BeginVertical("box");
 					MultiExcelFilesOnGUI();
 					GUILayout.EndVertical();
@@ -52,20 +52,20 @@ namespace RCore.E2U
 		private void SingleExcelOnGUI()
 		{
 			GUILayout.BeginHorizontal();
-			m_e2USettings.excelFile.path = EditorHelper.TextField(m_e2USettings.excelFile.path, "Excel File", 100);
-			bool validExcelPath = ValidateExcelPath(m_e2USettings.excelFile.path);
+			m_sheetXSettings.excelFile.path = EditorHelper.TextField(m_sheetXSettings.excelFile.path, "Excel File", 100);
+			bool validExcelPath = ValidateExcelPath(m_sheetXSettings.excelFile.path);
 			if (validExcelPath)
 				EditorHelper.LabelField("Good", 50, false, TextAnchor.MiddleCenter, Color.green);
 			else
 				EditorHelper.LabelField("Bad", 50, false, TextAnchor.MiddleCenter, Color.red);
 			if (EditorHelper.Button("Select File", 100))
 			{
-				string directory = string.IsNullOrEmpty(m_e2USettings.excelFile.path) ? null : Path.GetDirectoryName(m_e2USettings.excelFile.path);
+				string directory = string.IsNullOrEmpty(m_sheetXSettings.excelFile.path) ? null : Path.GetDirectoryName(m_sheetXSettings.excelFile.path);
 				string path = EditorHelper.OpenFilePanel("Select File", "xlsx", directory);
 				if (!string.IsNullOrEmpty(path))
 				{
-					m_e2USettings.excelFile.path = path;
-					m_e2USettings.excelFile.Load();
+					m_sheetXSettings.excelFile.path = path;
+					m_sheetXSettings.excelFile.Load();
 				}
 			}
 			GUILayout.EndHorizontal();
@@ -74,7 +74,7 @@ namespace RCore.E2U
 			m_tableSpreadSheet ??= CreateSpreadsheetTable();
 			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
 			m_tableSpreadSheet.viewHeight = 200f;
-			m_tableSpreadSheet.DrawOnGUI(m_e2USettings.excelFile.sheets);
+			m_tableSpreadSheet.DrawOnGUI(m_sheetXSettings.excelFile.sheets);
 				
 			var style = new GUIStyle(EditorStyles.helpBox);
 			style.fixedWidth = position.width * 0.2f - 7;
@@ -82,32 +82,32 @@ namespace RCore.E2U
 			EditorGUILayout.BeginVertical(style);
 			if (EditorHelper.Button("Reload"))
 			{
-				if (ValidateExcelPath(m_e2USettings.excelFile.path))
-					m_e2USettings.excelFile.Load();
+				if (ValidateExcelPath(m_sheetXSettings.excelFile.path))
+					m_sheetXSettings.excelFile.Load();
 			}
 			if (EditorHelper.Button("Export All"))
 			{
-				m_e2USettings.ExportAll();
+				m_sheetXSettings.ExportAll();
 			}
 			if (EditorHelper.Button("Export IDs"))
 			{
-				m_e2USettings.ExportIDs();
+				m_sheetXSettings.ExportIDs();
 			}
 			if (EditorHelper.Button("Export Constants"))
 			{
-				m_e2USettings.ExportConstants();
+				m_sheetXSettings.ExportConstants();
 			}
 			if (EditorHelper.Button("Export Json"))
 			{
-				m_e2USettings.ExportJson();
+				m_sheetXSettings.ExportJson();
 			}
 			if (EditorHelper.Button("Export Localizations"))
 			{
-				m_e2USettings.ExportLocalizations();
+				m_sheetXSettings.ExportLocalizations();
 			}
 			if (EditorHelper.Button("Open Settings"))
 			{
-				E2USettingsWindow.ShowWindow();
+				SheetXSettingsWindow.ShowWindow();
 			}
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
@@ -119,13 +119,13 @@ namespace RCore.E2U
 			{
 				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
 				foreach (string path in paths)
-					m_e2USettings.AddExcelFileFile(path);
+					m_sheetXSettings.AddExcelFileFile(path);
 			}
 			m_tableExcelFiles ??= CreateExcelTable();
-			m_tableExcelFiles.DrawOnGUI(m_e2USettings.excelFiles);
+			m_tableExcelFiles.DrawOnGUI(m_sheetXSettings.excelFiles);
 			if (EditorHelper.Button("Export All"))
 			{
-				m_e2USettings.ExportAll();
+				m_sheetXSettings.ExportAll();
 			}
 		}
 
@@ -234,7 +234,7 @@ namespace RCore.E2U
 				GUI.backgroundColor = Color.red;
 				if (GUI.Button(rect, "Delete"))
 				{
-					m_e2USettings.excelFiles.Remove(item);
+					m_sheetXSettings.excelFiles.Remove(item);
 				}
 				GUI.backgroundColor = defaultColor;
 			}).SetAutoResize(true).SetTooltip("Click to delete");
@@ -242,10 +242,10 @@ namespace RCore.E2U
 			return table;
 		}
 		
-		[MenuItem("Window/E2U/Excel To Unity")]
+		[MenuItem("Window/SheetX/Sheets Exporter")]
 		public static void ShowWindow()
 		{
-			var window = GetWindow<E2UWindow>("E2U", true);
+			var window = GetWindow<SheetXWindow>("E2U", true);
 			window.Show();
 		}
 	}

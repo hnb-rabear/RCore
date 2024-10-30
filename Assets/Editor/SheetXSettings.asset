@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4ab2bc8934cee74489e4f1e7950acaa, type: 3}
-  m_Name: ExcelToUnitySettings
+  m_Name: SheetXSettings
   m_EditorClassIdentifier: 
   excelFile:
     path: D:/Downloads/Example.xlsx
@@ -32,17 +32,17 @@ MonoBehaviour:
     - name: ExampleMergeTable
       selected: 1
   excelFiles: []
-  jsonOutputFolder: Assets/RCore/E2U/Editor/Example/Json
-  constantsOutputFolder: Assets/RCore/E2U/Editor/Example/Constants
-  localizationOutputFolder: Assets/RCore/E2U/Editor/Example/Localizations
+  jsonOutputFolder: Assets/RCore/SheetX/Editor/Example/Json
+  constantsOutputFolder: Assets/RCore/SheetX/Editor/Example/Constants
+  localizationOutputFolder: Assets/RCore/SheetX/Editor/Example/Localizations
   namespace: 
   separateConstants: 0
   separateIDs: 0
   separateLocalizations: 1
   combineJson: 0
-  enumTypeOnlyForIDs: 0
+  onlyEnumAsIDs: 0
   encryptJson: 0
-  langCharSets: korea (kr), japan (jp), china (cn)
+  langCharSets: chinese, japan, korean
   persistentFields: id, key
   excludedSheets: 
   googleClientId: 

@@ -18,13 +18,13 @@ public static class LocalizationExample
 	public enum ID 
 	{
 		NONE = -1,
-		message_1 = 0, message_2, message_3, message_4, message_5, content_1, content_2, content_3, content_4, content_5, title_1, title_2, title_3, title_4, title_5, title_6, whatever_msg, hero_name_HERO_1, hero_name_HERO_2, hero_name_HERO_3, hero_name_HERO_4, hero_name_HERO_5,
+		message_1 = 0, message_2, message_3, message_4, message_5, content_1, content_2, content_3, content_4, content_5, title_1, title_2, title_3, title_4, title_5, title_6, whatever_msg, hero_name_1, hero_name_2, hero_name_3, hero_name_4, hero_name_5,
 	}
 	public const int
-		message_1 = 0, message_2 = 1, message_3 = 2, message_4 = 3, message_5 = 4, content_1 = 5, content_2 = 6, content_3 = 7, content_4 = 8, content_5 = 9, title_1 = 10, title_2 = 11, title_3 = 12, title_4 = 13, title_5 = 14, title_6 = 15, whatever_msg = 16, hero_name_HERO_1 = 17, hero_name_HERO_2 = 18, hero_name_HERO_3 = 19, hero_name_HERO_4 = 20, hero_name_HERO_5 = 21;
+		message_1 = 0, message_2 = 1, message_3 = 2, message_4 = 3, message_5 = 4, content_1 = 5, content_2 = 6, content_3 = 7, content_4 = 8, content_5 = 9, title_1 = 10, title_2 = 11, title_3 = 12, title_4 = 13, title_5 = 14, title_6 = 15, whatever_msg = 16, hero_name_1 = 17, hero_name_2 = 18, hero_name_3 = 19, hero_name_4 = 20, hero_name_5 = 21;
 	public static readonly string[] idString = new string[]
 	{
-		"message_1", "message_2", "message_3", "message_4", "message_5", "content_1", "content_2", "content_3", "content_4", "content_5", "title_1", "title_2", "title_3", "title_4", "title_5", "title_6", "whatever_msg", "hero_name_HERO_1", "hero_name_HERO_2", "hero_name_HERO_3", "hero_name_HERO_4", "hero_name_HERO_5",
+		"message_1", "message_2", "message_3", "message_4", "message_5", "content_1", "content_2", "content_3", "content_4", "content_5", "title_1", "title_2", "title_3", "title_4", "title_5", "title_6", "whatever_msg", "hero_name_1", "hero_name_2", "hero_name_3", "hero_name_4", "hero_name_5",
 	};
 	public static readonly Dictionary<string, string> LanguageFiles = new Dictionary<string, string>() {  { "english", "LocalizationExample_english" }, { "spanish", "LocalizationExample_spanish" }, { "japan", "LocalizationExample_japan" }, { "chinese", "LocalizationExample_chinese" }, { "korean", "LocalizationExample_korean" }, { "thai", "LocalizationExample_thai" }, };
 	public static readonly string DefaultLanguage = "english";
