@@ -1,5 +1,7 @@
+using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using NPOI.SS.UserModel;
 using UnityEngine;
 
@@ -43,6 +45,49 @@ namespace RCore.E2U
 			using var sw = new StreamWriter(pFilePath);
 			sw.WriteLine(pContent);
 			sw.Close();
+		}
+		
+		public static string[] SplitValueToArray(string pValue, bool pIncludeColon = true)
+		{
+			string[] splits = { ":", "|", "\r\n", "\r", "\n" };
+			if (!pIncludeColon)
+				splits = new[] { "|", "\r\n", "\r", "\n" };
+			string[] result = pValue.Split(splits, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+			return result;
+		}
+	}
+	
+	public static class E2UExtension
+	{
+		public static string ToCellString(this ICell cell, string pDefault = "")
+		{
+			if (cell == null)
+				return pDefault;
+			string cellStr;
+			if (cell.CellType == CellType.Formula)
+			{
+				switch (cell.CachedFormulaResultType)
+				{
+					case CellType.Numeric:
+						cellStr = cell.NumericCellValue.ToString(CultureInfo.InvariantCulture);
+						break;
+                 
+					case CellType.String:
+						cellStr = cell.StringCellValue;
+						break;
+                 
+					case CellType.Boolean:
+						cellStr = cell.BooleanCellValue.ToString();
+						break;
+                 
+					default:
+						cellStr = cell.ToString();
+						break;
+				}
+			}
+			else
+				cellStr = cell.ToString();
+			return cellStr;
 		}
 	}
 }

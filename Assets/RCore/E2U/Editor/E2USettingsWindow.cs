@@ -28,7 +28,7 @@ namespace RCore.E2U
 			m_e2USettings.separateConstants = EditorHelper.Toggle(m_e2USettings.separateConstants, "Separate Constants Sheets", 200);
 			m_e2USettings.separateLocalizations = EditorHelper.Toggle(m_e2USettings.separateLocalizations, "Separate Localizations Sheets", 200);
 			m_e2USettings.combineJson = EditorHelper.Toggle(m_e2USettings.combineJson, "Combine Json Sheets", 200);
-			m_e2USettings.languageMaps = EditorHelper.TextField(m_e2USettings.languageMaps, "Language maps", 200);
+			m_e2USettings.langCharSets = EditorHelper.TextField(m_e2USettings.langCharSets, "Lang char sets", 200);
 			m_e2USettings.persistentFields = EditorHelper.TextField(m_e2USettings.persistentFields, "Persistent fields", 200);
 			m_e2USettings.excludedSheets = EditorHelper.TextField(m_e2USettings.excludedSheets, "Excluded sheets", 200);
 			m_e2USettings.googleClientId = EditorHelper.TextField(m_e2USettings.googleClientId, "Google client id", 200);

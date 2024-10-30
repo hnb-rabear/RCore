@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -81,5 +82,24 @@ namespace RCore.E2U
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 			return WorkbookFactory.Create(file);
 		}
+	}
+	
+	public class ConstantBuilder : IComparable<ConstantBuilder>
+	{
+		public string name;
+		public string value;
+		public string valueType;
+		public string comment;
+
+		public int CompareTo(ConstantBuilder other)
+		{
+			return string.Compare(name, other.name, StringComparison.Ordinal);
+		}
+	}
+	
+	public class LocalizationBuilder
+	{
+		public List<string> idsString = new List<string>();
+		public Dictionary<string, List<string>> languageTextDict = new Dictionary<string, List<string>>();
 	}
 }

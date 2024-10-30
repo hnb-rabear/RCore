@@ -13,15 +13,24 @@ using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 #endif
 
-public static class LOCALIZATION_CLASS_NAME
+public static class LocalizationExample2
 {
-//LOCALIZED_DICTIONARY_KEY_ENUM
-//LOCALIZED_DICTIONARY_KEY_CONST
-//LOCALIZED_DICTIONARY_KEY_STRING
-//LOCALIZED_DICTIONARY
+	public enum ID 
+	{
+		NONE = -1,
+		DAY_X = 0, TODAY, TAP_TO_COLLECT, FREE_GIFT, REFRESH_IN, FREE_GIFT_EVERYDAY, WAIT_TIME_MINUS_30M, UPGRADE_BARN, UPGRADE, BUY, GO_TO_SHOP, CONFIRM, CANCEL, WARNING, BARN_UPGRADE, FINISH_BUILDING, FINISH, COMPLETE, NOT_ENOUGH_COIN, NOT_ENOUGH_CASH, TAP_TO_CLOSE, SEND, UNLOCK_AT_LEVEL_X, REQUIRED_LEVEL_X, REQUIRED_CITY_LEVEL_X, MISSION_COMPLETED,
+	}
+	public const int
+		DAY_X = 0, TODAY = 1, TAP_TO_COLLECT = 2, FREE_GIFT = 3, REFRESH_IN = 4, FREE_GIFT_EVERYDAY = 5, WAIT_TIME_MINUS_30M = 6, UPGRADE_BARN = 7, UPGRADE = 8, BUY = 9, GO_TO_SHOP = 10, CONFIRM = 11, CANCEL = 12, WARNING = 13, BARN_UPGRADE = 14, FINISH_BUILDING = 15, FINISH = 16, COMPLETE = 17, NOT_ENOUGH_COIN = 18, NOT_ENOUGH_CASH = 19, TAP_TO_CLOSE = 20, SEND = 21, UNLOCK_AT_LEVEL_X = 22, REQUIRED_LEVEL_X = 23, REQUIRED_CITY_LEVEL_X = 24, MISSION_COMPLETED = 25;
+	public static readonly string[] idString = new string[]
+	{
+		"DAY_X", "TODAY", "TAP_TO_COLLECT", "FREE_GIFT", "REFRESH_IN", "FREE_GIFT_EVERYDAY", "WAIT_TIME_MINUS_30M", "UPGRADE_BARN", "UPGRADE", "BUY", "GO_TO_SHOP", "CONFIRM", "CANCEL", "WARNING", "BARN_UPGRADE", "FINISH_BUILDING", "FINISH", "COMPLETE", "NOT_ENOUGH_COIN", "NOT_ENOUGH_CASH", "TAP_TO_CLOSE", "SEND", "UNLOCK_AT_LEVEL_X", "REQUIRED_LEVEL_X", "REQUIRED_CITY_LEVEL_X", "MISSION_COMPLETED",
+	};
+	public static readonly Dictionary<string, string> LanguageFiles = new Dictionary<string, string>() {  { "english", "LocalizationExample2_english" }, { "spanish", "LocalizationExample2_spanish" }, { "japan", "LocalizationExample2_japan" }, { "korean", "LocalizationExample2_korean" }, { "thai", "LocalizationExample2_thai" }, { "chinese", "LocalizationExample2_chinese" }, };
+	public static readonly string DefaultLanguage = "english";
 
     public static bool Addressable;
-	public static string Folder = "LOCALIZATION_FOLDER";
+	public static string Folder = "";
     private static StringBuilder m_StringBuilder = new StringBuilder();
     public static Action OnLanguageChanged;
     private static string[] m_Texts;
@@ -53,7 +62,7 @@ public static class LOCALIZATION_CLASS_NAME
 		if (m_LanguageTemp != lang)
 		{
 #if UNITY_EDITOR
-			Debug.Log($"Init {nameof(LOCALIZATION_CLASS_NAME)}");
+			Debug.Log($"Init {nameof(LocalizationExample2)}");
 #endif
 		    string file = LanguageFiles[lang];
             string address = $"{Folder}/{file}";
@@ -117,7 +126,7 @@ public static class LOCALIZATION_CLASS_NAME
         if (m_LanguageTemp != lang)
         {
 #if UNITY_EDITOR
-            Debug.Log($"Init {nameof(LOCALIZATION_CLASS_NAME)}");
+            Debug.Log($"Init {nameof(LocalizationExample2)}");
 #endif
             string file = LanguageFiles[lang];
             string address = $"{Folder}/{file}";
@@ -330,7 +339,7 @@ public static class LOCALIZATION_CLASS_NAME
 
     private static List<DynamicText> m_DynamicTexts = new List<DynamicText>();
     /// <summary>
-    /// Used this if you are unable to add LOCALIZATION_CLASS_NAMEText component to the gameObject
+    /// Used this if you are unable to add LocalizationExample2Text component to the gameObject
     /// </summary>
     /// <param name="pObj">gameObject contain Text or TextMeshProUGUI component</param>
     /// <param name="pLocalizedKey">string Id of localized text</param>
@@ -341,7 +350,7 @@ public static class LOCALIZATION_CLASS_NAME
         RegisterDynamicText(pObj, key, pArgs);
     }
     /// <summary>
-    /// Used this if you are unable to add LOCALIZATION_CLASS_NAMEText component to the gameObject
+    /// Used this if you are unable to add LocalizationExample2Text component to the gameObject
     /// </summary>
     /// <param name="pObj">gameObject contain Text or TextMeshProUGUI component</param>
     /// <param name="pLocalizedKey">integer Id of localized text</param>
@@ -366,8 +375,8 @@ public static class LOCALIZATION_CLASS_NAME
         text.Refresh();
         m_DynamicTexts.Add(text);
 #if UNITY_EDITOR
-        if (pObj.TryGetComponent(out LOCALIZATION_CLASS_NAMEText _))
-            Debug.LogError($"{pObj.name} should not have LOCALIZATION_CLASS_NAMEText!");
+        if (pObj.TryGetComponent(out LocalizationExample2Text _))
+            Debug.LogError($"{pObj.name} should not have LocalizationExample2Text!");
 #endif
     }
 
@@ -439,7 +448,7 @@ public static class LOCALIZATION_CLASS_NAME
 		foreach (var guid in assetIds)
 		{
 			var obj = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-			var components = obj.GetComponentsInChildren<LOCALIZATION_CLASS_NAMEText>(true);
+			var components = obj.GetComponentsInChildren<LocalizationExample2Text>(true);
 			foreach (var com in components)
 			{
                 if (com.LocalizedEnumId != ID.NONE)
@@ -465,8 +474,8 @@ public static class LOCALIZATION_CLASS_NAME
 		string intIds = "";
 		for (int i = 0; i < pRefinedIds.Count; i++)
 		{
-			enumIds += $"{nameof(LOCALIZATION_CLASS_NAME)}.ID.{pRefinedIds[i]}";
-			intIds += $"{nameof(LOCALIZATION_CLASS_NAME)}.{pRefinedIds[i]}";
+			enumIds += $"{nameof(LocalizationExample2)}.ID.{pRefinedIds[i]}";
+			intIds += $"{nameof(LocalizationExample2)}.{pRefinedIds[i]}";
 			if (i < pRefinedIds.Count - 1)
 			{
 				enumIds += ", ";
@@ -478,7 +487,7 @@ public static class LOCALIZATION_CLASS_NAME
 		string template = GetTemplateClassContainsRefinedIds();
 		string result = template.Replace("ENUM_IDS", enumIds).Replace("INT_IDS", intIds);
 		string directoryPath = $"{Application.dataPath}/LocalizationRefinedIds";
-		string path = $"{directoryPath}/{nameof(LOCALIZATION_CLASS_NAME)}RefinedIds.cs";
+		string path = $"{directoryPath}/{nameof(LocalizationExample2)}RefinedIds.cs";
 		if (!System.IO.Directory.Exists(directoryPath))
 			System.IO.Directory.CreateDirectory(directoryPath);
 		System.IO.File.WriteAllText(path, result);
@@ -486,18 +495,18 @@ public static class LOCALIZATION_CLASS_NAME
 	}
 	private static string GetTemplateClassContainsRefinedIds()
 	{
-		string content = $"namespace {typeof(LOCALIZATION_CLASS_NAME).Namespace}\n"
+		string content = $"namespace {typeof(LocalizationExample2).Namespace}\n"
 			+ "{\n"
 			+ "\tusing System.Collections.Generic;\n"
-			+ $"\tpublic class LOCALIZATION_CLASS_NAMERefinedIds\n"
+			+ $"\tpublic class LocalizationExample2RefinedIds\n"
 			+ "\t{\n"
-			+ "\t\tpublic static readonly List<LOCALIZATION_CLASS_NAME.ID> enumIds = new List<LOCALIZATION_CLASS_NAME.ID> { ENUM_IDS };\n"
+			+ "\t\tpublic static readonly List<LocalizationExample2.ID> enumIds = new List<LocalizationExample2.ID> { ENUM_IDS };\n"
 			+ "\t\tpublic static readonly List<int> intIds = new List<int> { INT_IDS };\n"
 			+ "\t}\n"
 			+ "}";
 		return content;
 	}
-	[UnityEditor.MenuItem("Assets/Create/RCore/Localization/Refine LOCALIZATION_CLASS_NAME Ids")]
+	[UnityEditor.MenuItem("Assets/Create/RCore/Localization/Refine LocalizationExample2 Ids")]
 	public static void CreateLocalizationRefinedIds()
 	{
 		string currentPath = UnityEditor.AssetDatabase.GetAssetPath(UnityEditor.Selection.activeObject);

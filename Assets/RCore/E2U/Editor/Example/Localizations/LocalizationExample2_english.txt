@@ -1,0 +1,1 @@
+["Day {0}","Today","Tap to collect!","Free Gift","Refresh In:","Free Lucky Chest","Refresh -30M","Upgrade Barn","Upgrade","Buy","Go To Shop","Confirm","Cancel","Warning!","Barn Upgrade","Building Finish","Finish","Complete","Not enough Coin","Not Enough Cash","Tap to close!","Send","Unlock at level {0}","Require level {0}","Require city level {0}","Mission completed"]

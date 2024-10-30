@@ -1144,9 +1144,9 @@ namespace RCore.Editor
 		        newPath = EditorUtility.OpenFolderPanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, "");
 		        if (!string.IsNullOrEmpty(newPath))
 		        {
-			        LastOpenedDirectory = newPath;
 			        if (pFormatToUnityPath && newPath.StartsWith(Application.dataPath))
 				        newPath = FormatPathToUnityPath(newPath);
+			        LastOpenedDirectory = newPath;
 		        }
 	        }
 	        EditorGUILayout.EndHorizontal();

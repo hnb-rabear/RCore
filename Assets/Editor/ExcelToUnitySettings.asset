@@ -13,12 +13,28 @@ MonoBehaviour:
   m_Name: ExcelToUnitySettings
   m_EditorClassIdentifier: 
   excelFile:
-    path: 
-    sheets: []
+    path: D:/Downloads/Example.xlsx
+    sheets:
+    - name: ExampleConstants
+      selected: 1
+    - name: ExampleIDs
+      selected: 1
+    - name: LocalizationExample
+      selected: 1
+    - name: LocalizationExample2
+      selected: 1
+    - name: ExampleDataBasic1
+      selected: 1
+    - name: ExampleDataBasic2
+      selected: 1
+    - name: ExampleDataAdvanced
+      selected: 1
+    - name: ExampleMergeTable
+      selected: 1
   excelFiles: []
-  jsonOutputFolder: C:/Work/Projects/RCore/ProjectSettings/Packages
-  constantsOutputFolder: C:/Work/Projects/RCore/ProjectSettings
-  localizationOutputFolder: C:/Work/Projects/RCore/ProjectSettings/Packages/com.unity.services.mediation
+  jsonOutputFolder: Assets/RCore/E2U/Editor/Example/Json
+  constantsOutputFolder: Assets/RCore/E2U/Editor/Example/Constants
+  localizationOutputFolder: Assets/RCore/E2U/Editor/Example/Localizations
   namespace: 
   separateConstants: 0
   separateIDs: 0
@@ -26,11 +42,11 @@ MonoBehaviour:
   combineJson: 0
   enumTypeOnlyForIDs: 0
   encryptJson: 0
-  languageMaps: korea (kr), japan (jp), china (cn)
+  langCharSets: korea (kr), japan (jp), china (cn)
   persistentFields: id, key
-  excludedSheets: ssssssssss
-  googleClientId: sssssssssssssssssss
-  googleClientSecret: sssssssssss
+  excludedSheets: 
+  googleClientId: 
+  googleClientSecret: 
   encryptionKey: 168, 220, 184, 133, 78, 149, 8, 249, 171, 138, 98, 170, 95, 15,
     211, 200, 51, 242, 4, 193, 219, 181, 232, 99, 16, 240, 142, 128, 29, 163, 245,
     24, 204, 73, 173, 32, 214, 76, 31, 99, 91, 239, 232, 53, 138, 195, 93, 195, 185,
