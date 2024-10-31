@@ -6,15 +6,7 @@ namespace RCore.Service
     public class IronSourceProvider : MonoBehaviour
     {
         private static IronSourceProvider m_Instance;
-        public static IronSourceProvider Instance
-        {
-            get
-            {
-                if (m_Instance == null)
-                    m_Instance = FindObjectOfType<IronSourceProvider>();
-                return m_Instance;
-            }
-        }
+        public static IronSourceProvider Instance => m_Instance;
 #if IRONSOURCE
 
         private Action<bool> m_OnRewardedAdCompleted;

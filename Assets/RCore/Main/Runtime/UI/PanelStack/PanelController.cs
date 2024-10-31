@@ -17,14 +17,10 @@ namespace RCore.UI
 	public class PanelController : PanelStack
 	{
 		[Tooltip("Set True if this panel is prefab and rarely use in game")]
-		public bool useOnce = false;
-
+		public bool useOnce;
 		[Tooltip("Enable it and override IE_HideFX and IE_ShowFX")]
 		public bool enableFXTransition = false;
-
-		[Tooltip("For optimization")]
 		public bool nested = true;
-
 		public Button btnBack;
 
 		public Action onWillShow;
@@ -67,6 +63,34 @@ namespace RCore.UI
 		public bool Displayed => m_showed || m_isShowing;
 		public bool Transiting => m_isShowing || m_isHiding;
 
+		protected override void Awake()
+		{
+			base.Awake();
+
+			if (btnBack != null)
+				btnBack.onClick.AddListener(BtnBack_Pressed);
+		}
+
+		protected virtual void OnDisable()
+		{
+			LockWhileTransiting(false);
+		}
+
+		protected virtual void OnValidate()
+		{
+			if (Application.isPlaying)
+				return;
+			if (nested)
+			{
+				var canvas = gameObject.GetComponent<Canvas>();
+				if (canvas == null)
+					gameObject.AddComponent<Canvas>();
+				var graphicRaycaster = gameObject.GetComponent<GraphicRaycaster>();
+				if (graphicRaycaster == null)
+					gameObject.AddComponent<GraphicRaycaster>();
+			}
+		}
+		
 		//=================================
 
 #region Hide
@@ -204,36 +228,6 @@ namespace RCore.UI
 
 		//===================================
 
-		protected override void Awake()
-		{
-			base.Awake();
-
-			if (btnBack != null)
-				btnBack.onClick.AddListener(BtnBack_Pressed);
-		}
-
-		protected virtual void OnDisable()
-		{
-			LockWhileTransiting(false);
-		}
-
-		protected virtual void OnValidate()
-		{
-			if (Application.isPlaying)
-				return;
-			if (nested)
-			{
-				var canvas = gameObject.GetComponent<Canvas>();
-				if (canvas == null)
-					gameObject.AddComponent<Canvas>();
-				var graphicRaycaster = gameObject.GetComponent<GraphicRaycaster>();
-				if (graphicRaycaster == null)
-					gameObject.AddComponent<GraphicRaycaster>();
-			}
-		}
-
-		//======================================================
-
 		private void LockWhileTransiting(bool value)
 		{
 			if (enableFXTransition)
@@ -249,11 +243,8 @@ namespace RCore.UI
 			{
 				if (TopPanel != null)
 					TopPanel.Back();
-				else
-					LogError("There is nothing for Back");
 			}
 			else
-				//parentPanel.PopPanel();
 				parentPanel.PopChildrenThenParent();
 		}
 

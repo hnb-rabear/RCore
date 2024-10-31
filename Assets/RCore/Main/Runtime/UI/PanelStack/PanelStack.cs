@@ -11,10 +11,11 @@ namespace RCore.UI
 {
 	public class PanelStack : MonoBehaviour
 	{
-		protected Stack<PanelController> panelStack = new Stack<PanelController>();
-		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
-
+		internal Stack<PanelController> panelStack = new Stack<PanelController>();
 		internal PanelStack parentPanel;
+		
+		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
+		
 		public PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 		/// <summary>
 		/// Index in stack
@@ -79,11 +80,11 @@ namespace RCore.UI
 			{
 				if (pPanel.gameObject.IsPrefab())
 				{
-					string name = pPanel.name;
+					string panelName = pPanel.name;
 					pPanel = Instantiate(pPanel, transform);
 					pPanel.SetActive(false);
 					pPanel.Init();
-					pPanel.name = name;
+					pPanel.name = panelName;
 				}
 				return pPanel;
 			}
@@ -109,7 +110,7 @@ namespace RCore.UI
 		/// Find child panel of this Panel
 		/// </summary>
 		/// <typeparam name="T">Panels inherit PanelController</typeparam>
-		/// <param name="pOriginal">Can be prefab or buildin prefab</param>
+		/// <param name="pOriginal">Can be prefab or built-in prefab</param>
 		/// <returns></returns>
 		protected T GetCachedPanel<T>(T pOriginal) where T : PanelController
 		{
@@ -234,7 +235,7 @@ namespace RCore.UI
 		/// <summary>
 		/// Pop the top panel off the stack and show the one beneath it
 		/// </summary>
-		public void PopPanel(bool instant = true)
+		protected void PopPanel(bool instant = true)
 		{
 			if (TopPanel == null)
 			{
@@ -280,7 +281,7 @@ namespace RCore.UI
 			}
 			else
 			{
-				var newPanel = this.TopPanel;
+				var newPanel = TopPanel;
 				if (newPanel != null && !newPanel.Displayed)
 				{
 					newPanel.Show();
@@ -293,17 +294,21 @@ namespace RCore.UI
 		/// <summary>
 		/// Check if panel is prefab or build-in prefab then create and init
 		/// </summary>
-		public virtual T PushPanelToTop<T>(ref T pPanel) where T : PanelController
+		public virtual T PushPanelToTop<T>(ref T pPanel, bool hideOtherPanels = false) where T : PanelController
 		{
-			var panel = CreatePanel(ref pPanel);
-			PushPanelToTop(panel);
-			return panel;
+			if (!hideOtherPanels || parentPanel == null)
+			{
+				var panel = CreatePanel(ref pPanel);
+				PushPanelToTop(panel);
+				return panel;
+			}
+			return parentPanel.PushPanel(ref pPanel, true);
 		}
 
 		/// <summary>
 		/// Push panel without hiding panel is under it
 		/// </summary>
-		public virtual void PushPanelToTop(PanelController panel)
+		protected virtual void PushPanelToTop(PanelController panel)
 		{
 			if (TopPanel == panel && TopPanel.Displayed)
 				return;

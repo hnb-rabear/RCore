@@ -18,27 +18,12 @@ using UnityEditor.Build;
 
 namespace RCore.Service
 {
-	public class RFirebaseManager : MonoBehaviour
+	public class FirebaseManager : MonoBehaviour
 	{
 #region Members
 
-		private static RFirebaseManager m_Instance;
-		public static RFirebaseManager Instance
-		{
-			get
-			{
-				if (m_Instance == null)
-				{
-					m_Instance = FindObjectOfType<RFirebaseManager>();
-					if (m_Instance != null)
-						DontDestroyOnLoad(m_Instance);
-					else
-						m_Instance = new GameObject("RFirebaseManager").AddComponent<RFirebaseManager>();
-				}
-				return m_Instance;
-
-			}
-		}
+		private static FirebaseManager m_Instance;
+		public static FirebaseManager Instance => m_Instance;
 
 		public bool dontDestroy;
 
@@ -123,7 +108,7 @@ namespace RCore.Service
 
 #if UNITY_EDITOR
 
-		[CustomEditor(typeof(RFirebaseManager))]
+		[CustomEditor(typeof(FirebaseManager))]
 		private class RFirebaseManagerEditor : UnityEditor.Editor
 		{
 			private List<string> m_CurDirectives;

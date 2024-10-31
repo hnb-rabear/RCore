@@ -237,6 +237,7 @@ namespace RCore.Editor.Tool
 
 		private void DrawPreviewSettingsProfiles()
 		{
+			EditorGUI.BeginChangeCheck();
 			var profiles = m_envProfileCollections.profiles;
 			if (profiles.Count == 0)
 				return;
@@ -251,6 +252,8 @@ namespace RCore.Editor.Tool
 				}
 				GUILayout.Space(5);
 			}
+			if (EditorGUI.EndChangeCheck())
+				EditorUtility.SetDirty(m_envProfileCollections);
 		}
 
 		private void EditProfile(bool pMode)
