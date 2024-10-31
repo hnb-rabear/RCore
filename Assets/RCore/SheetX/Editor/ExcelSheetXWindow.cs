@@ -7,7 +7,7 @@ using RCore.Editor;
 
 namespace RCore.SheetX
 {
-	public class SheetXWindow : EditorWindow
+	public class ExcelSheetXWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;
 		private SheetXSettings m_sheetXSettings;
@@ -23,18 +23,18 @@ namespace RCore.SheetX
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-			var tab = EditorHelper.Tabs($"{nameof(SheetXWindow)}", "Export Excel Spreadsheet", "Export Multi Excel Spreadsheets");
+			var tab = EditorHelper.Tabs($"{nameof(ExcelSheetXWindow)}", "Export Excel Spreadsheet", "Export Multi Excel Spreadsheets");
 			switch (tab)
 			{
 				case "Export Excel Spreadsheet":
 					GUILayout.BeginVertical("box");
-					SingleExcelOnGUI();
+					PageSingleFile();
 					GUILayout.EndVertical();
 					break;
 				
 				case "Export Multi Excel Spreadsheets":
 					GUILayout.BeginVertical("box");
-					MultiExcelFilesOnGUI();
+					PageMultiFiles();
 					GUILayout.EndVertical();
 					break;
 			}
@@ -49,23 +49,23 @@ namespace RCore.SheetX
 			return true;
 		}
 
-		private void SingleExcelOnGUI()
+		private void PageSingleFile()
 		{
 			GUILayout.BeginHorizontal();
-			m_sheetXSettings.excelFile.path = EditorHelper.TextField(m_sheetXSettings.excelFile.path, "Excel File", 100);
-			bool validExcelPath = ValidateExcelPath(m_sheetXSettings.excelFile.path);
+			m_sheetXSettings.excel.path = EditorHelper.TextField(m_sheetXSettings.excel.path, "Excel File", 100);
+			bool validExcelPath = ValidateExcelPath(m_sheetXSettings.excel.path);
 			if (validExcelPath)
 				EditorHelper.LabelField("Good", 50, false, TextAnchor.MiddleCenter, Color.green);
 			else
 				EditorHelper.LabelField("Bad", 50, false, TextAnchor.MiddleCenter, Color.red);
 			if (EditorHelper.Button("Select File", 100))
 			{
-				string directory = string.IsNullOrEmpty(m_sheetXSettings.excelFile.path) ? null : Path.GetDirectoryName(m_sheetXSettings.excelFile.path);
+				string directory = string.IsNullOrEmpty(m_sheetXSettings.excel.path) ? null : Path.GetDirectoryName(m_sheetXSettings.excel.path);
 				string path = EditorHelper.OpenFilePanel("Select File", "xlsx", directory);
 				if (!string.IsNullOrEmpty(path))
 				{
-					m_sheetXSettings.excelFile.path = path;
-					m_sheetXSettings.excelFile.Load();
+					m_sheetXSettings.excel.path = path;
+					m_sheetXSettings.excel.Load();
 				}
 			}
 			GUILayout.EndHorizontal();
@@ -74,7 +74,7 @@ namespace RCore.SheetX
 			m_tableSpreadSheet ??= CreateSpreadsheetTable();
 			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
 			m_tableSpreadSheet.viewHeight = 200f;
-			m_tableSpreadSheet.DrawOnGUI(m_sheetXSettings.excelFile.sheets);
+			m_tableSpreadSheet.DrawOnGUI(m_sheetXSettings.excel.sheets);
 				
 			var style = new GUIStyle(EditorStyles.helpBox);
 			style.fixedWidth = position.width * 0.2f - 7;
@@ -82,38 +82,26 @@ namespace RCore.SheetX
 			EditorGUILayout.BeginVertical(style);
 			if (EditorHelper.Button("Reload"))
 			{
-				if (ValidateExcelPath(m_sheetXSettings.excelFile.path))
-					m_sheetXSettings.excelFile.Load();
+				if (ValidateExcelPath(m_sheetXSettings.excel.path))
+					m_sheetXSettings.excel.Load();
 			}
 			if (EditorHelper.Button("Export All"))
-			{
 				m_sheetXSettings.ExportAll();
-			}
 			if (EditorHelper.Button("Export IDs"))
-			{
 				m_sheetXSettings.ExportIDs();
-			}
 			if (EditorHelper.Button("Export Constants"))
-			{
 				m_sheetXSettings.ExportConstants();
-			}
 			if (EditorHelper.Button("Export Json"))
-			{
 				m_sheetXSettings.ExportJson();
-			}
 			if (EditorHelper.Button("Export Localizations"))
-			{
 				m_sheetXSettings.ExportLocalizations();
-			}
 			if (EditorHelper.Button("Open Settings"))
-			{
 				SheetXSettingsWindow.ShowWindow();
-			}
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}
 		
-		private void MultiExcelFilesOnGUI()
+		private void PageMultiFiles()
 		{
 			if (EditorHelper.Button("Add Excel Files", 200))
 			{
@@ -242,10 +230,10 @@ namespace RCore.SheetX
 			return table;
 		}
 		
-		[MenuItem("Window/SheetX/Sheets Exporter")]
+		[MenuItem("Window/SheetX/Excel Sheets Exporter")]
 		public static void ShowWindow()
 		{
-			var window = GetWindow<SheetXWindow>("E2U", true);
+			var window = GetWindow<ExcelSheetXWindow>("Excel Sheets Exporter", true);
 			window.Show();
 		}
 	}

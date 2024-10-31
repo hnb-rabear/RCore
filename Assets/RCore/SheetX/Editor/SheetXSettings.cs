@@ -9,6 +9,7 @@ using NPOI.SS.UserModel;
 using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.SheetX
 {
@@ -32,7 +33,8 @@ namespace RCore.SheetX
 	{
 		private const string FILE_PATH = "Assets/Editor/SheetXSettings.asset";
 
-		public Excel excelFile;
+		public Spreadsheets excel;
+		public Spreadsheets google;
 		public List<ExcelFile> excelFiles;
 		public string jsonOutputFolder;
 		public string constantsOutputFolder;
@@ -116,14 +118,14 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = excelFile.GetWorkBook();
+			var workBook = excel.GetWorkBook();
 			if (workBook == null)
 				return;
 
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
 
-			foreach (var m in excelFile.sheets)
+			foreach (var m in excel.sheets)
 			{
 				if (m.name.EndsWith(SheetXConstants.IDS_SHEET) && m.selected)
 				{
@@ -392,11 +394,11 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = excelFile.GetWorkBook();
+			var workBook = excel.GetWorkBook();
 			if (workBook == null)
 				return;
 
-			var sheets = excelFile.sheets;
+			var sheets = excel.sheets;
 
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
@@ -629,11 +631,11 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = excelFile.GetWorkBook();
+			var workBook = excel.GetWorkBook();
 			if (workBook == null)
 				return;
 			
-			var sheets = excelFile.sheets;
+			var sheets = excel.sheets;
 			
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
@@ -990,11 +992,11 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = excelFile.GetWorkBook();
+			var workBook = excel.GetWorkBook();
 			if (workBook == null)
 				return;
 
-			var sheets = excelFile.sheets;
+			var sheets = excel.sheets;
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
 				m_allIds = new Dictionary<string, int>();
@@ -1031,7 +1033,7 @@ namespace RCore.SheetX
 			{
 				//Build json file for all jsons content
 				string mergedJson = JsonConvert.SerializeObject(allJsons);
-				string mergedFileName = Path.GetFileNameWithoutExtension(excelFile.path).Trim().Replace(" ", "_");
+				string mergedFileName = Path.GetFileNameWithoutExtension(excel.path).Trim().Replace(" ", "_");
 				SheetXHelper.WriteFile(jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
 
 				if (encryptJson)
@@ -1513,7 +1515,7 @@ namespace RCore.SheetX
 
 		public void ResetToDefault()
 		{
-			excelFile = new Excel();
+			excel = new Spreadsheets();
 			excelFiles = new List<ExcelFile>();
 			jsonOutputFolder = "";
 			constantsOutputFolder = "";

@@ -24,7 +24,7 @@ namespace RCore.SheetX
 	}
 
 	[Serializable]
-	public class Excel
+	public class Spreadsheets
 	{
 		public string path;
 		public List<Spreadsheet> sheets = new();
