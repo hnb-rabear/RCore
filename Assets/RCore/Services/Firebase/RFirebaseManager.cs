@@ -13,6 +13,7 @@ using Firebase.Extensions;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
+using UnityEditor.Build;
 #endif
 
 namespace RCore.Service
@@ -21,20 +22,20 @@ namespace RCore.Service
 	{
 #region Members
 
-		private static RFirebaseManager mInstance;
+		private static RFirebaseManager m_Instance;
 		public static RFirebaseManager Instance
 		{
 			get
 			{
-				if (mInstance == null)
+				if (m_Instance == null)
 				{
-					mInstance = FindObjectOfType<RFirebaseManager>();
-					if (mInstance != null)
-						DontDestroyOnLoad(mInstance);
+					m_Instance = FindObjectOfType<RFirebaseManager>();
+					if (m_Instance != null)
+						DontDestroyOnLoad(m_Instance);
 					else
-						mInstance = new GameObject("RFirebaseManager").AddComponent<RFirebaseManager>();
+						m_Instance = new GameObject("RFirebaseManager").AddComponent<RFirebaseManager>();
 				}
-				return mInstance;
+				return m_Instance;
 
 			}
 		}
@@ -53,14 +54,14 @@ namespace RCore.Service
 
 		private void Awake()
 		{
-			if (mInstance == null)
+			if (m_Instance == null)
 			{
-				mInstance = this;
+				m_Instance = this;
 
 				if (dontDestroy)
-					DontDestroyOnLoad(mInstance);
+					DontDestroyOnLoad(m_Instance);
 			}
-			else if (mInstance != this)
+			else if (m_Instance != this)
 				Destroy(gameObject);
 
 		}
@@ -132,33 +133,31 @@ namespace RCore.Service
 
 			private void OnEnable()
 			{
-				var target = EditorUserBuildSettings.selectedBuildTargetGroup;
-				string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
+				var buildTarget = NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+				string directivesStr = PlayerSettings.GetScriptingDefineSymbols(buildTarget);
 				m_CurDirectives = directivesStr.Split(';').ToList();
 
 				m_Directives = new List<string>()
 				{
-					"FIREBASE",
 					"FIREBASE_ANALYTICS",
-					"FIREBASE_STORAGE",
-					"FIREBASE_DATABASE",
+					// "FIREBASE_STORAGE",
+					// "FIREBASE_DATABASE",
 					"FIREBASE_AUTH",
 					"FIREBASE_CRASHLYTICS",
-					"FIREBASE_MESSAGING",
+					// "FIREBASE_MESSAGING",
 					"FIREBASE_REMOTE",
-					"FIREBASE_FIRESTORE"
+					// "FIREBASE_FIRESTORE"
 				};
 				m_DisplayNames = new List<string>()
 				{
-					"Firebase",
 					"Firebase Analytics",
-					"Firebase Storage",
-					"Firebase Database",
+					// "Firebase Storage",
+					// "Firebase Database",
 					"Firebase Auth",
 					"Firebase Crashlytics",
-					"Firebase Messaging",
+					// "Firebase Messaging",
 					"Firebase Remote Config",
-					"Firebase Firestore"
+					// "Firebase Firestore"
 				};
 				m_SelectedDirectives = new List<bool>(m_Directives.Count);
 				for (int i = 0; i < m_Directives.Count; i++)
@@ -170,8 +169,8 @@ namespace RCore.Service
 			public override void OnInspectorGUI()
 			{
 				base.OnInspectorGUI();
-				GUILayout.BeginVertical("box");
 
+				GUILayout.BeginVertical("box");
 				var selectedDirectives = new List<string>();
 				var nonSelectedDirectives = new List<string>();
 				for (int i = 0; i < m_Directives.Count; i++)
@@ -191,7 +190,6 @@ namespace RCore.Service
 					EditorHelper.AddDirectives(selectedDirectives);
 					EditorHelper.RemoveDirective(nonSelectedDirectives);
 				}
-
 				GUILayout.EndVertical();
 			}
 		}

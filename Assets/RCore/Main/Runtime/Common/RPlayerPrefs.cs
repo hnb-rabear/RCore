@@ -302,8 +302,7 @@ namespace RCore
 
 		public void Add(TKey pKey, TVal pVal)
 		{
-			m_values.Remove(pKey);
-			m_values.Add(pKey, pVal);
+			m_values[pKey] = pVal;
 			changed = true;
 		}
 
@@ -337,39 +336,72 @@ namespace RCore
 			changed = true;
 		}
 	}
-
+	
 	public class RPlayerPrefObject<T> : RPlayerPref
 	{
 		public T value;
-        private bool m_encrypt;
-		public RPlayerPrefObject(string pKey, bool pEncrypt, T pDefault) : base(pKey)
+		private bool m_encrypted;
+		public RPlayerPrefObject(string pKey, bool pEncrypted, T pDefault) : base(pKey)
 		{
-            m_encrypt = pEncrypt;
+			m_encrypted = pEncrypted;
 			value = pDefault;
-			key = pEncrypt ? Encryption.Singleton.Encrypt(pKey) : pKey;
+			key = pEncrypted ? Encryption.Singleton.Encrypt(pKey) : pKey;
 
 			if (PlayerPrefs.HasKey(key))
 			{
 				var val = PlayerPrefs.GetString(key);
-                try
-                {
-                    string content = pEncrypt ? Encryption.Singleton.Decrypt(val) : val;
-                    value = JsonConvert.DeserializeObject<T>(content);
-                }
-                catch
-                {
-                    value = pDefault;
-                }
+				try
+				{
+					string content = pEncrypted ? Encryption.Singleton.Decrypt(val) : val;
+					value = JsonConvert.DeserializeObject<T>(content);
+				}
+				catch
+				{
+					value = pDefault;
+				}
 			}
 		}
 		public override void SaveChange()
 		{
-            var json = JsonConvert.SerializeObject(value, new JsonSerializerSettings()
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-            });
-            if (m_encrypt)
+			var json = JsonConvert.SerializeObject(value, new JsonSerializerSettings()
+			{
+				NullValueHandling = NullValueHandling.Ignore,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+			});
+			if (m_encrypted)
+				json = Encryption.Singleton.Encrypt(json);
+			PlayerPrefs.SetString(key, json);
+		}
+	}
+
+	public class RPlayerPrefSerializableObject<T> : RPlayerPref
+	{
+		public T value;
+        private bool m_encrypted;
+		public RPlayerPrefSerializableObject(string pKey, bool pEncrypted, T pDefault) : base(pKey)
+		{
+            m_encrypted = pEncrypted;
+			value = pDefault;
+			key = pEncrypted ? Encryption.Singleton.Encrypt(pKey) : pKey;
+
+			if (PlayerPrefs.HasKey(key))
+			{
+				var val = PlayerPrefs.GetString(key);
+				try
+				{
+					string content = pEncrypted ? Encryption.Singleton.Decrypt(val) : val;
+					value = JsonUtility.FromJson<T>(content);
+				}
+				catch
+				{
+					value = pDefault;
+				}
+			}
+		}
+		public override void SaveChange()
+		{
+            var json = JsonUtility.ToJson(value);
+            if (m_encrypted)
                 json = Encryption.Singleton.Encrypt(json);
             PlayerPrefs.SetString(key, json);
 		}
