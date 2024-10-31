@@ -5,6 +5,7 @@ namespace RCore.Notification
 	/// </summary>
 	public class GameNotification
 	{
+#if UNITY_NOTIFICATION
 		private Unity.Notifications.Notification m_internalNotification;
 
 		/// <summary>
@@ -48,9 +49,18 @@ namespace RCore.Notification
 			};
 		}
 		
-		internal GameNotification(Unity.Notifications.Notification notification)
+		public GameNotification(Unity.Notifications.Notification notification)
 		{
 			this.m_internalNotification = notification;
 		}
+#else
+		public int? Id { get; set; }
+		public string Title { get; set; }
+		public string Body { get; set; }
+		public string Data { get; set; }
+		public int BadgeNumber { get; set; }
+		public GameNotification() { }
+		public GameNotification(object notification) { }
+#endif
 	}
 }

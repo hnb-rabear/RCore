@@ -66,7 +66,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEGetData(pOnFinished));
+			FirebaseManager.Instance.StartCoroutine(IEGetData(pOnFinished));
 		}
 		private IEnumerator IEGetData(Action<string, bool> pOnFinished)
 		{

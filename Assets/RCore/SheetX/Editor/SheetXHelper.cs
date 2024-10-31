@@ -421,7 +421,7 @@ namespace RCore.SheetX
 
 			return combined;
 		}
-		
+
 		public static Encryption CreateEncryption(string text)
 		{
 			string[] keysString = text.Trim().Replace(" ", "").Split(',');
@@ -444,6 +444,26 @@ namespace RCore.SheetX
 					return new Encryption(keysByte);
 			}
 			return null;
+		}
+
+		public static string AddNamespace(string fileContent, string @namespace)
+		{
+			if (!string.IsNullOrEmpty(@namespace))
+			{
+				fileContent = fileContent.Replace(Environment.NewLine, "NEW_LINE");
+				fileContent = fileContent.Replace("\n", "NEW_LINE");
+				fileContent = fileContent.Replace("NEW_LINE", $"{Environment.NewLine}\t");
+				fileContent = $"namespace {@namespace}\n{"{"}\n\t{fileContent}\n{"}"}";
+			}
+			return fileContent;
+		}
+
+		public static bool IsJsonSheet(string pName)
+		{
+			return !pName.EndsWith(SheetXConstants.IDS_SHEET)
+				&& !pName.EndsWith(SheetXConstants.CONSTANTS_SHEET)
+				&& !pName.Contains(SheetXConstants.SETTINGS_SHEET)
+				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
 		}
 	}
 

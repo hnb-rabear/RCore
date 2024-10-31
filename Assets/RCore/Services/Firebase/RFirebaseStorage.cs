@@ -215,7 +215,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEDelete(pOnFinished, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEDelete(pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEDelete(Action<bool> pOnFinished, SavedFileDefinition pStoDef)
@@ -281,7 +281,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEUploadStream(pContent, pOnFinished, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEUploadStream(pContent, pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEUploadStream(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
@@ -358,7 +358,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEDownloadStream(pOnFinished, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEDownloadStream(pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEDownloadStream(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
@@ -439,7 +439,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEUploadFromFile(pOnFinished, pOriginalFilePath, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEUploadFromFile(pOnFinished, pOriginalFilePath, pStoDef));
 		}
 
 		private static IEnumerator IEUploadFromFile(Action<bool> pOnFinished, string pOriginalFilePath, SavedFileDefinition pStoDef)
@@ -512,7 +512,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEDownloadToFile(pOnFinished, pOutPutPath, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEDownloadToFile(pOnFinished, pOutPutPath, pStoDef));
 		}
 
 		private static IEnumerator IEDownloadToFile(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef)
@@ -581,7 +581,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEUploadBytes(pContent, pOnFinished, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEUploadBytes(pContent, pOnFinished, pStoDef));
 		}
 
 		/// <summary>
@@ -680,7 +680,7 @@ namespace RCore.Service
 				return;
 			}
 
-			RFirebaseManager.Instance.StartCoroutine(IEDownLoadBytes(pOnFinished, pStoDef));
+			FirebaseManager.Instance.StartCoroutine(IEDownLoadBytes(pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEDownLoadBytes(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)

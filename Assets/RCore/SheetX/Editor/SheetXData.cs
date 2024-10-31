@@ -17,17 +17,17 @@ namespace RCore.SheetX
 	}
 
 	[Serializable]
-	public class Spreadsheet
+	public class SheetPath
 	{
 		public string name;
 		public bool selected;
 	}
 
 	[Serializable]
-	public class Spreadsheets
+	public class ExcelSheetsPath
 	{
 		public string path;
-		public List<Spreadsheet> sheets = new();
+		public List<SheetPath> sheets = new();
 		public void Load()
 		{
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -46,7 +46,7 @@ namespace RCore.SheetX
 				var sheet = workbook.GetSheetAt(i);
 				if (sheets.Exists(x => x.name == sheet.SheetName))
 					continue;
-				sheets.Add(new Spreadsheet()
+				sheets.Add(new SheetPath()
 				{
 					name = sheet.SheetName,
 					selected = true,
@@ -80,6 +80,44 @@ namespace RCore.SheetX
 
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 			return WorkbookFactory.Create(file);
+		}
+	}
+	
+	[Serializable]
+	public class GoogleSheetsPath : IComparable<GoogleSheetsPath>
+	{
+		public string name { get; set; }
+		public string id { get; set; }
+		public List<Sheet> sheets { get; set; } = new List<Sheet>();
+
+		[Serializable]
+		public class Sheet
+		{
+			public string name { get; set; }
+			public bool selected { get; set; }
+		}
+
+		public void AddSheet(string name)
+		{
+			for (int i = 0; i < sheets.Count; i++)
+				if (sheets[i].name == name)
+					return;
+			sheets.Add(new Sheet { name = name, selected = true });
+		}
+
+		public void RemoveSheet(string name)
+		{
+			for (int i = 0; i < sheets.Count; i++)
+				if (sheets[i].name == name)
+				{
+					sheets.RemoveAt(i);
+					break;
+				}
+		}
+
+		public int CompareTo(GoogleSheetsPath other)
+		{
+			return name.CompareTo(other.name);
 		}
 	}
 	

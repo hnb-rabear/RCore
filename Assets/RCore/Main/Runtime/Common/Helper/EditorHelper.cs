@@ -58,6 +58,7 @@ namespace RCore.Editor
         public string label;
         public Color color;
         public int width;
+        public int height;
         public Action onPressed;
         public bool IsPressed { get; private set; }
 
@@ -76,6 +77,8 @@ namespace RCore.Editor
             style ??= new GUIStyle("Button");
             if (width > 0)
                 style.fixedWidth = width;
+            if (height > 0)
+	            style.fixedHeight = height;
             if (color != default)
                 GUI.backgroundColor = color;
             IsPressed = GUILayout.Button(label, style, GUILayout.MinHeight(21));
@@ -116,25 +119,28 @@ namespace RCore.Editor
                 var normalColor = style.normal.textColor;
                 if (color != default)
 	                normalColor = color;
-                normalColor.a = readOnly ? 0.5f : 1;
                 style.normal.textColor = normalColor;
             }
 
+            if (readOnly)
+	            GUI.enabled = false;
             string str;
             if (valueWidth == 0)
             {
-                if (textArea)
-                    str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40));
-                else
-                    str = EditorGUILayout.TextField(value, style, GUILayout.MinWidth(40));
+	            if (textArea)
+		            str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40));
+	            else
+		            str = EditorGUILayout.TextField(value, style, GUILayout.MinWidth(40));
             }
             else
             {
-                if (textArea)
-                    str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
-                else
-                    str = EditorGUILayout.TextField(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+	            if (textArea)
+		            str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+	            else
+		            str = EditorGUILayout.TextField(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
             }
+            if (readOnly)
+	            GUI.enabled = true;
 
             if (!string.IsNullOrEmpty(label))
                 EditorGUILayout.EndHorizontal();
@@ -1079,48 +1085,52 @@ namespace RCore.Editor
 
 #region Tools
 
-        public static bool Button(string pLabel, int pWidth = 0)
+        public static bool Button(string pLabel, int pWidth = 0, int pHeight = 0)
         {
             var button = new EditorButton()
             {
                 label = pLabel,
-                width = pWidth
+                width = pWidth,
+                height = pHeight
             };
             button.Draw();
             return button.IsPressed;
         }
 
-        public static void Button(string pLabel, Action pOnPressed, int pWidth = 0)
+        public static void Button(string pLabel, Action pOnPressed, int pWidth = 0, int pHeight = 0)
         {
             var button = new EditorButton()
             {
                 label = pLabel,
                 width = pWidth,
                 onPressed = pOnPressed,
+                height = pHeight,
             };
             button.Draw();
         }
 
-        public static bool ButtonColor(string pLabel, Color pColor = default, int pWidth = 0)
+        public static bool ButtonColor(string pLabel, Color pColor = default, int pWidth = 0, int pHeight = 0)
         {
             var button = new EditorButton()
             {
                 label = pLabel,
                 width = pWidth,
                 color = pColor,
+                height = pHeight,
             };
             button.Draw();
             return button.IsPressed;
         }
 
-        public static void ButtonColor(string pLabel, Action pOnPressed, Color pColor = default, int pWidth = 0)
+        public static void ButtonColor(string pLabel, Action pOnPressed, Color pColor = default, int pWidth = 0, int pHeight = 0)
         {
             var button = new EditorButton()
             {
                 label = pLabel,
                 width = pWidth,
                 color = pColor,
-                onPressed = pOnPressed
+                onPressed = pOnPressed,
+                height = pHeight,
             };
             button.Draw();
         }

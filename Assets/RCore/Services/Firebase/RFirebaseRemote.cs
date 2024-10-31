@@ -17,7 +17,7 @@ namespace RCore.Service
         public static void Initialize(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
         {
 #if FIREBASE_REMOTE
-            if (!RFirebaseManager.initialized)
+            if (!FirebaseManager.initialized)
             {
                 FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
                 {

@@ -9,6 +9,7 @@ namespace RCore.Notification
     /// </summary>
     public class NotificationsPlatform : IDisposable
     {
+	    
         /// <summary>
         /// Fired when a notification is received.
         /// </summary>
@@ -48,6 +49,7 @@ namespace RCore.Notification
         /// <exception cref="InvalidOperationException"><paramref name="gameNotification"/> isn't of the correct type.</exception>
         public void ScheduleNotification(GameNotification gameNotification, DateTime deliveryTime)
         {
+#if UNITY_NOTIFICATION
             if (gameNotification == null)
             {
                 throw new ArgumentNullException(nameof(gameNotification));
@@ -55,6 +57,7 @@ namespace RCore.Notification
 
             int notificationId = NotificationCenter.ScheduleNotification(gameNotification.InternalNotification, new NotificationDateTimeSchedule(deliveryTime));
             gameNotification.Id = notificationId;
+#endif
         }
 
         /// <summary>
@@ -142,5 +145,4 @@ namespace RCore.Notification
             NotificationReceived?.Invoke(new GameNotification(notification));
         }
     }
-
 }

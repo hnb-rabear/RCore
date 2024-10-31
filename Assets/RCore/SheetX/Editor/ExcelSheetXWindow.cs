@@ -11,13 +11,16 @@ namespace RCore.SheetX
 	{
 		private Vector2 m_scrollPosition;
 		private SheetXSettings m_sheetXSettings;
+		private ExcelSheetHandler m_excelSheetHandler;
 		private EditorTableView<ExcelFile> m_tableExcelFiles;
-		private EditorTableView<Spreadsheet> m_tableSpreadSheet;
+		private EditorTableView<SheetPath> m_tableSpreadSheet;
 		private IWorkbook m_workbook;
 
 		private void OnEnable()
 		{
 			m_sheetXSettings = SheetXSettings.Load();
+			m_excelSheetHandler = new ExcelSheetHandler(m_sheetXSettings);
+			
 		}
 
 		private void OnGUI()
@@ -86,15 +89,15 @@ namespace RCore.SheetX
 					m_sheetXSettings.excel.Load();
 			}
 			if (EditorHelper.Button("Export All"))
-				m_sheetXSettings.ExportAll();
+				m_excelSheetHandler.ExportAll();
 			if (EditorHelper.Button("Export IDs"))
-				m_sheetXSettings.ExportIDs();
+				m_excelSheetHandler.ExportIDs();
 			if (EditorHelper.Button("Export Constants"))
-				m_sheetXSettings.ExportConstants();
+				m_excelSheetHandler.ExportConstants();
 			if (EditorHelper.Button("Export Json"))
-				m_sheetXSettings.ExportJson();
+				m_excelSheetHandler.ExportJson();
 			if (EditorHelper.Button("Export Localizations"))
-				m_sheetXSettings.ExportLocalizations();
+				m_excelSheetHandler.ExportLocalizations();
 			if (EditorHelper.Button("Open Settings"))
 				SheetXSettingsWindow.ShowWindow();
 			EditorGUILayout.EndVertical();
@@ -113,13 +116,12 @@ namespace RCore.SheetX
 			m_tableExcelFiles.DrawOnGUI(m_sheetXSettings.excelFiles);
 			if (EditorHelper.Button("Export All"))
 			{
-				m_sheetXSettings.ExportAll();
 			}
 		}
 
-		private EditorTableView<Spreadsheet> CreateSpreadsheetTable()
+		private EditorTableView<SheetPath> CreateSpreadsheetTable()
 		{
-			var table = new EditorTableView<Spreadsheet>(this, "Spreadsheets");
+			var table = new EditorTableView<SheetPath>(this, "Spreadsheets");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
