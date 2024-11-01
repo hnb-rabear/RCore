@@ -228,5 +228,18 @@ namespace RCore.Editor
 				EditorUtility.SetDirty(target);
 			}
 		}
+		
+		//==============================================
+
+		[MenuItem("GameObject/RCore/Image/Set perfect ratio")]
+		public static void SetImagesPerfectRatio()
+		{
+			foreach (var target in Selection.gameObjects)
+			{
+				var images = target.GetComponentsInChildren<UnityEngine.UI.Image>(true);
+				foreach (var image in images)
+					image.PerfectRatio();
+			}
+		}
 	}
 }

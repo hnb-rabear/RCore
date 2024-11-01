@@ -285,14 +285,13 @@ namespace RCore.SheetX
 					var cellKey = rowData.GetCell(col);
 					if (cellKey == null)
 						continue;
-					if (row <= 0)
+					string key = cellKey.ToString().Trim();
+					if (row <= 0 || string.IsNullOrEmpty(key))
 						continue;
 					var cellValue = rowData.GetCell(col + 1);
 					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						continue;
-					string key = cellKey.ToString().Trim();
 					int value = int.Parse(cellValue.ToString().Trim());
-
 					if (m_allIds.ContainsKey(key))
 						EditorUtility.DisplayDialog("Duplicated ID!", $@"ID {key} is duplicated in sheet {pSheetName}", "Ok");
 					m_allIds[key] = value;

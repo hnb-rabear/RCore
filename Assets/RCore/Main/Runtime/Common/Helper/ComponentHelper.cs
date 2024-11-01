@@ -7,6 +7,7 @@ using DG.Tweening;
 #endif
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -753,22 +754,40 @@ namespace RCore
 
 		public static void PerfectRatio(this UnityEngine.UI.Image image)
 		{
-			if (image != null && image.sprite != null && image.type == UnityEngine.UI.Image.Type.Sliced)
+			if (image != null && image.sprite != null)
 			{
-				var nativeSize = image.sprite.NativeSize();
-				var rectSize = image.rectTransform.sizeDelta;
-				if (rectSize.y > 0 && rectSize.y < nativeSize.y)
+				if (image.type == UnityEngine.UI.Image.Type.Sliced)
 				{
-					var ratio = nativeSize.y * 1f / rectSize.y;
-					image.pixelsPerUnitMultiplier = ratio;
-				}
-				else if (rectSize.x > 0 && rectSize.x < nativeSize.x)
-				{
-					var ratio = nativeSize.x * 1f / rectSize.x;
-					image.pixelsPerUnitMultiplier = ratio;
+					var nativeSize = image.sprite.NativeSize();
+					var rectSize = image.rectTransform.sizeDelta;
+					if (rectSize.y > 0 && rectSize.y < nativeSize.y)
+					{
+						var ratio = nativeSize.y * 1f / rectSize.y;
+						image.pixelsPerUnitMultiplier = ratio;
+					}
+					else if (rectSize.x > 0 && rectSize.x < nativeSize.x)
+					{
+						var ratio = nativeSize.x * 1f / rectSize.x;
+						image.pixelsPerUnitMultiplier = ratio;
+					}
+					else
+						image.pixelsPerUnitMultiplier = 1;
 				}
 				else
-					image.pixelsPerUnitMultiplier = 1;
+				{
+					var nativeSize = image.sprite.NativeSize();
+					var nativeRatio = nativeSize.x / nativeSize.y;
+					
+					var size = image.rectTransform.sizeDelta;
+					var ratio = size.x / size.y;
+
+					if (nativeRatio > ratio) //
+						size.x = nativeSize.x * size.y / nativeSize.y;
+					else if (nativeRatio < ratio)
+						size.y = size.x * nativeSize.y / nativeSize.x;
+						
+					image.rectTransform.sizeDelta = size;
+				}
 			}
 		}
 
