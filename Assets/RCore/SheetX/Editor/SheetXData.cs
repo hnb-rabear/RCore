@@ -86,25 +86,16 @@ namespace RCore.SheetX
 	[Serializable]
 	public class GoogleSheetsPath : IComparable<GoogleSheetsPath>
 	{
-		public string name { get; set; }
-		public string id { get; set; }
-		public List<Sheet> sheets { get; set; } = new List<Sheet>();
-
-		[Serializable]
-		public class Sheet
-		{
-			public string name { get; set; }
-			public bool selected { get; set; }
-		}
-
+		public string id;
+		public string name;
+		public List<SheetPath> sheets = new List<SheetPath>();
 		public void AddSheet(string name)
 		{
 			for (int i = 0; i < sheets.Count; i++)
 				if (sheets[i].name == name)
 					return;
-			sheets.Add(new Sheet { name = name, selected = true });
+			sheets.Add(new SheetPath { name = name, selected = true });
 		}
-
 		public void RemoveSheet(string name)
 		{
 			for (int i = 0; i < sheets.Count; i++)
@@ -114,7 +105,6 @@ namespace RCore.SheetX
 					break;
 				}
 		}
-
 		public int CompareTo(GoogleSheetsPath other)
 		{
 			return name.CompareTo(other.name);

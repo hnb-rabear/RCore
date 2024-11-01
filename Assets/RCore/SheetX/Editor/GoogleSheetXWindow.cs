@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using Google.Apis.Services;
-using Google.Apis.Sheets.v4;
 using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -11,13 +7,14 @@ namespace RCore.SheetX
 	public class GoogleSheetXWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;
-		private SheetXSettings m_sheetXSettings;
+		private SheetXSettings m_settings;
 		private GoogleSheetHandler m_googleSheetHandler;
+		private EditorTableView<SheetPath> m_tableSpreadSheet;
 
 		private void OnEnable()
 		{
-			m_sheetXSettings = SheetXSettings.Load();
-			m_googleSheetHandler = new GoogleSheetHandler(m_sheetXSettings);
+			m_settings = SheetXSettings.Load();
+			m_googleSheetHandler = new GoogleSheetHandler(m_settings);
 		}
 
 		private void OnGUI()
@@ -47,13 +44,38 @@ namespace RCore.SheetX
 			{
 				GUILayout.BeginVertical();
 				{
-					m_sheetXSettings.google.path = EditorHelper.TextField(m_sheetXSettings.google.path, "Google Spreadsheets Id", 160);
-					EditorHelper.TextField("Google Spreadsheets Name", "Google Spreadsheets Name", 160, readOnly: true);
+					m_settings.googleSheetsPath.id = EditorHelper.TextField(m_settings.googleSheetsPath.id, "Google Spreadsheets Id", 160);
+					EditorHelper.TextField(m_settings.googleSheetsPath.name, "Google Spreadsheets Name", 160, readOnly: true);
 				}
 				GUILayout.EndVertical();
 				if (EditorHelper.Button("Download", pHeight: 41))
-					m_googleSheetHandler.Download();
+					m_googleSheetHandler.Download(m_settings.googleSheetsPath);
 			}
+			GUILayout.EndHorizontal();
+			//-----
+			GUILayout.BeginHorizontal();
+			m_tableSpreadSheet ??= SheetXHelper.CreateSpreadsheetTable(this);
+			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
+			m_tableSpreadSheet.viewHeight = 250f;
+			m_tableSpreadSheet.DrawOnGUI(m_settings.googleSheetsPath.sheets);
+
+			var style = new GUIStyle(EditorStyles.helpBox);
+			style.fixedWidth = position.width * 0.2f - 7;
+			style.fixedHeight = 250f;
+			EditorGUILayout.BeginVertical(style);
+			if (EditorHelper.Button("Export All", pHeight: 40))
+				m_googleSheetHandler.ExportAll();
+			if (EditorHelper.Button("Export IDs", pHeight: 30))
+				m_googleSheetHandler.ExportIDs();
+			if (EditorHelper.Button("Export Constants", pHeight: 30))
+				m_googleSheetHandler.ExportConstants();
+			if (EditorHelper.Button("Export Json", pHeight: 30))
+				m_googleSheetHandler.ExportJson();
+			if (EditorHelper.Button("Export Localizations", pHeight: 30))
+				m_googleSheetHandler.ExportLocalizations();
+			if (EditorHelper.Button("Open Settings", pHeight: 30))
+				SheetXSettingsWindow.ShowWindow();
+			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}
 

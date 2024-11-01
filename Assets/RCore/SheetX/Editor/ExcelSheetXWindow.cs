@@ -10,7 +10,7 @@ namespace RCore.SheetX
 	public class ExcelSheetXWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;
-		private SheetXSettings m_sheetXSettings;
+		private SheetXSettings m_settings;
 		private ExcelSheetHandler m_excelSheetHandler;
 		private EditorTableView<ExcelFile> m_tableExcelFiles;
 		private EditorTableView<SheetPath> m_tableSpreadSheet;
@@ -18,9 +18,9 @@ namespace RCore.SheetX
 
 		private void OnEnable()
 		{
-			m_sheetXSettings = SheetXSettings.Load();
-			m_excelSheetHandler = new ExcelSheetHandler(m_sheetXSettings);
-			
+			m_settings = SheetXSettings.Load();
+			m_excelSheetHandler = new ExcelSheetHandler(m_settings);
+
 		}
 
 		private void OnGUI()
@@ -34,7 +34,7 @@ namespace RCore.SheetX
 					PageSingleFile();
 					GUILayout.EndVertical();
 					break;
-				
+
 				case "Export Multi Excel Spreadsheets":
 					GUILayout.BeginVertical("box");
 					PageMultiFiles();
@@ -55,101 +55,68 @@ namespace RCore.SheetX
 		private void PageSingleFile()
 		{
 			GUILayout.BeginHorizontal();
-			m_sheetXSettings.excel.path = EditorHelper.TextField(m_sheetXSettings.excel.path, "Excel File", 100);
-			bool validExcelPath = ValidateExcelPath(m_sheetXSettings.excel.path);
+			m_settings.excelSheetsPath.path = EditorHelper.TextField(m_settings.excelSheetsPath.path, "Excel File", 100);
+			bool validExcelPath = ValidateExcelPath(m_settings.excelSheetsPath.path);
 			if (validExcelPath)
 				EditorHelper.LabelField("Good", 50, false, TextAnchor.MiddleCenter, Color.green);
 			else
 				EditorHelper.LabelField("Bad", 50, false, TextAnchor.MiddleCenter, Color.red);
 			if (EditorHelper.Button("Select File", 100))
 			{
-				string directory = string.IsNullOrEmpty(m_sheetXSettings.excel.path) ? null : Path.GetDirectoryName(m_sheetXSettings.excel.path);
+				string directory = string.IsNullOrEmpty(m_settings.excelSheetsPath.path) ? null : Path.GetDirectoryName(m_settings.excelSheetsPath.path);
 				string path = EditorHelper.OpenFilePanel("Select File", "xlsx", directory);
 				if (!string.IsNullOrEmpty(path))
 				{
-					m_sheetXSettings.excel.path = path;
-					m_sheetXSettings.excel.Load();
+					m_settings.excelSheetsPath.path = path;
+					m_settings.excelSheetsPath.Load();
 				}
 			}
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			m_tableSpreadSheet ??= CreateSpreadsheetTable();
+			m_tableSpreadSheet ??= SheetXHelper.CreateSpreadsheetTable(this);
 			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
-			m_tableSpreadSheet.viewHeight = 200f;
-			m_tableSpreadSheet.DrawOnGUI(m_sheetXSettings.excel.sheets);
-				
+			m_tableSpreadSheet.viewHeight = 250f;
+			m_tableSpreadSheet.DrawOnGUI(m_settings.excelSheetsPath.sheets);
+
 			var style = new GUIStyle(EditorStyles.helpBox);
 			style.fixedWidth = position.width * 0.2f - 7;
-			style.fixedHeight = 200f;
+			style.fixedHeight = 250f;
 			EditorGUILayout.BeginVertical(style);
 			if (EditorHelper.Button("Reload"))
 			{
-				if (ValidateExcelPath(m_sheetXSettings.excel.path))
-					m_sheetXSettings.excel.Load();
+				if (ValidateExcelPath(m_settings.excelSheetsPath.path))
+					m_settings.excelSheetsPath.Load();
 			}
-			if (EditorHelper.Button("Export All"))
+			if (EditorHelper.Button("Export All", pHeight: 40))
 				m_excelSheetHandler.ExportAll();
-			if (EditorHelper.Button("Export IDs"))
+			if (EditorHelper.Button("Export IDs", pHeight: 30))
 				m_excelSheetHandler.ExportIDs();
-			if (EditorHelper.Button("Export Constants"))
+			if (EditorHelper.Button("Export Constants", pHeight: 30))
 				m_excelSheetHandler.ExportConstants();
-			if (EditorHelper.Button("Export Json"))
+			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_excelSheetHandler.ExportJson();
-			if (EditorHelper.Button("Export Localizations"))
+			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 				m_excelSheetHandler.ExportLocalizations();
-			if (EditorHelper.Button("Open Settings"))
+			if (EditorHelper.Button("Open Settings", pHeight: 30))
 				SheetXSettingsWindow.ShowWindow();
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}
-		
+
 		private void PageMultiFiles()
 		{
 			if (EditorHelper.Button("Add Excel Files", 200))
 			{
 				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
 				foreach (string path in paths)
-					m_sheetXSettings.AddExcelFileFile(path);
+					m_settings.AddExcelFileFile(path);
 			}
 			m_tableExcelFiles ??= CreateExcelTable();
-			m_tableExcelFiles.DrawOnGUI(m_sheetXSettings.excelFiles);
-			if (EditorHelper.Button("Export All"))
-			{
-			}
+			m_tableExcelFiles.DrawOnGUI(m_settings.excelFiles);
+			if (EditorHelper.Button("Export All")) { }
 		}
 
-		private EditorTableView<SheetPath> CreateSpreadsheetTable()
-		{
-			var table = new EditorTableView<SheetPath>(this, "Spreadsheets");
-			var labelGUIStyle = new GUIStyle(GUI.skin.label)
-			{
-				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
-			};
-			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
-			{
-				normal = new GUIStyleState
-				{
-					textColor = Color.gray
-				}
-			};
-			table.AddColumn("Selected", 70, 90, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.selected = EditorGUI.Toggle(rect, item.selected);
-			}).SetAutoResize(true);
-			table.AddColumn("Excel Path", 300, 0, (rect, item) =>
-			{
-				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				item.name = EditorGUI.TextField(
-					position: rect,
-					text: item.name,
-					style: style
-				);
-			}).SetAutoResize(true).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
-			return table;
-		} 
-		
 		private EditorTableView<ExcelFile> CreateExcelTable()
 		{
 			var table = new EditorTableView<ExcelFile>(this, "Excel files");
@@ -185,7 +152,7 @@ namespace RCore.SheetX
 				rect.xMin += 10;
 				item.exportConstants = EditorGUI.Toggle(rect, item.exportConstants);
 			}).SetAutoResize(true);
-			
+
 			table.AddColumn("Export IDs", 80, 100, (rect, item) =>
 			{
 				rect.xMin += 10;
@@ -217,21 +184,21 @@ namespace RCore.SheetX
 				GUI.Label(rect, status);
 				GUI.contentColor = defaultColor;
 			}).SetAutoResize(true);
-			
+
 			table.AddColumn("Edit", 60, 100, (rect, item) =>
 			{
 				var defaultColor = GUI.color;
 				GUI.backgroundColor = Color.red;
 				if (GUI.Button(rect, "Delete"))
 				{
-					m_sheetXSettings.excelFiles.Remove(item);
+					m_settings.excelFiles.Remove(item);
 				}
 				GUI.backgroundColor = defaultColor;
 			}).SetAutoResize(true).SetTooltip("Click to delete");
 
 			return table;
 		}
-		
+
 		[MenuItem("Window/SheetX/Excel Sheets Exporter")]
 		public static void ShowWindow()
 		{

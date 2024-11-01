@@ -2,7 +2,6 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  ***/
 
-using System;
 using UnityEngine;
 
 public class Constants

@@ -6,6 +6,8 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.SS.UserModel;
+using RCore.Editor;
+using UnityEditor;
 using UnityEngine;
 
 namespace RCore.SheetX
@@ -464,6 +466,37 @@ namespace RCore.SheetX
 				&& !pName.EndsWith(SheetXConstants.CONSTANTS_SHEET)
 				&& !pName.Contains(SheetXConstants.SETTINGS_SHEET)
 				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
+		}
+		
+		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow)
+		{
+			var table = new EditorTableView<SheetPath>(editorWindow, "Spreadsheets");
+			var labelGUIStyle = new GUIStyle(GUI.skin.label)
+			{
+				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
+			};
+			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
+			{
+				normal = new GUIStyleState
+				{
+					textColor = Color.gray
+				}
+			};
+			table.AddColumn("Selected", 70, 90, (rect, item) =>
+			{
+				rect.xMin += 10;
+				item.selected = EditorGUI.Toggle(rect, item.selected);
+			}).SetAutoResize(true);
+			table.AddColumn("Sheet name", 300, 0, (rect, item) =>
+			{
+				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
+				item.name = EditorGUI.TextField(
+					position: rect,
+					text: item.name,
+					style: style
+				);
+			}).SetAutoResize(true).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
+			return table;
 		}
 	}
 

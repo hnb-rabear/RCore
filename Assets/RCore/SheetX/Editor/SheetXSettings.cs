@@ -28,8 +28,8 @@ namespace RCore.SheetX
 	{
 		private const string FILE_PATH = "Assets/Editor/SheetXSettings.asset";
 
-		public ExcelSheetsPath excel;
-		public ExcelSheetsPath google;
+		public ExcelSheetsPath excelSheetsPath;
+		public GoogleSheetsPath googleSheetsPath;
 		public List<ExcelFile> excelFiles;
 		public string jsonOutputFolder;
 		public string constantsOutputFolder;
@@ -96,7 +96,7 @@ namespace RCore.SheetX
 
 		public void ResetToDefault()
 		{
-			excel = new ExcelSheetsPath();
+			excelSheetsPath = new ExcelSheetsPath();
 			excelFiles = new List<ExcelFile>();
 			jsonOutputFolder = "";
 			constantsOutputFolder = "";
@@ -108,7 +108,7 @@ namespace RCore.SheetX
 			combineJson = false;
 			onlyEnumAsIDs = false;
 			encryptJson = false;
-			langCharSets = "korea (kr), japan (jp), china (cn)";
+			langCharSets = "japan, korean, chinese";
 			persistentFields = "id, key";
 			excludedSheets = "";
 			googleClientId = "";

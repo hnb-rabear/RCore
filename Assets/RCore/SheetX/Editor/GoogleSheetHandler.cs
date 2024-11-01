@@ -5,6 +5,7 @@ using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Util.Store;
+using System;
 
 namespace RCore.SheetX
 {
@@ -18,19 +19,19 @@ namespace RCore.SheetX
 			m_settings = settings;
 		}
 		
-		public void Download()
+		public void Download(GoogleSheetsPath googleSheetsPath)
 		{
-			string key = m_settings.google.path;
+			string key = googleSheetsPath.id;
 			if (string.IsNullOrEmpty(key))
 			{
 				UnityEngine.Debug.LogError("Key can not be empty");
 				return;
 			}
 
-			Authenticate();
+			Authenticate(googleSheetsPath);
 		}
 		
-		private void Authenticate()
+		private void Authenticate(GoogleSheetsPath googleSheetsPath)
 		{
 			// Create Google Sheets API service.
 			var service = new SheetsService(new BaseClientService.Initializer()
@@ -39,7 +40,7 @@ namespace RCore.SheetX
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
 			
-			string googleSheetId = m_settings.google.path;
+			string googleSheetId = googleSheetsPath.id;
 			
 			// Fetch metadata for the entire spreadsheet.
 			Spreadsheet spreadsheet;
@@ -47,17 +48,17 @@ namespace RCore.SheetX
 			{
 				spreadsheet = service.Spreadsheets.Get(googleSheetId).Execute();
 			}
-			catch
+			catch (Exception ex)
 			{
+				Debug.LogError(ex);
 				return;
 			}
-			googleSheetName = spreadsheet.Properties.Title;
-			TxtGoogleSheetName.Text = spreadsheet.Properties.Title;
-			sheets = new List<GoogleSheetsPath.Sheet>();
+			googleSheetsPath.name = spreadsheet.Properties.Title;
+			var sheets = new List<SheetPath>();
 			foreach (var sheet in spreadsheet.Sheets)
 			{
 				var sheetName = sheet.Properties.Title;
-				sheets.Add(new GoogleSheetsPath.Sheet()
+				sheets.Add(new SheetPath()
 				{
 					name = sheetName,
 					selected = true,
@@ -65,22 +66,21 @@ namespace RCore.SheetX
 			}
 
 			// Sync with current save
-			// var savedSheets = m_settings.googleSheetsPaths.Find(x => x.id == googleSheetId);
-			// if (savedSheets != null && savedSheets.sheets != null)
-			// {
-			// 	foreach (var sheet in sheets)
-			// 	{
-			// 		var existedSheet = savedSheets.sheets.Find(x => x.name == sheet.name);
-			// 		if (existedSheet != null)
-			// 			sheet.selected = existedSheet.selected;
-			// 	}
-			// }
-
-			// m_bindingSheets = new BindingList<GoogleSheetsPath.Sheet>(sheets);
-			// DtgGoogleSheets.DataSource = m_bindingSheets;
+			foreach (var sheet in sheets)
+			{
+				var existedSheet = googleSheetsPath.sheets.Find(x => x.name == sheet.name);
+				if (existedSheet != null)
+					sheet.selected = existedSheet.selected;
+				else
+					googleSheetsPath.sheets.Add(new SheetPath()
+					{
+						name = sheet.name,
+						selected = true,
+					});
+			}
 		}
-		
-		public UserCredential AuthenticateGoogleStore()
+
+		private UserCredential AuthenticateGoogleStore()
 		{
 			var clientSecrets = new ClientSecrets();
 			clientSecrets.ClientId = m_settings.googleClientId;
@@ -98,5 +98,43 @@ namespace RCore.SheetX
 			UnityEngine.Debug.Log("Credential file saved to: " + m_settings.GetSaveDirectory());
 			return credential;
 		}
+
+		public void ExportAll()
+		{
+		}
+		
+		//======================================
+		
+#region Export IDs
+
+		public void ExportIDs()
+		{
+		}
+
+#endregion
+		
+#region Export Constants
+
+		public void ExportConstants()
+		{
+		}
+
+#endregion
+		
+#region Export Localizations
+
+		public void ExportLocalizations()
+		{
+		}
+
+#endregion
+		
+#region Export Json
+
+		public void ExportJson()
+		{
+		}
+
+#endregion
 	}
 }

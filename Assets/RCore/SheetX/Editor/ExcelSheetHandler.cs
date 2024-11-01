@@ -22,13 +22,13 @@ namespace RCore.SheetX
 		private List<string> m_localizedSheetsExported = new List<string>();
 		private List<string> m_localizedLanguages = new List<string>();
 		private Dictionary<string, string> m_characterMaps = new Dictionary<string, string>();
-		
+
 		public ExcelSheetHandler(SheetXSettings settings)
 		{
 			m_settings = settings;
 		}
-		
-		#region Export IDs
+
+#region Export IDs
 
 		public void ExportIDs()
 		{
@@ -38,14 +38,14 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = m_settings.excel.GetWorkBook();
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
 			if (workBook == null)
 				return;
 
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
 
-			foreach (var m in m_settings.excel.sheets)
+			foreach (var m in m_settings.excelSheetsPath.sheets)
 			{
 				if (m.name.EndsWith(SheetXConstants.IDS_SHEET) && m.selected)
 				{
@@ -314,11 +314,11 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = m_settings.excel.GetWorkBook();
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
 			if (workBook == null)
 				return;
 
-			var sheets = m_settings.excel.sheets;
+			var sheets = m_settings.excelSheetsPath.sheets;
 
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
@@ -551,12 +551,12 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = m_settings.excel.GetWorkBook();
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
 			if (workBook == null)
 				return;
-			
-			var sheets = m_settings.excel.sheets;
-			
+
+			var sheets = m_settings.excelSheetsPath.sheets;
+
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
 				m_allIds = new Dictionary<string, int>();
@@ -569,7 +569,7 @@ namespace RCore.SheetX
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_characterMaps = new Dictionary<string, string>();
-			
+
 			for (int i = 0; i < sheets.Count; i++)
 			{
 				if (sheets[i].selected && sheets[i].name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
@@ -912,11 +912,11 @@ namespace RCore.SheetX
 				return;
 			}
 
-			var workBook = m_settings.excel.GetWorkBook();
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
 			if (workBook == null)
 				return;
 
-			var sheets = m_settings.excel.sheets;
+			var sheets = m_settings.excelSheetsPath.sheets;
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
 				m_allIds = new Dictionary<string, int>();
@@ -953,7 +953,7 @@ namespace RCore.SheetX
 			{
 				//Build json file for all jsons content
 				string mergedJson = JsonConvert.SerializeObject(allJsons);
-				string mergedFileName = Path.GetFileNameWithoutExtension(m_settings.excel.path).Trim().Replace(" ", "_");
+				string mergedFileName = Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path).Trim().Replace(" ", "_");
 				SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
 
 				if (m_settings.encryptJson)
@@ -1413,7 +1413,7 @@ namespace RCore.SheetX
 		}
 
 #endregion
-		
+
 		public void ExportAll()
 		{
 			ExportIDs();
