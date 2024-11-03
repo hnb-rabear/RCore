@@ -137,5 +137,27 @@ namespace RCore.SheetX
 				Directory.CreateDirectory(path);
 			return path;
 		}
+
+		public void CreateFileIDs(string exportFileName, string content)
+		{
+			string fileContent = Resources.Load<TextAsset>(SheetXConstants.IDS_CS_TEMPLATE).text;
+			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", exportFileName);
+			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", content);
+			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
+
+			SheetXHelper.WriteFile(constantsOutputFolder, $"{exportFileName}.cs", fileContent);
+			UnityEngine.Debug.Log($"Exported {exportFileName}.cs!");
+		}
+		
+		public void CreateFileConstants(string pContent, string pExportFileName)
+		{
+			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
+			fileContent = fileContent.Replace("_CONST_CLASS_NAME_", pExportFileName);
+			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
+			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
+
+			SheetXHelper.WriteFile(constantsOutputFolder, pExportFileName + ".cs", fileContent);
+			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
+		}
 	}
 }

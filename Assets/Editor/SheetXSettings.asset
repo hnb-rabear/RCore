@@ -12,12 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4ab2bc8934cee74489e4f1e7950acaa, type: 3}
   m_Name: SheetXSettings
   m_EditorClassIdentifier: 
-  excelFile:
-    path: D:/Downloads/Example.xlsx
+  excelSheetsPath:
+    path: 
+    sheets: []
+  googleSheetsPath:
+    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    name: Example
     sheets:
-    - name: ExampleConstants
-      selected: 1
     - name: ExampleIDs
+      selected: 1
+    - name: ExampleConstants
       selected: 1
     - name: LocalizationExample
       selected: 1
@@ -28,8 +32,6 @@ MonoBehaviour:
     - name: ExampleDataBasic2
       selected: 1
     - name: ExampleDataAdvanced
-      selected: 1
-    - name: ExampleMergeTable
       selected: 1
   excelFiles: []
   jsonOutputFolder: Assets/RCore/SheetX/Editor/Example/Json

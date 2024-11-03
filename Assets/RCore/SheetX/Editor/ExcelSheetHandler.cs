@@ -21,7 +21,7 @@ namespace RCore.SheetX
 		private Dictionary<string, LocalizationBuilder> m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
 		private List<string> m_localizedSheetsExported = new List<string>();
 		private List<string> m_localizedLanguages = new List<string>();
-		private Dictionary<string, string> m_characterMaps = new Dictionary<string, string>();
+		private Dictionary<string, string> m_langCharSets = new Dictionary<string, string>();
 
 		public ExcelSheetHandler(SheetXSettings settings)
 		{
@@ -56,7 +56,7 @@ namespace RCore.SheetX
 					if (m_settings.separateConstants)
 					{
 						var content = m_idsBuilderDict[m.name].ToString();
-						CreateFileIDs(m.name, content);
+						m_settings.CreateFileIDs(m.name, content);
 					}
 				}
 			}
@@ -70,7 +70,7 @@ namespace RCore.SheetX
 					iDsBuilder.Append(content);
 					iDsBuilder.AppendLine();
 				}
-				CreateFileIDs("IDs", iDsBuilder.ToString());
+				m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 			}
 		}
 
@@ -80,7 +80,7 @@ namespace RCore.SheetX
 
 			if (sheet == null || sheet.LastRowNum == 0)
 			{
-				Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 				return false;
 			}
 
@@ -228,17 +228,6 @@ namespace RCore.SheetX
 			return true;
 		}
 
-		private void CreateFileIDs(string exportFileName, string content)
-		{
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.IDS_CS_TEMPLATE).text;
-			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", exportFileName);
-			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", content);
-			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
-
-			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{exportFileName}.cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {exportFileName}.cs!");
-		}
-
 		private int GetReferenceId(string pKey, out bool pFound)
 		{
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
@@ -336,9 +325,7 @@ namespace RCore.SheetX
 					LoadSheetConstantsData(workBook, sheet.name);
 
 					if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
-					{
-						CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
-					}
+						m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
 				}
 			}
 
@@ -350,7 +337,7 @@ namespace RCore.SheetX
 					builder.Append(b.Value);
 					builder.AppendLine();
 				}
-				CreateFileConstants(builder.ToString(), "Constants");
+				m_settings.CreateFileConstants(builder.ToString(), "Constants");
 			}
 		}
 
@@ -359,7 +346,7 @@ namespace RCore.SheetX
 			var sheet = pWorkbook.GetSheet(pSheetName);
 			if (sheet == null || sheet.LastRowNum == 0)
 			{
-				Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 				return;
 			}
 
@@ -527,23 +514,17 @@ namespace RCore.SheetX
 			m_constantsBuilderDict[constantsSheet].Append(constantsSB);
 		}
 
-		private void CreateFileConstants(string pContent, string pExportFileName)
-		{
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
-			fileContent = fileContent.Replace("_CONST_CLASS_NAME_", pExportFileName);
-			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
-			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
-
-			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, pExportFileName + ".cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
-		}
-
 #endregion
 
 #region Export Localizations
 
 		public void ExportLocalizations()
 		{
+			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
+			{
+				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
+				return;
+			}
 			if (string.IsNullOrEmpty(m_settings.localizationOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Localization Output folder!");
@@ -567,20 +548,20 @@ namespace RCore.SheetX
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
-			m_characterMaps = new Dictionary<string, string>();
+			m_langCharSets = new Dictionary<string, string>();
 
 			for (int i = 0; i < sheets.Count; i++)
 			{
-				if (sheets[i].selected && sheets[i].name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
-				{
-					LoadSheetLocalizationData(workBook, sheets[i].name);
+				if (!sheets[i].selected || !sheets[i].name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
+					continue;
+				
+				LoadSheetLocalizationData(workBook, sheets[i].name);
 
-					if (m_localizationsDict.ContainsKey(sheets[i].name) && m_settings.separateLocalizations)
-					{
-						var builder = m_localizationsDict[sheets[i].name];
-						CreateLocalizationFileV2(builder.idsString, builder.languageTextDict, sheets[i].name);
-						m_localizedSheetsExported.Add(sheets[i].name);
-					}
+				if (m_localizationsDict.ContainsKey(sheets[i].name) && m_settings.separateLocalizations)
+				{
+					var builder = m_localizationsDict[sheets[i].name];
+					CreateLocalizationFile(builder.idsString, builder.languageTextDict, sheets[i].name);
+					m_localizedSheetsExported.Add(sheets[i].name);
 				}
 			}
 
@@ -599,7 +580,7 @@ namespace RCore.SheetX
 						builder.languageTextDict[language].AddRange(texts);
 					}
 				}
-				CreateLocalizationFileV2(builder.idsString, builder.languageTextDict, "Localization");
+				CreateLocalizationFile(builder.idsString, builder.languageTextDict, "Localization");
 				m_localizedSheetsExported.Add("Localization");
 			}
 
@@ -670,10 +651,6 @@ namespace RCore.SheetX
 							textDict[fieldName].Add(fieldValue);
 						}
 					}
-					else
-					{
-						Console.Write(col);
-					}
 				}
 			}
 
@@ -704,7 +681,7 @@ namespace RCore.SheetX
 				});
 		}
 
-		private void CreateLocalizationFileV2(List<string> pIdsString, Dictionary<string, List<string>> pLanguageTextDict, string pFileName)
+		private void CreateLocalizationFile(List<string> pIdsString, Dictionary<string, List<string>> pLanguageTextDict, string pFileName)
 		{
 			if (pLanguageTextDict.Count == 0 || pLanguageTextDict.Count == 0)
 				return;
@@ -774,10 +751,10 @@ namespace RCore.SheetX
 
 				if (m_settings.langCharSets != null && m_settings.langCharSets.Contains(listText.Key))
 				{
-					if (m_characterMaps.ContainsKey(listText.Key))
-						m_characterMaps[listText.Key] += json;
+					if (m_langCharSets.ContainsKey(listText.Key))
+						m_langCharSets[listText.Key] += json;
 					else
-						m_characterMaps[listText.Key] = json;
+						m_langCharSets[listText.Key] = json;
 				}
 			}
 
@@ -924,28 +901,24 @@ namespace RCore.SheetX
 						LoadSheetIDsValues(workBook, sheet.name);
 			}
 
-			var allSheets = new List<string>();
 			bool writeJsonFileForSingleSheet = !m_settings.combineJson;
 			var allJsons = new Dictionary<string, string>();
-			for (int i = 0; i < sheets.Count; i++)
+			foreach (var sheet in sheets)
 			{
-				if (sheets[i].selected && SheetXHelper.IsJsonSheet(sheets[i].name))
+				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name))
+					continue;
+				string fileName = sheet.name.Trim().Replace(" ", "_");
+				string json = ConvertSheetToJson(workBook, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
+
+				//Merge all json into a single file
+				if (m_settings.combineJson)
 				{
-					string fileName = sheets[i].name.Trim().Replace(" ", "_");
-					string json = ConvertSheetToJson(workBook, sheets[i].name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
-
-					//Merge all json into a single file
-					if (m_settings.combineJson)
+					if (allJsons.ContainsKey(fileName))
 					{
-						if (allJsons.ContainsKey(fileName))
-						{
-							UnityEngine.Debug.LogError($"Could not create single json file {fileName}, because file {fileName} is already exists!");
-							continue;
-						}
-						allJsons.Add(fileName, json);
+						UnityEngine.Debug.LogError($"Could not create single json file {fileName}, because file {fileName} is already exists!");
+						continue;
 					}
-
-					allSheets.Add(sheets[i].name);
+					allJsons.Add(fileName, json);
 				}
 			}
 			if (m_settings.combineJson)
