@@ -8,15 +8,6 @@ using NPOI.XSSF.UserModel;
 namespace RCore.SheetX
 {
 	[Serializable]
-	public class ExcelFile
-	{
-		public string path;
-		public bool selected;
-		public bool exportConstants;
-		public bool exportIDs;
-	}
-
-	[Serializable]
 	public class SheetPath
 	{
 		public string name;
@@ -26,6 +17,7 @@ namespace RCore.SheetX
 	[Serializable]
 	public class ExcelSheetsPath
 	{
+		public bool selected = true;
 		public string path;
 		public List<SheetPath> sheets = new();
 		public void Load()

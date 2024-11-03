@@ -12,7 +12,7 @@ namespace RCore.SheetX
 		private Vector2 m_scrollPosition;
 		private SheetXSettings m_settings;
 		private ExcelSheetHandler m_excelSheetHandler;
-		private EditorTableView<ExcelFile> m_tableExcelFiles;
+		private EditorTableView<ExcelSheetsPath> m_tableExcelFiles;
 		private EditorTableView<SheetPath> m_tableSpreadSheet;
 		private IWorkbook m_workbook;
 
@@ -109,17 +109,21 @@ namespace RCore.SheetX
 			if (EditorHelper.Button("Add Excel Files", 200))
 			{
 				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
-				foreach (string path in paths)
-					m_settings.AddExcelFileFile(path);
+				for (int i = 0; i < paths.Count; i++)
+				{
+					if (paths[i].StartsWith(Application.dataPath))
+						paths[i] = EditorHelper.FormatPathToUnityPath(paths[i]);
+					m_settings.AddExcelFileFile(paths[i]);
+				}
 			}
 			m_tableExcelFiles ??= CreateExcelTable();
-			m_tableExcelFiles.DrawOnGUI(m_settings.excelFiles);
+			m_tableExcelFiles.DrawOnGUI(m_settings.excelSheetsPaths);
 			if (EditorHelper.Button("Export All")) { }
 		}
 
-		private EditorTableView<ExcelFile> CreateExcelTable()
+		private EditorTableView<ExcelSheetsPath> CreateExcelTable()
 		{
-			var table = new EditorTableView<ExcelFile>(this, "Excel files");
+			var table = new EditorTableView<ExcelSheetsPath>(this, "Excel files");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
@@ -146,18 +150,6 @@ namespace RCore.SheetX
 					style: style
 				);
 			}).SetAutoResize(true).SetSorting((a, b) => String.Compare(a.path, b.path, StringComparison.Ordinal));
-
-			table.AddColumn("Export Constants", 120, 140, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.exportConstants = EditorGUI.Toggle(rect, item.exportConstants);
-			}).SetAutoResize(true);
-
-			table.AddColumn("Export IDs", 80, 100, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.exportIDs = EditorGUI.Toggle(rect, item.exportIDs);
-			}).SetAutoResize(true);
 
 			table.AddColumn("Status", 80, 100, (rect, item) =>
 			{
@@ -187,14 +179,26 @@ namespace RCore.SheetX
 
 			table.AddColumn("Edit", 60, 100, (rect, item) =>
 			{
+				if (GUI.Button(rect, "Edit"))
+				{
+					item.Load();
+					EditSheetsWindow.ShowWindow(item, result =>
+					{
+						
+					});
+				}
+			}).SetAutoResize(true).SetTooltip("Click to Edit");
+			
+			table.AddColumn("Delete", 60, 100, (rect, item) =>
+			{
 				var defaultColor = GUI.color;
 				GUI.backgroundColor = Color.red;
 				if (GUI.Button(rect, "Delete"))
 				{
-					m_settings.excelFiles.Remove(item);
+					m_settings.excelSheetsPaths.Remove(item);
 				}
 				GUI.backgroundColor = defaultColor;
-			}).SetAutoResize(true).SetTooltip("Click to delete");
+			}).SetAutoResize(true).SetTooltip("Click to Delete");
 
 			return table;
 		}

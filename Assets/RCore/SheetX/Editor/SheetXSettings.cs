@@ -30,7 +30,7 @@ namespace RCore.SheetX
 
 		public ExcelSheetsPath excelSheetsPath;
 		public GoogleSheetsPath googleSheetsPath;
-		public List<ExcelFile> excelFiles;
+		public List<ExcelSheetsPath> excelSheetsPaths;
 		public string jsonOutputFolder;
 		public string constantsOutputFolder;
 		public string localizationOutputFolder;
@@ -60,24 +60,6 @@ namespace RCore.SheetX
 			return collection;
 		}
 
-		public void AddExcelFileFile(string path)
-		{
-			if (!File.Exists(path))
-				return;
-			for (int i = 0; i < excelFiles.Count; i++)
-			{
-				if (excelFiles[i].path == path)
-					return;
-			}
-			excelFiles.Add(new ExcelFile()
-			{
-				path = path,
-				selected = true,
-				exportConstants = true,
-				exportIDs = true,
-			});
-		}
-
 		public string GetLocalizationFolder()
 		{
 			string path = localizationOutputFolder;
@@ -97,7 +79,7 @@ namespace RCore.SheetX
 		public void ResetToDefault()
 		{
 			excelSheetsPath = new ExcelSheetsPath();
-			excelFiles = new List<ExcelFile>();
+			excelSheetsPaths = new List<ExcelSheetsPath>();
 			jsonOutputFolder = "";
 			constantsOutputFolder = "";
 			localizationOutputFolder = "";
@@ -158,6 +140,24 @@ namespace RCore.SheetX
 
 			SheetXHelper.WriteFile(constantsOutputFolder, pExportFileName + ".cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
+		}
+
+		public void AddExcelFileFile(string path)
+		{
+			if (!File.Exists(path))
+				return;
+			foreach (var _excelSheetsPath in excelSheetsPaths)
+			{
+				if (_excelSheetsPath.path == path)
+					return;
+			}
+			var newPath = new ExcelSheetsPath()
+			{
+				path = path,
+				selected = true,
+			};
+			newPath.Load();
+			excelSheetsPaths.Add(newPath);
 		}
 	}
 }

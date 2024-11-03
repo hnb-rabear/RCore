@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SheetXSettings
   m_EditorClassIdentifier: 
   excelSheetsPath:
+    selected: 1
     path: 
     sheets: []
   googleSheetsPath:
@@ -33,10 +34,130 @@ MonoBehaviour:
       selected: 1
     - name: ExampleDataAdvanced
       selected: 1
-  excelFiles: []
-  jsonOutputFolder: Assets/RCore/SheetX/Editor/Example/Json
-  constantsOutputFolder: Assets/RCore/SheetX/Editor/Example/Constants
-  localizationOutputFolder: Assets/RCore/SheetX/Editor/Example/Localizations
+  excelSheetsPaths:
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/Skills.xlsx
+    sheets:
+    - name: PassiveAbility
+      selected: 1
+    - name: PassiveAbilityMinor
+      selected: 1
+    - name: PlayerActiveSkills
+      selected: 1
+    - name: PassiveTree
+      selected: 1
+    - name: WeaponPerks
+      selected: 1
+    - name: InBattleUpgradeEvols
+      selected: 1
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/ShopItems.xlsx
+    sheets:
+    - name: IDs
+      selected: 1
+    - name: Constants
+      selected: 1
+    - name: Shop
+      selected: 1
+    - name: Chests
+      selected: 1
+    - name: ChestRewards
+      selected: 1
+    - name: CheckinRewards
+      selected: 1
+    - name: ProgressRewards
+      selected: 1
+    - name: FreeRewards
+      selected: 0
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/Maps.xlsx
+    sheets:
+    - name: Maps
+      selected: 1
+    - name: Areas
+      selected: 1
+    - name: AreasHard
+      selected: 1
+    - name: EndlessModeAreas
+      selected: 1
+    - name: EndlessModeEnemies
+      selected: 1
+    - name: BossRushMode
+      selected: 1
+    - name: SecretDropRates
+      selected: 1
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/Localization.xlsx
+    sheets:
+    - name: LocalizationCommon
+      selected: 1
+    - name: LocalizationMod
+      selected: 1
+    - name: LocalizationTutorial
+      selected: 1
+    - name: LocalizationSkill
+      selected: 1
+    - name: LocalizationTask
+      selected: 1
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/GameData.xlsx
+    sheets:
+    - name: Constants
+      selected: 1
+    - name: TrackingConstants
+      selected: 1
+    - name: IDs
+      selected: 1
+    - name: Characters
+      selected: 1
+    - name: EnemiesV2
+      selected: 1
+    - name: EnemyAttacks
+      selected: 1
+    - name: Mods
+      selected: 1
+    - name: Skins
+      selected: 1
+    - name: Equipments
+      selected: 1
+    - name: RescueRewards
+      selected: 1
+    - name: PlayerLevels
+      selected: 1
+    - name: WeaponStats
+      selected: 1
+    - name: Leaderboards
+      selected: 1
+    - name: FakeScores
+      selected: 1
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/Design.xlsx
+    sheets:
+    - name: Map
+      selected: 1
+    - name: Enemy HP
+      selected: 1
+    - name: SKills Price
+      selected: 1
+    - name: WeaponStats
+      selected: 1
+    - name: Exp
+      selected: 1
+  - selected: 1
+    path: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple Excel Files/Challenges.xlsx
+    sheets:
+    - name: IDs
+      selected: 1
+    - name: Achievements
+      selected: 1
+    - name: DailyQuests
+      selected: 1
+  jsonOutputFolder: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple
+    Excel Files/Json
+  constantsOutputFolder: Assets/RCore/SheetX/Editor/Example/Example Exporting Multiple
+    Excel Files/Constants
+  localizationOutputFolder: Assets/RCore/SheetX/Editor/Example/Example Exporting
+    Multiple Excel Files/Localizations
   namespace: 
   separateConstants: 0
   separateIDs: 0

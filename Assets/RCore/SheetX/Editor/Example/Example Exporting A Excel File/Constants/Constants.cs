@@ -2,6 +2,7 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  ***/
 
+using System;
 using UnityEngine;
 
 public class Constants
@@ -19,8 +20,8 @@ public class Constants
 	public static readonly int[] EXAMPLE_REFERENCE_4 = new int[2] { 1, 4 }; /*Write your comment for the constants*/
 	public const string EXAMPLE_STRING = "321fda"; /*String example*/
 	public static readonly Vector2 EXAMPLE_VECTOR2_1 = new Vector2(1f, 2f); /*Vector2 example*/
-	public static readonly Vector2 EXAMPLE_VECTOR2_2 = new Vector2(1f, 2f); /*Vector2 example*/
-	public static readonly Vector3 EXAMPLE_VECTOR3 = new Vector3(3f, 3f, 4f); /*Vector3 example*/
+	public static readonly Vector2 EXAMPLE_VECTOR2_2 = new Vector2(1f, 02f); /*Vector2 example*/
+	public static readonly Vector3 EXAMPLE_VECTOR3 = new Vector3(3f, 03f, 04f); /*Vector3 example*/
 
 
 }
