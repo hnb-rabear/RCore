@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+#if UNITY_NOTIFICATION
 using Unity.Notifications;
+#endif
 
 namespace RCore.Notification
 {
@@ -271,6 +273,7 @@ namespace RCore.Notification
 		/// </summary>
 		public IEnumerator Init()
 		{
+#if UNITY_NOTIFICATION
 			if (Initialized)
 				yield break;
 
@@ -291,6 +294,9 @@ namespace RCore.Notification
 			yield return Platform.RequestNotificationPermission();
 
 			OnForegrounding();
+#else
+			yield break;
+#endif
 		}
 
 		/// <summary>

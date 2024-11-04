@@ -1,20 +1,28 @@
 using System;
 using System.Collections;
+#if UNITY_NOTIFICATION
+using System.Collections;
 using Unity.Notifications;
+#endif
 
 namespace RCore.Notification
 {
-    /// <summary>
-    /// A type that handles notifications for a specific game platform
-    /// </summary>
-    public class NotificationsPlatform : IDisposable
-    {
-	    
-        /// <summary>
-        /// Fired when a notification is received.
-        /// </summary>
-        public event Action<GameNotification> NotificationReceived;
+	/// <summary>
+	/// A type that handles notifications for a specific game platform
+	/// </summary>
+	public class NotificationsPlatform : IDisposable
+	{
+		/// <summary>
+		/// Fired when a notification is received.
+		/// </summary>
+		public event Action<GameNotification> NotificationReceived;
 
+		public GameNotification CreateNotification()
+		{
+			return new GameNotification();
+		}
+		
+#if UNITY_NOTIFICATION
         /// <summary>
         /// Create the platform with provided notification settings.
         /// </summary>
@@ -30,15 +38,6 @@ namespace RCore.Notification
         public IEnumerator RequestNotificationPermission()
         {
             return NotificationCenter.RequestPermission();
-        }
-
-        /// <summary>
-        /// Create a new instance of a <see cref="IGameNotification"/> for this platform.
-        /// </summary>
-        /// <returns>A new platform-appropriate notification object.</returns>
-        public GameNotification CreateNotification()
-        {
-            return new GameNotification();
         }
 
         /// <summary>
@@ -144,5 +143,17 @@ namespace RCore.Notification
             // if the event is registered
             NotificationReceived?.Invoke(new GameNotification(notification));
         }
-    }
+#else
+		public void Dispose() { }
+		public void OnBackground() { }
+		public void ScheduleNotification(GameNotification gameNotification, DateTime deliveryTime) { }
+		public void CancelNotification(int notificationId) { }
+		public void CancelAllScheduledNotifications() { }
+		public void DismissNotification(int notificationId) { }
+		public void DismissAllDisplayedNotifications() { }
+		public GameNotification GetLastNotification() => null;
+		public void OnForeground() { }
+		public IEnumerator RequestNotificationPermission() { yield break; }
+#endif
+	}
 }
