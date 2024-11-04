@@ -125,24 +125,24 @@ namespace RCore.Service
 				m_Directives = new List<string>()
 				{
 					"FIREBASE_ANALYTICS",
-					// "FIREBASE_STORAGE",
-					// "FIREBASE_DATABASE",
-					"FIREBASE_AUTH",
 					"FIREBASE_CRASHLYTICS",
-					// "FIREBASE_MESSAGING",
-					"FIREBASE_REMOTE",
+					"FIREBASE_REMOTE_CONFIG",
+					"FIREBASE_AUTH",
 					// "FIREBASE_FIRESTORE"
+					// "FIREBASE_DATABASE",
+					// "FIREBASE_STORAGE",
+					// "FIREBASE_MESSAGING",
 				};
 				m_DisplayNames = new List<string>()
 				{
 					"Firebase Analytics",
-					// "Firebase Storage",
-					// "Firebase Database",
-					"Firebase Auth",
 					"Firebase Crashlytics",
-					// "Firebase Messaging",
 					"Firebase Remote Config",
+					"Firebase Auth",
 					// "Firebase Firestore"
+					// "Firebase Database",
+					// "Firebase Storage",
+					// "Firebase Messaging",
 				};
 				m_SelectedDirectives = new List<bool>(m_Directives.Count);
 				for (int i = 0; i < m_Directives.Count; i++)

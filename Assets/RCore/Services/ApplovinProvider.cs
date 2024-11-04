@@ -1,4 +1,4 @@
-﻿#if APPLOVINE
+﻿#if APPLOVIN
 using GoogleMobileAds.Ump.Api;
 #endif
 using System;
@@ -10,12 +10,11 @@ namespace RCore.Service
     {
         private static ApplovinProvider instance;
         public static ApplovinProvider Instance => instance ??= new ApplovinProvider();
-
-#if APPLOVINE
-        private static string SDK_KEY => RCoreConfig.Instance.maxSdkKey;
-        private static string AD_UNIT_INTERSTITIAL => RCoreConfig.Instance.maxInterstitial;
-        private static string AD_UNIT_REWARDED => RCoreConfig.Instance.maxRewarded;
-        private static string AD_UNIT_BANNER => RCoreConfig.Instance.maxBanner;
+        private static string SDK_KEY => Configuration.Instance.customKeys["MAX_SDK_KEY"];
+        private static string AD_UNIT_INTERSTITIAL => Configuration.Instance.customKeys["MAX_INTERSTITIAL"];
+        private static string AD_UNIT_REWARDED => Configuration.Instance.customKeys["MAX_REWARDED"];
+        private static string AD_UNIT_BANNER => Configuration.Instance.customKeys["MAX_BANNER"];
+#if APPLOVIN
         public void Init()
         {
             // Create a ConsentRequestParameters object     

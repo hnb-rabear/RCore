@@ -34,15 +34,15 @@ namespace RCore.Editor.Tool
 
     public class ENVWindow : EditorWindow
     {
-        private Vector2 m_ScrollPosition;
-        private List<Tuple<string, string>> m_TempConfig = new List<Tuple<string, string>>();
-        private bool m_HadEnvFile;
+        private Vector2 m_scrollPosition;
+        private List<Tuple<string, string>> m_tempConfig = new List<Tuple<string, string>>();
+        private bool m_hadEnvFile;
 
         private void OnEnable()
         {
-            m_HadEnvFile = File.Exists(Env.EnvPath);
+            m_hadEnvFile = File.Exists(Env.EnvPath);
 
-            if (m_HadEnvFile)
+            if (m_hadEnvFile)
                 LoadEnvironmentFile();
         }
 
@@ -54,7 +54,7 @@ namespace RCore.Editor.Tool
 
         private void OnGUI()
         {
-            if (!m_HadEnvFile)
+            if (!m_hadEnvFile)
             {
                 if (!GUILayout.Button("Create .env File"))
                     return;
@@ -62,7 +62,7 @@ namespace RCore.Editor.Tool
                 try
                 {
                     File.WriteAllText(Env.EnvPath, SerializeEnvDictionary(new Dictionary<string, string> { { "VARIABLE_NAME", "VALUE" } }));
-                    m_HadEnvFile = true;
+                    m_hadEnvFile = true;
                     LoadEnvironmentFile();
                 }
                 catch (Exception err)
@@ -72,37 +72,37 @@ namespace RCore.Editor.Tool
                 return;
             }
 
-            m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition);
+            m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition);
 
-            for (var i = 0; i < m_TempConfig.Count; i += 1)
+            for (var i = 0; i < m_tempConfig.Count; i += 1)
             {
                 GUILayout.BeginHorizontal();
 
-                var key = GUILayout.TextField(m_TempConfig[i].Item1, GUILayout.ExpandWidth(false), GUILayout.Width(200));
-                var value = GUILayout.TextField(m_TempConfig[i].Item2, GUILayout.Width(position.width - 260));
+                var key = GUILayout.TextField(m_tempConfig[i].Item1, GUILayout.ExpandWidth(false), GUILayout.Width(200));
+                var value = GUILayout.TextField(m_tempConfig[i].Item2, GUILayout.Width(position.width - 260));
 
-                if (m_TempConfig.Count == 1)
+                if (m_tempConfig.Count == 1)
                     GUI.enabled = false;
 
                 if (GUILayout.Button("-", GUILayout.Width(23)))
                 {
-                    m_TempConfig.RemoveAt(i);
+                    m_tempConfig.RemoveAt(i);
                     continue;
                 }
 
-                if (m_TempConfig.Count == 1)
+                if (m_tempConfig.Count == 1)
                     GUI.enabled = true;
 
                 if (GUILayout.Button("+", GUILayout.Width(23)))
                 {
-                    m_TempConfig.Insert(i + 1, new Tuple<string, string>("", ""));
+                    m_tempConfig.Insert(i + 1, new Tuple<string, string>("", ""));
                     continue;
                 }
 
                 GUILayout.EndHorizontal();
 
-                if (!key.Equals(m_TempConfig[i].Item1) || !value.Equals(m_TempConfig[i].Item2))
-                    m_TempConfig[i] = new Tuple<string, string>(key, value);
+                if (!key.Equals(m_tempConfig[i].Item1) || !value.Equals(m_tempConfig[i].Item2))
+                    m_tempConfig[i] = new Tuple<string, string>(key, value);
             }
 
             GUILayout.BeginHorizontal();
@@ -110,7 +110,7 @@ namespace RCore.Editor.Tool
             {
                 try
                 {
-                    File.WriteAllText(Env.EnvPath, SerializeEnvDictionary(m_TempConfig.ToDictionary(item => item.Item1, item => item.Item2)));
+                    File.WriteAllText(Env.EnvPath, SerializeEnvDictionary(m_tempConfig.ToDictionary(item => item.Item1, item => item.Item2)));
                 }
                 catch (Exception err)
                 {
@@ -142,7 +142,7 @@ namespace RCore.Editor.Tool
                 return;
 
             var content = File.ReadAllText(Env.EnvPath, Encoding.UTF8);
-            m_TempConfig = Env.ParseEnvironmentFile(content).Select(item => new Tuple<string, string>(item.Key, item.Value)).ToList();
+            m_tempConfig = Env.ParseEnvironmentFile(content).Select(item => new Tuple<string, string>(item.Key, item.Value)).ToList();
         }
 
         private static string SerializeEnvDictionary(Dictionary<string, string> dictionary)

@@ -29,18 +29,6 @@ namespace RCore.Editor
 			Selection.activeObject = Configuration.Instance;
 		}
 		
-		[MenuItem("RCore/Config/Runtime", priority = GROUP_1 + 2)]
-		private static void OpenRCoreConfig()
-		{
-			Selection.activeObject = RCoreConfig.Instance;
-		}
-		
-		[MenuItem("RCore/Config/Editor", priority = GROUP_1 + 3)]
-		private static void OpenRCoreEditorConfig()
-		{
-			Selection.activeObject = RCoreEditorConfig.Instance;
-		}
-		
 		//==========================================================
 		
 		[MenuItem("RCore/Asset Database/Save Assets " + SHIFT + "_1", priority = GROUP_2 + 1)]

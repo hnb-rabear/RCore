@@ -25,7 +25,7 @@ namespace RCore.Editor.Tool
 		{
 			get
 			{
-				var key = "api:" + RCoreEditorConfig.Instance.tinyPngApiKey;
+				var key = "api:" + Configuration.Instance.customKeys["TINIFY_API_KEY"];
 				key = Convert.ToBase64String(Encoding.UTF8.GetBytes(key));
 				return $"Basic {key}";
 			}

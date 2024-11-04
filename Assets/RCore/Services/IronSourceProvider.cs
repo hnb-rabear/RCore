@@ -7,6 +7,8 @@ namespace RCore.Service
     {
         private static IronSourceProvider m_Instance;
         public static IronSourceProvider Instance => m_Instance;
+        public static string ANDROID_APP_KEY => Configuration.Instance.customKeys["IS_APP_KEY_ANDROID"];
+        public static string IOS_APP_KEY => Configuration.Instance.customKeys["IS_APP_KEY_IOS"];
 #if IRONSOURCE
 
         private Action<bool> m_OnRewardedAdCompleted;
@@ -54,9 +56,9 @@ namespace RCore.Service
             void InitAds()
             {
 #if UNITY_ANDROID
-                string appKey = RConfig.Instance.isAndroidAppKey;
+                string appKey = ANDROID_APP_KEY
 #elif UNITY_IPHONE
-				string appKey = RConfig.Instance.isIosAppKey;
+				string appKey = IOS_APP_KEY
 #endif
                 IronSourceConfig.Instance.setClientSideCallbacks(true);
 

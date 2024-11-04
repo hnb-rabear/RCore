@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using UnityEngine;
 #if UNITY_EDITOR
 using RCore.Editor;
@@ -11,30 +12,35 @@ namespace RCore
 	[CreateAssetMenu(fileName = "Configuration", menuName = "RCore/Configuration")]
 	public class Configuration : ScriptableObject
 	{
-#region Internal Class
-
 		[Serializable]
-		public class Profile
+		public class Env
 		{
 			public string name;
-			public List<Directive> defines = new List<Directive>();
+			public List<Directive> directives = new();
 			public void AddDirective(string pName, bool defaultActive)
 			{
 				if (string.IsNullOrEmpty(pName))
 					return;
 				var find = GetDirective(pName);
 				if (find == null)
-					defines.Add(new Directive(pName, defaultActive));
+					directives.Add(new Directive(pName, defaultActive));
+			}
+			public Env AddDirective(params string[] pNames)
+			{
+				foreach (string pName in pNames)
+				{
+					if (string.IsNullOrEmpty(pName))
+						continue;
+					bool exist = directives.Any(directive => directive.name == pName);
+					if (!exist)
+						directives.Add(new Directive(pName, false));
+				}
+				return this;
 			}
 			public Directive GetDirective(string pName)
 			{
-				if (string.IsNullOrEmpty(pName))
-					return null;
+				return string.IsNullOrEmpty(pName) ? null : directives.FirstOrDefault(directive => directive.name == pName);
 
-				for (int i = 0; i < defines.Count; i++)
-					if (defines[i].name == pName)
-						return defines[i];
-				return null;
 			}
 		}
 
@@ -55,8 +61,6 @@ namespace RCore
 			public Color color;
 			public bool enabled = true;
 		}
-
-#endregion
 
 		//==================================
 
@@ -82,26 +86,24 @@ namespace RCore
 		}
 
 		public Action onSettingsChanged;
-		public Profile profile = new Profile();
-		public RPlayerPrefBool enableLogSystem;
+		public SerializableDictionary<string, string> customKeys;
+		public List<Env> envs = new List<Env>();
+		public Env curEnv = new Env();
+
 		[SerializeField] private bool m_enableLog;
 		[SerializeField] private bool m_enableDraw;
 
-		private void Init()
-		{
-			enableLogSystem = new RPlayerPrefBool("EnableLogSystem");
-			RCore.Debug.enabled = m_enableLog;
-			RCore.DebugDraw.enabled = m_enableDraw;
-		}
+		private RPlayerPrefBool m_enableLogSystem;
+		
 		public bool EnableLog
 		{
-			get => m_enableLog || enableLogSystem.Value;
+			get => m_enableLog || m_enableLogSystem.Value;
 			set
 			{
 				if (m_enableLog == value)
 					return;
 				m_enableLog = value;
-				RCore.Debug.enabled = value;
+				Debug.enabled = value;
 				onSettingsChanged?.Invoke();
 			}
 		}
@@ -117,7 +119,41 @@ namespace RCore
 				onSettingsChanged?.Invoke();
 			}
 		}
-		
+
+		private void Init()
+		{
+			m_enableLogSystem = new RPlayerPrefBool("EnableLogSystem");
+			Debug.enabled = m_enableLog;
+			DebugDraw.enabled = m_enableDraw;
+		}
+
+		private void OnValidate()
+		{
+			if (envs.Count == 0 || envs[0].name != "do_not_remove")
+			{
+				envs.Insert(0, new Env()
+				{
+					name = "do_not_remove",
+				});
+			}
+			envs[0].AddDirective("DOTWEEN",
+				"GPGS",
+				"IN_APP_REVIEW",
+				"IN_APP_UPDATE",
+				"APPLOVIN",
+				"IRONSOURCE",
+				"FIREBASE",
+				"FIREBASE_ANALYTICS",
+				"FIREBASE_CRASHLYTICS",
+				"FIREBASE_REMOTE_CONFIG",
+				"FIREBASE_AUTH",
+				"FIREBASE_FIRESTORE",
+				"FIREBASE_DATABASE",
+				"FIREBASE_STORAGE",
+				"FIREBASE_MESSAGING"
+			);
+		}
+
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void RunOnGameStart()
 		{

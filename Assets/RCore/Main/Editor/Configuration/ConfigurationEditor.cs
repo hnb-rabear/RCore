@@ -16,27 +16,18 @@ namespace RCore.Editor.Tool
 	public class ConfigurationEditor : UnityEditor.Editor
 	{
 		private Configuration m_target;
+		private const string DEFAULT_ENV_NAME = "do_not_remove";
 
 		//-- FIREBASE CONFIGURATION
 		private static string FirebaseDevConfigPath { get => EditorPrefs.GetString("firebaseDevConfigPath"); set => EditorPrefs.SetString("firebaseDevConfigPath", value); }
 		private static string FirebaseLiveConfigPath { get => EditorPrefs.GetString("firebaseLiveConfigPath"); set => EditorPrefs.SetString("firebaseLiveConfigPath", value); }
-		private static string FirebaseConfigOutputFolder
-		{
-			get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath);
-			set => EditorPrefs.SetString("FirebaseConfigOutputFolder", value);
-		}
-		private static string FirebaseConfig
-		{
-			get => EditorPrefs.GetString("firebase_config_" + Application.productName);
-			set => EditorPrefs.SetString("firebase_config_" + Application.productName, value);
-		}
+		private static string FirebaseConfigOutputFolder { get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath); set => EditorPrefs.SetString("FirebaseConfigOutputFolder", value); }
+		private static string FirebaseConfig { get => EditorPrefs.GetString("firebase_config_" + Application.productName); set => EditorPrefs.SetString("firebase_config_" + Application.productName, value); }
 		private static string FirebaseProjectNumber { get => EditorPrefs.GetString("project_number"); set => EditorPrefs.SetString("project_number", value); }
 
-		private string m_typedProfileName;
-		private string m_selectedProfile;
-		private ConfigurationCollection m_configurationCollections;
-		private bool m_removingProfile;
-		private bool m_previewingProfiles;
+		private string m_typedEnvName;
+		private string m_selectedEnv;
+		private bool m_previewingEnvs;
 		private string m_buildName;
 		private float m_lastUpdateTime;
 		private readonly Dictionary<string, ReorderableList> m_reorderDirectivesDict = new Dictionary<string, ReorderableList>();
@@ -44,17 +35,13 @@ namespace RCore.Editor.Tool
 		private void OnEnable()
 		{
 			EditorApplication.update += UpdateEditor;
-			
-			m_target = Configuration.Instance;
-			if (m_configurationCollections == null)
-				m_configurationCollections = ConfigurationCollection.Load();
-			m_removingProfile = false;
-			m_selectedProfile = m_target.profile.name;
-			m_typedProfileName = m_target.profile.name;
 
-			m_removingProfile = false;
-			EditProfile(false);
-			InitDirectives(m_target.profile);
+			m_target = Configuration.Instance;
+			m_selectedEnv = m_target.curEnv.name;
+			m_typedEnvName = m_target.curEnv.name;
+
+			EditEnv(false);
+			InitEnv(m_target.curEnv);
 
 			CheckFirebaseConfigPaths();
 		}
@@ -63,7 +50,7 @@ namespace RCore.Editor.Tool
 		{
 			EditorApplication.update -= UpdateEditor;
 		}
-		
+
 		private void UpdateEditor()
 		{
 			float currentTime = Time.realtimeSinceStartup;
@@ -80,187 +67,179 @@ namespace RCore.Editor.Tool
 
 		public override void OnInspectorGUI()
 		{
-			var tab = EditorHelper.Tabs("dev_setting_tabs", "Default", "Custom");
+			var tab = EditorHelper.Tabs("dev_setting_tabs", "Default", "Envs Manager");
 			GUILayout.Space(5);
 			switch (tab)
 			{
-				case "Custom":
-					DrawSettingsProfiles();
+				case "Envs Manager":
+					DrawTabPageEnv();
 					break;
 				case "Firebase":
-					DrawFirebaseConfiguration();
+					DrawTabPageFirebase();
 					break;
 				default:
 					EditorHelper.BoxVertical(() => base.OnInspectorGUI(), default, true);
 					break;
 			}
-			if (tab != "Custom")
-			{
-				m_removingProfile = false;
-				EditProfile(false);
-			}
+
 			GUILayout.Space(10);
-			if (m_previewingProfiles && EditorHelper.ButtonColor("Back", Color.yellow))
-				EditProfile(false);
+			if (m_previewingEnvs && EditorHelper.ButtonColor("Back", Color.yellow))
+				EditEnv(false);
 			if (EditorHelper.ButtonColor("Save", Color.green))
 			{
-				EditorUtility.SetDirty(m_configurationCollections);
 				EditorUtility.SetDirty(m_target);
 				AssetDatabase.SaveAssets();
 			}
 			GUILayout.Space(10);
 
 			GUILayout.BeginHorizontal();
-			EditorHelper.TextArea(m_buildName, "Build Name", readOnly:true);
+			EditorHelper.TextArea(m_buildName, "Build Name", readOnly: true);
 			if (EditorHelper.Button("Copy", 50))
 				GUIUtility.systemCopyBuffer = m_buildName;
 			GUILayout.EndHorizontal();
 		}
 
-		//========= SETTINGS PROFILE
-
-		private void DrawSettingsProfiles()
+		private void DrawTabPageEnv()
 		{
+			EditorGUI.BeginChangeCheck();
+
 			m_target.EnableLog = EditorHelper.Toggle(m_target.EnableLog, "Show Log", 120, 280);
 			m_target.EnableDraw = EditorHelper.Toggle(m_target.EnableDraw, "Enable Draw", 120, 280);
 
-			EditorHelper.BoxVertical(m_previewingProfiles ? "Profiles" : m_target.profile.name, () =>
+			if (!m_previewingEnvs)
 			{
-				GUILayout.Space(5);
-				
-				if (!m_previewingProfiles)
+				EditorHelper.BoxVertical(m_target.curEnv.name, () =>
 				{
+					GUILayout.Space(5);
 					EditorGUILayout.BeginVertical("box");
-					DrawSettingsProfile(m_target.profile);
+					DrawEnv(m_target.curEnv);
 					EditorGUILayout.EndVertical();
-					DrawProfilesSelection();
-				}
-				else
-					DrawPreviewSettingsProfiles();
-			}, Color.white, true);
+					DrawComboBoxEnvs();
+				}, isBox: true);
+			}
+			else
+				EditorHelper.BoxVertical("Envs", () =>
+				{
+					var envs = m_target.envs;
+					if (envs.Count == 0)
+						return;
+
+					for (int i = 0; i < envs.Count; i++)
+					{
+						if (EditorHelper.HeaderFoldout($"{envs[i].name} ({envs[i].directives.Count})", "PreviewEnv" + i))
+						{
+							EditorGUILayout.BeginVertical("box");
+							DrawEnv(envs[i]);
+							EditorGUILayout.EndVertical();
+						}
+						GUILayout.Space(5);
+					}
+				}, isBox: true);
+
+			if (EditorGUI.EndChangeCheck())
+				EditorUtility.SetDirty(m_target);
 		}
 
-		private void InitDirectives(Configuration.Profile profile)
+		private void InitEnv(Configuration.Env pEnv)
 		{
-			if (profile == null)
+			if (pEnv == null)
 				return;
 			string[] currentDefines = EditorHelper.GetDirectives();
-			for (int i = 0; i < currentDefines.Length; i++)
-				profile.AddDirective(currentDefines[i], true);
+			foreach (string define in currentDefines)
+				pEnv.AddDirective(define, true);
 
-			for (int i = 0; i < profile.defines.Count; i++)
+			for (int i = 0; i < pEnv.directives.Count; i++)
 			{
 				if (currentDefines.Length > 0)
 				{
 					bool exist = false;
 					for (int j = 0; j < currentDefines.Length; j++)
 					{
-						if (currentDefines[j] == profile.defines[i].name)
+						if (currentDefines[j] == pEnv.directives[i].name)
 							exist = true;
 					}
-					profile.defines[i].enabled = exist;
+					pEnv.directives[i].enabled = exist;
 				}
 				else
-					profile.defines[i].enabled = false;
+					pEnv.directives[i].enabled = false;
 			}
 		}
 
-		private void DrawSettingsProfile(Configuration.Profile pProfile)
+		private void DrawEnv(Configuration.Env pEnv)
 		{
-			if (m_previewingProfiles && pProfile.name != "do_not_remove")
+			if (m_previewingEnvs && pEnv.name != DEFAULT_ENV_NAME)
 			{
-				var newName = EditorHelper.TextField(pProfile.name, "Name", 120, 280);
-				if (pProfile.name != newName)
+				var newName = EditorHelper.TextField(pEnv.name, "Name", 120, 280);
+				if (pEnv.name != newName)
 				{
-					bool validName = !m_configurationCollections.profiles.Exists(x => x.name == newName && x != pProfile);
+					bool validName = !m_target.envs.Exists(x => x.name == newName && x != pEnv);
 					if (validName)
-						pProfile.name = newName;
+						pEnv.name = newName;
 				}
 			}
 
-			if (pProfile.defines != null && pProfile.name != null)
+			if (pEnv.directives != null && pEnv.name != null)
 			{
 				string[] defaultDirectives = { "DEVELOPMENT", "UNITY_IAP", "ADDRESSABLES" };
 				foreach (string directive in defaultDirectives)
-					pProfile.AddDirective(directive, false);
+					pEnv.AddDirective(directive, false);
 
-				if (!m_reorderDirectivesDict.ContainsKey(pProfile.name))
+				if (!m_reorderDirectivesDict.ContainsKey(pEnv.name))
 				{
-					var reorderList = new ReorderableList(pProfile.defines, typeof(Configuration.Directive), true, true, true, true);
-					m_reorderDirectivesDict.TryAdd(pProfile.name, reorderList);
+					var reorderList = new ReorderableList(pEnv.directives, typeof(Configuration.Directive), true, true, true, true);
+					m_reorderDirectivesDict.TryAdd(pEnv.name, reorderList);
 					reorderList.drawElementCallback = (rect, index, isActive, isFocused) =>
 					{
-						var define = pProfile.defines[index];
+						var define = pEnv.directives[index];
 						GUI.backgroundColor = define.color;
 						const float widthTog = 20;
 						const float widthColor = 60;
 						float widthName = rect.width - widthTog - widthColor - 10;
 						define.enabled = EditorGUI.Toggle(new Rect(rect.x, rect.y, widthTog, 20), define.enabled);
 
-						if (defaultDirectives.Contains(define.name))
+						if (pEnv.name == DEFAULT_ENV_NAME || defaultDirectives.Contains(define.name))
 							EditorGUI.LabelField(new Rect(rect.x + widthTog + 5, rect.y, widthName, 20), define.name);
 						else
 							define.name = EditorGUI.TextField(new Rect(rect.x + widthTog + 5, rect.y, widthName, 20), define.name);
 						define.color = EditorGUI.ColorField(new Rect(rect.x + widthTog + 5 + widthName + 5, rect.y, widthColor, 20), define.color);
 						GUI.backgroundColor = Color.white;
 					};
-					m_reorderDirectivesDict[pProfile.name].onCanRemoveCallback = (list) =>
+					m_reorderDirectivesDict[pEnv.name].onCanRemoveCallback = (reorderableList) =>
 					{
-						var define = pProfile.defines[list.index];
-						return !defaultDirectives.Contains(define.name);
+						var directive = pEnv.directives[reorderableList.index];
+						return pEnv.name != DEFAULT_ENV_NAME && !defaultDirectives.Contains(directive.name);
 					};
 				}
-				m_reorderDirectivesDict[pProfile.name].DoLayoutList();
+				m_reorderDirectivesDict[pEnv.name].DoLayoutList();
 				if (GUI.changed)
-					pProfile.defines = (List<Configuration.Directive>)m_reorderDirectivesDict[pProfile.name].list;
+					pEnv.directives = (List<Configuration.Directive>)m_reorderDirectivesDict[pEnv.name].list;
 
 				EditorGUILayout.BeginHorizontal();
-				if (m_previewingProfiles)
+				if (m_previewingEnvs)
 				{
 					if (EditorHelper.Button("Duplicate"))
 					{
-						var cloneProfile = CloneProfile(pProfile);
-						cloneProfile.name += " (new)";
-						m_configurationCollections.profiles.Add(cloneProfile);
+						var cloneEnv = CloneEnv(pEnv);
+						cloneEnv.name += $" ({m_target.envs.Count})";
+						m_target.envs.Add(cloneEnv);
 					}
-					if (pProfile.name != "do_not_remove" && EditorHelper.ButtonColor("Remove", Color.red))
-						m_configurationCollections.profiles.Remove(pProfile);
+					if (pEnv.name != DEFAULT_ENV_NAME && EditorHelper.ButtonColor("Remove", Color.red))
+						m_target.envs.Remove(pEnv);
 				}
 				else
 				{
 					if (EditorHelper.Button("Apply"))
-						ApplyDirectives(pProfile.defines);
+						ApplyDirectives(pEnv.directives);
 				}
 				EditorGUILayout.EndHorizontal();
 			}
 		}
 
-		private void DrawPreviewSettingsProfiles()
+		private void EditEnv(bool pMode)
 		{
-			EditorGUI.BeginChangeCheck();
-			var profiles = m_configurationCollections.profiles;
-			if (profiles.Count == 0)
+			if (m_previewingEnvs == pMode)
 				return;
-
-			for (int i = 0; i < profiles.Count; i++)
-			{
-				if (EditorHelper.HeaderFoldout($"{profiles[i].name} ({profiles[i].defines.Count})", "PreviewProfile" + i))
-				{
-					EditorGUILayout.BeginVertical("box");
-					DrawSettingsProfile(profiles[i]);
-					EditorGUILayout.EndVertical();
-				}
-				GUILayout.Space(5);
-			}
-			if (EditorGUI.EndChangeCheck())
-				EditorUtility.SetDirty(m_configurationCollections);
-		}
-
-		private void EditProfile(bool pMode)
-		{
-			if (m_previewingProfiles == pMode)
-				return;
-			m_previewingProfiles = pMode;
+			m_previewingEnvs = pMode;
 			m_reorderDirectivesDict.Clear();
 		}
 
@@ -274,106 +253,88 @@ namespace RCore.Editor.Tool
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, symbols);
 		}
 
-		private void DrawProfilesSelection()
+		private void DrawComboBoxEnvs()
 		{
 			EditorHelper.BoxVertical(() =>
 			{
-				var profiles = m_configurationCollections.profiles ?? new List<Configuration.Profile>();
+				var envs = m_target.envs ?? new List<Configuration.Env>();
 
 				EditorHelper.BoxHorizontal(() =>
 				{
-					m_typedProfileName = EditorHelper.TextField(m_typedProfileName, "Profile Name");
-					if (EditorHelper.ButtonColor("Save Profile", Color.green))
+					m_typedEnvName = EditorHelper.TextField(m_typedEnvName, "Env Name");
+					if (EditorHelper.ButtonColor("Save Env", Color.green))
 					{
-						if (string.IsNullOrEmpty(m_typedProfileName))
+						if (string.IsNullOrEmpty(m_typedEnvName))
 							return;
 
 						int index = -1;
-						for (int i = 0; i < profiles.Count; i++)
+						for (int i = 0; i < envs.Count; i++)
 						{
-							if (profiles[i].name == m_typedProfileName.Trim())
+							if (envs[i].name == m_typedEnvName.Trim())
 							{
-								profiles[i] = CloneProfile(m_target.profile);
+								envs[i] = CloneEnv(m_target.curEnv);
 								index = i;
 								break;
 							}
 						}
 						if (index == -1)
 						{
-							var newProfile = CloneProfile(m_target.profile);
-							newProfile.name = m_typedProfileName;
-							profiles.Add(newProfile);
+							var newEnv = CloneEnv(m_target.curEnv);
+							newEnv.name = m_typedEnvName;
+							envs.Add(newEnv);
 						}
 
-						m_selectedProfile = m_typedProfileName;
+						m_selectedEnv = m_typedEnvName;
 
-						ApplyProfile(m_selectedProfile, false);
+						ApplyEnv(m_selectedEnv, false);
 					}
 				}, Color.yellow);
 
-				string[] allProfileNames = new string[profiles.Count];
-				for (int i = 0; i < profiles.Count; i++)
-					allProfileNames[i] = profiles[i].name;
+				string[] allEnvNames = new string[envs.Count];
+				for (int i = 0; i < envs.Count; i++)
+					allEnvNames[i] = envs[i].name;
 
-				if (allProfileNames.Length > 0)
-					EditorHelper.BoxHorizontal(() =>
-					{
-						var preSelectedProfile = m_selectedProfile;
-						m_selectedProfile = EditorHelper.DropdownList(m_selectedProfile, "Profiles", allProfileNames);
-						if (m_removingProfile)
-						{
-							if (EditorHelper.ButtonColor("Remove", Color.red))
-							{
-								for (int i = 0; i < profiles.Count; i++)
-									if (profiles[i].name == m_selectedProfile)
-									{
-										profiles.RemoveAt(i);
-										break;
-									}
-								m_removingProfile = false;
-							}
-							if (EditorHelper.ButtonColor("Cancel", Color.green))
-								m_removingProfile = false;
-						}
-						else
-						{
-							if (EditorHelper.ButtonColor("Edit", Color.yellow))
-								EditProfile(true);
-							if (EditorHelper.ButtonColor("Apply", Color.green))
-								ApplyProfile(m_selectedProfile);
-						}
-
-						if (m_selectedProfile != preSelectedProfile)
-							ApplyProfile(m_selectedProfile, false);
-					});
+				if (allEnvNames.Length > 0)
+				{
+					GUILayout.BeginHorizontal();
+					var preSelectedEnv = m_selectedEnv;
+					m_selectedEnv = EditorHelper.DropdownList(m_selectedEnv, "Envs", allEnvNames);
+					if (m_selectedEnv != preSelectedEnv)
+						ApplyEnv(m_selectedEnv, false);
+					if (EditorHelper.ButtonColor("Edit", Color.yellow))
+						EditEnv(true);
+					if (EditorHelper.ButtonColor("Apply", Color.green))
+						ApplyEnv(m_selectedEnv);
+					GUILayout.EndHorizontal();
+				}
 			}, Color.cyan, true);
 		}
 
-		private void ApplyProfile(string pName, bool pApplyDirectives = true)
+		private void ApplyEnv(string pName, bool pApplyDirectives = true)
 		{
-			var profiles = m_configurationCollections.profiles;
-			for (int i = 0; i < profiles.Count; i++)
-				if (profiles[i].name == pName)
+			var envs = m_target.envs;
+			for (int i = 0; i < envs.Count; i++)
+				if (envs[i].name == pName)
 				{
-					m_target.profile = CloneProfile(profiles[i]);
-					m_typedProfileName = m_target.profile.name;
-					m_removingProfile = false;
+					m_target.curEnv = CloneEnv(envs[i]);
+					m_typedEnvName = m_target.curEnv.name;
 					if (pApplyDirectives)
-						ApplyDirectives(m_target.profile.defines);
+						ApplyDirectives(m_target.curEnv.directives);
+					m_reorderDirectivesDict.Clear();
 					break;
 				}
 		}
 
-		private static Configuration.Profile CloneProfile(Configuration.Profile pProfile)
+		private static Configuration.Env CloneEnv(Configuration.Env pEnv)
 		{
-			var toJson = JsonUtility.ToJson(pProfile);
-			var fromJson = JsonUtility.FromJson<Configuration.Profile>(toJson);
+			var toJson = JsonUtility.ToJson(pEnv);
+			var fromJson = JsonUtility.FromJson<Configuration.Env>(toJson);
 			return fromJson;
 		}
 
 		//========== FIREBASE
 
-		private void DrawFirebaseConfiguration()
+		private void DrawTabPageFirebase()
 		{
 			EditorHelper.BoxVertical("Firebase", () =>
 			{
@@ -386,49 +347,49 @@ namespace RCore.Editor.Tool
 				string destination = Application.dataPath + FirebaseConfigOutputFolder + "/google-services.json";
 				string curProjectNumber = FirebaseProjectNumber;
 
-				EditorHelper.BoxHorizontal(() =>
+				GUILayout.BeginHorizontal();
+				if (livePath == testPath && livePath != "")
 				{
-					if (livePath == testPath && livePath != "")
-					{
-						EditorGUILayout.HelpBox("Live and Test Path must not be the same!", MessageType.Warning);
-						return;
-					}
+					EditorGUILayout.HelpBox("Live and Test Path must not be the same!", MessageType.Warning);
+					return;
+				}
 
-					EditorHelper.Button("Use Live Config", () =>
-					{
-						var theSourceFile = new FileInfo(livePath);
-						using var reader = theSourceFile.OpenText();
-						string content = reader.ReadToEnd();
-						var contentNode = SimpleJSON.JSON.Parse(content);
-						var projectNumberNode = contentNode["project_info"]["project_number"];
-						if (curProjectNumber == projectNumberNode)
-							return;
-						curProjectNumber = projectNumberNode;
-						File.WriteAllText(destination, content);
-						FirebaseConfig = content;
-						FirebaseProjectNumber = curProjectNumber;
-						AssetDatabase.Refresh();
-						EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-						EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-					});
-					EditorHelper.Button("Use Dev Config", () =>
-					{
-						var theSourceFile = new FileInfo(testPath);
-						using var reader = theSourceFile.OpenText();
-						string content = reader.ReadToEnd();
-						var contentNode = SimpleJSON.JSON.Parse(content);
-						var projectNumberNode = contentNode["project_info"]["project_number"];
-						if (curProjectNumber == projectNumberNode)
-							return;
-						curProjectNumber = projectNumberNode;
-						File.WriteAllText(destination, content);
-						FirebaseConfig = content;
-						FirebaseProjectNumber = curProjectNumber;
-						AssetDatabase.Refresh();
-						EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-						EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-					});
+				EditorHelper.Button("Use Live Config", () =>
+				{
+					var theSourceFile = new FileInfo(livePath);
+					using var reader = theSourceFile.OpenText();
+					string content = reader.ReadToEnd();
+					var contentNode = SimpleJSON.JSON.Parse(content);
+					var projectNumberNode = contentNode["project_info"]["project_number"];
+					if (curProjectNumber == projectNumberNode)
+						return;
+					curProjectNumber = projectNumberNode;
+					File.WriteAllText(destination, content);
+					FirebaseConfig = content;
+					FirebaseProjectNumber = curProjectNumber;
+					AssetDatabase.Refresh();
+					EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+					EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
 				});
+				EditorHelper.Button("Use Dev Config", () =>
+				{
+					var theSourceFile = new FileInfo(testPath);
+					using var reader = theSourceFile.OpenText();
+					string content = reader.ReadToEnd();
+					var contentNode = SimpleJSON.JSON.Parse(content);
+					var projectNumberNode = contentNode["project_info"]["project_number"];
+					if (curProjectNumber == projectNumberNode)
+						return;
+					curProjectNumber = projectNumberNode;
+					File.WriteAllText(destination, content);
+					FirebaseConfig = content;
+					FirebaseProjectNumber = curProjectNumber;
+					AssetDatabase.Refresh();
+					EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+					EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+				});
+				GUILayout.EndHorizontal();
+
 				string currentConfig = FirebaseConfig;
 				if (string.IsNullOrEmpty(currentConfig))
 				{

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
 using Firebase;
 using Firebase.RemoteConfig;
 using Firebase.Extensions;
@@ -16,7 +16,7 @@ namespace RCore.Service
 
         public static void Initialize(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
         {
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             if (!FirebaseManager.initialized)
             {
                 FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
@@ -46,7 +46,7 @@ namespace RCore.Service
         /// </summary>
         public static double GetNumberValue(object pKey)
         {
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).DoubleValue;
 #else
             return Convert.ToDouble(defaultData[pKey.ToString()].ToString());
@@ -55,7 +55,7 @@ namespace RCore.Service
 
         public static string GetStringValue(object pKey)
         {
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).StringValue;
 #else
             return defaultData[pKey.ToString()].ToString();
@@ -64,7 +64,7 @@ namespace RCore.Service
 
         public static bool GetBoolValue(object pKey)
         {
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).BooleanValue;
 #else
             return Convert.ToBoolean(defaultData[pKey.ToString()]);
@@ -79,7 +79,7 @@ namespace RCore.Service
         public static T GetObjectValue<T>(object pKey)
         {
             var json = "";
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             try
             {
 
@@ -98,7 +98,7 @@ namespace RCore.Service
         private static void SetDefaultData(Dictionary<string, object> pDefaultData)
         {
             defaultData = pDefaultData;
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaultData).ContinueWithOnMainThread(task =>
             {
                 if (task.IsCanceled)
@@ -122,7 +122,7 @@ namespace RCore.Service
         /// </summary>
         public static void FetchDataAsync(Action<bool> pOnFetched)
         {
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             FirebaseRemoteConfig.DefaultInstance.FetchAsync(TimeSpan.Zero).ContinueWithOnMainThread((task) =>
             {
                 if (task.IsCanceled)
@@ -175,7 +175,7 @@ namespace RCore.Service
 
         public static void LogFetchedData()
         {
-#if FIREBASE_REMOTE
+#if FIREBASE_REMOTE_CONFIG
             string log = "";
             var result = new Dictionary<string, ConfigValue>();
             var keys = FirebaseRemoteConfig.DefaultInstance.Keys;
