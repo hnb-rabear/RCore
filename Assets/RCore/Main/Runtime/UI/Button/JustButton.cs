@@ -340,10 +340,20 @@ namespace RCore.UI
 		[CustomEditor(typeof(JustButton), true)]
 		public class JustButtonEditor : ButtonEditor
 		{
+			private JustButton m_target;
+			
+			protected override void OnEnable()
+			{
+				base.OnEnable();
+
+				m_target = (JustButton)target;
+			}
+
 			public override void OnInspectorGUI()
 			{
 				base.OnInspectorGUI();
 
+				m_target.CheckPerfectRatio();
 				EditorGUILayout.BeginVertical("box");
 				{
 					EditorHelper.SerializeField(serializedObject, "m_img");

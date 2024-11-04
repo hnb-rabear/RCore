@@ -23,10 +23,10 @@ namespace RCore.Editor
 		private const string SHIFT = "#";
 		private const string CTRL = "%";
 
-		[MenuItem("RCore/Env Setting %_&_j", priority = GROUP_1 + 1)]
+		[MenuItem("RCore/Configuration %_&_j", priority = GROUP_1 + 1)]
 		private static void OpenEnvSetting()
 		{
-			Selection.activeObject = EnvSetting.Instance;
+			Selection.activeObject = Configuration.Instance;
 		}
 		
 		[MenuItem("RCore/Config/Runtime", priority = GROUP_1 + 2)]

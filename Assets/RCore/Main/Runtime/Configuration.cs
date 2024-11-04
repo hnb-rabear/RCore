@@ -8,8 +8,8 @@ using RCore.Editor;
 
 namespace RCore
 {
-	[CreateAssetMenu(fileName = "EnvSetting", menuName = "RCore/Env Setting")]
-	public class EnvSetting : ScriptableObject
+	[CreateAssetMenu(fileName = "Configuration", menuName = "RCore/Configuration")]
+	public class Configuration : ScriptableObject
 	{
 #region Internal Class
 
@@ -60,19 +60,19 @@ namespace RCore
 
 		//==================================
 
-		private static EnvSetting m_Instance;
-		public static EnvSetting Instance
+		private static Configuration m_Instance;
+		public static Configuration Instance
 		{
 			get
 			{
 				if (m_Instance == null)
 				{
-					m_Instance = Resources.Load<EnvSetting>(nameof(EnvSetting));
+					m_Instance = Resources.Load<Configuration>(nameof(Configuration));
 #if UNITY_EDITOR
 					if (m_Instance == null)
 					{
-						EditorHelper.CreateScriptableAsset<EnvSetting>("Assets/Resources/EnvSetting.asset");
-						m_Instance = Resources.Load<EnvSetting>(nameof(EnvSetting));
+						EditorHelper.CreateScriptableAsset<Configuration>("Assets/Resources/Configuration.asset");
+						m_Instance = Resources.Load<Configuration>(nameof(Configuration));
 					}
 #endif
 					m_Instance.Init();

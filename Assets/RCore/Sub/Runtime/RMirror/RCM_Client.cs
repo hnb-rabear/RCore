@@ -58,7 +58,7 @@ namespace RCore.RCM
         private int m_GuiHeight = 100;
         private void OnGUI()
         {
-            if (NetworkClient.isConnected && EnvSetting.Instance.EnableLog)
+            if (NetworkClient.isConnected && Configuration.Instance.EnableLog)
             {
                 var boxStyle = new GUIStyle(GUI.skin.box);
                 GUILayout.BeginArea(new Rect(0, 0, m_GuiWidth, m_GuiHeight), boxStyle);

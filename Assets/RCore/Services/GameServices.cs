@@ -551,7 +551,7 @@ namespace RCore.Service
 #endif
 		}
 
-        private static async void ShowInAppReview()
+        public static async void ShowInAppReview()
         {
 #if UNITY_EDITOR
 	        Application.OpenURL("market://details?id=" + Application.identifier);

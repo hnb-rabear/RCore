@@ -12,10 +12,10 @@ using EditorPrefs = UnityEditor.EditorPrefs;
 
 namespace RCore.Editor.Tool
 {
-	[CustomEditor(typeof(EnvSetting))]
-	public class EnvSettingEditor : UnityEditor.Editor
+	[CustomEditor(typeof(Configuration))]
+	public class ConfigurationEditor : UnityEditor.Editor
 	{
-		private EnvSetting m_target;
+		private Configuration m_target;
 
 		//-- FIREBASE CONFIGURATION
 		private static string FirebaseDevConfigPath { get => EditorPrefs.GetString("firebaseDevConfigPath"); set => EditorPrefs.SetString("firebaseDevConfigPath", value); }
@@ -34,7 +34,7 @@ namespace RCore.Editor.Tool
 
 		private string m_typedProfileName;
 		private string m_selectedProfile;
-		private EnvProfilesCollection m_envProfileCollections;
+		private ConfigurationCollection m_configurationCollections;
 		private bool m_removingProfile;
 		private bool m_previewingProfiles;
 		private string m_buildName;
@@ -45,9 +45,9 @@ namespace RCore.Editor.Tool
 		{
 			EditorApplication.update += UpdateEditor;
 			
-			m_target = EnvSetting.Instance;
-			if (m_envProfileCollections == null)
-				m_envProfileCollections = EnvProfilesCollection.Load();
+			m_target = Configuration.Instance;
+			if (m_configurationCollections == null)
+				m_configurationCollections = ConfigurationCollection.Load();
 			m_removingProfile = false;
 			m_selectedProfile = m_target.profile.name;
 			m_typedProfileName = m_target.profile.name;
@@ -104,7 +104,7 @@ namespace RCore.Editor.Tool
 				EditProfile(false);
 			if (EditorHelper.ButtonColor("Save", Color.green))
 			{
-				EditorUtility.SetDirty(m_envProfileCollections);
+				EditorUtility.SetDirty(m_configurationCollections);
 				EditorUtility.SetDirty(m_target);
 				AssetDatabase.SaveAssets();
 			}
@@ -140,7 +140,7 @@ namespace RCore.Editor.Tool
 			}, Color.white, true);
 		}
 
-		private void InitDirectives(EnvSetting.Profile profile)
+		private void InitDirectives(Configuration.Profile profile)
 		{
 			if (profile == null)
 				return;
@@ -165,14 +165,14 @@ namespace RCore.Editor.Tool
 			}
 		}
 
-		private void DrawSettingsProfile(EnvSetting.Profile pProfile)
+		private void DrawSettingsProfile(Configuration.Profile pProfile)
 		{
 			if (m_previewingProfiles && pProfile.name != "do_not_remove")
 			{
 				var newName = EditorHelper.TextField(pProfile.name, "Name", 120, 280);
 				if (pProfile.name != newName)
 				{
-					bool validName = !m_envProfileCollections.profiles.Exists(x => x.name == newName && x != pProfile);
+					bool validName = !m_configurationCollections.profiles.Exists(x => x.name == newName && x != pProfile);
 					if (validName)
 						pProfile.name = newName;
 				}
@@ -186,7 +186,7 @@ namespace RCore.Editor.Tool
 
 				if (!m_reorderDirectivesDict.ContainsKey(pProfile.name))
 				{
-					var reorderList = new ReorderableList(pProfile.defines, typeof(EnvSetting.Directive), true, true, true, true);
+					var reorderList = new ReorderableList(pProfile.defines, typeof(Configuration.Directive), true, true, true, true);
 					m_reorderDirectivesDict.TryAdd(pProfile.name, reorderList);
 					reorderList.drawElementCallback = (rect, index, isActive, isFocused) =>
 					{
@@ -212,7 +212,7 @@ namespace RCore.Editor.Tool
 				}
 				m_reorderDirectivesDict[pProfile.name].DoLayoutList();
 				if (GUI.changed)
-					pProfile.defines = (List<EnvSetting.Directive>)m_reorderDirectivesDict[pProfile.name].list;
+					pProfile.defines = (List<Configuration.Directive>)m_reorderDirectivesDict[pProfile.name].list;
 
 				EditorGUILayout.BeginHorizontal();
 				if (m_previewingProfiles)
@@ -221,10 +221,10 @@ namespace RCore.Editor.Tool
 					{
 						var cloneProfile = CloneProfile(pProfile);
 						cloneProfile.name += " (new)";
-						m_envProfileCollections.profiles.Add(cloneProfile);
+						m_configurationCollections.profiles.Add(cloneProfile);
 					}
 					if (pProfile.name != "do_not_remove" && EditorHelper.ButtonColor("Remove", Color.red))
-						m_envProfileCollections.profiles.Remove(pProfile);
+						m_configurationCollections.profiles.Remove(pProfile);
 				}
 				else
 				{
@@ -238,7 +238,7 @@ namespace RCore.Editor.Tool
 		private void DrawPreviewSettingsProfiles()
 		{
 			EditorGUI.BeginChangeCheck();
-			var profiles = m_envProfileCollections.profiles;
+			var profiles = m_configurationCollections.profiles;
 			if (profiles.Count == 0)
 				return;
 
@@ -253,7 +253,7 @@ namespace RCore.Editor.Tool
 				GUILayout.Space(5);
 			}
 			if (EditorGUI.EndChangeCheck())
-				EditorUtility.SetDirty(m_envProfileCollections);
+				EditorUtility.SetDirty(m_configurationCollections);
 		}
 
 		private void EditProfile(bool pMode)
@@ -264,7 +264,7 @@ namespace RCore.Editor.Tool
 			m_reorderDirectivesDict.Clear();
 		}
 
-		private static void ApplyDirectives(List<EnvSetting.Directive> defines)
+		private static void ApplyDirectives(List<Configuration.Directive> defines)
 		{
 			string symbols = string.Join(";", defines
 				.Where(d => d.enabled)
@@ -278,7 +278,7 @@ namespace RCore.Editor.Tool
 		{
 			EditorHelper.BoxVertical(() =>
 			{
-				var profiles = m_envProfileCollections.profiles ?? new List<EnvSetting.Profile>();
+				var profiles = m_configurationCollections.profiles ?? new List<Configuration.Profile>();
 
 				EditorHelper.BoxHorizontal(() =>
 				{
@@ -351,7 +351,7 @@ namespace RCore.Editor.Tool
 
 		private void ApplyProfile(string pName, bool pApplyDirectives = true)
 		{
-			var profiles = m_envProfileCollections.profiles;
+			var profiles = m_configurationCollections.profiles;
 			for (int i = 0; i < profiles.Count; i++)
 				if (profiles[i].name == pName)
 				{
@@ -364,10 +364,10 @@ namespace RCore.Editor.Tool
 				}
 		}
 
-		private static EnvSetting.Profile CloneProfile(EnvSetting.Profile pProfile)
+		private static Configuration.Profile CloneProfile(Configuration.Profile pProfile)
 		{
 			var toJson = JsonUtility.ToJson(pProfile);
-			var fromJson = JsonUtility.FromJson<EnvSetting.Profile>(toJson);
+			var fromJson = JsonUtility.FromJson<Configuration.Profile>(toJson);
 			return fromJson;
 		}
 
