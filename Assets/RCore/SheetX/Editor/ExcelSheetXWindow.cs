@@ -106,7 +106,8 @@ namespace RCore.SheetX
 
 		private void PageMultiFiles()
 		{
-			if (EditorHelper.Button("Add Excel Files", 200))
+			GUILayout.BeginHorizontal();
+			if (EditorHelper.Button("Add Excel Files", pWidth: 200, pHeight: 30))
 			{
 				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
 				for (int i = 0; i < paths.Count; i++)
@@ -116,9 +117,16 @@ namespace RCore.SheetX
 					m_settings.AddExcelFileFile(paths[i]);
 				}
 			}
+			GUILayout.FlexibleSpace();
+			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
+			{
+				
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 			m_tableExcelFiles ??= CreateExcelTable();
 			m_tableExcelFiles.DrawOnGUI(m_settings.excelSheetsPaths);
-			if (EditorHelper.Button("Export All")) { }
+
 		}
 
 		private EditorTableView<ExcelSheetsPath> CreateExcelTable()
@@ -182,13 +190,10 @@ namespace RCore.SheetX
 				if (GUI.Button(rect, "Edit"))
 				{
 					item.Load();
-					EditSheetsWindow.ShowWindow(item, result =>
-					{
-						
-					});
+					EditSheetsWindow.ShowWindow(item, result => { });
 				}
 			}).SetAutoResize(true).SetTooltip("Click to Edit");
-			
+
 			table.AddColumn("Delete", 60, 100, (rect, item) =>
 			{
 				var defaultColor = GUI.color;
