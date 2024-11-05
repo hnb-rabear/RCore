@@ -140,9 +140,7 @@ namespace RCore.Editor
 		{
 			string path = Application.persistentDataPath;
 			if (!Directory.Exists(path))
-			{
 				Directory.CreateDirectory(path);
-			}
 			var psi = new ProcessStartInfo(path);
 			Process.Start(psi);
 		}

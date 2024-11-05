@@ -26,6 +26,51 @@ MonoBehaviour:
     - name: ADDRESSABLES
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
+    - name: DOTWEEN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: GPGS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: IN_APP_REVIEW
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: IN_APP_UPDATE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: APPLOVIN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: IRONSOURCE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_ANALYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_CRASHLYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_REMOTE_CONFIG
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_AUTH
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_FIRESTORE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_DATABASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_STORAGE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE_MESSAGING
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
   - name: do_not_remove_1
     directives:
     - name: DEVELOPMENT
@@ -114,5 +159,3 @@ MonoBehaviour:
     - name: do_not_remove_5
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
-  m_enableLog: 1
-  m_enableDraw: 0

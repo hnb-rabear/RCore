@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NPOI.SS.UserModel;
 using RCore.Editor;
+using Object = UnityEngine.Object;
 
 namespace RCore.SheetX
 {
@@ -89,7 +91,7 @@ namespace RCore.SheetX
 					m_settings.excelSheetsPath.Load();
 			}
 			if (EditorHelper.Button("Export All", pHeight: 40))
-				m_excelSheetHandler.ExportAll();
+				m_excelSheetHandler.ExportExcelAll();
 			if (EditorHelper.Button("Export IDs", pHeight: 30))
 				m_excelSheetHandler.ExportIDs();
 			if (EditorHelper.Button("Export Constants", pHeight: 30))
@@ -119,9 +121,7 @@ namespace RCore.SheetX
 			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
-			{
-				
-			}
+				m_excelSheetHandler.ExportExcelsAll();
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 			m_tableExcelFiles ??= CreateExcelTable();
@@ -185,7 +185,22 @@ namespace RCore.SheetX
 				GUI.contentColor = defaultColor;
 			}).SetAutoResize(true);
 
-			table.AddColumn("Edit", 60, 100, (rect, item) =>
+			table.AddColumn("Ping", 50, 70, (rect, item) =>
+			{
+				if (GUI.Button(rect, "Ping"))
+				{
+					var obj = AssetDatabase.LoadAssetAtPath<Object>(item.path);
+					if (obj != null)
+						Selection.activeObject = obj;
+					else
+					{
+						var psi = new ProcessStartInfo(Path.GetDirectoryName(item.path));
+						Process.Start(psi);
+					}
+				}
+			}).SetAutoResize(true);
+
+			table.AddColumn("Edit", 50, 70, (rect, item) =>
 			{
 				if (GUI.Button(rect, "Edit"))
 				{
@@ -194,7 +209,7 @@ namespace RCore.SheetX
 				}
 			}).SetAutoResize(true).SetTooltip("Click to Edit");
 
-			table.AddColumn("Delete", 60, 100, (rect, item) =>
+			table.AddColumn("Delete", 60, 80, (rect, item) =>
 			{
 				var defaultColor = GUI.color;
 				GUI.backgroundColor = Color.red;

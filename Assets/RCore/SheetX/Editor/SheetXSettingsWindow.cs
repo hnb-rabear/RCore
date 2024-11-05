@@ -28,7 +28,6 @@ namespace RCore.SheetX
 			m_sheetXSettings.combineJson = EditorHelper.Toggle(m_sheetXSettings.combineJson, "Combine Json Sheets", 200);
 			m_sheetXSettings.langCharSets = EditorHelper.TextField(m_sheetXSettings.langCharSets, "Lang char sets", 200);
 			m_sheetXSettings.persistentFields = EditorHelper.TextField(m_sheetXSettings.persistentFields, "Persistent fields", 200);
-			m_sheetXSettings.excludedSheets = EditorHelper.TextField(m_sheetXSettings.excludedSheets, "Excluded sheets", 200);
 			m_sheetXSettings.googleClientId = EditorHelper.TextField(m_sheetXSettings.googleClientId, "Google client id", 200);
 			m_sheetXSettings.googleClientSecret = EditorHelper.TextField(m_sheetXSettings.googleClientSecret, "Google client secret", 200);
 			GUILayout.EndVertical();
