@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.Data.JObject
 {
@@ -14,7 +15,7 @@ namespace RCore.Data.JObject
 		protected List<JObjectCollection> m_collections = new List<JObjectCollection>();
 		protected List<IJObjectHandler> m_handlers = new List<IJObjectHandler>();
 		
-		public SessionData session;
+		public SessionData sessionData;
 		public SessionDataHandler sessionDataHandler;
 		
 		protected bool m_initialized;
@@ -81,7 +82,7 @@ namespace RCore.Data.JObject
 			if (m_initialized)
 				return;
 
-			(session, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectDBManager>("UserSession");
+			(sessionData, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectDBManager>("UserSession");
 			Load();
 			PostLoad();
 			m_initialized = true;
@@ -138,10 +139,10 @@ namespace RCore.Data.JObject
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
-			if (session.lastActive > 0)
+			if (sessionData.lastActive > 0)
 			{
 				int utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
-				offlineSeconds = utcNowTimestamp - session.lastActive;
+				offlineSeconds = utcNowTimestamp - sessionData.lastActive;
 			}
 			return offlineSeconds;
 		}

@@ -61,7 +61,7 @@ namespace RCore
 			public Color color;
 			public bool enabled = true;
 		}
-
+        
 		//==================================
 
 		private static Configuration m_Instance;
@@ -79,53 +79,14 @@ namespace RCore
 						m_Instance = Resources.Load<Configuration>(nameof(Configuration));
 					}
 #endif
-					m_Instance.Init();
 				}
 				return m_Instance;
 			}
 		}
-
-		public Action onSettingsChanged;
+		
 		public SerializableDictionary<string, string> customKeys;
 		public List<Env> envs = new List<Env>();
-		public Env curEnv = new Env();
-
-		[SerializeField] private bool m_enableLog;
-		[SerializeField] private bool m_enableDraw;
-
-		private RPlayerPrefBool m_enableLogSystem;
-		
-		public bool EnableLog
-		{
-			get => m_enableLog || m_enableLogSystem.Value;
-			set
-			{
-				if (m_enableLog == value)
-					return;
-				m_enableLog = value;
-				Debug.enabled = value;
-				onSettingsChanged?.Invoke();
-			}
-		}
-		public bool EnableDraw
-		{
-			get => m_enableDraw;
-			set
-			{
-				if (m_enableDraw == value)
-					return;
-				m_enableDraw = value;
-				DebugDraw.enabled = value;
-				onSettingsChanged?.Invoke();
-			}
-		}
-
-		private void Init()
-		{
-			m_enableLogSystem = new RPlayerPrefBool("EnableLogSystem");
-			Debug.enabled = m_enableLog;
-			DebugDraw.enabled = m_enableDraw;
-		}
+		public Env curEnv;
 
 		private void OnValidate()
 		{
@@ -154,6 +115,8 @@ namespace RCore
 			);
 		}
 
+		//==================================
+		
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void RunOnGameStart()
 		{

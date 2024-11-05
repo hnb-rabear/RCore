@@ -103,8 +103,8 @@ namespace RCore.Editor.Tool
 		{
 			EditorGUI.BeginChangeCheck();
 
-			m_target.EnableLog = EditorHelper.Toggle(m_target.EnableLog, "Show Log", 120, 280);
-			m_target.EnableDraw = EditorHelper.Toggle(m_target.EnableDraw, "Enable Draw", 120, 280);
+			Debug.Enabled = EditorHelper.Toggle(Debug.Enabled, "Enable Log", 120, 280);
+			DebugDraw.Enabled = EditorHelper.Toggle(DebugDraw.Enabled, "Enable Draw", 120, 280);
 
 			if (!m_previewingEnvs)
 			{

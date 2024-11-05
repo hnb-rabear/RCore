@@ -13,12 +13,31 @@ namespace RCore
 {
 	public static class Debug
 	{
+		public static Action OnEnabled;
 		private static readonly StringBuilder m_StrBuilder = new StringBuilder();
-		public static bool enabled = true;
+
+		static Debug()
+		{
+			m_Enabled = PlayerPrefs.GetInt("EnabledLog", 0) == 1;
+		}
+
+		private static bool m_Enabled;
+		public static bool Enabled
+		{
+			get => m_Enabled;
+			set
+			{
+				if (m_Enabled == value)
+					return;
+				m_Enabled = value;
+				PlayerPrefs.SetInt("EnabledLog", value ? 1 : 0);
+				OnEnabled?.Invoke();
+			}
+		}
 
 		public static void Log(object message)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			m_StrBuilder.Append("[H] ").Append(message);
@@ -27,7 +46,7 @@ namespace RCore
 
 		public static void Log(object message, bool pShowTime)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
@@ -39,7 +58,7 @@ namespace RCore
 
 		public static void Log(object message, Color pColor = default)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			string c = pColor == default ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
@@ -49,7 +68,7 @@ namespace RCore
 
 		public static void Log(object title, object message, Color pColor = default)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			string c = pColor == default ? ColorUtility.ToHtmlStringRGBA(Color.yellow) : ColorUtility.ToHtmlStringRGBA(pColor);
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
@@ -59,7 +78,7 @@ namespace RCore
 
 		public static void LogError(object message, bool pShowTime = false)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
@@ -71,7 +90,7 @@ namespace RCore
 
 		public static void LogWarning(object message, bool pShowTime = false)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
@@ -83,7 +102,7 @@ namespace RCore
 
 		public static void LogException(Exception e, bool pShowTime = false)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			if (pShowTime)
@@ -95,7 +114,7 @@ namespace RCore
 
 		public static void LogJson<T>(T pObj, Color pColor = default) where T : class
 		{
-			if (!enabled || pObj == null)
+			if (!Enabled || pObj == null)
 				return;
 			var jsonStr = JsonUtility.ToJson(pObj);
 			if (jsonStr != "{}")
@@ -109,7 +128,7 @@ namespace RCore
 
 		public static void LogNewtonJson(object pObj, Color pColor = default)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			/*
 			var jsonStr = Newtonsoft.Json.JsonConvert.SerializeObject(pObj);
@@ -129,7 +148,7 @@ namespace RCore
 		/// <param name="additionalText">Additional text to print.</param>
 		public static void LogArray<T>(T[] array, string additionalText = "")
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			m_StrBuilder.Append("[H] ").Append(additionalText).Append("{");
@@ -150,7 +169,7 @@ namespace RCore
 		/// <param name="additionalText">Additional text to print before dict</param>
 		public static void LogDictionary<TKey, TValue>(Dictionary<TKey, TValue> dict, string additionalText = "")
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			m_StrBuilder.Append("[H] ").Append(additionalText).Append("{");
@@ -174,7 +193,7 @@ namespace RCore
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static void LogList<T>(List<T> list, string additionalText = "")
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			m_StrBuilder.Append("[H] ").Append(additionalText).Append("{");
@@ -194,7 +213,7 @@ namespace RCore
 		/// <param name="objs">Objects to check.</param>
 		public static void LogNull(params object[] objs)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			m_StrBuilder.Append("[H] ").Append("{");
@@ -210,7 +229,7 @@ namespace RCore
 		[Conditional("UNITY_EDITOR")]
 		public static void LogToFile(object context, string fileName, bool deleteAfterQuit = true)
 		{
-			if (enabled && Application.isEditor)
+			if (Enabled && Application.isEditor)
 			{
 				var sr = new StreamReader(fileName);
 				var sw = new StreamWriter(fileName, true);
@@ -233,7 +252,7 @@ namespace RCore
 
 		public static void Assert(bool pCondition, string pLog)
 		{
-			if (!enabled)
+			if (!Enabled)
 				return;
 			m_StrBuilder.Remove(0, m_StrBuilder.Length);
 			m_StrBuilder.Append(pLog);
