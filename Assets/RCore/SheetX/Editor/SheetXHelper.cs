@@ -165,17 +165,20 @@ namespace RCore.SheetX
 		public static List<FieldValueType> GetFieldValueTypes(IWorkbook pWorkBook, string pSheetName)
 		{
 			var sheet = pWorkBook.GetSheet(pSheetName);
-			var rowData = sheet.GetRow(0);
-			if (rowData == null)
+			var firstRowData = sheet.GetRow(0);
+			if (firstRowData == null)
 				return null;
 
-			int lastCellNum = rowData.LastCellNum;
+			int lastCellNum = firstRowData.LastCellNum;
 			var fieldsName = new string[lastCellNum];
 			var fieldsValue = new string[lastCellNum];
-			for (int col = 0; col < rowData.LastCellNum; col++)
+			for (int col = 0; col < firstRowData.LastCellNum; col++)
 			{
-				var cell = rowData.GetCell(col);
-				if (cell != null && !string.IsNullOrEmpty(cell.StringCellValue))
+				var cell = firstRowData.GetCell(col);
+				if (cell == null || cell.CellType != CellType.String)
+					continue;
+
+				if (!string.IsNullOrEmpty(cell.StringCellValue))
 					fieldsName[col] = cell.ToString().Replace(" ", "_");
 				else
 					fieldsName[col] = "";
@@ -184,19 +187,20 @@ namespace RCore.SheetX
 
 			for (int row = 1; row <= sheet.LastRowNum; row++)
 			{
-				rowData = sheet.GetRow(row);
-				if (rowData != null)
+				firstRowData = sheet.GetRow(row);
+				if (firstRowData != null)
 				{
 					//Find longest value, and use it to check value type
 					for (int col = 0; col < fieldsName.Length; col++)
 					{
-						var cell = rowData.GetCell(col);
-						if (cell != null)
-						{
-							string cellStr = cell.ToCellString();
-							if (cellStr.Length > fieldsValue[col].Length)
-								fieldsValue[col] = cellStr;
-						}
+						if (string.IsNullOrEmpty(fieldsName[col]))
+							continue;
+						var cell = firstRowData.GetCell(col);
+						if (cell == null)
+							continue;
+						string cellStr = cell.ToCellString();
+						if (cellStr.Length > fieldsValue[col].Length)
+							fieldsValue[col] = cellStr;
 					}
 				}
 			}
@@ -205,6 +209,8 @@ namespace RCore.SheetX
 			for (int i = 0; i < fieldsName.Length; i++)
 			{
 				string fieldName = fieldsName[i];
+				if (string.IsNullOrEmpty(fieldName))
+					continue;
 				string filedValue = fieldsValue[i].Trim();
 				bool isArray = fieldName.Contains("[]");
 				var fieldValueType = new FieldValueType(fieldName);

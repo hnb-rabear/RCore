@@ -77,8 +77,6 @@ namespace RCore.SheetX
 
 		public void ResetToDefault()
 		{
-			excelSheetsPath = new ExcelSheetsPath();
-			excelSheetsPaths = new List<ExcelSheetsPath>();
 			jsonOutputFolder = "";
 			constantsOutputFolder = "";
 			localizationOutputFolder = "";

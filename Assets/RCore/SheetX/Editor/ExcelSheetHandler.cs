@@ -984,10 +984,12 @@ namespace RCore.SheetX
 					mergeValues = new string[lastCellNum];
 					validCols = new bool[lastCellNum];
 
+					//Find valid columns
 					for (int col = 0; col < lastCellNum; col++)
 					{
 						var cell = rowData.GetCell(col);
 						if (cell != null
+						    && cell.CellType == CellType.String
 						    && !string.IsNullOrEmpty(cell.StringCellValue)
 						    && !cell.StringCellValue.Contains("[x]"))
 						{
@@ -1436,7 +1438,7 @@ namespace RCore.SheetX
 			foreach (var file in m_settings.excelSheetsPaths)
 			{
 				if (!file.selected)
-					return;
+					continue;
 
 				var workBook = file.GetWorkBook();
 				if (workBook == null)
