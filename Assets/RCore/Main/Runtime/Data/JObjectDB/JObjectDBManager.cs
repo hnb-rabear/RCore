@@ -4,18 +4,6 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
-	public class Module<TCollection, THandler>
-	{
-		public TCollection Collection { get; }
-		public THandler Handler { get; }
-
-		public Module(TCollection collection, THandler handler)
-		{
-			Collection = collection;
-			Handler = handler;
-		}
-	}
-	
 	public abstract class JObjectDBManager : MonoBehaviour
 	{
 		[SerializeField, Range(1, 10)] private int m_saveDelay = 3;
@@ -26,8 +14,8 @@ namespace RCore.Data.JObject
 		protected List<JObjectCollection> m_collections = new List<JObjectCollection>();
 		protected List<IJObjectHandler> m_handlers = new List<IJObjectHandler>();
 		
-		public UserSessionCollection session;
-		public UserSessionHandler sessionHandler;
+		public SessionData session;
+		public SessionDataHandler sessionDataHandler;
 		
 		protected bool m_initialized;
 		private float m_saveCountdown;
@@ -93,7 +81,7 @@ namespace RCore.Data.JObject
 			if (m_initialized)
 				return;
 
-			(session, sessionHandler) = CreateModule<UserSessionCollection, UserSessionHandler, JObjectDBManager>("UserSession");
+			(session, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectDBManager>("UserSession");
 			Load();
 			PostLoad();
 			m_initialized = true;

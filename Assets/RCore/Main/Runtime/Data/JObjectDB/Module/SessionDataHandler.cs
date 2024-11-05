@@ -1,6 +1,6 @@
 namespace RCore.Data.JObject
 {
-	public class UserSessionHandler : JObjectHandler<JObjectDBManager>
+	public class SessionDataHandler : JObjectHandler<JObjectDBManager>
 	{
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{

@@ -4,7 +4,7 @@ using System;
 namespace RCore.Data.JObject
 {
 	[Serializable]
-	public class UserSessionCollection : JObjectCollection
+	public class SessionData : JObjectCollection
 	{
 		public int[] sessions = { 0, 0, 0, 0 }; // 0: sessionsTotal, 1: sessionsDaily, 2: sessionWeekly, 3: sessionMonthly
 		public int days;
