@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.SS.UserModel;
@@ -37,7 +38,7 @@ namespace RCore.SheetX
 			if (!File.Exists(filePath))
 				using (File.Create(filePath)) { }
 
-			using var sw = new StreamWriter(filePath);
+			using var sw = new StreamWriter(filePath, false, Encoding.UTF8);
 			sw.WriteLine(pContent);
 			sw.Close();
 		}
@@ -492,7 +493,7 @@ namespace RCore.SheetX
 			{
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
-			}).SetAutoResize(true);
+			});
 			table.AddColumn("Sheet name", 300, 0, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
@@ -501,7 +502,7 @@ namespace RCore.SheetX
 					text: item.name,
 					style: style
 				);
-			}).SetAutoResize(true).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
+			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
 			return table;
 		}
 	}

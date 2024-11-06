@@ -590,8 +590,8 @@ namespace RCore.SheetX
 				var maps = GenerateLangCharSets(m_langCharSets);
 				foreach (var map in maps)
 				{
-					SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"characters_map_{map.Key}.txt", map.Value);
-					UnityEngine.Debug.Log($"Exported characters_map_{map.Key}.txt!");
+					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
+					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
 				}
 			}
 
@@ -789,7 +789,8 @@ namespace RCore.SheetX
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_CONST", idBuilder.ToString());
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_STRING", idStringDictBuilder.ToString());
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY", languagesDictBuilder.ToString());
-			fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder());
+			fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
+			fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
@@ -880,7 +881,8 @@ namespace RCore.SheetX
 				fileContent = fileContent.Replace("//LOCALIZATION_SET_FOLDER", setFolder.ToString());
 				fileContent = fileContent.Replace("//LOCALIZATION_USE_ADDRESSABLE", useAddressable.ToString());
 				fileContent = fileContent.Replace("//LOCALIZATION_SYSTEM_LANGUAGE", systemLanguages.ToString());
-				fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder());
+				fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
+				fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 				fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 				SheetXHelper.WriteFile(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent);
 				UnityEngine.Debug.Log($"Exported LocalizationsManager.cs!");
@@ -1574,8 +1576,8 @@ namespace RCore.SheetX
 				var maps = GenerateLangCharSets(m_langCharSets);
 				foreach (var map in maps)
 				{
-					SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"characters_map_{map.Key}.txt", map.Value);
-					UnityEngine.Debug.Log($"Exported characters_map_{map.Key}.txt!");
+					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
+					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
 				}
 			}
 

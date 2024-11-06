@@ -22,7 +22,6 @@ namespace RCore.SheetX
 		{
 			m_settings = SheetXSettings.Load();
 			m_excelSheetHandler = new ExcelSheetHandler(m_settings);
-
 		}
 
 		private void OnGUI()
@@ -46,11 +45,20 @@ namespace RCore.SheetX
 			GUILayout.EndScrollView();
 		}
 
-		private bool ValidateExcelPath(string path)
+		private bool ValidateExcelPath(string path, out string status)
 		{
 			string extension = Path.GetExtension(path)?.ToLower();
-			if (extension != ".xlsx" || !File.Exists(path))
+			if (extension != ".xlsx")
+			{
+				status = "Not Excel";
 				return false;
+			}
+			if (!File.Exists(path))
+			{
+				status = "Not found";
+				return false;
+			}
+			status = "Good";
 			return true;
 		}
 
@@ -58,11 +66,14 @@ namespace RCore.SheetX
 		{
 			GUILayout.BeginHorizontal();
 			m_settings.excelSheetsPath.path = EditorHelper.TextField(m_settings.excelSheetsPath.path, "Excel File", 100);
-			bool validExcelPath = ValidateExcelPath(m_settings.excelSheetsPath.path);
-			if (validExcelPath)
-				EditorHelper.LabelField("Good", 50, false, TextAnchor.MiddleCenter, Color.green);
-			else
-				EditorHelper.LabelField("Bad", 50, false, TextAnchor.MiddleCenter, Color.red);
+			if (!string.IsNullOrEmpty(m_settings.excelSheetsPath.path))
+			{
+				bool validExcelPath = ValidateExcelPath(m_settings.excelSheetsPath.path, out string status);
+				if (validExcelPath)
+					EditorHelper.LabelField(status, 50, false, TextAnchor.MiddleCenter, Color.green);
+				else
+					EditorHelper.LabelField(status, 50, false, TextAnchor.MiddleCenter, Color.red);
+			}
 			if (EditorHelper.Button("Select File", 100))
 			{
 				string directory = string.IsNullOrEmpty(m_settings.excelSheetsPath.path) ? null : Path.GetDirectoryName(m_settings.excelSheetsPath.path);
@@ -87,7 +98,7 @@ namespace RCore.SheetX
 			EditorGUILayout.BeginVertical(style);
 			if (EditorHelper.Button("Reload"))
 			{
-				if (ValidateExcelPath(m_settings.excelSheetsPath.path))
+				if (ValidateExcelPath(m_settings.excelSheetsPath.path, out _))
 					m_settings.excelSheetsPath.Load();
 			}
 			if (EditorHelper.Button("Export All", pHeight: 40))
@@ -147,7 +158,7 @@ namespace RCore.SheetX
 			{
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
-			}).SetAutoResize(true);
+			});
 
 			table.AddColumn("Excel Path", 300, 0, (rect, item) =>
 			{
@@ -157,7 +168,7 @@ namespace RCore.SheetX
 					text: item.path,
 					style: style
 				);
-			}).SetAutoResize(true).SetSorting((a, b) => String.Compare(a.path, b.path, StringComparison.Ordinal));
+			}).SetSorting((a, b) => String.Compare(a.path, b.path, StringComparison.Ordinal));
 
 			table.AddColumn("Status", 80, 100, (rect, item) =>
 			{
@@ -166,24 +177,13 @@ namespace RCore.SheetX
 				string status = "";
 				if (!string.IsNullOrEmpty(item.path))
 				{
-					string extension = Path.GetExtension(item.path)?.ToLower();
-					bool fileExists = File.Exists(item.path);
-					bool valid = extension == ".xlsx" && fileExists;
-					if (valid)
-					{
-						status = "Good";
-						color = Color.green;
-					}
-					else
-					{
-						status = fileExists ? "File not found" : "File is invalid";
-						color = Color.red;
-					}
+					ValidateExcelPath(item.path, out status);
+					color = status == "Good" ? Color.green : Color.red;
 				}
 				GUI.contentColor = color;
 				GUI.Label(rect, status);
 				GUI.contentColor = defaultColor;
-			}).SetAutoResize(true);
+			});
 
 			table.AddColumn("Ping", 50, 70, (rect, item) =>
 			{
@@ -198,7 +198,7 @@ namespace RCore.SheetX
 						Process.Start(psi);
 					}
 				}
-			}).SetAutoResize(true);
+			});
 
 			table.AddColumn("Edit", 50, 70, (rect, item) =>
 			{
@@ -207,7 +207,7 @@ namespace RCore.SheetX
 					item.Load();
 					EditSheetsWindow.ShowWindow(item, result => { });
 				}
-			}).SetAutoResize(true).SetTooltip("Click to Edit");
+			}).SetTooltip("Click to Edit");
 
 			table.AddColumn("Delete", 60, 80, (rect, item) =>
 			{
@@ -218,7 +218,7 @@ namespace RCore.SheetX
 					m_settings.excelSheetsPaths.Remove(item);
 				}
 				GUI.backgroundColor = defaultColor;
-			}).SetAutoResize(true).SetTooltip("Click to Delete");
+			}).SetTooltip("Click to Delete");
 
 			return table;
 		}

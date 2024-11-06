@@ -79,7 +79,10 @@ namespace RCore.SheetX
 			GUILayout.EndHorizontal();
 		}
 
-		private void PageMultiFiles() { }
+		private void PageMultiFiles()
+		{
+			
+		}
 
 		[MenuItem("Window/SheetX/Google Sheets Exporter")]
 		public static void ShowWindow()
