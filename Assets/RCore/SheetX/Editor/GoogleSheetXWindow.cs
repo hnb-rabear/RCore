@@ -1,3 +1,4 @@
+using System;
 using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +10,8 @@ namespace RCore.SheetX
 		private Vector2 m_scrollPosition;
 		private SheetXSettings m_settings;
 		private GoogleSheetHandler m_googleSheetHandler;
-		private EditorTableView<SheetPath> m_tableSpreadSheet;
+		private EditorTableView<SheetPath> m_tableSheets;
+		private EditorTableView<GoogleSheetsPath> m_tableGoogleSheetsPaths;
 
 		private void OnEnable()
 		{
@@ -54,10 +56,10 @@ namespace RCore.SheetX
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			m_tableSpreadSheet ??= SheetXHelper.CreateSpreadsheetTable(this);
-			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
-			m_tableSpreadSheet.viewHeight = 250f;
-			m_tableSpreadSheet.DrawOnGUI(m_settings.googleSheetsPath.sheets);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this);
+			m_tableSheets.viewWidthFillRatio = 0.8f;
+			m_tableSheets.viewHeight = 250f;
+			m_tableSheets.DrawOnGUI(m_settings.googleSheetsPath.sheets);
 
 			var style = new GUIStyle(EditorStyles.helpBox);
 			style.fixedWidth = position.width * 0.2f - 7;
@@ -81,7 +83,85 @@ namespace RCore.SheetX
 
 		private void PageMultiFiles()
 		{
+			GUILayout.BeginHorizontal();
+			if (EditorHelper.Button("Add Google SpreadSheets", pWidth: 200, pHeight: 30))
+			{
+				// var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
+				// for (int i = 0; i < paths.Count; i++)
+				// {
+				// 	if (paths[i].StartsWith(Application.dataPath))
+				// 		paths[i] = EditorHelper.FormatPathToUnityPath(paths[i]);
+				// 	m_settings.AddExcelFileFile(paths[i]);
+				// }
+			}
+			GUILayout.FlexibleSpace();
+			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
+				m_googleSheetHandler.ExportExcelsAll();
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
+			m_tableGoogleSheetsPaths ??= CreateTableGoogleSheetsPath();
+			m_tableGoogleSheetsPaths.DrawOnGUI(m_settings.googleSheetsPaths);
+		}
+
+		private EditorTableView<GoogleSheetsPath> CreateTableGoogleSheetsPath()
+		{
+			var table = new EditorTableView<GoogleSheetsPath>(this, "Google Spreadsheets paths");
+			var labelGUIStyle = new GUIStyle(GUI.skin.label)
+			{
+				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
+			};
+			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
+			{
+				normal = new GUIStyleState
+				{
+					textColor = Color.gray
+				}
+			};
+
+			table.AddColumn("Selected", 70, 90, (rect, item) =>
+			{
+				rect.xMin += 10;
+				item.selected = EditorGUI.Toggle(rect, item.selected);
+			});
 			
+			table.AddColumn("Name", 100, 150, (rect, item) =>
+			{
+				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
+				item.id = EditorGUI.TextField(rect, item.id, style);
+			});
+
+			table.AddColumn("Id", 200, 0, (rect, item) =>
+			{
+				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
+				item.id = EditorGUI.TextField(rect, item.id, style);
+			}).SetSorting((a, b) => String.Compare(a.id, b.id, StringComparison.Ordinal));
+
+			table.AddColumn("Ping", 50, 70, (rect, item) =>
+			{
+				if (GUI.Button(rect, "Ping"))
+				{
+					
+				}
+			});
+
+			table.AddColumn("Edit", 50, 70, (rect, item) =>
+			{
+				if (GUI.Button(rect, "Edit"))
+				{
+					
+				}
+			}).SetTooltip("Click to Edit");
+
+			table.AddColumn("Delete", 60, 80, (rect, item) =>
+			{
+				var defaultColor = GUI.color;
+				GUI.backgroundColor = Color.red;
+				if (GUI.Button(rect, "Delete"))
+					m_settings.googleSheetsPaths.Remove(item);
+				GUI.backgroundColor = defaultColor;
+			}).SetTooltip("Click to Delete");
+
+			return table;
 		}
 
 		[MenuItem("Window/SheetX/Google Sheets Exporter")]

@@ -6,15 +6,12 @@ using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Util.Store;
 using System;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NPOI.SS.UserModel;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RCore.SheetX
 {
@@ -25,7 +22,6 @@ namespace RCore.SheetX
 		private Dictionary<string, StringBuilder> m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, int> m_allIds = new Dictionary<string, int>();
 		private Dictionary<string, int> m_allIDsSorted;
-		private readonly string[] m_scopes = { SheetsService.Scope.SpreadsheetsReadonly };
 		private SheetsService m_service;
 		private Dictionary<string, LocalizationBuilder> m_localizationsDict;
 		private List<string> m_localizedSheetsExported;
@@ -92,22 +88,22 @@ namespace RCore.SheetX
 			}
 		}
 
-		private UserCredential AuthenticateGoogleStore()
+		private UserCredential AuthenticateGoogleStore(string googleClientId, string googleClientSecret)
 		{
 			var clientSecrets = new ClientSecrets();
-			clientSecrets.ClientId = m_settings.googleClientId;
-			clientSecrets.ClientSecret = m_settings.googleClientSecret;
+			clientSecrets.ClientId = googleClientId;
+			clientSecrets.ClientSecret = googleClientSecret;
 
 			// The file token.json stores the user's access and refresh tokens, and is created
 			// automatically when the authorization flow completes for the first time.
 			var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
 				clientSecrets,
-				m_scopes,
+				new [] { SheetsService.Scope.SpreadsheetsReadonly },
 				"user",
 				CancellationToken.None,
-				new FileDataStore(m_settings.GetSaveDirectory(), true)).Result;
+				new FileDataStore(SheetXHelper.GetSaveDirectory(), true)).Result;
 
-			UnityEngine.Debug.Log("Credential file saved to: " + m_settings.GetSaveDirectory());
+			UnityEngine.Debug.Log("Credential file saved to: " + SheetXHelper.GetSaveDirectory());
 			return credential;
 		}
 
@@ -124,9 +120,9 @@ namespace RCore.SheetX
 			if (m_cachedSpreadsheet.TryGetValue(googleSpreadsheetsId, out var metadata))
 				return metadata;
 			var service = GetService();
-			var cached = service.Spreadsheets.Get(googleSpreadsheetsId).Execute();
-			m_cachedSpreadsheet[googleSpreadsheetsId] = cached;
-			return cached;
+			var spreadsheet = service.Spreadsheets.Get(googleSpreadsheetsId).Execute();
+			m_cachedSpreadsheet[googleSpreadsheetsId] = spreadsheet;
+			return spreadsheet;
 		}
 
 		//======================================
@@ -1554,10 +1550,14 @@ namespace RCore.SheetX
 		{
 			m_service ??= new SheetsService(new BaseClientService.Initializer()
 			{
-				HttpClientInitializer = AuthenticateGoogleStore(),
+				HttpClientInitializer = AuthenticateGoogleStore(m_settings.googleClientId, m_settings.googleClientSecret),
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
 			return m_service;
+		}
+		
+		public void ExportExcelsAll()
+		{
 		}
 	}
 }

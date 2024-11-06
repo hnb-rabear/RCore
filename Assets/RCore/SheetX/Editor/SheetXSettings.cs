@@ -31,7 +31,7 @@ namespace RCore.SheetX
 		public ExcelSheetsPath excelSheetsPath;
 		public GoogleSheetsPath googleSheetsPath;
 		public List<ExcelSheetsPath> excelSheetsPaths;
-		public List<ExcelSheetsPath> googleSheetsPaths;
+		public List<GoogleSheetsPath> googleSheetsPaths;
 		public string jsonOutputFolder;
 		public string constantsOutputFolder;
 		public string localizationOutputFolder;
@@ -109,14 +109,6 @@ namespace RCore.SheetX
 		{
 			m_encryption ??= SheetXHelper.CreateEncryption(encryptionKey);
 			return m_encryption ?? Encryption.Singleton;
-		}
-
-		public string GetSaveDirectory()
-		{
-			var path = Path.Combine(Application.dataPath, "Editor");
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
-			return path;
 		}
 
 		public void CreateFileIDs(string exportFileName, string content)

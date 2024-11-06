@@ -505,6 +505,14 @@ namespace RCore.SheetX
 			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
 			return table;
 		}
+		
+		public static string GetSaveDirectory()
+		{
+			var path = Path.Combine(Application.dataPath, "Editor");
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
+			return path;
+		}
 	}
 
 	public static class SheetXExtension

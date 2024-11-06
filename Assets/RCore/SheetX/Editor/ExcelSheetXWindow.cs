@@ -14,8 +14,8 @@ namespace RCore.SheetX
 		private Vector2 m_scrollPosition;
 		private SheetXSettings m_settings;
 		private ExcelSheetHandler m_excelSheetHandler;
-		private EditorTableView<ExcelSheetsPath> m_tableExcelFiles;
-		private EditorTableView<SheetPath> m_tableSpreadSheet;
+		private EditorTableView<SheetPath> m_tableSheets;
+		private EditorTableView<ExcelSheetsPath> m_tableExcelSheetsPaths;
 		private IWorkbook m_workbook;
 
 		private void OnEnable()
@@ -87,10 +87,10 @@ namespace RCore.SheetX
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			m_tableSpreadSheet ??= SheetXHelper.CreateSpreadsheetTable(this);
-			m_tableSpreadSheet.viewWidthFillRatio = 0.8f;
-			m_tableSpreadSheet.viewHeight = 250f;
-			m_tableSpreadSheet.DrawOnGUI(m_settings.excelSheetsPath.sheets);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this);
+			m_tableSheets.viewWidthFillRatio = 0.8f;
+			m_tableSheets.viewHeight = 250f;
+			m_tableSheets.DrawOnGUI(m_settings.excelSheetsPath.sheets);
 
 			var style = new GUIStyle(EditorStyles.helpBox);
 			style.fixedWidth = position.width * 0.2f - 7;
@@ -120,9 +120,9 @@ namespace RCore.SheetX
 		private void PageMultiFiles()
 		{
 			GUILayout.BeginHorizontal();
-			if (EditorHelper.Button("Add Excel Files", pWidth: 200, pHeight: 30))
+			if (EditorHelper.Button("Add Excel SpreadSheets", pWidth: 200, pHeight: 30))
 			{
-				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
+				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel SpreadSheets", new[] { "Excel", "xlsx" });
 				for (int i = 0; i < paths.Count; i++)
 				{
 					if (paths[i].StartsWith(Application.dataPath))
@@ -135,12 +135,12 @@ namespace RCore.SheetX
 				m_excelSheetHandler.ExportExcelsAll();
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
-			m_tableExcelFiles ??= CreateExcelTable();
-			m_tableExcelFiles.DrawOnGUI(m_settings.excelSheetsPaths);
+			m_tableExcelSheetsPaths ??= CreateTableExcelSheetsPaths();
+			m_tableExcelSheetsPaths.DrawOnGUI(m_settings.excelSheetsPaths);
 
 		}
 
-		private EditorTableView<ExcelSheetsPath> CreateExcelTable()
+		private EditorTableView<ExcelSheetsPath> CreateTableExcelSheetsPaths()
 		{
 			var table = new EditorTableView<ExcelSheetsPath>(this, "Excel files");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
@@ -154,6 +154,7 @@ namespace RCore.SheetX
 					textColor = Color.gray
 				}
 			};
+			
 			table.AddColumn("Selected", 70, 90, (rect, item) =>
 			{
 				rect.xMin += 10;
@@ -205,7 +206,7 @@ namespace RCore.SheetX
 				if (GUI.Button(rect, "Edit"))
 				{
 					item.Load();
-					EditSheetsWindow.ShowWindow(item, result => { });
+					EditExcelSheetsWindow.ShowWindow(item);
 				}
 			}).SetTooltip("Click to Edit");
 
