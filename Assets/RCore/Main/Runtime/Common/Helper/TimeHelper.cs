@@ -418,7 +418,7 @@ namespace RCore
             return "";
         }
 
-        public static double GetSecondsTillMidNight()
+        public static double GetSecondsTillMidNightUtc()
         {
             var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
             var secondsTillMidNight = GetSecondsTillMidNight(utcNow);
@@ -430,6 +430,19 @@ namespace RCore
             var midNight = pFrom.Date.AddDays(1);
             var remainingTime = (midNight - pFrom).TotalSeconds;
             return remainingTime;
+        }
+
+        public static double GetSecondsTillTargetHour(DateTime pFrom, int targetHour) // 0 - 23
+        {
+            if (targetHour < 0 || targetHour > 23)
+                throw new ArgumentException("Hour must be between 0 and 23.");
+            
+            var targetTime = new DateTime(pFrom.Year, pFrom.Month, pFrom.Day, targetHour, 0, 0);
+            
+            if (pFrom >= targetTime)
+                targetTime = targetTime.AddDays(1);
+            
+            return (targetTime - pFrom).TotalSeconds;
         }
 
         /// <summary>

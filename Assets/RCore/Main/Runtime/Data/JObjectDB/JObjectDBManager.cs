@@ -172,7 +172,7 @@ namespace RCore.Data.JObject
 			where TManager : JObjectDBManager
 		{
 			var newController = gameObject.AddComponent<THandler>();
-			newController.manager = this as TManager;
+			newController.dbManager = this as TManager;
 			
 			m_handlers.Add(newController);
 			return newController;

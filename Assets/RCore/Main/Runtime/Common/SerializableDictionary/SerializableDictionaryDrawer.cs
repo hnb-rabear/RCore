@@ -83,7 +83,7 @@ namespace RCore
                         if (isKeyRepeatedProperty.boolValue)
                         {
                             hasRepeated = true;
-                            var keyProperty = dictionaryList.GetArrayElementAtIndex(i).FindPropertyRelative("Key");
+                            var keyProperty = dictionaryList.GetArrayElementAtIndex(i).FindPropertyRelative("k");
                             string keyString = GetSerializedPropertyValueAsString(keyProperty);
                             repeatedKeys.Add(keyString);
                         }
@@ -169,8 +169,8 @@ namespace RCore
         private float GetListElementHeight(int index)
         {
             var kvpProp = dictionaryList.GetArrayElementAtIndex(index);
-            var keyProp = kvpProp.FindPropertyRelative("Key");
-            var valueProp = kvpProp.FindPropertyRelative("Value");
+            var keyProp = kvpProp.FindPropertyRelative("k");
+            var valueProp = kvpProp.FindPropertyRelative("v");
 
             float GetPropertyHeight(SerializedProperty prop)
             {
@@ -201,8 +201,8 @@ namespace RCore
             Rect dividerRect;
 
             var kvpProp = dictionaryList.GetArrayElementAtIndex(index);
-            var keyProp = kvpProp.FindPropertyRelative("Key");
-            var valueProp = kvpProp.FindPropertyRelative("Value");
+            var keyProp = kvpProp.FindPropertyRelative("k");
+            var valueProp = kvpProp.FindPropertyRelative("v");
 
             void Draw(Rect rect, SerializedProperty prop)
             {

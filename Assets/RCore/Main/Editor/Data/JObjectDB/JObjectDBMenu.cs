@@ -22,8 +22,8 @@ namespace RCore.Editor.Data.JObject
 		[MenuItem("RCore/JObjectDB/Backup", priority = RMenu.GROUP_4 + 3)]
 		private static void BackUpData()
 		{
-			string path = EditorUtility.SaveFilePanelInProject("Save Backup", "PlayerData_" + System.DateTime.Now.ToString().Replace("/", "_").Replace(":", "_")
-				+ ".txt", "txt", "Please enter a file name to save!");
+			string fileName = "PlayerData_" + System.DateTime.Now.ToString().Replace("/", "_").Replace(":", "_");
+			string path = EditorUtility.SaveFilePanel("Backup Data", null, fileName, "txt");
 			if (!string.IsNullOrEmpty(path))
 				JObjectDB.Backup(path);
 		}

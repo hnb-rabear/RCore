@@ -27,9 +27,8 @@ namespace RCore.Editor.Data.JObject
 			if (GUILayout.Button("Backup"))
 			{
 				var time = DateTime.Now;
-				string path = EditorUtility.SaveFilePanelInProject("Backup Data", "GameData_"
-					+ $"{time.Year % 100}{time.Month:00}{time.Day:00}_{time.Hour:00}h{time.Minute:00}"
-					+ ".json", "json,txt", "Please enter a file name to save!");
+				string fileName = $"GameData_{time.Year % 100}{time.Month:00}{time.Day:00}_{time.Hour:00}h{time.Minute:00}";
+				string path = EditorUtility.SaveFilePanel("Backup Data", null, fileName, "txt");
 
 				if (!string.IsNullOrEmpty(path))
 					JObjectDB.Backup(path);

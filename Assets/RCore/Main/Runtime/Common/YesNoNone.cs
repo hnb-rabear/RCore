@@ -1,3 +1,5 @@
+using System;
+
 namespace RCore
 {
 	public enum YesNoNone
@@ -12,5 +14,18 @@ namespace RCore
 		None,
 		Width,
 		Height,
+	}
+
+	[Serializable]
+	public class SerializableKeyValue<TypeKey, TypeValue>
+	{
+		public TypeKey k;
+		public TypeValue v;
+		public SerializableKeyValue() { }
+		public SerializableKeyValue(TypeKey pId, TypeValue pValue)
+		{
+			k = pId;
+			v = pValue;
+		}
 	}
 }

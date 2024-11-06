@@ -3,6 +3,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore
 {
@@ -15,10 +16,10 @@ namespace RCore
 		{
 			foreach (var kVP in this)
 			{
-				if (dictionaryList.FirstOrDefault(value => this.Comparer.Equals(value.Key, kVP.Key))
+				if (dictionaryList.FirstOrDefault(value => this.Comparer.Equals(value.k, kVP.Key))
 				    is SerializedDictionaryKVPProps<TKey, TValue> serializedKVP)
 				{
-					serializedKVP.Value = kVP.Value;
+					serializedKVP.v = kVP.Value;
 				}
 				else
 				{
@@ -26,7 +27,7 @@ namespace RCore
 				}
 			}
 
-			dictionaryList.RemoveAll(value => ContainsKey(value.Key) == false);
+			dictionaryList.RemoveAll(value => ContainsKey(value.k) == false);
 
 			for (int i = 0; i < dictionaryList.Count; i++)
 			{
@@ -38,25 +39,42 @@ namespace RCore
 		{
 			Clear();
 
-			dictionaryList.RemoveAll(r => r.Key == null);
+			dictionaryList.RemoveAll(r => r.k == null);
 
 			foreach (var serializedKVP in dictionaryList)
 			{
-				if (!(serializedKVP.isKeyDuplicated = ContainsKey(serializedKVP.Key)))
+				if (!(serializedKVP.isKeyDuplicated = ContainsKey(serializedKVP.k)))
 				{
-					Add(serializedKVP.Key, serializedKVP.Value);
+					Add(serializedKVP.k, serializedKVP.v);
 				}
 			}
 		}
 
 		public new TValue this[TKey key]
 		{
+			set
+			{
+				if (ContainsKey(key))
+				{
+					base[key] = value;
+					var kvp = dictionaryList.FirstOrDefault(kvp => this.Comparer.Equals(kvp.k, key));
+					if (kvp != null)
+					{
+						kvp.v = value;
+					}
+				}
+				else
+				{
+					Add(key, value);
+					dictionaryList.Add(new SerializedDictionaryKVPProps<TKey, TValue>(key, value));
+				}
+			}
 			get
 			{
 #if UNITY_EDITOR
 				if (ContainsKey(key))
 				{
-					var duplicateKeysWithCount = dictionaryList.GroupBy(item => item.Key)
+					var duplicateKeysWithCount = dictionaryList.GroupBy(item => item.k)
 						.Where(group => group.Count() > 1)
 						.Select(group => new { Key = group.Key, Count = group.Count() });
 
@@ -81,22 +99,22 @@ namespace RCore
 		[System.Serializable]
 		public class SerializedDictionaryKVPProps<TypeKey, TypeValue>
 		{
-			public TypeKey Key;
-			public TypeValue Value;
+			public TypeKey k;
+			public TypeValue v;
 
 			public int index;
 			public bool isKeyDuplicated;
 
 			public SerializedDictionaryKVPProps(TypeKey key, TypeValue value)
 			{
-				this.Key = key;
-				this.Value = value;
+				k = key;
+				v = value;
 			}
 
 			public static implicit operator SerializedDictionaryKVPProps<TypeKey, TypeValue>(KeyValuePair<TypeKey, TypeValue> kvp)
 				=> new SerializedDictionaryKVPProps<TypeKey, TypeValue>(kvp.Key, kvp.Value);
 			public static implicit operator KeyValuePair<TypeKey, TypeValue>(SerializedDictionaryKVPProps<TypeKey, TypeValue> kvp)
-				=> new KeyValuePair<TypeKey, TypeValue>(kvp.Key, kvp.Value);
+				=> new KeyValuePair<TypeKey, TypeValue>(kvp.k, kvp.v);
 		}
 	}
 }

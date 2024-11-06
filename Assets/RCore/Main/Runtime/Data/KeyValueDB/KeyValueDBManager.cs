@@ -172,9 +172,8 @@ namespace RCore.Data.KeyValue
 			}
 			if (GUILayout.Button("Back Up"))
 			{
-				string path = EditorUtility.SaveFilePanelInProject("Save Backup", "GameData_"
-					+ DateTime.Now.ToString().Replace("/", "_").Replace(":", "_")
-					+ ".txt", "txt", "Please enter a file name to save!");
+				string fileName = "GameData_" + DateTime.Now.ToString().Replace("/", "_").Replace(":", "_");
+				string path = EditorUtility.SaveFilePanel("Backup Data", null, fileName, "txt");
 				if (!string.IsNullOrEmpty(path))
 					KeyValueDB.BackupData(path);
 			}
