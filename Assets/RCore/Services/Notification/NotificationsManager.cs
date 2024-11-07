@@ -271,7 +271,7 @@ namespace RCore.Notification
 		/// <summary>
 		/// Initialize the notifications manager.
 		/// </summary>
-		public IEnumerator Init()
+		public IEnumerator IEInit()
 		{
 #if UNITY_NOTIFICATION
 			if (Initialized)

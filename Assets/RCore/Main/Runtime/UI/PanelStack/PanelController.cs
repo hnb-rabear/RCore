@@ -334,6 +334,7 @@ namespace RCore.UI
 							}
 						}
 						((PanelController)target).enableFXTransition = true;
+						EditorUtility.SetDirty(m_script);
 					}
 				}
 			}

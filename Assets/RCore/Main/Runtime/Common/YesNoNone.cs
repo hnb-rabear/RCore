@@ -22,9 +22,9 @@ namespace RCore
 		public TypeKey k;
 		public TypeValue v;
 		public SerializableKeyValue() { }
-		public SerializableKeyValue(TypeKey pId, TypeValue pValue)
+		public SerializableKeyValue(TypeKey pKey, TypeValue pValue)
 		{
-			k = pId;
+			k = pKey;
 			v = pValue;
 		}
 	}
