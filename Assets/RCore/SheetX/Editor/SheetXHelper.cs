@@ -481,7 +481,7 @@ namespace RCore.SheetX
 				&& !pName.Contains(SheetXConstants.SETTINGS_SHEET)
 				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
 		}
-		
+
 		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow)
 		{
 			var table = new EditorTableView<SheetPath>(editorWindow, "Spreadsheets");
@@ -496,19 +496,15 @@ namespace RCore.SheetX
 					textColor = Color.gray
 				}
 			};
-			table.AddColumn("Selected", 70, 90, (rect, item) =>
+			table.AddColumn("Selected", 60, 60, (rect, item) =>
 			{
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
 			});
-			table.AddColumn("Sheet name", 300, 0, (rect, item) =>
+			table.AddColumn("Sheet name", 200, 300, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				item.name = EditorGUI.TextField(
-					position: rect,
-					text: item.name,
-					style: style
-				);
+				EditorGUI.LabelField(rect, item.name, style);
 			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
 			return table;
 		}
@@ -522,7 +518,7 @@ namespace RCore.SheetX
 				Directory.CreateDirectory(path);
 			return path;
 		}
-		
+
 		public static void DownloadGoogleSheet(string googleClientId, string googleClientSecret, GoogleSheetsPath pGoogleSheetsPath)
 		{
 			if (string.IsNullOrEmpty(pGoogleSheetsPath.id))
@@ -533,7 +529,7 @@ namespace RCore.SheetX
 
 			AuthenticateGoogleSheet(googleClientId, googleClientSecret, pGoogleSheetsPath);
 		}
-		
+
 		private static void AuthenticateGoogleSheet(string googleClientId, string googleClientSecret, GoogleSheetsPath pGoogleSheetsPath)
 		{
 			var service = new SheetsService(new BaseClientService.Initializer()
@@ -541,7 +537,7 @@ namespace RCore.SheetX
 				HttpClientInitializer = AuthenticateGoogleUser(googleClientId, googleClientSecret),
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
-			
+
 			// Fetch metadata for the entire spreadsheet.
 			Spreadsheet spreadsheet;
 			try
@@ -553,7 +549,7 @@ namespace RCore.SheetX
 				UnityEngine.Debug.LogError(ex);
 				return;
 			}
-			
+
 			var sheetPaths = new List<SheetPath>();
 			foreach (var sheet in spreadsheet.Sheets)
 			{
@@ -566,6 +562,15 @@ namespace RCore.SheetX
 			}
 
 			// Sync with current save
+			for (int i = 0; i < pGoogleSheetsPath.sheets.Count; i++)
+			{
+				var sheetPath = pGoogleSheetsPath.sheets[i];
+				if (!sheetPaths.Exists(x => x.name == sheetPath.name))
+				{
+					pGoogleSheetsPath.sheets.RemoveAt(i);
+					i--;
+				}
+			}
 			foreach (var sheetPath in sheetPaths)
 			{
 				var existedSheet = pGoogleSheetsPath.sheets.Find(x => x.name == sheetPath.name);
@@ -580,7 +585,7 @@ namespace RCore.SheetX
 			}
 			pGoogleSheetsPath.name = spreadsheet.Properties.Title;
 		}
-		
+
 		public static UserCredential AuthenticateGoogleUser(string googleClientId, string googleClientSecret)
 		{
 			var clientSecrets = new ClientSecrets();
@@ -591,7 +596,7 @@ namespace RCore.SheetX
 			// automatically when the authorization flow completes for the first time.
 			var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
 				clientSecrets,
-				new [] { SheetsService.Scope.SpreadsheetsReadonly },
+				new[] { SheetsService.Scope.SpreadsheetsReadonly },
 				"user",
 				CancellationToken.None,
 				new FileDataStore(GetSaveDirectory(), true)).Result;
@@ -599,10 +604,10 @@ namespace RCore.SheetX
 			UnityEngine.Debug.Log("Credential file saved to: " + GetSaveDirectory());
 			return credential;
 		}
-		
+
 #endregion
 	}
-	
+
 	public static class SheetXExtension
 	{
 		public static string ToCellString(this ICell cell, string pDefault = "")

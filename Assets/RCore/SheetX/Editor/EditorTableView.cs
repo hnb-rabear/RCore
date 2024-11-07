@@ -119,7 +119,7 @@ namespace RCore.Editor
 			if (m_multiColumnHeader == null || m_columnResized)
 				ReBuild();
 
-			var style = new GUIStyle(EditorStyles.helpBox);
+			var style = new GUIStyle("box");
 
 			float _viewWidth = viewWidth;
 			float _viewHeight = viewHeight;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Google.Apis.Sheets.v4.Data;
 using RCore.Editor;
@@ -12,24 +13,31 @@ namespace RCore.SheetX
 		private EditorTableView<SheetPath> m_tableSheets;
 		private string m_googleClientId;
 		private string m_googleClientSecret;
+		private Action<GoogleSheetsPath> m_onQuit;
+		private bool m_isEditing;
 
-		public static void ShowWindow(GoogleSheetsPath googleSheetsPath, string googleClientId, string googleClientSecret)
+		public static void ShowWindow(GoogleSheetsPath googleSheetsPath, string googleClientId, string googleClientSecret, Action<GoogleSheetsPath> onQuit)
 		{
 			var window = CreateInstance<EditGoogleSheetsWindow>();
 			window.titleContent = new GUIContent("Edit Spreadsheets");
 			window.m_googleSheetsPath = googleSheetsPath;
 			window.m_googleClientId = googleClientId;
 			window.m_googleClientSecret = googleClientSecret;
+			window.m_onQuit = onQuit;
+			window.m_isEditing = !string.IsNullOrEmpty(googleSheetsPath.id);
 			window.ShowUtility();
 		}
 
 		private void OnGUI()
 		{
-			GUILayout.BeginHorizontal();
+			GUILayout.BeginHorizontal("box");
 			{
 				GUILayout.BeginVertical();
 				{
-					m_googleSheetsPath.id = EditorHelper.TextField(m_googleSheetsPath.id, "Google Spreadsheets Id", 160);
+					if (!m_isEditing)
+						m_googleSheetsPath.id = EditorHelper.TextField(m_googleSheetsPath.id, "Google Spreadsheets Id", 160);
+					else
+						EditorHelper.TextField(m_googleSheetsPath.id, "Google Spreadsheets Id", 160, readOnly: true);
 					EditorHelper.TextField(m_googleSheetsPath.name, "Google Spreadsheets Name", 160, readOnly: true);
 				}
 				GUILayout.EndVertical();
@@ -38,16 +46,22 @@ namespace RCore.SheetX
 			}
 			GUILayout.EndHorizontal();
 			//-----
+			GUILayout.BeginVertical("box");
 			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this);
-			m_tableSheets.viewWidthFillRatio = 0.8f;
-			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_googleSheetsPath.sheets);
+			GUILayout.EndVertical();
 		}
 
 		private void OnLostFocus()
 		{
 			// Force window to regain focus to prevent clicking on other editor windows
 			Focus();
+		}
+
+		private void OnDestroy()
+		{
+			if (m_googleSheetsPath.sheets.Count > 0)
+				m_onQuit?.Invoke(m_googleSheetsPath);
 		}
 	}
 }

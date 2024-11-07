@@ -11,12 +11,12 @@ namespace RCore.Editor
 		private Action<string> m_onContentSaved;
 		private Vector2 m_scrollPosition;
 
-		public static void ShowWindow(string initialContent, Action<string> callback)
+		public static void ShowWindow(string initialContent, Action<string> onQuit)
 		{
 			var window = CreateInstance<TextEditorWindow>();
 			window.titleContent = new GUIContent("Text Editor");
 			window.m_content = initialContent;
-			window.m_onContentSaved = callback;
+			window.m_onContentSaved = onQuit;
 			window.ShowUtility();
 		}
 

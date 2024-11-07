@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -26,9 +27,7 @@ namespace RCore.SheetX
 			switch (tab)
 			{
 				case "Export Google Spreadsheet":
-					GUILayout.BeginVertical("box");
 					PageSingleFile();
-					GUILayout.EndVertical();
 					break;
 
 				case "Export Multi Google Spreadsheets":
@@ -42,12 +41,24 @@ namespace RCore.SheetX
 
 		private void PageSingleFile()
 		{
-			GUILayout.BeginHorizontal();
+			GUILayout.BeginHorizontal("box");
 			{
 				GUILayout.BeginVertical();
 				{
 					m_settings.googleSheetsPath.id = EditorHelper.TextField(m_settings.googleSheetsPath.id, "Google Spreadsheets Id", 160);
-					EditorHelper.TextField(m_settings.googleSheetsPath.name, "Google Spreadsheets Name", 160, readOnly: true);
+					GUILayout.BeginHorizontal();
+					{
+						EditorHelper.TextField(m_settings.googleSheetsPath.name, "Google Spreadsheets Name", 160, readOnly: true);
+						if (!string.IsNullOrEmpty(m_settings.googleSheetsPath.name))
+						{
+							if (EditorHelper.Button("Ping", 50))
+							{
+								string url = $"https://docs.google.com/spreadsheets/d/{m_settings.googleSheetsPath.id}/edit";
+								Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+							}
+						}
+					}
+					GUILayout.EndHorizontal();
 				}
 				GUILayout.EndVertical();
 				if (EditorHelper.Button("Download", pHeight: 41))
@@ -61,7 +72,7 @@ namespace RCore.SheetX
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.googleSheetsPath.sheets);
 
-			var style = new GUIStyle(EditorStyles.helpBox);
+			var style = new GUIStyle("box");
 			style.fixedWidth = position.width * 0.2f - 7;
 			style.fixedHeight = 250f;
 			EditorGUILayout.BeginVertical(style);
@@ -86,15 +97,11 @@ namespace RCore.SheetX
 			GUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Add Google SpreadSheets", pWidth: 200, pHeight: 30))
 			{
-				//EditGoogleSheetsWindow.ShowWindow(new GoogleSheetsPath(), m_settings.googleClientId, m_settings.googleClientSecret);
-				
-				// var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
-				// for (int i = 0; i < paths.Count; i++)
-				// {
-				// 	if (paths[i].StartsWith(Application.dataPath))
-				// 		paths[i] = EditorHelper.FormatPathToUnityPath(paths[i]);
-				// 	m_settings.AddExcelFileFile(paths[i]);
-				// }
+				EditGoogleSheetsWindow.ShowWindow(new GoogleSheetsPath(), m_settings.googleClientId, m_settings.googleClientSecret, output =>
+				{
+					if (!m_settings.googleSheetsPaths.Exists(x => x.id == output.id))
+						m_settings.googleSheetsPaths.Add(output);
+				});
 			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
@@ -120,41 +127,46 @@ namespace RCore.SheetX
 				}
 			};
 
-			table.AddColumn("Selected", 70, 90, (rect, item) =>
+			table.AddColumn("Selected", 60, 60, (rect, item) =>
 			{
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
 			});
-			
+
 			table.AddColumn("Name", 100, 150, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				item.id = EditorGUI.TextField(rect, item.id, style);
-			});
-
-			table.AddColumn("Id", 200, 0, (rect, item) =>
-			{
-				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				item.id = EditorGUI.TextField(rect, item.id, style);
+				EditorGUI.LabelField(rect, item.name, style);
 			}).SetSorting((a, b) => String.Compare(a.id, b.id, StringComparison.Ordinal));
 
-			table.AddColumn("Ping", 50, 70, (rect, item) =>
+			table.AddColumn("Id", 300, 0, (rect, item) =>
+			{
+				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
+				EditorGUI.LabelField(rect, item.id, style);
+			});
+
+			table.AddColumn("Ping", 50, 50, (rect, item) =>
 			{
 				if (GUI.Button(rect, "Ping"))
 				{
-					
+					string url = $"https://docs.google.com/spreadsheets/d/{item.id}/edit"; 
+					Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
 				}
 			});
 
-			table.AddColumn("Edit", 50, 70, (rect, item) =>
+			table.AddColumn("Edit", 50, 50, (rect, item) =>
 			{
 				if (GUI.Button(rect, "Edit"))
 				{
-					
+					EditGoogleSheetsWindow.ShowWindow(item, m_settings.googleClientId, m_settings.googleClientSecret, output =>
+					{
+						if (!m_settings.googleSheetsPaths.Exists(x => x.id == output.id))
+							m_settings.googleSheetsPaths.Add(output);
+					});
 				}
 			}).SetTooltip("Click to Edit");
 
-			table.AddColumn("Delete", 60, 80, (rect, item) =>
+			table.AddColumn("Delete", 60, 60, (rect, item) =>
 			{
 				var defaultColor = GUI.color;
 				GUI.backgroundColor = Color.red;

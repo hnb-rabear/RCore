@@ -31,9 +31,7 @@ namespace RCore.SheetX
 			switch (tab)
 			{
 				case "Export Excel Spreadsheet":
-					GUILayout.BeginVertical("box");
 					PageSingleFile();
-					GUILayout.EndVertical();
 					break;
 
 				case "Export Multi Excel Spreadsheets":
@@ -64,7 +62,7 @@ namespace RCore.SheetX
 
 		private void PageSingleFile()
 		{
-			GUILayout.BeginHorizontal();
+			GUILayout.BeginHorizontal("box");
 			m_settings.excelSheetsPath.path = EditorHelper.TextField(m_settings.excelSheetsPath.path, "Excel File", 100);
 			if (!string.IsNullOrEmpty(m_settings.excelSheetsPath.path))
 			{
@@ -80,6 +78,8 @@ namespace RCore.SheetX
 				string path = EditorHelper.OpenFilePanel("Select File", "xlsx", directory);
 				if (!string.IsNullOrEmpty(path))
 				{
+					if (path.StartsWith(Application.dataPath))
+						path = EditorHelper.FormatPathToUnityPath(path);
 					m_settings.excelSheetsPath.path = path;
 					m_settings.excelSheetsPath.Load();
 				}
@@ -92,7 +92,7 @@ namespace RCore.SheetX
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.excelSheetsPath.sheets);
 
-			var style = new GUIStyle(EditorStyles.helpBox);
+			var style = new GUIStyle("box");
 			style.fixedWidth = position.width * 0.2f - 7;
 			style.fixedHeight = 250f;
 			EditorGUILayout.BeginVertical(style);
@@ -155,7 +155,7 @@ namespace RCore.SheetX
 				}
 			};
 			
-			table.AddColumn("Selected", 70, 90, (rect, item) =>
+			table.AddColumn("Selected", 60, 60, (rect, item) =>
 			{
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
@@ -164,11 +164,7 @@ namespace RCore.SheetX
 			table.AddColumn("Excel Path", 300, 0, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				item.path = EditorGUI.TextField(
-					position: rect,
-					text: item.path,
-					style: style
-				);
+				EditorGUI.LabelField(rect, item.path, style);
 			}).SetSorting((a, b) => String.Compare(a.path, b.path, StringComparison.Ordinal));
 
 			table.AddColumn("Status", 80, 100, (rect, item) =>
@@ -186,7 +182,7 @@ namespace RCore.SheetX
 				GUI.contentColor = defaultColor;
 			});
 
-			table.AddColumn("Ping", 50, 70, (rect, item) =>
+			table.AddColumn("Ping", 50, 50, (rect, item) =>
 			{
 				if (GUI.Button(rect, "Ping"))
 				{
@@ -201,7 +197,7 @@ namespace RCore.SheetX
 				}
 			});
 
-			table.AddColumn("Edit", 50, 70, (rect, item) =>
+			table.AddColumn("Edit", 50, 50, (rect, item) =>
 			{
 				if (GUI.Button(rect, "Edit"))
 				{
@@ -210,7 +206,7 @@ namespace RCore.SheetX
 				}
 			}).SetTooltip("Click to Edit");
 
-			table.AddColumn("Delete", 60, 80, (rect, item) =>
+			table.AddColumn("Delete", 60, 60, (rect, item) =>
 			{
 				var defaultColor = GUI.color;
 				GUI.backgroundColor = Color.red;
