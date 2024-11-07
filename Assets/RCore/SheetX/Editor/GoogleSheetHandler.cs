@@ -34,79 +34,6 @@ namespace RCore.SheetX
 			m_settings = settings;
 		}
 
-		public void Download(GoogleSheetsPath googleSheetsPath)
-		{
-			string key = googleSheetsPath.id;
-			if (string.IsNullOrEmpty(key))
-			{
-				UnityEngine.Debug.LogError("Key can not be empty");
-				return;
-			}
-
-			Authenticate(googleSheetsPath);
-		}
-
-		private void Authenticate(GoogleSheetsPath googleSheetsPath)
-		{
-			string googleSheetId = googleSheetsPath.id;
-
-			// Fetch metadata for the entire spreadsheet.
-			Spreadsheet spreadsheet;
-			try
-			{
-				spreadsheet = GetCacheMetadata(googleSheetId);
-			}
-			catch (Exception ex)
-			{
-				UnityEngine.Debug.LogError(ex);
-				return;
-			}
-			googleSheetsPath.name = spreadsheet.Properties.Title;
-			var sheets = new List<SheetPath>();
-			foreach (var sheet in spreadsheet.Sheets)
-			{
-				var sheetName = sheet.Properties.Title;
-				sheets.Add(new SheetPath()
-				{
-					name = sheetName,
-					selected = true,
-				});
-			}
-
-			// Sync with current save
-			foreach (var sheet in sheets)
-			{
-				var existedSheet = googleSheetsPath.sheets.Find(x => x.name == sheet.name);
-				if (existedSheet != null)
-					sheet.selected = existedSheet.selected;
-				else
-					googleSheetsPath.sheets.Add(new SheetPath()
-					{
-						name = sheet.name,
-						selected = true,
-					});
-			}
-		}
-
-		private UserCredential AuthenticateGoogleStore(string googleClientId, string googleClientSecret)
-		{
-			var clientSecrets = new ClientSecrets();
-			clientSecrets.ClientId = googleClientId;
-			clientSecrets.ClientSecret = googleClientSecret;
-
-			// The file token.json stores the user's access and refresh tokens, and is created
-			// automatically when the authorization flow completes for the first time.
-			var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-				clientSecrets,
-				new [] { SheetsService.Scope.SpreadsheetsReadonly },
-				"user",
-				CancellationToken.None,
-				new FileDataStore(SheetXHelper.GetSaveDirectory(), true)).Result;
-
-			UnityEngine.Debug.Log("Credential file saved to: " + SheetXHelper.GetSaveDirectory());
-			return credential;
-		}
-
 		public void ExportAll()
 		{
 			ExportIDs();
@@ -1550,7 +1477,7 @@ namespace RCore.SheetX
 		{
 			m_service ??= new SheetsService(new BaseClientService.Initializer()
 			{
-				HttpClientInitializer = AuthenticateGoogleStore(m_settings.googleClientId, m_settings.googleClientSecret),
+				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.googleClientId, m_settings.googleClientSecret),
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
 			return m_service;

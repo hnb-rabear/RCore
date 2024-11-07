@@ -10,12 +10,16 @@ namespace RCore.SheetX
 	{
 		private GoogleSheetsPath m_googleSheetsPath;
 		private EditorTableView<SheetPath> m_tableSheets;
-		
-		public static void ShowWindow(GoogleSheetsPath googleSheetsPath)
+		private string m_googleClientId;
+		private string m_googleClientSecret;
+
+		public static void ShowWindow(GoogleSheetsPath googleSheetsPath, string googleClientId, string googleClientSecret)
 		{
 			var window = CreateInstance<EditGoogleSheetsWindow>();
 			window.titleContent = new GUIContent("Edit Spreadsheets");
 			window.m_googleSheetsPath = googleSheetsPath;
+			window.m_googleClientId = googleClientId;
+			window.m_googleClientSecret = googleClientSecret;
 			window.ShowUtility();
 		}
 
@@ -30,7 +34,7 @@ namespace RCore.SheetX
 				}
 				GUILayout.EndVertical();
 				if (EditorHelper.Button("Download", pHeight: 41))
-					m_googleSheetsPath.Download();
+					SheetXHelper.DownloadGoogleSheet(m_googleClientId, m_googleClientSecret, m_googleSheetsPath);
 			}
 			GUILayout.EndHorizontal();
 			//-----

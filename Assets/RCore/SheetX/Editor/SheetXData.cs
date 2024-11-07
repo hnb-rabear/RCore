@@ -84,8 +84,6 @@ namespace RCore.SheetX
 		public bool selected = true;
 		public string id;
 		public string name;
-		public string googleClientId;
-		public string googleClientSecret;
 		public List<SheetPath> sheets = new List<SheetPath>();
 		public void AddSheet(string name)
 		{
@@ -106,64 +104,6 @@ namespace RCore.SheetX
 		public int CompareTo(GoogleSheetsPath other)
 		{
 			return name.CompareTo(other.name);
-		}
-		public void Download()
-		{
-			string key = id;
-			if (string.IsNullOrEmpty(key))
-			{
-				UnityEngine.Debug.LogError("Key can not be empty");
-				return;
-			}
-
-			Authenticate();
-		}
-		private void Authenticate()
-		{
-			string googleSheetId = id;
-
-			var service = new SheetsService(new BaseClientService.Initializer()
-			{
-				HttpClientInitializer = SheetXHelper.AuthenticateGoogleStore(googleClientId, googleClientSecret),
-				ApplicationName = SheetXConstants.APPLICATION_NAME,
-			});
-			
-			// Fetch metadata for the entire spreadsheet.
-			Spreadsheet spreadsheet;
-			try
-			{
-				spreadsheet = service.Spreadsheets.Get(id).Execute();
-			}
-			catch (Exception ex)
-			{
-				UnityEngine.Debug.LogError(ex);
-				return;
-			}
-			name = spreadsheet.Properties.Title;
-			var sheets = new List<SheetPath>();
-			foreach (var sheet in spreadsheet.Sheets)
-			{
-				var sheetName = sheet.Properties.Title;
-				sheets.Add(new SheetPath()
-				{
-					name = sheetName,
-					selected = true,
-				});
-			}
-
-			// Sync with current save
-			foreach (var sheet in sheets)
-			{
-				var existedSheet = sheets.Find(x => x.name == sheet.name);
-				if (existedSheet != null)
-					sheet.selected = existedSheet.selected;
-				else
-					sheets.Add(new SheetPath()
-					{
-						name = sheet.name,
-						selected = true,
-					});
-			}
 		}
 	}
 	

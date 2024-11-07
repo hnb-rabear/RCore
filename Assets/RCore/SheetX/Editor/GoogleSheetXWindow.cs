@@ -51,7 +51,7 @@ namespace RCore.SheetX
 				}
 				GUILayout.EndVertical();
 				if (EditorHelper.Button("Download", pHeight: 41))
-					m_googleSheetHandler.Download(m_settings.googleSheetsPath);
+					SheetXHelper.DownloadGoogleSheet(m_settings.googleClientId, m_settings.googleClientSecret, m_settings.googleSheetsPath);
 			}
 			GUILayout.EndHorizontal();
 			//-----
@@ -86,6 +86,8 @@ namespace RCore.SheetX
 			GUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Add Google SpreadSheets", pWidth: 200, pHeight: 30))
 			{
+				//EditGoogleSheetsWindow.ShowWindow(new GoogleSheetsPath(), m_settings.googleClientId, m_settings.googleClientSecret);
+				
 				// var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel Files", new[] { "Excel", "xlsx" });
 				// for (int i = 0; i < paths.Count; i++)
 				// {

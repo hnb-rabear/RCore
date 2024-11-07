@@ -1,3 +1,8 @@
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
+using Google.Apis.Util.Store;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,8 +13,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.SS.UserModel;
 using RCore.Editor;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
+using Color = UnityEngine.Color;
 
 namespace RCore.SheetX
 {
@@ -505,7 +512,9 @@ namespace RCore.SheetX
 			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
 			return table;
 		}
-		
+
+#region Google Spreadsheets
+
 		public static string GetSaveDirectory()
 		{
 			var path = Path.Combine(Application.dataPath, "Editor");
@@ -513,8 +522,87 @@ namespace RCore.SheetX
 				Directory.CreateDirectory(path);
 			return path;
 		}
-	}
+		
+		public static void DownloadGoogleSheet(string googleClientId, string googleClientSecret, GoogleSheetsPath pGoogleSheetsPath)
+		{
+			if (string.IsNullOrEmpty(pGoogleSheetsPath.id))
+			{
+				UnityEngine.Debug.LogError("Key can not be empty");
+				return;
+			}
 
+			AuthenticateGoogleSheet(googleClientId, googleClientSecret, pGoogleSheetsPath);
+		}
+		
+		private static void AuthenticateGoogleSheet(string googleClientId, string googleClientSecret, GoogleSheetsPath pGoogleSheetsPath)
+		{
+			var service = new SheetsService(new BaseClientService.Initializer()
+			{
+				HttpClientInitializer = AuthenticateGoogleUser(googleClientId, googleClientSecret),
+				ApplicationName = SheetXConstants.APPLICATION_NAME,
+			});
+			
+			// Fetch metadata for the entire spreadsheet.
+			Spreadsheet spreadsheet;
+			try
+			{
+				spreadsheet = service.Spreadsheets.Get(pGoogleSheetsPath.id).Execute();
+			}
+			catch (Exception ex)
+			{
+				UnityEngine.Debug.LogError(ex);
+				return;
+			}
+			
+			var sheetPaths = new List<SheetPath>();
+			foreach (var sheet in spreadsheet.Sheets)
+			{
+				var sheetName = sheet.Properties.Title;
+				sheetPaths.Add(new SheetPath()
+				{
+					name = sheetName,
+					selected = true,
+				});
+			}
+
+			// Sync with current save
+			foreach (var sheetPath in sheetPaths)
+			{
+				var existedSheet = pGoogleSheetsPath.sheets.Find(x => x.name == sheetPath.name);
+				if (existedSheet != null)
+					sheetPath.selected = existedSheet.selected;
+				else
+					pGoogleSheetsPath.sheets.Add(new SheetPath()
+					{
+						name = sheetPath.name,
+						selected = true,
+					});
+			}
+			pGoogleSheetsPath.name = spreadsheet.Properties.Title;
+		}
+		
+		public static UserCredential AuthenticateGoogleUser(string googleClientId, string googleClientSecret)
+		{
+			var clientSecrets = new ClientSecrets();
+			clientSecrets.ClientId = googleClientId;
+			clientSecrets.ClientSecret = googleClientSecret;
+
+			// The file token.json stores the user's access and refresh tokens, and is created
+			// automatically when the authorization flow completes for the first time.
+			var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+				clientSecrets,
+				new [] { SheetsService.Scope.SpreadsheetsReadonly },
+				"user",
+				CancellationToken.None,
+				new FileDataStore(GetSaveDirectory(), true)).Result;
+
+			UnityEngine.Debug.Log("Credential file saved to: " + GetSaveDirectory());
+			return credential;
+		}
+		
+#endregion
+	}
+	
 	public static class SheetXExtension
 	{
 		public static string ToCellString(this ICell cell, string pDefault = "")
