@@ -183,7 +183,7 @@ namespace RCore.UI
 #else
             if (m_coroutine != null)
                 StopCoroutine(m_coroutine);
-            m_coroutine = StartCoroutine(IEArrangeChildren(mChildrenPrePosition, mChildrenNewPosition, tweenTime));
+            m_coroutine = StartCoroutine(IEArrangeChildren(m_childrenPrePosition, m_childrenNewPosition, m_tweenTime));
             yield return m_coroutine;
 #endif
 			onFinish?.Invoke();
