@@ -10,10 +10,10 @@ namespace RCore.Service
     {
         private static ApplovinProvider instance;
         public static ApplovinProvider Instance => instance ??= new ApplovinProvider();
-        private static string SDK_KEY => Configuration.Instance.customKeys["MAX_SDK_KEY"];
-        private static string AD_UNIT_INTERSTITIAL => Configuration.Instance.customKeys["MAX_INTERSTITIAL"];
-        private static string AD_UNIT_REWARDED => Configuration.Instance.customKeys["MAX_REWARDED"];
-        private static string AD_UNIT_BANNER => Configuration.Instance.customKeys["MAX_BANNER"];
+        private static string SDK_KEY => Configuration.KeyValues["MAX_SDK_KEY"];
+        private static string AD_UNIT_INTERSTITIAL => Configuration.KeyValues["MAX_INTERSTITIAL"];
+        private static string AD_UNIT_REWARDED => Configuration.KeyValues["MAX_REWARDED"];
+        private static string AD_UNIT_BANNER => Configuration.KeyValues["MAX_BANNER"];
 #if APPLOVIN
         public void Init()
         {

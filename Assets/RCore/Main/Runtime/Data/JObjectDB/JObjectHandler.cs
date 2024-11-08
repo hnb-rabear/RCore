@@ -4,21 +4,6 @@ using UnityEngine.Serialization;
 
 namespace RCore.Data.JObject
 {
-	public class DelayableEvent
-	{
-		public readonly string key;
-		public float delay;
-		public BaseEvent @event;
-		public DelayableEvent(BaseEvent pEvent, float pDelay, int pSubKey)
-		{
-			@event = pEvent;
-			key = pEvent.GetType().ToString();
-			delay = pDelay;
-			if (pSubKey > 0)
-				key += pSubKey;
-		}
-	}
-
 	public interface IJObjectHandler
 	{
 		public void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
@@ -27,7 +12,8 @@ namespace RCore.Data.JObject
 		public void OnPreSave(int utcNowTimestamp);
 	}
 	
-	public abstract class JObjectHandler<T> : MonoBehaviour, IJObjectHandler where T : JObjectDBManager
+	[System.Serializable]
+	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectDBManager
 	{
 		public T dbManager;
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);

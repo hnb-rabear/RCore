@@ -81,9 +81,10 @@ namespace RCore
 
                 if (showFull || t.Hours > 0)
                 {
-                    //00:00
+                    // 00:00:00
                     return m_TimeBuilder.Clear()
-                        .Append((t.Hours * 60 + t.Minutes).ToString("D2")).Append(":")
+                        .Append(t.Hours.ToString("D2")).Append(":")
+                        .Append(t.Minutes.ToString("D2")).Append(":")
                         .Append(t.Seconds.ToString("D2"))
                         .ToString();
                 }
@@ -296,9 +297,9 @@ namespace RCore
                 if (showFull || t.Days > 0)
                 {
                     //00:00:00:000
-                    string day = t.Days > 0 ? (t.Days > 1 ? " days" : " day") : "";
+                    string day = t.Days > 0 ? t.Days > 1 ? " days" : " day" : "";
                     return m_TimeBuilder.Clear()
-                        .Append(t.Days > 0 ? (t.Days + day) : "").Append(t.Days > 0 ? " " : "")
+                        .Append(t.Days > 0 ? t.Days + day : "").Append(t.Days > 0 ? " " : "")
                         .Append(t.Hours.ToString("D2")).Append(":")
                         .Append(t.Minutes.ToString("D2")).Append(":")
                         .Append(t.Seconds.ToString("D2"))
@@ -386,8 +387,8 @@ namespace RCore
                         //Hour Minute Second
                         return m_TimeBuilder.Clear()
                             .Append(t.Hours).Append(t.Hours <= 1 ? " Hour " : " Hours ")
-                            .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? (t.Minutes == 1 ? " Minute " : " Minutes ") : "")
-                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? (t.Seconds == 1 ? " Second" : " Seconds") : "")
+                            .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? t.Minutes == 1 ? " Minute " : " Minutes " : "")
+                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
                             .ToString();
                     }
                 }
@@ -398,7 +399,7 @@ namespace RCore
                         //Minute Second
                         return m_TimeBuilder.Clear()
                             .Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes == 1 ? " Minute " : " Minutes ")
-                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? (t.Seconds == 1 ? " Second" : " Seconds") : "")
+                            .Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
                             .ToString();
                     }
                     else

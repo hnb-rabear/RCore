@@ -84,10 +84,12 @@ namespace RCore
 			}
 		}
 		
-		public SerializableDictionary<string, string> customKeys;
+		public SerializableDictionary<string, string> keyValues;
 		public List<Env> envs = new List<Env>();
 		public Env curEnv;
 
+		public static SerializableDictionary<string, string> KeyValues => Instance.keyValues;
+		
 		private void OnValidate()
 		{
 			if (envs.Count == 0 || envs[0].name != "do_not_remove")

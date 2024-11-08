@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
@@ -171,7 +172,7 @@ namespace RCore.Data.JObject
 			where THandler : JObjectHandler<TManager>
 			where TManager : JObjectDBManager
 		{
-			var newController = gameObject.AddComponent<THandler>();
+			var newController = Activator.CreateInstance<THandler>();
 			newController.dbManager = this as TManager;
 			
 			m_handlers.Add(newController);

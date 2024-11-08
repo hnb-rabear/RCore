@@ -7,8 +7,8 @@ namespace RCore.Service
     {
         private static IronSourceProvider m_Instance;
         public static IronSourceProvider Instance => m_Instance;
-        public static string ANDROID_APP_KEY => Configuration.Instance.customKeys["IS_APP_KEY_ANDROID"];
-        public static string IOS_APP_KEY => Configuration.Instance.customKeys["IS_APP_KEY_IOS"];
+        public static string ANDROID_APP_KEY => Configuration.KeyValues["IS_APP_KEY_ANDROID"];
+        public static string IOS_APP_KEY => Configuration.KeyValues["IS_APP_KEY_IOS"];
 #if IRONSOURCE
 
         private Action<bool> m_OnRewardedAdCompleted;

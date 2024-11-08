@@ -683,7 +683,7 @@ namespace RCore
 		public ComponentRef<T> reference;
 		public bool loading { get; private set; }
 		public T asset { get; private set; }
-		public T instance;
+		public T instance { get; private set; }
 		private AsyncOperationHandle<GameObject> m_operation;
 		public async UniTask<T> InstantiateAsync(bool defaultActive = false)
 		{
@@ -702,8 +702,8 @@ namespace RCore
 				var go = await m_operation;
 				loading = false;
 				go.SetActive(defaultActive);
-				go.TryGetComponent(out instance);
 				go.name = go.name.Replace("(Clone)", "");
+				instance = go.GetComponent<T>();
 				Debug.Log($"Instantiate Asset Bundle {instance.name}");
 				return instance;
 			}
@@ -747,8 +747,8 @@ namespace RCore
 				var go = m_operation.Result;
 				loading = false;
 				go.SetActive(defaultActive);
-				go.TryGetComponent(out instance);
 				go.name = go.name.Replace("(Clone)", "");
+				instance = go.GetComponent<T>();
 				Debug.Log($"Instantiate Asset Bundle {instance.name}");
 			}
 		}
