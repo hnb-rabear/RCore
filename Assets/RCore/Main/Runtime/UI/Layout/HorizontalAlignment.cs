@@ -31,16 +31,17 @@ namespace RCore
 		public bool moveFromRoot;
 		public AnimationCurve animCurve;
 
-		[Header("Optional")] 
+		[Header("Optional")]
 		public float yOffset;
 
-		private Transform[] mChildren;
-		private Vector3[] mChildrenNewPosition;
-		private Vector3[] mChildrenPrePosition;
+		private Transform[] m_children;
+		private Vector3[] m_childrenNewPosition;
+		private Vector3[] m_childrenPrePosition;
+		private AnimationCurve m_animCurveTemp;
 #if DOTWEEN
-        private Tweener mTweener;
+		private Tweener m_tweener;
 #else
-		private Coroutine mCoroutine;
+		private Coroutine m_coroutine;
 #endif
 		private void Start()
 		{
@@ -59,10 +60,10 @@ namespace RCore
 			float t = lerp;
 			if (animCurve != null && animCurve.length > 1)
 				t = animCurve.Evaluate(lerp);
-			for (int j = 0; j < mChildren.Length; j++)
+			for (int j = 0; j < m_children.Length; j++)
 			{
-				var pos = Vector3.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
-				mChildren[j].localPosition = pos;
+				var pos = Vector3.Lerp(m_childrenPrePosition[j], m_childrenNewPosition[j], t);
+				m_children[j].localPosition = pos;
 			}
 		}
 
@@ -75,49 +76,49 @@ namespace RCore
 				if (child.gameObject.activeSelf)
 					list.Add(transform.GetChild(i));
 			}
-			mChildren = list.ToArray();
+			m_children = list.ToArray();
 		}
 
 		private void RefreshPositions()
 		{
-			if (Math.Abs(mChildren.Length * cellDistance) > maxContainerWidth && maxContainerWidth > 0)
-				cellDistance *= maxContainerWidth / Math.Abs(mChildren.Length * cellDistance);
+			if (Math.Abs(m_children.Length * cellDistance) > maxContainerWidth && maxContainerWidth > 0)
+				cellDistance *= maxContainerWidth / Math.Abs(m_children.Length * cellDistance);
 
-			mChildrenPrePosition = new Vector3[mChildren.Length];
-			mChildrenNewPosition = new Vector3[mChildren.Length];
+			m_childrenPrePosition = new Vector3[m_children.Length];
+			m_childrenNewPosition = new Vector3[m_children.Length];
 			switch (alignmentType)
 			{
 				case Alignment.Left:
-					for (int i = 0; i < mChildren.Length; i++)
+					for (int i = 0; i < m_children.Length; i++)
 					{
 						if (!moveFromRoot)
-							mChildrenPrePosition[i] = mChildren[i].localPosition;
-						mChildrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
+							m_childrenPrePosition[i] = m_children[i].localPosition;
+						m_childrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
 					}
 					break;
 
 				case Alignment.Right:
-					for (int i = 0; i < mChildren.Length; i++)
+					for (int i = 0; i < m_children.Length; i++)
 					{
 						if (!moveFromRoot)
-							mChildrenPrePosition[i] = mChildren[i].localPosition;
-						mChildrenNewPosition[i] = new Vector3(cellDistance, yOffset, 0) * ((mChildren.Length - 1 - i) * -1);
+							m_childrenPrePosition[i] = m_children[i].localPosition;
+						m_childrenNewPosition[i] = new Vector3(cellDistance, yOffset, 0) * ((m_children.Length - 1 - i) * -1);
 					}
 					break;
 
 				case Alignment.Center:
-					for (int i = 0; i < mChildren.Length; i++)
+					for (int i = 0; i < m_children.Length; i++)
 					{
 						if (!moveFromRoot)
-							mChildrenPrePosition[i] = mChildren[i].localPosition;
-						mChildrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
+							m_childrenPrePosition[i] = m_children[i].localPosition;
+						m_childrenNewPosition[i] = i * new Vector3(cellDistance, yOffset, 0);
 					}
-					for (int i = 0; i < mChildren.Length; i++)
+					for (int i = 0; i < m_children.Length; i++)
 					{
-						mChildrenNewPosition[i] = new Vector3(
-						mChildrenNewPosition[i].x - mChildrenNewPosition[mChildren.Length - 1].x / 2,
-						mChildrenNewPosition[i].y + yOffset,
-						mChildrenNewPosition[i].z);
+						m_childrenNewPosition[i] = new Vector3(
+							m_childrenNewPosition[i].x - m_childrenNewPosition[m_children.Length - 1].x / 2,
+							m_childrenNewPosition[i].y + yOffset,
+							m_childrenNewPosition[i].z);
 					}
 					break;
 			}
@@ -129,16 +130,16 @@ namespace RCore
 			RefreshPositions();
 			lerp = 1;
 
-			for (int i = 0; i < mChildren.Length; i++)
-				mChildren[i].localPosition = mChildrenNewPosition[i];
+			for (int i = 0; i < m_children.Length; i++)
+				m_children[i].localPosition = m_childrenNewPosition[i];
 		}
 
 		[InspectorButton]
-		public void AlignByTweener()
+		private void AlignByTweener()
 		{
 			AlignByTweener(null);
 		}
-		
+
 		public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
 		{
 			StartCoroutine(IEAlignByTweener(onFinish, pCurve));
@@ -148,38 +149,37 @@ namespace RCore
 		{
 			Init();
 			RefreshPositions();
-			if (pCurve != null)
-				animCurve = pCurve;
+			m_animCurveTemp = pCurve ?? this.animCurve;
 #if DOTWEEN
-            bool waiting = true;
-            lerp = 0;
-            mTweener.Kill();
-            mTweener = DOTween.To(tweenVal => lerp = tweenVal, 0f, 1f, tweenTime)
-                .OnUpdate(() =>
-                {
-                    float t = lerp;
-                    if (animCurve.length > 1)
-                        t = animCurve.Evaluate(lerp);
-                    for (int j = 0; j < mChildren.Length; j++)
-                    {
-                        var pos = Vector2.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
-                        mChildren[j].localPosition = pos;
-                    }
-                })
-                .OnComplete(() =>
-                {
-                    waiting = false;
-                })
-                .SetUpdate(true);
-            if (animCurve == null)
-                mTweener.SetEase(Ease.InQuint);
-            while (waiting)
-                yield return null;
+			bool waiting = true;
+			lerp = 0;
+			m_tweener.Kill();
+			m_tweener = DOTween.To(tweenVal => lerp = tweenVal, 0f, 1f, tweenTime)
+				.OnUpdate(() =>
+				{
+					float t = lerp;
+					if (m_animCurveTemp.length > 1)
+						t = m_animCurveTemp.Evaluate(lerp);
+					for (int j = 0; j < m_children.Length; j++)
+					{
+						var pos = Vector2.Lerp(m_childrenPrePosition[j], m_childrenNewPosition[j], t);
+						m_children[j].localPosition = pos;
+					}
+				})
+				.OnComplete(() =>
+				{
+					waiting = false;
+				})
+				.SetUpdate(true);
+			if (animCurve == null)
+				m_tweener.SetEase(Ease.InQuint);
+			while (waiting)
+				yield return null;
 #else
-			if (mCoroutine != null)
-				StopCoroutine(mCoroutine);
-			mCoroutine = StartCoroutine(IEArrangeChildren(mChildrenPrePosition, mChildrenNewPosition, tweenTime));
-			yield return mCoroutine;
+			if (m_coroutine != null)
+				StopCoroutine(m_coroutine);
+			m_coroutine = StartCoroutine(IEArrangeChildren(mChildrenPrePosition, mChildrenNewPosition, tweenTime));
+			yield return m_coroutine;
 #endif
 			onFinish?.Invoke();
 		}
@@ -193,12 +193,12 @@ namespace RCore
 					time = pDuration;
 				lerp = time / pDuration;
 				float t = lerp;
-				if (animCurve.length > 1)
-					t = animCurve.Evaluate(lerp);
-				for (int j = 0; j < mChildren.Length; j++)
+				if (m_animCurveTemp.length > 1)
+					t = m_animCurveTemp.Evaluate(lerp);
+				for (int j = 0; j < m_children.Length; j++)
 				{
 					var pos = Vector3.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);
-					mChildren[j].localPosition = pos;
+					m_children[j].localPosition = pos;
 				}
 				if (lerp >= 1)
 					break;

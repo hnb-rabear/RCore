@@ -6,10 +6,12 @@
 #if DOTWEEN
 using DG.Tweening;
 #endif
+using RCore.Inspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.UI
 {
@@ -22,30 +24,41 @@ namespace RCore.UI
 			Center,
 		}
 
-		public float maxContainerWidth;
-		public Alignment alignmentType;
-		public float cellDistance;
-		public float tweenTime = 0.25f;
-		public bool autoWhenStart;
-		[Header("Optional")]
-		public float yOffset;
-		[Range(0, 1f)] public float lerp;
-		public bool moveFromRoot;
-		public AnimationCurve animCurve;
+		[FormerlySerializedAs("maxContainerWidth")]
+		[SerializeField] private float m_maxContainerWidth;
+		[FormerlySerializedAs("alignmentType")]
+		[SerializeField] private Alignment m_alignmentType;
+		[FormerlySerializedAs("cellDistance")]
+		[SerializeField] private float m_cellDistance;
+		[FormerlySerializedAs("tweenTime")]
+		[SerializeField] private float m_tweenTime = 0.25f;
+		[FormerlySerializedAs("autoWhenStart")]
+		[SerializeField] private bool m_autoWhenStart;
+		
+		[Separator("Optional Config")]
+		[FormerlySerializedAs("yOffset")]
+		[SerializeField] private float m_height;
+		[SerializeField] private AnimationCurve m_heightCurve;
+		[FormerlySerializedAs("moveFromRoot")]
+		[SerializeField] private bool m_moveFromRoot;
+		[FormerlySerializedAs("animCurve")]
+		[SerializeField] private AnimationCurve m_animCurve;
+		[SerializeField, Range(0, 1f)] private float m_lerp;
 
 		private List<RectTransform> m_children = new List<RectTransform>();
 		private List<bool> m_indexesChanged = new List<bool>();
 		private List<int> m_childrenId = new List<int>();
 		private Vector2[] m_childrenPrePosition;
 		private Vector2[] m_childrenNewPosition;
+		private AnimationCurve m_animCurveTemp;
 #if DOTWEEN
 		private Tweener m_tweener;
 #else
-        private Coroutine mCoroutine;
+        private Coroutine m_coroutine;
 #endif
 		private void Start()
 		{
-			if (autoWhenStart)
+			if (m_autoWhenStart)
 				Align();
 		}
 
@@ -57,9 +70,9 @@ namespace RCore.UI
 			Init();
 			RefreshPositions();
 
-			float t = lerp;
-			if (animCurve.length > 1)
-				t = animCurve.Evaluate(lerp);
+			float t = m_lerp;
+			if (m_animCurve.length > 1)
+				t = m_animCurve.Evaluate(m_lerp);
 			for (int j = 0; j < m_children.Count; j++)
 			{
 				var pos = Vector3.Lerp(m_childrenPrePosition[j], m_childrenNewPosition[j], t);
@@ -116,60 +129,70 @@ namespace RCore.UI
 
 		private void RefreshPositions()
 		{
-			if (Math.Abs(m_children.Count * cellDistance) > maxContainerWidth && maxContainerWidth > 0)
-				cellDistance *= maxContainerWidth / (Math.Abs(m_children.Count * cellDistance));
+			if (Math.Abs(m_children.Count * m_cellDistance) > m_maxContainerWidth && m_maxContainerWidth > 0)
+				m_cellDistance *= m_maxContainerWidth / (Math.Abs(m_children.Count * m_cellDistance));
 			
 			m_childrenNewPosition = new Vector2[m_children.Count];
 			m_childrenPrePosition = new Vector2[m_children.Count];
-			switch (alignmentType)
+			switch (m_alignmentType)
 			{
 				case Alignment.Left:
 					for (int i = 0; i < m_children.Count; i++)
 					{
-						if (!moveFromRoot)
+						if (!m_moveFromRoot)
 							m_childrenPrePosition[i] = m_children[i].anchoredPosition;
-						m_childrenNewPosition[i] = i * new Vector2(cellDistance, yOffset);
+						float height = 0;
+						if (m_height > 0)
+							height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / (m_children.Count - 1)));
+						m_childrenNewPosition[i] = i * new Vector2(m_cellDistance, 0) + new Vector2(0, height);
 					}
 					break;
 
 				case Alignment.Right:
 					for (int i = 0; i < m_children.Count; i++)
 					{
-						if (!moveFromRoot)
+						if (!m_moveFromRoot)
 							m_childrenPrePosition[i] = m_children[i].anchoredPosition;
-						m_childrenNewPosition[i] = new Vector2(cellDistance, yOffset) * ((m_children.Count - 1 - i) * -1);
+						float height = 0;
+						if (m_height > 0)
+							height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / (m_children.Count - 1)));
+						m_childrenNewPosition[i] = new Vector2(m_cellDistance, 0) * ((m_children.Count - 1 - i) * -1) + new Vector2(0, height);
 					}
 					break;
 
 				case Alignment.Center:
 					for (int i = 0; i < m_children.Count; i++)
 					{
-						if (!moveFromRoot)
+						if (!m_moveFromRoot)
 							m_childrenPrePosition[i] = m_children[i].anchoredPosition;
-						m_childrenNewPosition[i] = i * new Vector2(cellDistance, yOffset);
+						m_childrenNewPosition[i] = i * new Vector2(m_cellDistance, 0);
 					}
 					for (int i = 0; i < m_children.Count; i++)
 					{
+						float height = 0;
+						if (m_height > 0)
+							height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / (m_children.Count - 1)));
 						m_childrenNewPosition[i] = new Vector2(
 							m_childrenNewPosition[i].x - m_childrenNewPosition[m_children.Count - 1].x / 2,
-							m_childrenNewPosition[i].y + yOffset);
+							m_childrenNewPosition[i].y + height);
 					}
 					break;
 			}
 		}
 
+		[InspectorButton]
 		public void Align()
 		{
 			Init();
 			RefreshPositions();
-			lerp = 1;
+			m_lerp = 1;
 
 			for (int i = 0; i < m_children.Count; i++)
 				m_children[i].anchoredPosition = m_childrenNewPosition[i];
 		}
 
 		[InspectorButton]
-		public void AlignByTweener()
+		private void AlignByTweener()
 		{
 			AlignByTweener(null);
 		}
@@ -183,18 +206,17 @@ namespace RCore.UI
 		{
 			Init();
 			RefreshPositions();
-			if (pCurve != null)
-				animCurve = pCurve;
+			m_animCurveTemp = pCurve ?? this.m_animCurve;
 #if DOTWEEN
 			bool waiting = true;
-			lerp = 0;
+			m_lerp = 0;
 			m_tweener.Kill();
-			m_tweener = DOTween.To(tweenVal => lerp = tweenVal, 0f, 1f, tweenTime)
+			m_tweener = DOTween.To(tweenVal => m_lerp = tweenVal, 0f, 1f, m_tweenTime)
 				.OnUpdate(() =>
 				{
-					float t = lerp;
-					if (animCurve.length > 1)
-						t = animCurve.Evaluate(lerp);
+					float t = m_lerp;
+					if (m_animCurveTemp.length > 1)
+						t = m_animCurveTemp.Evaluate(m_lerp);
 					for (int j = 0; j < m_children.Count; j++)
 					{
 						var pos = Vector2.Lerp(m_childrenPrePosition[j], m_childrenNewPosition[j], t);
@@ -206,15 +228,15 @@ namespace RCore.UI
 					waiting = false;
 				})
 				.SetUpdate(true);
-			if (animCurve == null)
+			if (m_animCurveTemp == null)
 				m_tweener.SetEase(Ease.InQuint);
 			while (waiting)
 				yield return null;
 #else
-            if (mCoroutine != null)
-                StopCoroutine(mCoroutine);
-            mCoroutine = StartCoroutine(IEArrangeChildren(m_childrenPrePosition, m_childrenNewPosition, tweenTime));
-            yield return mCoroutine;
+            if (m_coroutine != null)
+                StopCoroutine(m_coroutine);
+            m_coroutine = StartCoroutine(IEArrangeChildren(m_childrenPrePosition, m_childrenNewPosition, tweenTime));
+            yield return m_coroutine;
 #endif
 			onFinish?.Invoke();
 		}
@@ -226,16 +248,16 @@ namespace RCore.UI
 			{
 				if (time >= pDuration)
 					time = pDuration;
-				lerp = time / pDuration;
-				float t = lerp;
-				if (animCurve.length > 1)
-					t = animCurve.Evaluate(lerp);
+				m_lerp = time / pDuration;
+				float t = m_lerp;
+				if (m_animCurveTemp.length > 1)
+					t = m_animCurveTemp.Evaluate(m_lerp);
 				for (int j = 0; j < m_children.Count; j++)
 				{
 					var pos = Vector2.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);
 					m_children[j].anchoredPosition = pos;
 				}
-				if (lerp >= 1)
+				if (m_lerp >= 1)
 					break;
 				yield return null;
 				time += Time.unscaledDeltaTime;

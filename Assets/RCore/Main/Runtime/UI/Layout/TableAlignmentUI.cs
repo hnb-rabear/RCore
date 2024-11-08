@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 #if DOTWEEN
 using DG.Tweening;
 #endif
@@ -29,11 +30,16 @@ namespace RCore.UI
             Center,
         }
 
-        public TableLayoutType tableLayoutType;
-        public Alignment alignmentType;
-        public bool reverseY = true;
-        public float tweenTime = 0.25f;
-        public AnimationCurve animCurve;
+        [FormerlySerializedAs("tableLayoutType")]
+        [SerializeField, Tooltip("Horizontal:L,R,C, Vertical:T,B,C")] private TableLayoutType m_tableLayoutType;
+        [FormerlySerializedAs("alignmentType")]
+        [SerializeField] private Alignment m_alignmentType;
+        [FormerlySerializedAs("reverseY")]
+        [SerializeField] private bool m_reverseY = true;
+        [FormerlySerializedAs("tweenTime")]
+        [SerializeField] private float m_tweenTime = 0.25f;
+        [FormerlySerializedAs("animCurve")]
+        [SerializeField] private AnimationCurve m_animCurve;
 
         [Space(10)]
         public int maxRow;
@@ -51,28 +57,28 @@ namespace RCore.UI
         [SerializeField] private Vector2 m_ContentSizeBonus;
         [SerializeField] private List<Transform> m_IgnoredObjects;
 
-        private float m_Width;
-        private float m_Height;
-        private int m_FirstGroupIndex;
-        private int m_LastGroupIndex;
-        private Coroutine m_Coroutine;
-        private Vector2 m_ChildTopRight = Vector2.zero;
-        private Vector2 m_ChildBotLeft = Vector2.zero;
-
+        private float m_width;
+        private float m_height;
+        private int m_firstGroupIndex;
+        private int m_lastGroupIndex;
+        private Coroutine m_coroutine;
+        private Vector2 m_childTopRight = Vector2.zero;
+        private Vector2 m_childBotLeft = Vector2.zero;
+        private AnimationCurve m_animCurveTemp;
         private Dictionary<int, List<RectTransform>> childrenGroup;
 
         private void OnEnable()
         {
-            m_ChildTopRight = Vector2.zero;
-            m_ChildBotLeft = Vector2.zero;
+            m_childTopRight = Vector2.zero;
+            m_childBotLeft = Vector2.zero;
             if (m_AutoResizeContentX || m_AutoResizeContentY)
                 AutoResizeContent();
         }
-
+        
         public void Init()
         {
-            int totalRow = 0;
-            int totalCol = 0;
+            int totalRow;
+            int totalCol;
 
             var allChildren = new List<RectTransform>();
             for (int i = 0; i < transform.childCount; i++)
@@ -87,7 +93,7 @@ namespace RCore.UI
             }
 
             childrenGroup = new Dictionary<int, List<RectTransform>>();
-            if (tableLayoutType == TableLayoutType.Horizontal)
+            if (m_tableLayoutType == TableLayoutType.Horizontal)
             {
                 if (maxColumn == 0)
                     maxColumn = 1;
@@ -97,8 +103,8 @@ namespace RCore.UI
                 int row = 0;
                 while (allChildren.Count > 0)
                 {
-                    if (row == 0) m_FirstGroupIndex = row;
-                    if (row > 0) m_LastGroupIndex = row;
+                    if (row == 0) m_firstGroupIndex = row;
+                    if (row > 0) m_lastGroupIndex = row;
                     for (int i = 0; i < maxColumn; i++)
                     {
                         if (allChildren.Count == 0)
@@ -122,8 +128,8 @@ namespace RCore.UI
                 int col = 0;
                 while (allChildren.Count > 0)
                 {
-                    if (col == 0) m_FirstGroupIndex = col;
-                    if (col > 0) m_LastGroupIndex = col;
+                    if (col == 0) m_firstGroupIndex = col;
+                    if (col > 0) m_lastGroupIndex = col;
                     for (int i = 0; i < maxRow; i++)
                     {
                         if (allChildren.Count == 0)
@@ -138,29 +144,30 @@ namespace RCore.UI
                 }
             }
 
-            m_Width = (totalCol - 1) * columnDistance;
-            m_Height = (totalRow - 1) * rowDistance;
+            m_width = (totalCol - 1) * columnDistance;
+            m_height = (totalRow - 1) * rowDistance;
         }
 
+        [InspectorButton]
         public void Align()
         {
             Init();
 
-            if (tableLayoutType == TableLayoutType.Horizontal)
+            if (m_tableLayoutType == TableLayoutType.Horizontal)
             {
                 foreach (var a in childrenGroup)
                 {
                     var children = a.Value;
                     float y = a.Key * rowDistance;
-                    if (reverseY) y = -y + m_Height;
+                    if (m_reverseY) y = -y + m_height;
 
-                    switch (alignmentType)
+                    switch (m_alignmentType)
                     {
                         case Alignment.Left:
                             for (int i = 0; i < children.Count; i++)
                             {
                                 var pos = i * new Vector3(columnDistance, 0, 0);
-                                pos.y = y - m_Height / 2f;
+                                pos.y = y - m_height / 2f;
                                 children[i].anchoredPosition = pos;
                             }
                             break;
@@ -169,7 +176,7 @@ namespace RCore.UI
                             for (int i = 0; i < children.Count; i++)
                             {
                                 var pos = (children.Count - 1 - i) * new Vector3(columnDistance, 0, 0) * -1;
-                                pos.y = y - m_Height / 2f;
+                                pos.y = y - m_height / 2f;
                                 children[i].anchoredPosition = pos;
                             }
                             break;
@@ -178,10 +185,10 @@ namespace RCore.UI
                             for (int i = 0; i < children.Count; i++)
                             {
                                 var pos = i * new Vector3(columnDistance, 0, 0);
-                                pos.y = y - m_Height / 2f;
+                                pos.y = y - m_height / 2f;
                                 children[i].anchoredPosition = pos;
                             }
-                            if (a.Key == m_LastGroupIndex && m_LastGroupIndex != m_FirstGroupIndex)
+                            if (a.Key == m_lastGroupIndex && m_lastGroupIndex != m_firstGroupIndex)
                             {
                                 for (int i = 0; i < children.Count; i++)
                                 {
@@ -203,16 +210,16 @@ namespace RCore.UI
                     for (int i = 0; i < children.Count; i++)
                     {
                         var topRight = children[i].TopRight();
-                        if (topRight.x > m_ChildTopRight.x)
-                            m_ChildTopRight.x = topRight.x;
-                        if (topRight.y > m_ChildTopRight.y)
-                            m_ChildTopRight.y = topRight.y;
+                        if (topRight.x > m_childTopRight.x)
+                            m_childTopRight.x = topRight.x;
+                        if (topRight.y > m_childTopRight.y)
+                            m_childTopRight.y = topRight.y;
 
                         var botLeft = children[i].BotLeft();
-                        if (botLeft.x < m_ChildBotLeft.x)
-                            m_ChildBotLeft.x = botLeft.x;
-                        if (botLeft.y < m_ChildBotLeft.y)
-                            m_ChildBotLeft.y = botLeft.y;
+                        if (botLeft.x < m_childBotLeft.x)
+                            m_childBotLeft.x = botLeft.x;
+                        if (botLeft.y < m_childBotLeft.y)
+                            m_childBotLeft.y = botLeft.y;
                     }
                 }
             }
@@ -223,13 +230,13 @@ namespace RCore.UI
                     var children = a.Value;
                     float x = a.Key * columnDistance;
 
-                    switch (alignmentType)
+                    switch (m_alignmentType)
                     {
                         case Alignment.Top:
                             for (int i = 0; i < children.Count; i++)
                             {
                                 var pos = (children.Count - 1 - i) * new Vector3(0, rowDistance, 0) * -1;
-                                pos.x = x - m_Width / 2f;
+                                pos.x = x - m_width / 2f;
                                 children[i].anchoredPosition = pos;
                             }
                             break;
@@ -238,7 +245,7 @@ namespace RCore.UI
                             for (int i = 0; i < children.Count; i++)
                             {
                                 var pos = i * new Vector3(0, rowDistance, 0);
-                                pos.x = x - m_Width / 2f;
+                                pos.x = x - m_width / 2f;
                                 children[i].anchoredPosition = pos;
                             }
                             break;
@@ -247,10 +254,10 @@ namespace RCore.UI
                             for (int i = 0; i < children.Count; i++)
                             {
                                 var pos = i * new Vector3(0, rowDistance, 0);
-                                pos.x = x - m_Width / 2f;
+                                pos.x = x - m_width / 2f;
                                 children[i].anchoredPosition = pos;
                             }
-                            if (a.Key == m_LastGroupIndex && m_LastGroupIndex != m_FirstGroupIndex)
+                            if (a.Key == m_lastGroupIndex && m_lastGroupIndex != m_firstGroupIndex)
                             {
                                 for (int i = 0; i < children.Count; i++)
                                 {
@@ -272,16 +279,16 @@ namespace RCore.UI
                     for (int i = 0; i < children.Count; i++)
                     {
                         var topRight = children[i].TopRight();
-                        if (topRight.x > m_ChildTopRight.x)
-                            m_ChildTopRight.x = topRight.x;
-                        if (topRight.y > m_ChildTopRight.y)
-                            m_ChildTopRight.y = topRight.y;
+                        if (topRight.x > m_childTopRight.x)
+                            m_childTopRight.x = topRight.x;
+                        if (topRight.y > m_childTopRight.y)
+                            m_childTopRight.y = topRight.y;
 
                         var botLeft = children[i].BotLeft();
-                        if (botLeft.x < m_ChildBotLeft.x)
-                            m_ChildBotLeft.x = botLeft.x;
-                        if (botLeft.y < m_ChildBotLeft.y)
-                            m_ChildBotLeft.y = botLeft.y;
+                        if (botLeft.x < m_childBotLeft.x)
+                            m_childBotLeft.x = botLeft.x;
+                        if (botLeft.y < m_childBotLeft.y)
+                            m_childBotLeft.y = botLeft.y;
                     }
                 }
             }
@@ -292,8 +299,8 @@ namespace RCore.UI
 
         public void AutoResizeContent()
         {
-            float height = m_ChildTopRight.y - m_ChildBotLeft.y + m_ContentSizeBonus.y;
-            float width = m_ChildTopRight.x - m_ChildBotLeft.x + m_ContentSizeBonus.x;
+            float height = m_childTopRight.y - m_childBotLeft.y + m_ContentSizeBonus.y;
+            float width = m_childTopRight.x - m_childBotLeft.x + m_ContentSizeBonus.x;
 
             var size = (transform as RectTransform).sizeDelta;
             if (m_AutoResizeContentX)
@@ -304,7 +311,7 @@ namespace RCore.UI
         }
 
         [InspectorButton]
-        public void AlignByTweener()
+        private void AlignByTweener()
         {
 	        AlignByTweener(null);
         }
@@ -312,30 +319,29 @@ namespace RCore.UI
         public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
         {
             Init();
-            if (pCurve != null)
-                animCurve = pCurve;
 
+            m_animCurveTemp = pCurve ?? this.m_animCurve;
             var initialPositions = new Dictionary<int, Vector3[]>();
             var finalPositions = new Dictionary<int, Vector3[]>();
 
-            if (tableLayoutType == TableLayoutType.Horizontal)
+            if (m_tableLayoutType == TableLayoutType.Horizontal)
             {
                 foreach (var a in childrenGroup)
                 {
                     var children = a.Value;
                     float y = a.Key * rowDistance;
-                    if (reverseY) y = -y + m_Height;
+                    if (m_reverseY) y = -y + m_height;
 
                     var childrenNewPosition = new Vector3[children.Count];
                     var childrenPrePosition = new Vector3[children.Count];
-                    switch (alignmentType)
+                    switch (m_alignmentType)
                     {
                         case Alignment.Left:
                             for (int i = 0; i < children.Count; i++)
                             {
                                 childrenPrePosition[i] = children[i].anchoredPosition;
                                 var pos = i * new Vector3(columnDistance, 0, 0);
-                                pos.y = y - m_Height / 2f;
+                                pos.y = y - m_height / 2f;
                                 childrenNewPosition[i] = pos;
                             }
                             break;
@@ -345,7 +351,7 @@ namespace RCore.UI
                             {
                                 childrenPrePosition[i] = children[i].anchoredPosition;
                                 var pos = (children.Count - 1 - i) * new Vector3(columnDistance, 0, 0) * -1;
-                                pos.y = y - m_Height / 2f;
+                                pos.y = y - m_height / 2f;
                                 childrenNewPosition[i] = pos;
                             }
                             break;
@@ -355,10 +361,10 @@ namespace RCore.UI
                             {
                                 childrenPrePosition[i] = children[i].anchoredPosition;
                                 var pos = i * new Vector3(columnDistance, 0, 0);
-                                pos.y = y - m_Height / 2f;
+                                pos.y = y - m_height / 2f;
                                 childrenNewPosition[i] = pos;
                             }
-                            if (a.Key == m_LastGroupIndex && m_LastGroupIndex != m_FirstGroupIndex)
+                            if (a.Key == m_lastGroupIndex && m_lastGroupIndex != m_firstGroupIndex)
                                 for (int i = 0; i < children.Count; i++)
                                 {
                                     var pos = childrenNewPosition[i];
@@ -389,14 +395,14 @@ namespace RCore.UI
 
                     var childrenPrePosition = new Vector3[children.Count];
                     var childrenNewPosition = new Vector3[children.Count];
-                    switch (alignmentType)
+                    switch (m_alignmentType)
                     {
                         case Alignment.Top:
                             for (int i = 0; i < children.Count; i++)
                             {
                                 childrenPrePosition[i] = children[i].anchoredPosition;
                                 var pos = i * new Vector3(0, rowDistance, 0);
-                                pos.x = x - m_Width / 2f;
+                                pos.x = x - m_width / 2f;
                                 childrenNewPosition[i] = pos;
                             }
                             break;
@@ -406,7 +412,7 @@ namespace RCore.UI
                             {
                                 childrenPrePosition[i] = children[i].anchoredPosition;
                                 var pos = (childrenNewPosition.Length - 1 - i) * new Vector3(0, rowDistance, 0) * -1;
-                                pos.x = x - m_Width / 2f;
+                                pos.x = x - m_width / 2f;
                                 childrenNewPosition[i] = pos;
                             }
                             break;
@@ -416,10 +422,10 @@ namespace RCore.UI
                             {
                                 childrenPrePosition[i] = children[i].anchoredPosition;
                                 var pos = i * new Vector3(0, rowDistance, 0);
-                                pos.x = x - m_Width / 2f;
+                                pos.x = x - m_width / 2f;
                                 childrenNewPosition[i] = pos;
                             }
-                            if (a.Key == m_LastGroupIndex && m_LastGroupIndex != m_FirstGroupIndex)
+                            if (a.Key == m_lastGroupIndex && m_lastGroupIndex != m_firstGroupIndex)
                             {
                                 for (int i = 0; i < children.Count; i++)
                                 {
@@ -447,12 +453,12 @@ namespace RCore.UI
 #if DOTWEEN
             float lerp = 0;
             DOTween.Kill(GetInstanceID());
-            DOTween.To(val => lerp = val, 0f, 1f, tweenTime)
+            DOTween.To(val => lerp = val, 0f, 1f, m_tweenTime)
                 .OnUpdate(() =>
                 {
                     float t = lerp;
-                    if (animCurve.length > 1)
-                        t = animCurve.Evaluate(lerp);
+                    if (m_animCurveTemp.length > 1)
+                        t = m_animCurveTemp.Evaluate(lerp);
                     foreach (var a in childrenGroup)
                     {
                         var children = a.Value;
@@ -462,16 +468,16 @@ namespace RCore.UI
                             children[j].anchoredPosition = pos;
 
                             var topRight = children[j].TopRight();
-                            if (topRight.x > m_ChildTopRight.x)
-                                m_ChildTopRight.x = topRight.x;
-                            if (topRight.y > m_ChildTopRight.y)
-                                m_ChildTopRight.y = topRight.y;
+                            if (topRight.x > m_childTopRight.x)
+                                m_childTopRight.x = topRight.x;
+                            if (topRight.y > m_childTopRight.y)
+                                m_childTopRight.y = topRight.y;
 
                             var botLeft = children[j].BotLeft();
-                            if (botLeft.x < m_ChildBotLeft.x)
-                                m_ChildBotLeft.x = botLeft.x;
-                            if (botLeft.y < m_ChildBotLeft.y)
-                                m_ChildBotLeft.y = botLeft.y;
+                            if (botLeft.x < m_childBotLeft.x)
+                                m_childBotLeft.x = botLeft.x;
+                            if (botLeft.y < m_childBotLeft.y)
+                                m_childBotLeft.y = botLeft.y;
 
                             if (m_AutoResizeContentX || m_AutoResizeContentY)
                                 AutoResizeContent();
@@ -498,8 +504,8 @@ namespace RCore.UI
                 float lerp = time / p_pDuration;
                 float t = lerp;
 
-                if (animCurve.length > 1)
-                    t = animCurve.Evaluate(lerp);
+                if (m_animCurveTemp.length > 1)
+                    t = m_animCurveTemp.Evaluate(lerp);
 
                 foreach (var a in p_childrenGroup)
                 {
@@ -510,16 +516,16 @@ namespace RCore.UI
                         children[j].anchoredPosition = pos;
 
                         var topRight = children[j].TopRight();
-                        if (topRight.x > m_ChildTopRight.x)
-                            m_ChildTopRight.x = topRight.x;
-                        if (topRight.y > m_ChildTopRight.y)
-                            m_ChildTopRight.y = topRight.y;
+                        if (topRight.x > m_childTopRight.x)
+                            m_childTopRight.x = topRight.x;
+                        if (topRight.y > m_childTopRight.y)
+                            m_childTopRight.y = topRight.y;
 
                         var botLeft = children[j].BotLeft();
-                        if (botLeft.x < m_ChildBotLeft.x)
-                            m_ChildBotLeft.x = botLeft.x;
-                        if (botLeft.y < m_ChildBotLeft.y)
-                            m_ChildBotLeft.y = botLeft.y;
+                        if (botLeft.x < m_childBotLeft.x)
+                            m_childBotLeft.x = botLeft.x;
+                        if (botLeft.y < m_childBotLeft.y)
+                            m_childBotLeft.y = botLeft.y;
 
                         if (m_AutoResizeContentX || m_AutoResizeContentY)
                             AutoResizeContent();
