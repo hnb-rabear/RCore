@@ -490,7 +490,7 @@ namespace RCore.UI
 				});
 
 #else
-            StartCoroutine(IEArrangeChildren(childrenGroup, initialPositions, finalPositions, tweenTime, onFinish));
+            StartCoroutine(IEArrangeChildren(childrenGroup, initialPositions, finalPositions, m_tweenTime, onFinish));
 #endif
         }
 

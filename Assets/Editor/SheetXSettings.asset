@@ -14,15 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   excelSheetsPath:
     selected: 1
-    path: 
-    sheets: []
-  googleSheetsPath:
-    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
-    name: Example
+    path: Assets/RCore/SheetX/Editor/Example/Exporting A Excel File/Example.xlsx
     sheets:
-    - name: ExampleIDs
-      selected: 1
     - name: ExampleConstants
+      selected: 1
+    - name: ExampleIDs
       selected: 1
     - name: LocalizationExample
       selected: 1
@@ -34,6 +30,28 @@ MonoBehaviour:
       selected: 1
     - name: ExampleDataAdvanced
       selected: 1
+    - name: ExampleMergeTable
+      selected: 1
+    name: Example
+  googleSheetsPath:
+    selected: 1
+    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    name: Example
+    sheets:
+    - name: ExampleIDs
+      selected: 1
+    - name: ExampleConstants
+      selected: 1
+    - name: LocalizationExample
+      selected: 1
+    - name: LocalizationExample2
+      selected: 1
+    - name: ExampleDataBasic2
+      selected: 1
+    - name: ExampleDataAdvanced
+      selected: 1
+    - name: ExampleDataBasic1
+      selected: 1
   excelSheetsPaths:
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Challenges.xlsx
@@ -44,6 +62,7 @@ MonoBehaviour:
       selected: 1
     - name: DailyQuests
       selected: 1
+    name: Challenges
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Design.xlsx
     sheets:
@@ -57,6 +76,7 @@ MonoBehaviour:
       selected: 1
     - name: Exp
       selected: 1
+    name: Design
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/GameData.xlsx
     sheets:
@@ -88,6 +108,7 @@ MonoBehaviour:
       selected: 1
     - name: FakeScores
       selected: 1
+    name: GameData
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Localization.xlsx
     sheets:
@@ -101,6 +122,7 @@ MonoBehaviour:
       selected: 1
     - name: LocalizationTask
       selected: 1
+    name: Localization
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Maps.xlsx
     sheets:
@@ -118,6 +140,7 @@ MonoBehaviour:
       selected: 1
     - name: SecretDropRates
       selected: 1
+    name: Maps
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/ShopItems.xlsx
     sheets:
@@ -137,6 +160,7 @@ MonoBehaviour:
       selected: 1
     - name: FreeRewards
       selected: 1
+    name: ShopItems
   - selected: 1
     path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Skills.xlsx
     sheets:
@@ -152,7 +176,116 @@ MonoBehaviour:
       selected: 1
     - name: InBattleUpgradeEvols
       selected: 1
-  googleSheetsPaths: []
+    name: Skills
+  googleSheetsPaths:
+  - selected: 1
+    id: 1d53vWQzrp-qNsoeyEmkqQx4KeQObONOk55oWeNS2YXg
+    name: ShopItems
+    sheets:
+    - name: IDs
+      selected: 1
+    - name: Constants
+      selected: 1
+    - name: Shop
+      selected: 1
+    - name: Chests
+      selected: 1
+    - name: ChestRewards
+      selected: 1
+    - name: CheckinRewards
+      selected: 1
+    - name: ProgressRewards
+      selected: 1
+    - name: FreeRewards
+      selected: 1
+  - selected: 1
+    id: 1wcck5nOpFOKAaGNvnsKZQkYRuOYbm0mNx378lfIR7BQ
+    name: Maps
+    sheets:
+    - name: Maps
+      selected: 1
+    - name: Areas
+      selected: 1
+    - name: AreasHard
+      selected: 1
+    - name: EndlessModeAreas
+      selected: 1
+    - name: EndlessModeEnemies
+      selected: 1
+    - name: BossRushMode
+      selected: 1
+    - name: SecretDropRates
+      selected: 1
+  - selected: 1
+    id: 1kq0KaQxQ129f1OABm62x6GtfOKTg_3t4M8gODGHzSu8
+    name: Localization
+    sheets:
+    - name: LocalizationCommon
+      selected: 1
+    - name: LocalizationMod
+      selected: 1
+    - name: LocalizationTutorial
+      selected: 1
+    - name: LocalizationSkill
+      selected: 1
+    - name: LocalizationTask
+      selected: 1
+  - selected: 1
+    id: 1i2CmDGYpAYuX_8vBUbHXBAhuWPKHi_gd52uwzsegLdY
+    name: GameData
+    sheets:
+    - name: Constants
+      selected: 1
+    - name: TrackingConstants
+      selected: 1
+    - name: IDs
+      selected: 1
+    - name: Characters
+      selected: 1
+    - name: EnemiesV2
+      selected: 1
+    - name: EnemyAttacks
+      selected: 1
+    - name: Mods
+      selected: 1
+    - name: Skins
+      selected: 1
+    - name: Equipments
+      selected: 1
+    - name: RescueRewards
+      selected: 1
+    - name: PlayerLevels
+      selected: 1
+    - name: WeaponStats
+      selected: 1
+    - name: Leaderboards
+      selected: 1
+    - name: FakeScores
+      selected: 1
+  - selected: 1
+    id: 1qrRroztMBABBemYtsOmgovDpC-MbvKXmuD8WZvY89G0
+    name: Design
+    sheets:
+    - name: Map
+      selected: 1
+    - name: Enemy HP
+      selected: 1
+    - name: SKills Price
+      selected: 1
+    - name: WeaponStats
+      selected: 1
+    - name: Exp
+      selected: 1
+  - selected: 1
+    id: 1l9_elk7QfABbWlKanOHqkSIYlWcxWO1EIPt9Ax4XtUE
+    name: Challenges
+    sheets:
+    - name: IDs
+      selected: 1
+    - name: Achievements
+      selected: 1
+    - name: DailyQuests
+      selected: 1
   jsonOutputFolder: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Json
   constantsOutputFolder: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel
     Files/Constants

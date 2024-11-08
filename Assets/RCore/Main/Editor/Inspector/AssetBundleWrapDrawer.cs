@@ -4,6 +4,7 @@ using UnityEditor;
 
 namespace RCore.Editor
 {
+#if ADDRESSABLES
 	[CustomPropertyDrawer(typeof(AssetBundleWrap<>))]
 	public class AssetBundleWrapDrawer : PropertyDrawer
 	{
@@ -41,4 +42,5 @@ namespace RCore.Editor
 			return EditorGUIUtility.singleLineHeight;
 		}
 	}
+#endif
 }

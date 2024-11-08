@@ -23,6 +23,7 @@ namespace RCore.SheetX
 		public bool selected = true;
 		public string path;
 		public List<SheetPath> sheets = new();
+		public string name;
 		public void Load()
 		{
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -47,6 +48,7 @@ namespace RCore.SheetX
 					selected = true,
 				});
 			}
+			name = Path.GetFileNameWithoutExtension(path);
 		}
 		public void Validate()
 		{
@@ -64,6 +66,7 @@ namespace RCore.SheetX
 					}
 				}
 			}
+			name = Path.GetFileNameWithoutExtension(path);
 		}
 		public IWorkbook GetWorkBook()
 		{

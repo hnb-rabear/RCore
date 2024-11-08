@@ -71,6 +71,7 @@ namespace RCore.SheetX
 					EditorHelper.LabelField(status, 50, false, TextAnchor.MiddleCenter, Color.green);
 				else
 					EditorHelper.LabelField(status, 50, false, TextAnchor.MiddleCenter, Color.red);
+				m_settings.excelSheetsPath.name = Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path);
 			}
 			if (EditorHelper.Button("Select File", 100))
 			{
@@ -160,6 +161,12 @@ namespace RCore.SheetX
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
 			});
+			
+			table.AddColumn("Name", 100, 120, (rect, item) =>
+			{
+				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
+				EditorGUI.LabelField(rect, item.name, style);
+			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
 
 			table.AddColumn("Excel Path", 300, 0, (rect, item) =>
 			{
