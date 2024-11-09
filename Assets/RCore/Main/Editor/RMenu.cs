@@ -5,6 +5,7 @@
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;
+using RCore.Editor.SheetX;
 using UnityEditor;
 using UnityEngine;
 
@@ -183,6 +184,24 @@ namespace RCore.Editor
 		public static void OpenSearchAndReplaceAssetWindow()
 		{
 			SearchAndReplaceAssetWindow.ShowWindow();
+		}
+
+		[MenuItem("RCore/Tools/SheetX/Excel Sheets Exporter", priority = GROUP_6 + 6)]
+		public static void OpenExcelSheetsExporter()
+		{
+			ExcelSheetXWindow.ShowWindow();
+		}
+
+		[MenuItem("RCore/Tools/SheetX/Google Sheets Exporter", priority = GROUP_6 + 6)]
+		public static void OpenGoogleSheetsExporter()
+		{
+			GoogleSheetXWindow.ShowWindow();
+		}
+		
+		[MenuItem("RCore/Tools/SheetX/Settings", priority = GROUP_6 + 6)]
+		public static void OpenSheetXSettingsWindow()
+		{
+			SheetXSettingsWindow.ShowWindow();
 		}
 		
 		//==============================================

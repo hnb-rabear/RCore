@@ -1,58 +1,32 @@
-using System.Collections.Generic;
-using System.Threading;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Sheets.v4;
-using Google.Apis.Sheets.v4.Data;
-using Google.Apis.Util.Store;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NPOI.SS.UserModel;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
-	public class GoogleSheetHandler
+	public class ExcelSheetHandler
 	{
 		private SheetXSettings m_settings;
 		private Dictionary<string, StringBuilder> m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, StringBuilder> m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, int> m_allIds = new Dictionary<string, int>();
-		private Dictionary<string, int> m_allIDsSorted;
-		private SheetsService m_service;
-		private Dictionary<string, LocalizationBuilder> m_localizationsDict;
-		private List<string> m_localizedSheetsExported;
-		private List<string> m_localizedLanguages;
-		private Dictionary<string, string> m_langCharSets;
-		private Dictionary<string, Spreadsheet> m_cachedSpreadsheet = new Dictionary<string, Spreadsheet>();
+		private Dictionary<string, int> m_allIDsSorted; //List sorted by length will be used for linked data, for IDs which have prefix that is exactly same with another ID
+		private Dictionary<string, LocalizationBuilder> m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
+		private List<string> m_localizedSheetsExported = new List<string>();
+		private List<string> m_localizedLanguages = new List<string>();
+		private Dictionary<string, string> m_langCharSets = new Dictionary<string, string>();
 
-		public GoogleSheetHandler(SheetXSettings settings)
+		public ExcelSheetHandler(SheetXSettings settings)
 		{
 			m_settings = settings;
 		}
-
-		public void ExportAll()
-		{
-			ExportIDs();
-			ExportConstants();
-			ExportJson();
-			ExportLocalizations();
-		}
-
-		private Spreadsheet GetCacheMetadata(string googleSpreadsheetsId)
-		{
-			if (m_cachedSpreadsheet.TryGetValue(googleSpreadsheetsId, out var metadata))
-				return metadata;
-			var service = GetService();
-			var spreadsheet = service.Spreadsheets.Get(googleSpreadsheetsId).Execute();
-			m_cachedSpreadsheet[googleSpreadsheetsId] = spreadsheet;
-			return spreadsheet;
-		}
-
-		//======================================
 
 #region Export IDs
 
@@ -63,63 +37,48 @@ namespace RCore.SheetX
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
-			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
+			if (workBook == null)
 				return;
-			}
-			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
 
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
 
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var m in m_settings.excelSheetsPath.sheets)
 			{
-				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
-					continue;
-
-				var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-				if (sheetInfo == null)
-					continue;
-
-				var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-				// Construct the range dynamically based on row and column counts
-				var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-
-				// Create a request to get the sheet data
-				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
-				var values = response.Values;
-
-				//Load All IDs
-				BuildContentOfFileIDs(sheet.name, values);
-
-				//Create IDs Files
-				if (m_settings.separateConstants)
+				if (m.name.EndsWith(SheetXConstants.IDS_SHEET) && m.selected)
 				{
-					var content = m_idsBuilderDict[sheet.name].ToString();
-					m_settings.CreateFileIDs(sheet.name, content);
-				}
+					//Load All IDs
+					BuildContentOfFileIDs(workBook, m.name);
 
-				if (!m_settings.separateConstants)
-				{
-					var iDsBuilder = new StringBuilder();
-					foreach (var builder in m_idsBuilderDict)
+					//Create IDs Files
+					if (m_settings.separateConstants)
 					{
-						var content = builder.Value.ToString();
-						iDsBuilder.Append(content);
-						iDsBuilder.AppendLine();
+						var content = m_idsBuilderDict[m.name].ToString();
+						m_settings.CreateFileIDs(m.name, content);
 					}
-					m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 				}
+			}
+
+			if (!m_settings.separateConstants)
+			{
+				var iDsBuilder = new StringBuilder();
+				foreach (var builder in m_idsBuilderDict)
+				{
+					var content = builder.Value.ToString();
+					iDsBuilder.Append(content);
+					iDsBuilder.AppendLine();
+				}
+				m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 			}
 		}
 
-		private bool BuildContentOfFileIDs(string pSheetName, IList<IList<object>> rowsData)
+		private bool BuildContentOfFileIDs(IWorkbook pWorkBook, string pSheetName)
 		{
-			if (rowsData == null || rowsData.Count == 0)
+			var sheet = pWorkBook.GetSheet(pSheetName);
+
+			if (sheet == null || sheet.LastRowNum == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 				return false;
@@ -129,77 +88,81 @@ namespace RCore.SheetX
 			var idsEnumBuilders = new List<StringBuilder>();
 			var idsEnumBuilderNames = new List<string>();
 			var idsEnumBuilderIndexes = new List<int>();
-			for (int row = 0; row < rowsData.Count; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
-				var rowData = rowsData[row];
-				if (rowData == null)
-					continue;
-				for (int col = 0; col < rowData.Count; col += 3)
+				var rowData = sheet.GetRow(row);
+				if (rowData != null)
 				{
-					var cellKey = rowData[col];
-					if (cellKey == null)
-						continue;
-					int index = col / 3;
-					var sb = index < idsBuilders.Count ? idsBuilders[index] : new StringBuilder();
-					if (!idsBuilders.Contains(sb))
+					for (int col = 0; col <= rowData.LastCellNum; col += 3)
 					{
-						idsBuilders.Add(sb);
-					}
-					//Values row
-					if (row > 0)
-					{
-						string key = cellKey.ToString().Trim();
-						if (string.IsNullOrEmpty(key))
+						var cellKey = rowData.GetCell(col);
+						if (cellKey == null)
 							continue;
-
-						//Value
-						var cellValue = rowData[col + 1];
-						if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
+						int index = col / 3;
+						var sb = index < idsBuilders.Count ? idsBuilders[index] : new StringBuilder();
+						if (!idsBuilders.Contains(sb))
 						{
-							EditorUtility.DisplayDialog("Warning", $"Sheet {pSheetName}: Key {key} doesn't have value!", "OK");
-							continue;
+							idsBuilders.Add(sb);
 						}
-
-						string valueStr = cellValue.ToString().Trim();
-						int.TryParse(valueStr, out int value);
-						sb.Append("\tpublic const int ");
-						sb.Append(key);
-						sb.Append(" = ");
-						sb.Append(value);
-						sb.Append(";");
-
-						//Comment
-						if (col + 2 < rowData.Count)
+						//Values row
+						if (row > 0)
 						{
-							var cellComment = rowData[col + 2];
+							string key = cellKey.ToString().Trim();
+							if (string.IsNullOrEmpty(key))
+								continue;
+
+							//Value
+							var cellValue = rowData.GetCell(col + 1);
+							if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
+							{
+								EditorUtility.DisplayDialog("Warning", $"Sheet {sheet.SheetName}: Key {key} doesn't have value!", "OK");
+								continue;
+							}
+
+							string valueStr = cellValue.ToString().Trim();
+							int.TryParse(valueStr, out int value);
+							sb.Append("\tpublic const int ");
+							sb.Append(key);
+							sb.Append(" = ");
+							sb.Append(value);
+							sb.Append(";");
+
+							//Comment
+							var cellComment = rowData.GetCell(col + 2);
 							if (cellComment != null && !string.IsNullOrEmpty(cellComment.ToString().Trim()))
-								sb.Append(" /*").Append(cellComment).Append("*/");
-						}
+							{
+								string cellCommentFormula = SheetXHelper.ConvertFormulaCell(cellComment);
+								if (cellCommentFormula != null)
+									sb.Append(" /*").Append(cellCommentFormula).Append("*/");
+								else
+									sb.Append(" /*").Append(cellComment).Append("*/");
+							}
 
-						if (m_allIds.TryGetValue(key, out int val))
-						{
-							if (val != value)
-								EditorUtility.DisplayDialog("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}", "OK");
+							if (m_allIds.TryGetValue(key, out int val))
+							{
+								if (val != value)
+									EditorUtility.DisplayDialog("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}", "OK");
+							}
+							else
+							{
+								m_allIds[key] = value;
+							}
 						}
+						//Header row
 						else
 						{
-							m_allIds[key] = value;
-						}
-					}
-					//Header row
-					else
-					{
-						if (cellKey.ToString().Contains("[enum]"))
-						{
-							idsEnumBuilders.Add(sb);
-							idsEnumBuilderNames.Add(cellKey.ToString().Replace("[enum]", ""));
-							idsEnumBuilderIndexes.Add(index);
-						}
+							if (cellKey.ToString().Contains("[enum]"))
+							{
+								idsEnumBuilders.Add(sb);
+								idsEnumBuilderNames.Add(cellKey.ToString().Replace("[enum]", ""));
+								idsEnumBuilderIndexes.Add(index);
+							}
 
-						sb.Append("\t#region ")
-							.Append(cellKey);
+							sb.Append("\t#region ")
+								.Append(cellKey);
+						}
+						sb.Append(Environment.NewLine);
 					}
-					sb.Append(Environment.NewLine);
 				}
 			}
 
@@ -265,68 +228,6 @@ namespace RCore.SheetX
 			return true;
 		}
 
-		private Dictionary<string, IList<IList<object>>> GetSheetIDsValues()
-		{
-			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
-			var ids = new Dictionary<string, IList<IList<object>>>();
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
-			{
-				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
-					continue;
-
-				var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-				if (sheetInfo == null)
-					continue;
-
-				var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-				// Construct the range dynamically based on row and column counts
-				var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-
-				// Create a request to get the sheet data
-				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
-				var values = response.Values;
-				ids[sheet.name] = values;
-			}
-			return ids;
-		}
-
-		private void LoadSheetIDsValues(IList<IList<object>> rowsData, string pSheetName)
-		{
-			if (rowsData == null || rowsData.Count == 0)
-			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
-				return;
-			}
-
-			for (int row = 0; row < rowsData.Count; row++)
-			{
-				var rowData = rowsData[row];
-				if (rowData == null)
-					continue;
-				for (int col = 0; col < rowData.Count; col += 3)
-				{
-					var cellKey = rowData[col];
-					if (cellKey == null)
-						continue;
-					string key = cellKey.ToString().Trim();
-					if (row <= 0 || string.IsNullOrEmpty(key))
-						continue;
-					var cellValue = rowData[col + 1];
-					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
-						continue;
-					int value = int.Parse(cellValue.ToString().Trim());
-					if (m_allIds.ContainsKey(key))
-						EditorUtility.DisplayDialog("Duplicated ID!", $@"ID {key} is duplicated in sheet {pSheetName}", "Ok");
-					m_allIds[key] = value;
-				}
-			}
-
-			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
-		}
-
 		private int GetReferenceId(string pKey, out bool pFound)
 		{
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
@@ -353,12 +254,40 @@ namespace RCore.SheetX
 			return 0;
 		}
 
-		private bool CheckExistedId(string pKey)
+		private void LoadSheetIDsValues(IWorkbook pWorkBook, string pSheetName)
 		{
-			foreach (var id in m_allIds)
-				if (id.Key == pKey.Trim())
-					return true;
-			return false;
+			var sheet = pWorkBook.GetSheet(pSheetName);
+
+			if (sheet == null || sheet.LastRowNum == 0)
+			{
+				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				return;
+			}
+
+			for (int row = 0; row <= sheet.LastRowNum; row++)
+			{
+				var rowData = sheet.GetRow(row);
+				if (rowData == null)
+					continue;
+				for (int col = 0; col <= rowData.LastCellNum; col += 3)
+				{
+					var cellKey = rowData.GetCell(col);
+					if (cellKey == null)
+						continue;
+					string key = cellKey.ToString().Trim();
+					if (row <= 0 || string.IsNullOrEmpty(key))
+						continue;
+					var cellValue = rowData.GetCell(col + 1);
+					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
+						continue;
+					int value = int.Parse(cellValue.ToString().Trim());
+					if (m_allIds.ContainsKey(key))
+						EditorUtility.DisplayDialog("Duplicated ID!", $@"ID {key} is duplicated in sheet {pSheetName}", "Ok");
+					m_allIds[key] = value;
+				}
+			}
+
+			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
 		}
 
 #endregion
@@ -372,44 +301,32 @@ namespace RCore.SheetX
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
-			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
+			if (workBook == null)
 				return;
-			}
+
+			var sheets = m_settings.excelSheetsPath.sheets;
 
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
-				var sheetIDsValues = GetSheetIDsValues();
-				foreach (var sheetIDs in sheetIDsValues)
-					LoadSheetIDsValues(sheetIDs.Value, sheetIDs.Key);
+				m_allIds = new Dictionary<string, int>();
+				foreach (var sheet in sheets)
+					if (sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+						LoadSheetIDsValues(workBook, sheet.name);
 			}
 
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 
-			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in sheets)
 			{
-				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
-					continue;
+				if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET) && sheet.selected)
+				{
+					LoadSheetConstantsData(workBook, sheet.name);
 
-				var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-				if (sheetInfo == null)
-					continue;
-
-				// Construct the range dynamically based on row and column counts
-				var range = $"{sheet.name}!A1:D";
-
-				// Create a request to get the sheet data
-				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
-				var values = response.Values;
-
-				LoadSheetConstantsData(sheet.name, values);
-
-				if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
-					m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
+					if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
+						m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
+				}
 			}
 
 			if (!m_settings.separateConstants)
@@ -424,38 +341,64 @@ namespace RCore.SheetX
 			}
 		}
 
-		private void LoadSheetConstantsData(string pSheetName, IList<IList<object>> rowsData)
+		private void LoadSheetConstantsData(IWorkbook pWorkbook, string pSheetName)
 		{
-			if (rowsData == null || rowsData.Count == 0)
+			var sheet = pWorkbook.GetSheet(pSheetName);
+			if (sheet == null || sheet.LastRowNum == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 				return;
 			}
 
 			var constants = new List<ConstantBuilder>();
-			for (int row = 0; row < rowsData.Count; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
-				var newConst = new ConstantBuilder();
-				var rowValues = rowsData[row];
+				var rowData = sheet.GetRow(row);
+				if (rowData != null)
+				{
+					string name = null;
+					string value = null;
+					string valueType = null;
+					string comment = null;
+					var cell = rowData.GetCell(0); //Name
+					if (cell != null)
+						name = cell.ToString().Trim();
 
-				if (rowValues.Count < 1)
-					continue;
-				newConst.name = rowValues[0].ToString().Trim();
-				if (rowValues.Count < 2)
-					continue;
-				newConst.valueType = rowValues[1].ToString().Trim();
-				if (rowValues.Count < 3)
-					continue;
-				newConst.value = rowValues[2].ToString().Trim();
-				if (rowValues.Count >= 4)
-					newConst.comment = rowValues[3].ToString().Trim();
+					cell = rowData.GetCell(1); //Type
+					if (cell != null)
+						valueType = cell.ToString().Trim();
 
-				if (string.IsNullOrEmpty(newConst.name)
-				    || string.IsNullOrEmpty(newConst.valueType)
-				    || string.IsNullOrEmpty(newConst.value))
-					continue;
+					cell = rowData.GetCell(2); //Value
+					if (cell != null)
+					{
+						string formulaCellValue = SheetXHelper.ConvertFormulaCell(cell);
+						if (formulaCellValue != null)
+							value = formulaCellValue;
+						else
+							value = cell.ToString().Trim();
+					}
 
-				constants.Add(newConst);
+					cell = rowData.GetCell(3); //Comment 
+					if (cell != null)
+					{
+						string formulaCellValue = SheetXHelper.ConvertFormulaCell(cell);
+						if (formulaCellValue != null)
+							comment = formulaCellValue;
+						else
+							comment = cell.ToString().Trim();
+					}
+
+					if (name == null || value == null || valueType == null)
+						continue;
+
+					constants.Add(new ConstantBuilder()
+					{
+						name = name,
+						value = value,
+						valueType = valueType.ToLower(),
+						comment = comment,
+					});
+				}
 			}
 			constants.Sort();
 			BuildContentOfFileConstants(constants, pSheetName);
@@ -584,20 +527,22 @@ namespace RCore.SheetX
 			}
 			if (string.IsNullOrEmpty(m_settings.localizationOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Localization Output Folder!");
-				return;
-			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
-			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+				UnityEngine.Debug.LogError("Please setup the Localization Output folder!");
 				return;
 			}
 
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
+			if (workBook == null)
+				return;
+
+			var sheets = m_settings.excelSheetsPath.sheets;
+
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
-				var sheetIDsValues = GetSheetIDsValues();
-				foreach (var sheetIDs in sheetIDsValues)
-					LoadSheetIDsValues(sheetIDs.Value, sheetIDs.Key);
+				m_allIds = new Dictionary<string, int>();
+				foreach (var sheet in sheets)
+					if (sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+						LoadSheetIDsValues(workBook, sheet.name);
 			}
 
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
@@ -605,34 +550,18 @@ namespace RCore.SheetX
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
 
-			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			for (int i = 0; i < sheets.Count; i++)
 			{
-				if (!sheet.selected || !sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
+				if (!sheets[i].selected || !sheets[i].name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
 					continue;
 
-				var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-				if (sheetInfo == null)
-					continue;
+				LoadSheetLocalizationData(workBook, sheets[i].name);
 
-				var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-				// Construct the range dynamically based on row and column counts
-				var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-
-				// Create a request to get the sheet data
-				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
-				var values = response.Values;
-
-				LoadSheetLocalizationData(values, sheet.name);
-
-				if (m_localizationsDict.ContainsKey(sheet.name) && m_settings.separateLocalizations)
+				if (m_localizationsDict.ContainsKey(sheets[i].name) && m_settings.separateLocalizations)
 				{
-					var builder = m_localizationsDict[sheet.name];
-					CreateLocalizationFile(builder.idsString, builder.languageTextDict, sheet.name);
-					m_localizedSheetsExported.Add(sheet.name);
+					var builder = m_localizationsDict[sheets[i].name];
+					CreateLocalizationFile(builder.idsString, builder.languageTextDict, sheets[i].name);
+					m_localizedSheetsExported.Add(sheets[i].name);
 				}
 			}
 
@@ -654,13 +583,25 @@ namespace RCore.SheetX
 				CreateLocalizationFile(builder.idsString, builder.languageTextDict, "Localization");
 				m_localizedSheetsExported.Add("Localization");
 			}
+			
+			//Create language character sets
+			if (m_langCharSets != null && m_langCharSets.Count > 0)
+			{
+				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
+				foreach (var map in maps)
+				{
+					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
+					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
+				}
+			}
 
 			CreateLocalizationsManagerFile();
 		}
 
-		private void LoadSheetLocalizationData(IList<IList<object>> rowsData, string pSheetName)
+		private void LoadSheetLocalizationData(IWorkbook pWorkBook, string pSheetName)
 		{
-			if (rowsData == null || rowsData.Count == 0)
+			var sheet = pWorkBook.GetSheet(pSheetName);
+			if (sheet == null || sheet.LastRowNum == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 				return;
@@ -668,18 +609,24 @@ namespace RCore.SheetX
 
 			var idStrings = new List<string>();
 			var textDict = new Dictionary<string, List<string>>();
-			var firstRow = rowsData[0];
-			int maxCellNum = firstRow.Count;
+			var firstRow = sheet.GetRow(0);
+			int maxCellNum = firstRow.LastCellNum;
 
-			for (int row = 0; row < rowsData.Count; row++)
+			string mergeCellValue = "";
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
-				var rowData = rowsData[row];
-				if (rowData == null || rowData.Count == 0)
+				var rowData = sheet.GetRow(row);
+				if (rowData == null)
 					continue;
 				for (int col = 0; col < maxCellNum; col++)
 				{
-					string fieldValue = rowData[col].ToString();
-					var fieldName = rowsData[0][col].ToString();
+					var cell = rowData.GetCell(col);
+					var fieldValue = cell.ToCellString();
+					var fieldName = sheet.GetRow(0).GetCell(col).ToString();
+					if (cell != null && cell.IsMergedCell && !string.IsNullOrEmpty(fieldValue))
+						mergeCellValue = fieldValue;
+					if (cell != null && cell.IsMergedCell && string.IsNullOrEmpty(fieldValue))
+						fieldValue = mergeCellValue;
 					if (!string.IsNullOrEmpty(fieldName))
 					{
 						//idString
@@ -950,47 +897,31 @@ namespace RCore.SheetX
 		{
 			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Json Output Folder!");
-				return;
-			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
-			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+				UnityEngine.Debug.LogError("Please setup the Json Output folder!");
 				return;
 			}
 
+			var workBook = m_settings.excelSheetsPath.GetWorkBook();
+			if (workBook == null)
+				return;
+
+			var sheets = m_settings.excelSheetsPath.sheets;
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
-				var sheetIDsValues = GetSheetIDsValues();
-				foreach (var sheetIDs in sheetIDsValues)
-					LoadSheetIDsValues(sheetIDs.Value, sheetIDs.Key);
+				m_allIds = new Dictionary<string, int>();
+				foreach (var sheet in sheets)
+					if (sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+						LoadSheetIDsValues(workBook, sheet.name);
 			}
 
 			bool writeJsonFileForSingleSheet = !m_settings.combineJson;
 			var allJsons = new Dictionary<string, string>();
-			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in sheets)
 			{
 				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name))
 					continue;
-
-				var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-				if (sheetInfo == null)
-					continue;
-
-				var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-				// Construct the range dynamically based on row and column counts
-				var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-
-				// Create a request to get the sheet data
-				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
-				var values = response.Values;
-
 				string fileName = sheet.name.Trim().Replace(" ", "_");
-				string json = ConvertSheetToJson(values, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
+				string json = ConvertSheetToJson(workBook, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
 
 				//Merge all json into a single file
 				if (m_settings.combineJson)
@@ -1007,64 +938,72 @@ namespace RCore.SheetX
 			{
 				//Build json file for all jsons content
 				string mergedJson = JsonConvert.SerializeObject(allJsons);
-				string mergedFileName = sheetMetadata.Properties.Title.Replace(" ", "_");
+				string mergedFileName = Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path).Trim().Replace(" ", "_");
 				SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
 
 				if (m_settings.encryptJson)
-					UnityEngine.Debug.Log($"Exported encrypted Json data to {mergedFileName}.txt.");
+					UnityEngine.Debug.Log("Exported encrypted Json data to {mergedFileName}.txt.");
 				else
 					UnityEngine.Debug.Log($"Exported Json data to {mergedFileName}.txt.");
 			}
 		}
 
-		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
+		private string ConvertSheetToJson(IWorkbook pWorkBook, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
 		{
-			var fieldValueTypes = SheetXHelper.GetFieldValueTypes(pValues);
+			var fieldValueTypes = SheetXHelper.GetFieldValueTypes(pWorkBook, pSheetName);
 			if (fieldValueTypes == null)
 				return "{}";
-			return ConvertSheetToJson(pValues, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
+			return ConvertSheetToJson(pWorkBook, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
 		}
 
-		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
+		private string ConvertSheetToJson(IWorkbook pWorkBook, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
 			var unminifiedFields = m_settings.GetPersistentFields();
 
-			if (pValues == null || pValues.Count == 0)
+			var sheet = pWorkBook.GetSheet(pSheetName);
+			if (sheet == null || sheet.LastRowNum == 0)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				UnityEngine.Debug.LogWarning($"Sheet {sheet.SheetName} is empty!");
 				return null;
 			}
 
 			int lastCellNum = 0;
 			string[] fields = null;
+			string[] mergeValues = null;
 			bool[] validCols = null;
 			var rowContents = new List<RowContent>();
 
-			for (int row = 0; row < pValues.Count; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
-				var rowValues = pValues[row];
-				if (rowValues == null || rowValues.Count == 0)
+				var rowData = sheet.GetRow(row);
+				if (rowData == null)
 					continue;
 
 				if (row == 0)
 				{
-					lastCellNum = rowValues.Count;
+					lastCellNum = rowData.LastCellNum;
 					fields = new string[lastCellNum];
+					mergeValues = new string[lastCellNum];
 					validCols = new bool[lastCellNum];
 
+					//Find valid columns
 					for (int col = 0; col < lastCellNum; col++)
 					{
-						var cellValue = rowValues[col].ToString().Trim();
-						if (!string.IsNullOrEmpty(cellValue) && !cellValue.Contains("[x]"))
+						var cell = rowData.GetCell(col);
+						if (cell != null
+						    && cell.CellType == CellType.String
+						    && !string.IsNullOrEmpty(cell.StringCellValue)
+						    && !cell.StringCellValue.Contains("[x]"))
 						{
 							validCols[col] = true;
-							fields[col] = cellValue.Trim();
+							fields[col] = cell.ToString().Trim();
 						}
 						else
 						{
 							validCols[col] = false;
 							fields[col] = "";
 						}
+						mergeValues[col] = "";
 					}
 				}
 				else
@@ -1072,13 +1011,17 @@ namespace RCore.SheetX
 					var rowContent = new RowContent();
 					for (int col = 0; col < lastCellNum; col++)
 					{
-						var cellValue = "";
-						if (col < rowValues.Count)
-							cellValue = rowValues[col].ToString().Trim();
+						var cell = rowData.GetCell(col);
 						if (fields != null)
 						{
 							string fieldName = fields[col];
-							string fieldValue = cellValue;
+							string fieldValue = cell.ToCellString().Trim();
+
+							if (cell != null && cell.IsMergedCell && !string.IsNullOrEmpty(fieldValue))
+								mergeValues[col] = fieldValue;
+							if (cell != null && cell.IsMergedCell && string.IsNullOrEmpty(fieldValue))
+								fieldValue = mergeValues[col];
+
 							fieldName = fieldName.Replace(" ", "_");
 							rowContent.fieldNames.Add(fieldName);
 							rowContent.fieldValues.Add(fieldValue);
@@ -1389,7 +1332,7 @@ namespace RCore.SheetX
 										if (!SheetXHelper.IsValidJson(fieldValue))
 										{
 											EditorUtility.DisplayDialog("Error", $@"Invalid Json string at Sheet: {pSheetName} Field: {fieldName} Row: {i + 1}", "Ok");
-											UnityEngine.Debug.LogError($"Invalid Json string at Sheet: {pSheetName} Field: {fieldName} Row: {i + 1}");
+											UnityEngine.Debug.LogError($"Invalid data, Sheet: {pSheetName}, Field: {fieldName}, Row: {i + 1}");
 										}
 										var tempObj = JsonConvert.DeserializeObject(fieldValue);
 										var tempJsonStr = JsonConvert.SerializeObject(tempObj);
@@ -1458,29 +1401,12 @@ namespace RCore.SheetX
 
 #endregion
 
-		public static string GetColumnLetter(int columnNumber)
+		public void ExportExcelAll()
 		{
-			int dividend = columnNumber;
-			string columnLetter = string.Empty;
-
-			while (dividend > 0)
-			{
-				int modulo = (dividend - 1) % 26;
-				columnLetter = (char)(65 + modulo) + columnLetter; // 65 is the ASCII value for 'A'
-				dividend = (dividend - modulo) / 26;
-			}
-
-			return columnLetter;
-		}
-
-		private SheetsService GetService()
-		{
-			m_service ??= new SheetsService(new BaseClientService.Initializer()
-			{
-				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret),
-				ApplicationName = SheetXConstants.APPLICATION_NAME,
-			});
-			return m_service;
+			ExportIDs();
+			ExportConstants();
+			ExportJson();
+			ExportLocalizations();
 		}
 
 		public void ExportExcelsAll()
@@ -1488,126 +1414,106 @@ namespace RCore.SheetX
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
-
 			m_allIDsSorted = null;
 			m_allIds = new Dictionary<string, int>();
-
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
 
-			var service = GetService();
-			var googleSheetsPaths = m_settings.googleSheetsPaths;
-			//Load and write Ids first
-			foreach (var googleSheets in googleSheetsPaths)
+			//Process all IDs sheets first
+			foreach (var file in m_settings.excelSheetsPaths)
 			{
-				// Get the sheet metadata to determine its dimensions
-				var sheetMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
-				foreach (var sheet in googleSheets.sheets)
+				var workBook = file.GetWorkBook();
+				if (workBook == null)
+					continue;
+
+				//Load and write Ids
+				foreach (var sheet in file.sheets)
 				{
-					if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
-						continue;
-
-					var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-					if (sheetInfo == null)
-						continue;
-
-					var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-					// Construct the range dynamically based on row and column counts
-					var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-
-					// Create a request to get the sheet data
-					var request = service.Spreadsheets.Values.Get(googleSheets.id, range);
-					var response = request.Execute();
-					var values = response.Values;
-
-					// Build contents of file IDs and export to file if seperateIDs = true
-					if (BuildContentOfFileIDs(sheet.name, values) && m_settings.separateIDs)
-						m_settings.CreateFileIDs(sheet.name, m_idsBuilderDict[sheet.name].ToString());
+					string sheetName = sheet.name;
+					if (sheetName.EndsWith(SheetXConstants.IDS_SHEET) && workBook.GetSheet(sheetName) != null)
+						LoadSheetIDsValues(workBook, sheetName);
 				}
 			}
 
-			// 2. Read and write other data type
-			foreach (var googleSheets in googleSheetsPaths)
+			//Then process other type of sheets
+			foreach (var file in m_settings.excelSheetsPaths)
 			{
-				var sheets = new List<SheetPath>();
-				foreach (var sheet in googleSheets.sheets)
+				if (!file.selected)
+					continue;
+
+				var workBook = file.GetWorkBook();
+				if (workBook == null)
+					continue;
+
+				//Load and write Ids
+				foreach (var sheet in file.sheets)
 				{
-					if (sheet.selected)
-						sheets.Add(sheet);
+					if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET) || workBook.GetSheet(sheet.name) == null)
+						continue;
+					if (BuildContentOfFileIDs(workBook, sheet.name) && m_settings.separateIDs)
+						m_settings.CreateFileIDs(sheet.name, m_idsBuilderDict[sheet.name].ToString());
 				}
 
-				// Get the sheet metadata to determine its dimensions
-				var ggSheetsMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+				//Load and write json file
 				var allJsons = new Dictionary<string, string>();
-				foreach (var sheet in sheets)
+				foreach (var sheet in file.sheets)
 				{
-					var sheetInfo = ggSheetsMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-					if (sheetInfo == null)
+					if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name) || workBook.GetSheet(sheet.name) == null)
 						continue;
 
-					var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-					// Construct the range dynamically based on row and column counts
-					var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-					if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
-						range = $"{sheet.name}!A1:D";
-
-					// Create a request to get the sheet data
-					var request = service.Spreadsheets.Values.Get(googleSheets.id, range);
-					var response = request.Execute();
-					var values = response.Values;
-
-					//Load and write json file
-					if (SheetXHelper.IsJsonSheet(sheet.name))
-					{
-						string fileName = sheet.name.Trim().Replace(" ", "_");
-						string json = ConvertSheetToJson(values, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
-						if (m_settings.combineJson)
-						{
-							if (allJsons.ContainsKey(fileName))
-							{
-								UnityEngine.Debug.LogError($"Can not merge sheet {fileName}, because key {fileName} is already exists!");
-								continue;
-							}
-							allJsons.Add(fileName, json);
-						}
-					}
+					string fileName = sheet.name.Trim().Replace(" ", "_");
+					string json = ConvertSheetToJson(workBook, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
 
 					if (m_settings.combineJson)
 					{
-						//Build json file for all jsons content
-						string mergedJson = JsonConvert.SerializeObject(allJsons);
-						string mergedFileName = ggSheetsMetadata.Properties.Title;
-						SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
-
-						if (m_settings.encryptJson)
-							Debug.Log($"Exported encrypted Json data to {mergedFileName}.txt.");
-						else
-							Debug.Log($"Exported Json data to {mergedFileName}.txt.");
-					}
-
-					//Load and write constants
-					if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
-					{
-						LoadSheetConstantsData(sheet.name, values);
-
-						if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
-							m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
-					}
-
-					//Load and write localizations
-					if (sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
-					{
-						LoadSheetLocalizationData(values, sheet.name);
-
-						if (m_localizationsDict.ContainsKey(sheet.name) && m_settings.separateLocalizations)
+						if (allJsons.ContainsKey(fileName))
 						{
-							var builder = m_localizationsDict[sheet.name];
-							CreateLocalizationFile(builder.idsString, builder.languageTextDict, sheet.name);
-							m_localizedSheetsExported.Add(sheet.name);
+							UnityEngine.Debug.LogError($"Could not create single Json file {fileName}, because key {fileName} is already exists!");
+							continue;
 						}
+						allJsons.Add(fileName, json);
+					}
+				}
+
+				if (m_settings.combineJson)
+				{
+					//Build json file for all jsons content
+					string mergedJson = JsonConvert.SerializeObject(allJsons);
+					string mergedFileName = Path.GetFileNameWithoutExtension(file.path).Trim().Replace(" ", "_");
+					SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
+
+					if (m_settings.encryptJson)
+						UnityEngine.Debug.Log($"Exported encrypted Json data to {mergedFileName}.txt.");
+					else
+						UnityEngine.Debug.Log($"Exported Json data to {mergedFileName}.txt.");
+				}
+
+				//Load and write constants
+				foreach (var sheet in file.sheets)
+				{
+					if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET) || workBook.GetSheet(sheet.name) == null)
+						continue;
+
+					LoadSheetConstantsData(workBook, sheet.name);
+
+					if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
+						m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
+				}
+
+				//Load and write localizations
+				foreach (var sheet in file.sheets)
+				{
+					if (!sheet.selected || !sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET) || workBook.GetSheet(sheet.name) == null)
+						continue;
+
+					LoadSheetLocalizationData(workBook, sheet.name);
+
+					if (m_localizationsDict.ContainsKey(sheet.name) && m_settings.separateLocalizations)
+					{
+						var builder = m_localizationsDict[sheet.name];
+						CreateLocalizationFile(builder.idsString, builder.languageTextDict, sheet.name);
+						m_localizedSheetsExported.Add(sheet.name);
 					}
 				}
 			}
@@ -1664,21 +1570,31 @@ namespace RCore.SheetX
 				m_localizedSheetsExported.Add("Localization");
 			}
 
-			//Create characters sets
+			//Create language character sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
 				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
 				foreach (var map in maps)
 				{
 					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
-					Debug.Log($"Exported characters_set_{map.Key}.txt");
+					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
 				}
 			}
 
 			//Create localization manager file
 			CreateLocalizationsManagerFile();
 
-			Debug.Log("Done!");
+			UnityEngine.Debug.Log("Done!");
 		}
+
+		private bool CheckExistedId(string pKey)
+		{
+			foreach (var id in m_allIds)
+				if (id.Key == pKey.Trim())
+					return true;
+			return false;
+		}
+		
+		
 	}
 }

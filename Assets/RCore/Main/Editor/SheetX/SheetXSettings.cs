@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
 	public static class SheetXConstants
 	{

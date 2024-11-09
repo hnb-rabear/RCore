@@ -4,10 +4,9 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NPOI.SS.UserModel;
-using RCore.Editor;
 using Object = UnityEngine.Object;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
 	public class ExcelSheetXWindow : EditorWindow
 	{

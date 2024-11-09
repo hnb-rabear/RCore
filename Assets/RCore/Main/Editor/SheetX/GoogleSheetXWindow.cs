@@ -1,10 +1,9 @@
 using System;
 using System.Diagnostics;
-using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
 	public class GoogleSheetXWindow : EditorWindow
 	{

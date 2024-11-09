@@ -298,7 +298,7 @@ MonoBehaviour:
   combineJson: 0
   onlyEnumAsIDs: 0
   encryptJson: 0
-  langCharSets: japan, korean, chinese
+  langCharSets: japan (jp), korean (kr), chinese
   persistentFields: id, key
   googleClientId: nemLtHanO8yTvVCfcmm1olScbLHtgY0GJca44nzXxmm+JshTsX16Ez/egFrn7TyzyaG135y3q0bvEBeUXPKpLH90fSKzeOuk
   googleClientSecret: 75P71h7NJajJuBH/E2OdrGSlUouv9IUberqj0EngjWqYGew=

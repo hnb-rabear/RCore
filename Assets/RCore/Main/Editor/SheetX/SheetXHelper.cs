@@ -12,13 +12,12 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.SS.UserModel;
-using RCore.Editor;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
 using Color = UnityEngine.Color;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
 	public class SheetXHelper : MonoBehaviour
 	{

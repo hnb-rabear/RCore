@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using Google.Apis.Sheets.v4.Data;
-using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
 	public class EditGoogleSheetsWindow : EditorWindow
 	{

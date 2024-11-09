@@ -1,8 +1,7 @@
-using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.SheetX
+namespace RCore.Editor.SheetX
 {
 	public class EditExcelSheetsWindow : EditorWindow
 	{
