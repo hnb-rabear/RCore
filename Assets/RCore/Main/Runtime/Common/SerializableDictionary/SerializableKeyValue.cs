@@ -1,3 +1,7 @@
+/**
+* Author RaBear - HNB - 2024
+**/
+
 using System;
 using System.Collections.Generic;
 

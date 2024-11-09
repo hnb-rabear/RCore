@@ -1,3 +1,6 @@
+/***
+ * Author RaBear - HNB - 2024
+ */
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;

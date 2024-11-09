@@ -1,7 +1,12 @@
-﻿using System;
+﻿/**
+* Author RaBear - HNB - 2018
+**/
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using RCore.UI;
 using UnityEngine;
 #if UNITY_EDITOR
 using RCore.Editor;

@@ -1,3 +1,7 @@
+/**
+* Author RaBear - HNB - 2024
+**/
+
 using UnityEngine;
 using UnityEditor;
 

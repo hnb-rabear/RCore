@@ -1,5 +1,5 @@
 ﻿/***
- * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2020
+ * Author RaBear - HNB - 2020
  **/
 
 using RCore.Data.KeyValue;

@@ -1,5 +1,5 @@
 ﻿/**
- * Author RadBear - nbhung71711@gmail.com - 2018
+ * Author RaBear - HNB - 2018
  **/
 
 #if UNITY_EDITOR

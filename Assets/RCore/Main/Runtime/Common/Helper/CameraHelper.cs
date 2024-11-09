@@ -1,5 +1,5 @@
 ﻿/**
- * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
+ * Author RaBear - HNB - 2019
  **/
 
 using UnityEngine;

@@ -1,4 +1,4 @@
-﻿// Author - RadBear - nbhung71711@gmail.com - 2018
+﻿// Author - RaBear - 2018
 
 using System;
 using System.Collections.Generic;

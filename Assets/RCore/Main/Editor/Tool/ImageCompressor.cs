@@ -1,5 +1,5 @@
 /***
- * Author RadBear - nbhung71711 @gmail.com - 2023
+ * Author RaBear - HNB - 2023
  **/
 
 using System;
