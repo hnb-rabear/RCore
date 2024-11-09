@@ -41,12 +41,12 @@ namespace RCore.SheetX
 		public bool separateLocalizations;
 		public bool combineJson;
 		public bool onlyEnumAsIDs;
-		public bool encryptJson;
+		[HideInInspector] public bool encryptJson;
 		public string langCharSets;
 		public string persistentFields;
 		public string googleClientId;
 		public string googleClientSecret;
-		public string encryptionKey;
+		[HideInInspector] public string encryptionKey;
 		private Encryption m_encryption;
 
 		public static SheetXSettings Load()
@@ -151,36 +151,52 @@ namespace RCore.SheetX
 			excelSheetsPaths.Add(newPath);
 		}
 
-		public string GoogleClientId
+		private string m_obfGoogleClientId;
+		public string ObfGoogleClientId
 		{
 			get
 			{
 				try
 				{
-					return GetEncryption().Decrypt(googleClientId);
+					m_obfGoogleClientId = GetEncryption().Decrypt(googleClientId);
 				}
 				catch
 				{
-					return "";
+					m_obfGoogleClientId = "";
 				}
+				return m_obfGoogleClientId;
 			}
-			set => googleClientId = string.IsNullOrEmpty(value) ? "" : GetEncryption().Encrypt(value);
+			set
+			{
+				if (value == m_obfGoogleClientId)
+					return;
+				m_obfGoogleClientId = value;
+				googleClientId = string.IsNullOrEmpty(value) ? "" : GetEncryption().Encrypt(value);
+			}
 		}
 
-		public string GoogleClientSecret
+		private string m_obfGoogleClientSecret;
+		public string ObfGoogleClientSecret
 		{
 			get
 			{
 				try
 				{
-					return GetEncryption().Decrypt(googleClientSecret);
+					m_obfGoogleClientSecret = GetEncryption().Decrypt(googleClientSecret);
 				}
 				catch
 				{
-					return "";
+					m_obfGoogleClientSecret = "";
 				}
+				return m_obfGoogleClientSecret;
 			}
-			set => googleClientSecret = string.IsNullOrEmpty(value) ? "" : GetEncryption().Encrypt(value);
+			set
+			{
+				if (value == m_obfGoogleClientSecret)
+					return;
+				m_obfGoogleClientSecret = value;
+				googleClientSecret = string.IsNullOrEmpty(value) ? "" : GetEncryption().Encrypt(value);
+			}
 		}
 	}
 }

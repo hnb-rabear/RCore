@@ -1477,7 +1477,7 @@ namespace RCore.SheetX
 		{
 			m_service ??= new SheetsService(new BaseClientService.Initializer()
 			{
-				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.googleClientId, m_settings.googleClientSecret),
+				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret),
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
 			return m_service;
