@@ -94,7 +94,7 @@ namespace RCore.SheetX
 				var values = response.Values;
 
 				//Load All IDs
-				BuildContentOfFileIDs(values, sheet.name);
+				BuildContentOfFileIDs(sheet.name, values);
 
 				//Create IDs Files
 				if (m_settings.separateConstants)
@@ -117,7 +117,7 @@ namespace RCore.SheetX
 			}
 		}
 
-		private bool BuildContentOfFileIDs(IList<IList<object>> rowsData, string pSheetName)
+		private bool BuildContentOfFileIDs(string pSheetName, IList<IList<object>> rowsData)
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
@@ -360,7 +360,7 @@ namespace RCore.SheetX
 					return true;
 			return false;
 		}
-		
+
 #endregion
 
 #region Export Constants
@@ -406,7 +406,7 @@ namespace RCore.SheetX
 				var response = request.Execute();
 				var values = response.Values;
 
-				LoadSheetConstantsData(values, sheet.name);
+				LoadSheetConstantsData(sheet.name, values);
 
 				if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
 					m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
@@ -424,7 +424,7 @@ namespace RCore.SheetX
 			}
 		}
 
-		private void LoadSheetConstantsData(IList<IList<object>> rowsData, string pSheetName)
+		private void LoadSheetConstantsData(string pSheetName, IList<IList<object>> rowsData)
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
@@ -1024,7 +1024,7 @@ namespace RCore.SheetX
 				return "{}";
 			return ConvertSheetToJson(pValues, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
 		}
-		
+
 		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
 			var unminifiedFields = m_settings.GetPersistentFields();
@@ -1482,10 +1482,203 @@ namespace RCore.SheetX
 			});
 			return m_service;
 		}
-		
+
 		public void ExportExcelsAll()
 		{
-			
+			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
+			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
+			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
+
+			m_allIDsSorted = null;
+			m_allIds = new Dictionary<string, int>();
+
+			m_localizedSheetsExported = new List<string>();
+			m_localizedLanguages = new List<string>();
+			m_langCharSets = new Dictionary<string, string>();
+
+			var service = GetService();
+			var googleSheetsPaths = m_settings.googleSheetsPaths;
+			//Load and write Ids first
+			foreach (var googleSheets in googleSheetsPaths)
+			{
+				// Get the sheet metadata to determine its dimensions
+				var sheetMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+				foreach (var sheet in googleSheets.sheets)
+				{
+					if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+						continue;
+
+					var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
+					if (sheetInfo == null)
+						continue;
+
+					var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
+
+					// Construct the range dynamically based on row and column counts
+					var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
+
+					// Create a request to get the sheet data
+					var request = service.Spreadsheets.Values.Get(googleSheets.id, range);
+					var response = request.Execute();
+					var values = response.Values;
+
+					// Build contents of file IDs and export to file if seperateIDs = true
+					if (BuildContentOfFileIDs(sheet.name, values) && m_settings.separateIDs)
+						m_settings.CreateFileIDs(sheet.name, m_idsBuilderDict[sheet.name].ToString());
+				}
+			}
+
+			// 2. Read and write other data type
+			foreach (var googleSheets in googleSheetsPaths)
+			{
+				var sheets = new List<SheetPath>();
+				foreach (var sheet in googleSheets.sheets)
+				{
+					if (sheet.selected)
+						sheets.Add(sheet);
+				}
+
+				// Get the sheet metadata to determine its dimensions
+				var ggSheetsMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+				var allJsons = new Dictionary<string, string>();
+				foreach (var sheet in sheets)
+				{
+					var sheetInfo = ggSheetsMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
+					if (sheetInfo == null)
+						continue;
+
+					var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
+
+					// Construct the range dynamically based on row and column counts
+					var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
+					if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
+						range = $"{sheet.name}!A1:D";
+
+					// Create a request to get the sheet data
+					var request = service.Spreadsheets.Values.Get(googleSheets.id, range);
+					var response = request.Execute();
+					var values = response.Values;
+
+					//Load and write json file
+					if (SheetXHelper.IsJsonSheet(sheet.name))
+					{
+						string fileName = sheet.name.Trim().Replace(" ", "_");
+						string json = ConvertSheetToJson(values, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
+						if (m_settings.combineJson)
+						{
+							if (allJsons.ContainsKey(fileName))
+							{
+								UnityEngine.Debug.LogError($"Can not merge sheet {fileName}, because key {fileName} is already exists!");
+								continue;
+							}
+							allJsons.Add(fileName, json);
+						}
+					}
+
+					if (m_settings.combineJson)
+					{
+						//Build json file for all jsons content
+						string mergedJson = JsonConvert.SerializeObject(allJsons);
+						string mergedFileName = ggSheetsMetadata.Properties.Title;
+						SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
+
+						if (m_settings.encryptJson)
+							Debug.Log($"Exported encrypted Json data to {mergedFileName}.txt.");
+						else
+							Debug.Log($"Exported Json data to {mergedFileName}.txt.");
+					}
+
+					//Load and write constants
+					if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
+					{
+						LoadSheetConstantsData(sheet.name, values);
+
+						if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
+							m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
+					}
+
+					//Load and write localizations
+					if (sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
+					{
+						LoadSheetLocalizationData(values, sheet.name);
+
+						if (m_localizationsDict.ContainsKey(sheet.name) && m_settings.separateLocalizations)
+						{
+							var builder = m_localizationsDict[sheet.name];
+							CreateLocalizationFile(builder.idsString, builder.languageTextDict, sheet.name);
+							m_localizedSheetsExported.Add(sheet.name);
+						}
+					}
+				}
+			}
+
+			//Create file contain all IDs
+			if (!m_settings.separateIDs)
+			{
+				var builder = new StringBuilder();
+				int count = 0;
+				int length = m_idsBuilderDict.Count;
+				foreach (var b in m_idsBuilderDict)
+				{
+					builder.Append(b.Value);
+					if (count < length - 1)
+						builder.AppendLine();
+					count++;
+				}
+				m_settings.CreateFileIDs("IDs", builder.ToString());
+			}
+
+			//Create file contain all Constants
+			if (!m_settings.separateConstants)
+			{
+				var builder = new StringBuilder();
+				int count = 0;
+				int length = m_constantsBuilderDict.Count;
+				foreach (var b in m_constantsBuilderDict)
+				{
+					builder.Append(b.Value);
+					if (count < length - 1)
+						builder.AppendLine();
+					count++;
+				}
+				m_settings.CreateFileConstants(builder.ToString(), "Constants");
+			}
+
+			//Create file contain all Localizations
+			if (!m_settings.separateLocalizations)
+			{
+				var localizationBuilder = new LocalizationBuilder();
+				foreach (var b in m_localizationsDict)
+				{
+					localizationBuilder.idsString.AddRange(b.Value.idsString);
+					foreach (var t in b.Value.languageTextDict)
+					{
+						var language = t.Key;
+						var texts = t.Value;
+						if (!localizationBuilder.languageTextDict.ContainsKey(language))
+							localizationBuilder.languageTextDict.Add(language, new List<string>());
+						localizationBuilder.languageTextDict[language].AddRange(texts);
+					}
+				}
+				CreateLocalizationFile(localizationBuilder.idsString, localizationBuilder.languageTextDict, "Localization");
+				m_localizedSheetsExported.Add("Localization");
+			}
+
+			//Create characters sets
+			if (m_langCharSets != null && m_langCharSets.Count > 0)
+			{
+				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
+				foreach (var map in maps)
+				{
+					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
+					Debug.Log($"Exported characters_set_{map.Key}.txt");
+				}
+			}
+
+			//Create localization manager file
+			CreateLocalizationsManagerFile();
+
+			Debug.Log("Done!");
 		}
 	}
 }

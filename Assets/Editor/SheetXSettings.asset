@@ -300,8 +300,8 @@ MonoBehaviour:
   encryptJson: 0
   langCharSets: japan, korean, chinese
   persistentFields: id, key
-  googleClientId: 
-  googleClientSecret: 
+  googleClientId: nemLtHanO8yTvVCfcmm1olScbLHtgY0GJca44nzXxmm+JshTsX16Ez/egFrn7TyzyaG135y3q0bvEBeUXPKpLH90fSKzeOuk
+  googleClientSecret: 75P71h7NJajJuBH/E2OdrGSlUouv9IUberqj0EngjWqYGew=
   encryptionKey: 168, 220, 184, 133, 78, 149, 8, 249, 171, 138, 98, 170, 95, 15,
     211, 200, 51, 242, 4, 193, 219, 181, 232, 99, 16, 240, 142, 128, 29, 163, 245,
     24, 204, 73, 173, 32, 214, 76, 31, 99, 91, 239, 232, 53, 138, 195, 93, 195, 185,

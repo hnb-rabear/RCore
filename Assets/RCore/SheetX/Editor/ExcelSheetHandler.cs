@@ -587,7 +587,7 @@ namespace RCore.SheetX
 			//Create language character sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
-				var maps = GenerateLangCharSets(m_langCharSets);
+				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
 				foreach (var map in maps)
 				{
 					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
@@ -1573,7 +1573,7 @@ namespace RCore.SheetX
 			//Create language character sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
-				var maps = GenerateLangCharSets(m_langCharSets);
+				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
 				foreach (var map in maps)
 				{
 					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
@@ -1595,19 +1595,6 @@ namespace RCore.SheetX
 			return false;
 		}
 		
-		private Dictionary<string, string> GenerateLangCharSets(Dictionary<string, string> pCharacterMaps)
-		{
-			var output = new Dictionary<string, string>();
-			foreach (var map in pCharacterMaps)
-			{
-				string combinedStr = "";
-				var unique = new HashSet<char>(map.Value);
-				foreach (char c in unique)
-					combinedStr += c;
-				combinedStr = string.Concat(combinedStr.OrderBy(c => c));
-				output.Add(map.Key, combinedStr);
-			}
-			return output;
-		}
+		
 	}
 }

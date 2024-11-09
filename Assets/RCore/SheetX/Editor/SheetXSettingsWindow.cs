@@ -8,10 +8,14 @@ namespace RCore.SheetX
 	{
 		private Vector2 m_scrollPosition;
 		private SheetXSettings m_sheetXSettings;
-
+		private string m_googleClientId;
+		private string m_googleClientSecret;
+		
 		private void OnEnable()
 		{
 			m_sheetXSettings = SheetXSettings.Load();
+			m_googleClientId = m_sheetXSettings.GoogleClientId;
+			m_googleClientSecret = m_sheetXSettings.GoogleClientSecret;
 		}
 
 		private void OnGUI()
@@ -28,8 +32,21 @@ namespace RCore.SheetX
 			m_sheetXSettings.combineJson = EditorHelper.Toggle(m_sheetXSettings.combineJson, "Combine Json Sheets", 200);
 			m_sheetXSettings.langCharSets = EditorHelper.TextField(m_sheetXSettings.langCharSets, "Lang char sets", 200);
 			m_sheetXSettings.persistentFields = EditorHelper.TextField(m_sheetXSettings.persistentFields, "Persistent fields", 200);
-			m_sheetXSettings.googleClientId = EditorHelper.TextField(m_sheetXSettings.googleClientId, "Google client id", 200);
-			m_sheetXSettings.googleClientSecret = EditorHelper.TextField(m_sheetXSettings.googleClientSecret, "Google client secret", 200);
+			string editGoogleClientId = EditorHelper.TextField(m_googleClientId, "Google client id", 200);
+			if (editGoogleClientId != m_googleClientId)
+			{
+				m_googleClientId = editGoogleClientId;
+				m_sheetXSettings.GoogleClientId = editGoogleClientId;
+			}
+			string editGoogleClientSecret = EditorHelper.TextField(m_googleClientSecret, "Google client secret", 200);
+			if (editGoogleClientSecret != m_googleClientSecret)
+			{
+				m_googleClientSecret = editGoogleClientSecret;
+				m_sheetXSettings.GoogleClientSecret = editGoogleClientSecret;
+			}
+			EditorHelper.TextField(m_sheetXSettings.googleClientId, "Google client id", 200);
+			EditorHelper.TextField(m_sheetXSettings.googleClientSecret, "Google client secret", 200);
+			
 			GUILayout.EndVertical();
 			if (EditorGUI.EndChangeCheck())
 				EditorUtility.SetDirty(m_sheetXSettings);

@@ -121,7 +121,7 @@ namespace RCore.SheetX
 			SheetXHelper.WriteFile(constantsOutputFolder, $"{exportFileName}.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {exportFileName}.cs!");
 		}
-		
+
 		public void CreateFileConstants(string pContent, string pExportFileName)
 		{
 			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
@@ -149,6 +149,38 @@ namespace RCore.SheetX
 			};
 			newPath.Load();
 			excelSheetsPaths.Add(newPath);
+		}
+
+		public string GoogleClientId
+		{
+			get
+			{
+				try
+				{
+					return GetEncryption().Decrypt(googleClientId);
+				}
+				catch
+				{
+					return "";
+				}
+			}
+			set => googleClientId = string.IsNullOrEmpty(value) ? "" : GetEncryption().Encrypt(value);
+		}
+
+		public string GoogleClientSecret
+		{
+			get
+			{
+				try
+				{
+					return GetEncryption().Decrypt(googleClientSecret);
+				}
+				catch
+				{
+					return "";
+				}
+			}
+			set => googleClientSecret = string.IsNullOrEmpty(value) ? "" : GetEncryption().Encrypt(value);
 		}
 	}
 }
