@@ -1,5 +1,3 @@
-// Author: https://github.com/EduardMalkhasyan/Serializable-Dictionary-Unity
-
 #if UNITY_EDITOR
 using UnityEngine;
 using System.Collections.Generic;
@@ -53,7 +51,6 @@ namespace RCore
 
 #if UNITY_2022_1_OR_NEWER
                     var labelRect = headerRect;
-                    labelRect.x += 12;
                     GUI.Label(labelRect, prop.displayName);
 #else
                     GUI.Label(headerRect, prop.displayName);
@@ -75,15 +72,13 @@ namespace RCore
                     var hasRepeated = false;
                     var repeatedKeys = new List<string>();
 
-                    for (int i = 0; i < dictionaryList.arraySize; i++)
+                    for (int i = 0; i < m_dictionaryList.arraySize; i++)
                     {
-                        var isKeyRepeatedProperty = dictionaryList.GetArrayElementAtIndex(i)
-	                        .FindPropertyRelative("isKeyDuplicated");
-
+                        var isKeyRepeatedProperty = m_dictionaryList.GetArrayElementAtIndex(i).FindPropertyRelative("keyDuplicated");
                         if (isKeyRepeatedProperty.boolValue)
                         {
                             hasRepeated = true;
-                            var keyProperty = dictionaryList.GetArrayElementAtIndex(i).FindPropertyRelative("k");
+                            var keyProperty = m_dictionaryList.GetArrayElementAtIndex(i).FindPropertyRelative("k");
                             string keyString = GetSerializedPropertyValueAsString(keyProperty);
                             repeatedKeys.Add(keyString);
                         }
@@ -142,7 +137,7 @@ namespace RCore
                 indentedRect.y += indentedRect.height - newHeight;
                 indentedRect.height = newHeight;
 
-                reorderableList.DoList(indentedRect);
+                m_reorderableList.DoList(indentedRect);
             }
 
             SetupProps(prop);
@@ -160,7 +155,7 @@ namespace RCore
             if (prop.isExpanded)
             {
                 SetupList(prop);
-                height += reorderableList.GetHeight() + 5;
+                height += m_reorderableList.GetHeight() + 5;
             }
 
             return height;
@@ -168,7 +163,7 @@ namespace RCore
 
         private float GetListElementHeight(int index)
         {
-            var kvpProp = dictionaryList.GetArrayElementAtIndex(index);
+            var kvpProp = m_dictionaryList.GetArrayElementAtIndex(index);
             var keyProp = kvpProp.FindPropertyRelative("k");
             var valueProp = kvpProp.FindPropertyRelative("v");
 
@@ -194,13 +189,13 @@ namespace RCore
             return Mathf.Max(GetPropertyHeight(keyProp), GetPropertyHeight(valueProp));
         }
 
-        void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
+        private void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             Rect keyRect;
             Rect valueRect;
             Rect dividerRect;
 
-            var kvpProp = dictionaryList.GetArrayElementAtIndex(index);
+            var kvpProp = m_dictionaryList.GetArrayElementAtIndex(index);
             var keyProp = kvpProp.FindPropertyRelative("k");
             var valueProp = kvpProp.FindPropertyRelative("v");
 
@@ -225,8 +220,8 @@ namespace RCore
 
             void DrawRects()
             {
-                var dividerWidh = IsSingleLine(valueProp) ? 6 : 16f;
-                var dividerPosition = 0.25f;
+                var dividerWidth = IsSingleLine(valueProp) ? 6 : 16f;
+                var dividerPosition = 0.35f;
 
                 var fullRect = rect;
                 fullRect.width -= 1;
@@ -234,23 +229,23 @@ namespace RCore
 
                 keyRect = fullRect;
                 keyRect.width *= dividerPosition;
-                keyRect.width -= dividerWidh / 2;
+                keyRect.width -= dividerWidth / 2;
 
                 valueRect = fullRect;
                 valueRect.x += fullRect.width * dividerPosition;
                 valueRect.width *= (1 - dividerPosition);
-                valueRect.width -= dividerWidh / 2;
+                valueRect.width -= dividerWidth / 2;
 
                 dividerRect = fullRect;
-                dividerRect.x += fullRect.width * dividerPosition - dividerWidh / 2;
-                dividerRect.width = dividerWidh;
+                dividerRect.x += fullRect.width * dividerPosition - dividerWidth / 2;
+                dividerRect.width = dividerWidth;
             }
 
             void Key()
             {
                 Draw(keyRect, keyProp);
 
-                if (kvpProp.FindPropertyRelative("isKeyDuplicated").boolValue)
+                if (kvpProp.FindPropertyRelative("keyDuplicated").boolValue)
                 {
                     GUI.Label(new Rect(keyRect.x + keyRect.width - 20, keyRect.y - 1, 20, 20), EditorGUIUtility.IconContent("console.erroricon"));
                 }
@@ -268,8 +263,7 @@ namespace RCore
 
                     if (interfaceValue.objectReferenceValue != newValue)
                     {
-                        if (newValue == null || newValue.GetComponent(
-                            fieldInfo.FieldType.GenericTypeArguments[1].GenericTypeArguments[0]) != null)
+                        if (newValue == null || newValue.GetComponent(fieldInfo.FieldType.GenericTypeArguments[1].GenericTypeArguments[0]) != null)
                         {
                             interfaceValue.objectReferenceValue = newValue;
                         }
@@ -295,19 +289,19 @@ namespace RCore
                 {
                     if (Event.current.type == EventType.MouseDown)
                     {
-                        isDividerDragged = true;
+                        m_isDividerDragged = true;
                     }
                     else if (Event.current.type == EventType.MouseUp
                              || Event.current.type == EventType.MouseMove
                              || Event.current.type == EventType.MouseLeaveWindow)
                     {
-                        isDividerDragged = false;
+                        m_isDividerDragged = false;
                     }
                 }
 
-                if (isDividerDragged && Event.current != null && Event.current.type == EventType.MouseDrag)
+                if (m_isDividerDragged && Event.current != null && Event.current.type == EventType.MouseDrag)
                 {
-                    dividerPosProp.floatValue = Mathf.Clamp(dividerPosProp.floatValue + Event.current.delta.x / rect.width, .2f, .8f);
+                    m_dividerPosProp.floatValue = Mathf.Clamp(m_dividerPosProp.floatValue + Event.current.delta.x / rect.width, .2f, .8f);
                 }
             }
 
@@ -344,37 +338,37 @@ namespace RCore
 
         private void SetupList(SerializedProperty prop)
         {
-            if (reorderableList != null)
+            if (m_reorderableList != null)
             {
                 return;
             }
 
             SetupProps(prop);
 
-            this.reorderableList = new ReorderableList(dictionaryList.serializedObject, dictionaryList, true, false, true, true);
-            this.reorderableList.drawElementCallback = DrawListElement;
-            this.reorderableList.elementHeightCallback = GetListElementHeight;
-            this.reorderableList.drawNoneElementCallback = ShowDictIsEmptyMessage;
+            this.m_reorderableList = new ReorderableList(m_dictionaryList.serializedObject, m_dictionaryList, true, false, true, true);
+            this.m_reorderableList.drawElementCallback = DrawListElement;
+            this.m_reorderableList.elementHeightCallback = GetListElementHeight;
+            this.m_reorderableList.drawNoneElementCallback = ShowDictIsEmptyMessage;
         }
 
-        private ReorderableList reorderableList;
-        private bool isDividerDragged;
+        private ReorderableList m_reorderableList;
+        private bool m_isDividerDragged;
 
         public void SetupProps(SerializedProperty prop)
         {
-            if (this.property != null)
+            if (this.m_property != null)
             {
                 return;
             }
 
-            this.property = prop;
-            this.dictionaryList = prop.FindPropertyRelative("dictionaryList");
-            this.dividerPosProp = prop.FindPropertyRelative("dividerPos");
+            this.m_property = prop;
+            this.m_dictionaryList = prop.FindPropertyRelative("keyValues");
+            this.m_dividerPosProp = prop.FindPropertyRelative("dividerPos");
         }
 
-        private SerializedProperty property;
-        private SerializedProperty dictionaryList;
-        private SerializedProperty dividerPosProp;
+        private SerializedProperty m_property;
+        private SerializedProperty m_dictionaryList;
+        private SerializedProperty m_dividerPosProp;
     }
 }
 #endif

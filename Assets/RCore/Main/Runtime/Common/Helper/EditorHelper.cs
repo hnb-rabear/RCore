@@ -487,8 +487,7 @@ namespace RCore.Editor
             Object result;
 
             if (showAsBox)
-                result = EditorGUILayout.ObjectField(value, typeof(T), true, GUILayout.Width(valueWidth),
-                    GUILayout.Height(valueWidth));
+                result = EditorGUILayout.ObjectField(value, typeof(T), true, GUILayout.Width(valueWidth), GUILayout.Height(valueWidth));
             else
             {
                 if (valueWidth == 0)
@@ -811,7 +810,7 @@ namespace RCore.Editor
 
 #endregion
 
-        //=============================
+	    //========================================
 
 #region Layout
 
@@ -1081,7 +1080,7 @@ namespace RCore.Editor
 
 #endregion
 
-        //=============================
+	    //========================================
 
 #region Tools
 
@@ -1910,7 +1909,7 @@ namespace RCore.Editor
 
 #endregion
 
-        //=============================
+	    //========================================
 
 #region Input Fields
 
@@ -2198,73 +2197,7 @@ namespace RCore.Editor
             return results;
         }
 
-        public static void SerializeFields(SerializedProperty pProperty, params string[] properties)
-        {
-            foreach (var p in properties)
-            {
-                var item = pProperty.FindPropertyRelative(p);
-                EditorGUILayout.PropertyField(item, true);
-            }
-        }
 
-        public static void SerializeFields(SerializedObject pObj, params string[] properties)
-        {
-            foreach (var p in properties)
-            {
-                var item = pObj.FindProperty(p);
-                EditorGUILayout.PropertyField(item, true);
-            }
-        }
-
-        public static SerializedProperty SerializeField(SerializedObject pObj, string pPropertyName,
-            string pDisplayName = null, params GUILayoutOption[] options)
-        {
-            var property = pObj.FindProperty(pPropertyName);
-            if (property == null)
-            {
-                Debug.Log($"Not found property {pPropertyName}");
-                return null;
-            }
-
-            if (!property.isArray)
-            {
-                EditorGUILayout.PropertyField(property,
-                    new GUIContent(string.IsNullOrEmpty(pDisplayName) ? property.displayName : pDisplayName));
-                return property;
-            }
-
-            if (property.isExpanded)
-                EditorGUILayout.PropertyField(property, true, options);
-            else
-                EditorGUILayout.PropertyField(property, new GUIContent(property.displayName), options);
-            return property;
-        }
-
-        public static object GetTargetObjectOfProperty(SerializedProperty prop)
-        {
-            if (prop == null) return null;
-
-            var path = prop.propertyPath.Replace(".Array.data[", "[");
-            object obj = prop.serializedObject.targetObject;
-            var elements = path.Split('.');
-            foreach (var element in elements)
-            {
-                if (element.Contains("["))
-                {
-                    var elementName = element.Substring(0, element.IndexOf("[", StringComparison.Ordinal));
-                    var index = Convert.ToInt32(element.Substring(element.IndexOf("[", StringComparison.Ordinal))
-                        .Replace("[", "")
-                        .Replace("]", ""));
-                    obj = GetValue_Imp(obj, elementName, index);
-                }
-                else
-                {
-                    obj = GetValue_Imp(obj, element);
-                }
-            }
-
-            return obj;
-        }
 
         private static object GetValue_Imp(object source, string name)
         {
@@ -2307,8 +2240,100 @@ namespace RCore.Editor
         }
 
 #endregion
+	    
+	    //========================================
 
-        //===============
+#region SerializedProperty SerializedObject
+
+		public static void SerializeFields(SerializedProperty pProperty, params string[] properties)
+        {
+            foreach (var p in properties)
+            {
+                var item = pProperty.FindPropertyRelative(p);
+                EditorGUILayout.PropertyField(item, true);
+            }
+        }
+
+        public static void SerializeFields(SerializedObject pObj, params string[] properties)
+        {
+            foreach (var p in properties)
+            {
+                var item = pObj.FindProperty(p);
+                EditorGUILayout.PropertyField(item, true);
+            }
+        }
+
+        public static SerializedProperty SerializeField(SerializedObject pObj, string pPropertyName, string pDisplayName = null, params GUILayoutOption[] options)
+        {
+            var property = pObj.FindProperty(pPropertyName);
+            if (property == null)
+            {
+                Debug.Log($"Not found property {pPropertyName}");
+                return null;
+            }
+
+            if (!property.isArray)
+            {
+                EditorGUILayout.PropertyField(property, new GUIContent(string.IsNullOrEmpty(pDisplayName) ? property.displayName : pDisplayName));
+                return property;
+            }
+
+            if (property.isExpanded)
+                EditorGUILayout.PropertyField(property, true, options);
+            else
+                EditorGUILayout.PropertyField(property, new GUIContent(property.displayName), options);
+            return property;
+        }
+
+        public static object GetTargetObjectOfProperty(SerializedProperty prop)
+        {
+            if (prop == null) return null;
+
+            var path = prop.propertyPath.Replace(".Array.data[", "[");
+            object obj = prop.serializedObject.targetObject;
+            var elements = path.Split('.');
+            foreach (var element in elements)
+            {
+                if (element.Contains("["))
+                {
+                    var elementName = element.Substring(0, element.IndexOf("[", StringComparison.Ordinal));
+                    var index = Convert.ToInt32(element.Substring(element.IndexOf("[", StringComparison.Ordinal))
+                        .Replace("[", "")
+                        .Replace("]", ""));
+                    obj = GetValue_Imp(obj, elementName, index);
+                }
+                else
+                {
+                    obj = GetValue_Imp(obj, element);
+                }
+            }
+
+            return obj;
+        }
+
+        public static bool IsFirstElementOfList(this SerializedProperty property)
+        {
+	        string path = property.propertyPath;
+	        int index = path.LastIndexOf('[');
+	        if (index < 0)
+		        return false;
+
+	        int endIndex = path.IndexOf(']', index);
+	        if (endIndex < 0)
+		        return false;
+
+	        int elementIndex = int.Parse(path.Substring(index + 1, endIndex - index - 1));
+	        return elementIndex == 0;
+        }
+
+        public static bool IsInList(this SerializedProperty property)
+        {
+	        return property.displayName.Contains("Element");
+        }
+        
+#endregion
+
+	    //========================================
 
 #region Build
 
@@ -2428,7 +2453,7 @@ namespace RCore.Editor
 
 #endregion
 
-        //=============================
+	    //========================================
 
 #region Get / Load Assets
 
@@ -2595,7 +2620,7 @@ namespace RCore.Editor
         
 #endregion
 
-        //=============================
+	    //========================================
 
 #region Misc
 
@@ -3202,9 +3227,9 @@ namespace RCore.Editor
 #endregion
     }
 
-    //===================================================================
+    //========================================
     // Custom GUIStyle
-    //===================================================================
+    //========================================
 
     public static class GUIStyleHelper
     {

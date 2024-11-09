@@ -15,17 +15,4 @@ namespace RCore
 		Width,
 		Height,
 	}
-
-	[Serializable]
-	public class SerializableKeyValue<TypeKey, TypeValue>
-	{
-		public TypeKey k;
-		public TypeValue v;
-		public SerializableKeyValue() { }
-		public SerializableKeyValue(TypeKey pKey, TypeValue pValue)
-		{
-			k = pKey;
-			v = pValue;
-		}
-	}
 }
