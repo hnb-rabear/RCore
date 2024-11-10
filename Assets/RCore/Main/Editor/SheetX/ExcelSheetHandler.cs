@@ -708,10 +708,11 @@ namespace RCore.Editor.SheetX
 					if (i > 0 && i % 100 == 0)
 						idBuilder.Append("\n\t\t");
 
+					var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
 					if (i < pIdsString.Count - 1)
-						idBuilder.Append($"{pIdsString[i].RemoveSpecialCharacters()} = {i}, ");
+						idBuilder.Append($"{idString} = {i}, ");
 					else
-						idBuilder.Append($"{pIdsString[i].RemoveSpecialCharacters()} = {i};");
+						idBuilder.Append($"{idString} = {i};");
 				}
 			}
 
@@ -721,17 +722,18 @@ namespace RCore.Editor.SheetX
 			idBuilder2.Append("\n\t\t");
 			for (int i = 0; i < pIdsString.Count; i++)
 			{
+				var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
 				if (i > 0 && i % 100 == 0)
 				{
 					idBuilder2.Append("\n\t\t");
-					idBuilder2.Append($"{pIdsString[i].RemoveSpecialCharacters()},");
+					idBuilder2.Append($"{idString},");
 				}
 				else
 				{
 					if (i == 0)
-						idBuilder2.Append($"{pIdsString[i].RemoveSpecialCharacters()} = {i},");
+						idBuilder2.Append($"{idString} = {i},");
 					else
-						idBuilder2.Append($" {pIdsString[i].RemoveSpecialCharacters()},");
+						idBuilder2.Append($" {idString},");
 				}
 			}
 			idBuilder2.Append("\n\t}");
