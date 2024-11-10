@@ -333,9 +333,9 @@ namespace RCore.UI
 								animator.gameObject.GetOrAddComponent<CanvasGroup>();
 							}
 						}
-						((PanelController)target).enableFXTransition = true;
-						EditorUtility.SetDirty(m_script);
 					}
+					((PanelController)target).enableFXTransition = true;
+					EditorUtility.SetDirty(m_script);
 				}
 			}
 		}

@@ -590,11 +590,11 @@ namespace RCore
         
         public static DateTime? GetServerTimeUtc() => WebRequestHelper.GetServerTimeUtc();
 
-        public static int GetUtcNowTimestamp()
+        public static int GetNowTimestamp(bool utcTime)
         {
-            var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
-            int timestamp = DateTimeToUnixTimestampInt(utcNow);
-            return timestamp;
+	        var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
+	        int timestamp = DateTimeToUnixTimestampInt(utcTime ? utcNow : utcNow.ToLocalTime());
+	        return timestamp;
         }
 
         public static int GetCurrentWeekNumber(DateTime date)

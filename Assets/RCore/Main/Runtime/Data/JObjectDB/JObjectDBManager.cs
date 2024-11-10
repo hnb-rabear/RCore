@@ -50,7 +50,7 @@ namespace RCore.Data.JObject
 				return;
 
 			m_pauseState = pause ? 0 : 1;
-			int utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
+			int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 			int offlineSeconds = 0;
 			if (!pause)
 				offlineSeconds = GetOfflineSeconds();
@@ -99,7 +99,7 @@ namespace RCore.Data.JObject
 				// Do not allow multiple Save calls within a short period of time.
 				if (Time.unscaledTime - m_lastSave < 0.2f)
 					return;
-				int utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
+				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 				foreach (var handler in m_handlers)
 					handler.OnPreSave(utcNowTimestamp);
 				foreach (var collection in m_collections)
@@ -142,7 +142,7 @@ namespace RCore.Data.JObject
 			int offlineSeconds = 0;
 			if (sessionData.lastActive > 0)
 			{
-				int utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
+				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 				offlineSeconds = utcNowTimestamp - sessionData.lastActive;
 			}
 			return offlineSeconds;
@@ -192,7 +192,7 @@ namespace RCore.Data.JObject
 		protected void PostLoad()
 		{
 			int offlineSeconds = GetOfflineSeconds();
-			var utcNowTimestamp = TimeHelper.GetUtcNowTimestamp();
+			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 			foreach (var handler in m_handlers)
 				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}

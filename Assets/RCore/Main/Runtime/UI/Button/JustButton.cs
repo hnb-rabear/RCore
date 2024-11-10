@@ -6,7 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using DG.Tweening;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
@@ -37,8 +39,6 @@ namespace RCore.UI
 		[SerializeField] protected bool m_scaleBounceEffect = true;
 		[FormerlySerializedAs("mImg")]
 		[SerializeField] protected Image m_img;
-		[FormerlySerializedAs("mInitialScale")]
-		[SerializeField] protected Vector2 m_initialScale = Vector2.one;
 		[FormerlySerializedAs("m_PerfectRatio")]
 		[SerializeField] protected PerfectRatio m_perfectRatio = PerfectRatio.Height;
 
@@ -51,7 +51,6 @@ namespace RCore.UI
 		[FormerlySerializedAs("mImgInactive")]
 		[SerializeField] protected Sprite m_imgOff;
 		[FormerlySerializedAs("m_SfxClip")]
-		[FormerlySerializedAs("m_SFXClip")]
 		[SerializeField] protected string m_clickSfx;
 
 		public Image img
@@ -70,6 +69,14 @@ namespace RCore.UI
 		private Action m_inactionStateAction;
 		private bool m_active = true;
 		private int m_PerfectSpriteId;
+		private Vector2 m_initialScale;
+
+		protected override void Awake()
+		{
+			base.Awake();
+
+			m_initialScale = transform.localScale;
+		}
 
 		public virtual void SetEnable(bool pValue)
 		{
@@ -157,8 +164,16 @@ namespace RCore.UI
 					m_prePivot = m_pivotForScaleBounce;
 					RefreshPivot(rectTransform);
 				}
-
+#if DOTWEEN
+				DOTween.Kill(GetInstanceID());
+				transform
+					.DOScale(m_initialScale * 0.9f, 0.125f)
+					.SetUpdate(true)
+					.SetEase(Ease.InOutBack)
+					.SetId(GetInstanceID());
+#else
 				transform.localScale = m_initialScale * 0.95f;
+#endif
 			}
 		}
 
@@ -169,7 +184,15 @@ namespace RCore.UI
 
 			if (m_scaleBounceEffect)
 			{
+#if DOTWEEN
+				DOTween.Kill(GetInstanceID());
+				transform
+					.DOScale(m_initialScale, 0.1f)
+					.SetUpdate(true)
+					.SetId(GetInstanceID());
+#else
 				transform.localScale = m_initialScale;
+#endif
 			}
 		}
 
@@ -310,25 +333,30 @@ namespace RCore.UI
 			if (targetGraphic != null && m_img == null)
 				m_img = targetGraphic as Image;
 
-			if (transition == Transition.Animation)
+			if (m_scaleBounceEffect)
+			{
+				if (transition == Transition.Animation)
+					transition = Transition.None;
+
+				if (gameObject.TryGetComponent(out Animator a))
+					a.enabled = false;
+			}
+			else if (transition == Transition.Animation)
 			{
 				var _animator = gameObject.GetOrAddComponent<Animator>();
 				_animator.updateMode = AnimatorUpdateMode.UnscaledTime;
-				m_scaleBounceEffect = false;
 				if (_animator.runtimeAnimatorController == null)
 				{
 					string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
 					if (!string.IsNullOrEmpty(animatorCtrlPath))
 					{
-						 var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
-						 if (animatorCtrl != null)
-							 _animator.runtimeAnimatorController = animatorCtrl;
+						var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
+						if (animatorCtrl != null)
+							_animator.runtimeAnimatorController = animatorCtrl;
 					}
 				}
+				_animator.enabled = true;
 			}
-
-			if (m_scaleBounceEffect)
-				m_initialScale = transform.localScale;
 
 			RefreshPivot();
 
@@ -341,7 +369,7 @@ namespace RCore.UI
 		public class JustButtonEditor : ButtonEditor
 		{
 			private JustButton m_target;
-			
+
 			protected override void OnEnable()
 			{
 				base.OnEnable();

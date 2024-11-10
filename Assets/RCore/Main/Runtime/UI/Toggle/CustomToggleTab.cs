@@ -20,46 +20,70 @@ using DG.Tweening;
 
 namespace RCore.UI
 {
-    [AddComponentMenu("RCore/UI/CustomToggleTab")]
-    public class CustomToggleTab : Toggle
-    {
-        public Image imgBackground;
-        public TextMeshProUGUI txtLabel;
-        [FormerlySerializedAs("contentsInActive")] public List<RectTransform> contentsActive;
-        [FormerlySerializedAs("contentsInDeactive")] public List<RectTransform> contentsInactive;
-        public List<TextMeshProUGUI> additionalLabels;
-        public string sfxClip = "button";
-        public string sfxClipOff = "button";
+	[AddComponentMenu("RCore/UI/CustomToggleTab")]
+	public class CustomToggleTab : Toggle
+	{
+		[SerializeField] private Image m_imgBackground;
+		[FormerlySerializedAs("txtLabel")]
+		[SerializeField] private TextMeshProUGUI m_txtLabel;
+		[FormerlySerializedAs("contentsActive")]
+		[SerializeField] private List<RectTransform> m_contentsActive;
+		[FormerlySerializedAs("contentsInactive")]
+		[SerializeField] private List<RectTransform> m_contentsInactive;
+		[FormerlySerializedAs("additionalLabels")]
+		[SerializeField] private List<TextMeshProUGUI> m_additionalLabels;
+		[FormerlySerializedAs("sfxClip")]
+		[SerializeField] private string m_sfxClip = "button";
+		[FormerlySerializedAs("sfxClipOff")]
+		[SerializeField] private string m_sfxClipOff = "button";
+		[SerializeField] protected bool m_scaleBounceEffect = true;
 
-        public bool enableBgSpriteSwitch;
-        public Sprite sptActiveBackground;
-        public Sprite sptInactiveBackground;
+		[FormerlySerializedAs("enableBgSpriteSwitch")]
+		[SerializeField] private bool m_enableBgSpriteSwitch;
+		[FormerlySerializedAs("sptActiveBackground")]
+		[SerializeField] private Sprite m_sptActiveBackground;
+		[FormerlySerializedAs("sptInactiveBackground")]
+		[SerializeField] private Sprite m_sptInactiveBackground;
 
-        public bool enableBgColorSwitch;
-        public Color colorActiveBackground;
-        public Color colorInactiveBackground;
+		[FormerlySerializedAs("enableBgColorSwitch")]
+		[SerializeField] private bool m_enableBgColorSwitch;
+		[FormerlySerializedAs("colorActiveBackground")]
+		[SerializeField] private Color m_colorActiveBackground;
+		[FormerlySerializedAs("colorInactiveBackground")]
+		[SerializeField] private Color m_colorInactiveBackground;
 
-        public bool enableTextColorSwitch;
-        public Color colorActiveText;
-        public Color colorInactiveText;
+		[FormerlySerializedAs("enableTextColorSwitch")]
+		[SerializeField] private bool m_enableTextColorSwitch;
+		[FormerlySerializedAs("colorActiveText")]
+		[SerializeField] private Color m_colorActiveText;
+		[FormerlySerializedAs("colorInactiveText")]
+		[SerializeField] private Color m_colorInactiveText;
 
-        public bool enableSizeSwitch;
-        public Vector2 sizeActive;
-        [FormerlySerializedAs("sizeDeactive")] public Vector2 sizeInactive;
+		[FormerlySerializedAs("enableSizeSwitch")]
+		[SerializeField] private bool m_enableSizeSwitch;
+		[FormerlySerializedAs("sizeActive")]
+		[SerializeField] private Vector2 m_sizeActive;
+		[FormerlySerializedAs("sizeInactive")]
+		[SerializeField] private Vector2 m_sizeInactive;
 
-        public bool enableFontSizeSwitch;
-        public float fontSizeActive;
-        public float fontSizeInactive;
+		[FormerlySerializedAs("enableFontSizeSwitch")]
+		[SerializeField] private bool m_enableFontSizeSwitch;
+		[FormerlySerializedAs("fontSizeActive")]
+		[SerializeField] private float m_fontSizeActive;
+		[FormerlySerializedAs("fontSizeInactive")]
+		[SerializeField] private float m_fontSizeInactive;
 
-        public float tweenTime = 0.5f;
+		[FormerlySerializedAs("tweenTime")]
+		[SerializeField] private float m_tweenTime = 0.5f;
 
-        [ReadOnly] public bool isLocked;
+		[ReadOnly] public bool isLocked;
 
-        public Action onClickOnLock;
+		public Action onClickOnLock;
 
-        private CustomToggleGroup m_customToggleGroup;
+		private CustomToggleGroup m_customToggleGroup;
 		private bool m_isOn2;
-		
+		private Vector2 m_initialScale;
+
 		public bool IsOn
 		{
 			get => isOn;
@@ -74,406 +98,466 @@ namespace RCore.UI
 			}
 		}
 
-		protected override void Start()
-        {
-            base.Start();
+		protected override void Awake()
+		{
+			base.Awake();
 
-            m_customToggleGroup = group as CustomToggleGroup;
+			m_initialScale = transform.localScale;
+		}
+
+		protected override void Start()
+		{
+			base.Start();
+
+			m_customToggleGroup = group as CustomToggleGroup;
 			m_isOn2 = isOn;
-            
-            if (isOn && m_customToggleGroup != null)
-                m_customToggleGroup.SetTarget(transform as RectTransform);
+
+			if (isOn && m_customToggleGroup != null)
+				m_customToggleGroup.SetTarget(transform as RectTransform);
 		}
 
 #if UNITY_EDITOR
-        protected override void OnValidate()
-        {
-            if (Application.isPlaying)
-                return;
+		protected override void OnValidate()
+		{
+			if (Application.isPlaying)
+				return;
 
-            base.OnValidate();
+			base.OnValidate();
 
-            if (txtLabel == null)
-                txtLabel = gameObject.FindComponentInChildren<TextMeshProUGUI>();
+			if (m_txtLabel == null)
+				m_txtLabel = gameObject.FindComponentInChildren<TextMeshProUGUI>();
 
-            if (imgBackground == null)
-            {
-                var images = gameObject.GetComponentsInChildren<Image>();
-                imgBackground = images[0];
-            }
+			if (m_imgBackground == null)
+			{
+				var images = gameObject.GetComponentsInChildren<Image>();
+				m_imgBackground = images[0];
+			}
 
-            if (imgBackground != null)
-            {
-	            if (enableBgColorSwitch)
-	            {
-		            if (colorActiveBackground == default)
-			            colorActiveBackground = imgBackground.color;
-	            }
-	            else if (imgBackground.color == default && colorActiveBackground != default)
-	            {
-		            imgBackground.color = colorActiveBackground;
-	            }
-	            if (enableBgSpriteSwitch)
-	            {
-		            if (sptActiveBackground == null && imgBackground.sprite != null)
-			            sptActiveBackground = imgBackground.sprite;
-	            }
-	            else if (imgBackground.sprite == null && sptActiveBackground != null)
-	            {
-		            imgBackground.sprite = sptActiveBackground;
-	            }
-            }
-            if (txtLabel != null)
-            {
-	            if (enableFontSizeSwitch && fontSizeActive == 0)
-		            fontSizeActive = txtLabel.fontSize;
-	            if (enableTextColorSwitch)
-	            {
-		            if (colorActiveText == default)
-			            colorActiveText = txtLabel.color;
-	            }
-	            else if (txtLabel.color == default && colorActiveText != default)
-		            txtLabel.color = colorActiveText;
-            }
-            if (enableSizeSwitch)
-            {
-                if (sizeActive == Vector2.zero)
-                    sizeActive = ((RectTransform)transform).sizeDelta;
-            }
+			if (m_imgBackground != null)
+			{
+				if (m_enableBgColorSwitch)
+				{
+					if (m_colorActiveBackground == default)
+						m_colorActiveBackground = m_imgBackground.color;
+				}
+				else if (m_imgBackground.color == default && m_colorActiveBackground != default)
+				{
+					m_imgBackground.color = m_colorActiveBackground;
+				}
+				if (m_enableBgSpriteSwitch)
+				{
+					if (m_sptActiveBackground == null && m_imgBackground.sprite != null)
+						m_sptActiveBackground = m_imgBackground.sprite;
+				}
+				else if (m_imgBackground.sprite == null && m_sptActiveBackground != null)
+				{
+					m_imgBackground.sprite = m_sptActiveBackground;
+				}
+			}
+			if (m_txtLabel != null)
+			{
+				if (m_enableFontSizeSwitch && m_fontSizeActive == 0)
+					m_fontSizeActive = m_txtLabel.fontSize;
+				if (m_enableTextColorSwitch)
+				{
+					if (m_colorActiveText == default)
+						m_colorActiveText = m_txtLabel.color;
+				}
+				else if (m_txtLabel.color == default && m_colorActiveText != default)
+					m_txtLabel.color = m_colorActiveText;
+			}
+			if (m_enableSizeSwitch)
+			{
+				if (m_sizeActive == Vector2.zero)
+					m_sizeActive = ((RectTransform)transform).sizeDelta;
+			}
 
-            if (group == null)
-                group = gameObject.GetComponentInParent<ToggleGroup>();
-            
-            if (transition == Transition.Animation)
-            {
-	            var _animator = gameObject.GetOrAddComponent<Animator>();
-	            _animator.updateMode = AnimatorUpdateMode.UnscaledTime;
-	            if (_animator.runtimeAnimatorController == null)
-	            {
-		            string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
-		            if (!string.IsNullOrEmpty(animatorCtrlPath))
-		            {
-			            var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
-			            if (animatorCtrl != null)
-				            _animator.runtimeAnimatorController = animatorCtrl;
-		            }
-	            }
-            }
-        }
+			if (group == null)
+				group = gameObject.GetComponentInParent<ToggleGroup>();
+
+			if (m_scaleBounceEffect)
+			{
+				if (transition == Transition.Animation)
+					transition = Transition.None;
+
+				if (gameObject.TryGetComponent(out Animator a))
+					a.enabled = false;
+			}
+			else if (transition == Transition.Animation)
+			{
+				var _animator = gameObject.GetOrAddComponent<Animator>();
+				_animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+				if (_animator.runtimeAnimatorController == null)
+				{
+					string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("a32018778a1faa24fbd0f51f8de100a6");
+					if (!string.IsNullOrEmpty(animatorCtrlPath))
+					{
+						var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
+						if (animatorCtrl != null)
+							_animator.runtimeAnimatorController = animatorCtrl;
+					}
+				}
+				_animator.enabled = true;
+			}
+		}
 #endif
 
-        protected override void OnEnable()
-        {
-            base.OnEnable();
+		protected override void OnEnable()
+		{
+			base.OnEnable();
 
-            onValueChanged.AddListener(OnValueChanged);
+			if (m_scaleBounceEffect)
+				transform.localScale = m_initialScale;
+			
+			onValueChanged.AddListener(OnValueChanged);
 
-            Refresh();
-        }
+			Refresh();
+		}
 
-        protected override void OnDisable()
-        {
-            base.OnDisable();
+		protected override void OnDisable()
+		{
+			base.OnDisable();
+			
+			if (m_scaleBounceEffect)
+				transform.localScale = m_initialScale;
 
-            onValueChanged.RemoveListener(OnValueChanged);
-        }
+			onValueChanged.RemoveListener(OnValueChanged);
+		}
 
-        public override void OnPointerClick(PointerEventData eventData)
-        {
-            if (isLocked)
-            {
-                onClickOnLock?.Invoke();
-                return;
-            }
+		public override void OnPointerClick(PointerEventData p_eventData)
+		{
+			if (isLocked)
+			{
+				onClickOnLock?.Invoke();
+				return;
+			}
 
-            base.OnPointerClick(eventData);
-        }
+			base.OnPointerClick(p_eventData);
+		}
 
-        private void Refresh()
-        {
-            if (contentsActive != null)
-                foreach (var item in contentsActive)
-                    item.SetActive(isOn);
-
-            if (contentsInactive != null)
-                foreach (var item in contentsInactive)
-                    item.SetActive(!isOn);
-
-            if (enableBgSpriteSwitch)
-                imgBackground.sprite = isOn ? sptActiveBackground : sptInactiveBackground;
-
-            if (enableSizeSwitch)
-            {
-                var size = isOn ? sizeActive : sizeInactive;
-                if (gameObject.TryGetComponent(out LayoutElement layoutElement))
-                {
-                    layoutElement.minWidth = size.x;
-                    layoutElement.minHeight = size.y;
-                }
-                else
-                    ((RectTransform)transform).sizeDelta = size;
-            }
-
-            if (enableBgColorSwitch)
-                imgBackground.color = isOn ? colorActiveBackground : colorInactiveBackground;
-
-            if (enableTextColorSwitch)
-            {
-                if (txtLabel != null)
-                    txtLabel.color = isOn ? colorActiveText : colorInactiveText;
-
-                if (additionalLabels != null)
-                    foreach (var label in additionalLabels)
-                        label.color = isOn ? colorActiveText : colorInactiveText;
-            }
-
-            if (enableFontSizeSwitch)
-            {
-                if (txtLabel != null)
-                    txtLabel.fontSize = isOn ? fontSizeActive : fontSizeInactive;
-
-                if (additionalLabels != null)
-                    foreach (var label in additionalLabels)
-                        label.fontSize = isOn ? fontSizeActive : fontSizeInactive;
-            }
-
-            if (m_customToggleGroup != null && isOn)
-                m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
-        }
-
-        private void RefreshByTween()
-        {
+		public override void OnPointerDown(PointerEventData eventData)
+		{
+			base.OnPointerDown(eventData);
+			
+			if (m_scaleBounceEffect)
+			{
 #if DOTWEEN
-            if (m_isOn2 == isOn)
-                return;
-
-            m_isOn2 = isOn;
-
-            if (contentsActive != null)
-                foreach (var item in contentsActive)
-                    item.SetActive(isOn);
-
-            if (contentsInactive != null)
-                foreach (var item in contentsInactive)
-                    item.SetActive(!isOn);
-
-            if (Application.isPlaying)
-            {
-                if (enableBgSpriteSwitch)
-                {
-                    imgBackground.DOKill();
-                    imgBackground.sprite = isOn ? sptActiveBackground : sptInactiveBackground;
-                }
-                if (enableSizeSwitch || enableTextColorSwitch || enableBgColorSwitch || enableFontSizeSwitch)
-                {
-                    m_customToggleGroup.SetToggleInteractable(false);
-                    var layoutElement = gameObject.GetComponent<LayoutElement>();
-                    var txtFromColor = !isOn ? colorActiveText : colorInactiveText;
-                    var txtToColor = isOn ? colorActiveText : colorInactiveText;
-                    var bgFromColor = !isOn ? colorActiveBackground : colorInactiveBackground;
-                    var bgToColor = isOn ? colorActiveBackground : colorInactiveBackground;
-                    var sizeFrom = !isOn ? sizeActive : sizeInactive;
-                    var sizeTo = isOn ? sizeActive : sizeInactive;
-                    float fontSizeFrom = !isOn ? fontSizeActive : fontSizeInactive;
-                    float fontSizeTo = isOn ? fontSizeActive : fontSizeInactive;
-                    float val = 0;
-                    var rectTransform = transform as RectTransform;
-                    DOTween.Kill(GetInstanceID());
-                    DOTween.To(() => val, x => val = x, 1, tweenTime)
-                        .OnUpdate(() =>
-                        {
-                            if (enableSizeSwitch)
-                            {
-                                var size = Vector2.Lerp(sizeFrom, sizeTo, val);
-                                if (layoutElement == null)
-                                {
-                                    rectTransform.sizeDelta = size;
-                                }
-                                else
-                                {
-                                    layoutElement.minWidth = size.x;
-                                    layoutElement.minHeight = size.y;
-                                }
-                            }
-                            if (enableTextColorSwitch)
-                            {
-                                var color = Color.Lerp(txtFromColor, txtToColor, val);
-                                if (txtLabel != null)
-                                    txtLabel.color = color;
-
-                                if (additionalLabels != null)
-                                    foreach (var label in additionalLabels)
-                                        label.color = color;
-                            }
-                            if (enableBgColorSwitch)
-                            {
-                                var color = Color.Lerp(bgFromColor, bgToColor, val);
-                                imgBackground.color = color;
-                            }
-                            if (enableFontSizeSwitch)
-                            {
-                                if (txtLabel != null)
-                                    txtLabel.fontSize = Mathf.Lerp(fontSizeFrom, fontSizeTo, val);
-
-                                if (additionalLabels != null)
-                                    foreach (var label in additionalLabels)
-                                        label.fontSize = Mathf.Lerp(fontSizeFrom, fontSizeTo, val);
-                            }
-                        })
-                        .OnComplete(() =>
-                        {
-                            m_customToggleGroup.SetToggleInteractable(true);
-                            if (enableSizeSwitch)
-                            {
-                                var size = isOn ? sizeActive : sizeInactive;
-                                if (layoutElement == null)
-                                {
-                                    rectTransform.sizeDelta = size;
-                                }
-                                else
-                                {
-                                    layoutElement.minWidth = size.x;
-                                    layoutElement.minHeight = size.y;
-                                }
-                            }
-                            if (enableTextColorSwitch)
-                            {
-                                if (txtLabel != null)
-                                    txtLabel.color = txtToColor;
-
-                                if (additionalLabels != null)
-                                    foreach (var label in additionalLabels)
-                                        label.color = isOn ? colorActiveText : colorInactiveText;
-                            }
-                            if (enableBgColorSwitch)
-                                imgBackground.color = isOn ? colorActiveBackground : colorInactiveBackground;
-                            if (enableFontSizeSwitch)
-                            {
-                                if (txtLabel != null)
-                                    txtLabel.fontSize = isOn ? fontSizeActive : fontSizeInactive;
-
-                                if (additionalLabels != null)
-                                    foreach (var label in additionalLabels)
-                                        label.fontSize = isOn ? fontSizeActive : fontSizeInactive;
-                            }
-                        })
-                        .SetId(GetInstanceID())
-                        .SetEase(Ease.OutCubic);
-                }
-                if (m_customToggleGroup != null)
-                    m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
-            }
+				DOTween.Kill(GetInstanceID());
+				transform
+					.DOScale(m_initialScale * 0.9f, 0.125f)
+					.SetUpdate(true)
+					.SetEase(Ease.InOutBack)
+					.SetId(GetInstanceID());
+#else
+				transform.localScale = m_initialScale * 0.95f;
 #endif
-        }
+			}
+		}
 
-        private void OnValueChanged(bool pIsOn)
-        {
-            if (pIsOn && !string.IsNullOrEmpty(sfxClip))
-                EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
-            else if (!pIsOn && !string.IsNullOrEmpty(sfxClipOff))
-                EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClipOff));
-            
+		public override void OnPointerUp(PointerEventData eventData)
+		{
+			base.OnPointerUp(eventData);
+			
+			if (m_scaleBounceEffect)
+			{
 #if DOTWEEN
-			if (Application.isPlaying && tweenTime > 0 && transition != Transition.Animation)
-            {
-                RefreshByTween();
-                return;
-            }
+				DOTween.Kill(GetInstanceID());
+				transform
+					.DOScale(m_initialScale, 0.1f)
+					.SetUpdate(true)
+					.SetId(GetInstanceID());
+#else
+				transform.localScale = m_initialScale;
 #endif
-            Refresh();
-        }
-    }
+			}
+		}
+
+		private void Refresh()
+		{
+			if (m_contentsActive != null)
+				foreach (var item in m_contentsActive)
+					item.SetActive(isOn);
+
+			if (m_contentsInactive != null)
+				foreach (var item in m_contentsInactive)
+					item.SetActive(!isOn);
+
+			if (m_enableBgSpriteSwitch)
+				m_imgBackground.sprite = isOn ? m_sptActiveBackground : m_sptInactiveBackground;
+
+			if (m_enableSizeSwitch)
+			{
+				var size = isOn ? m_sizeActive : m_sizeInactive;
+				if (gameObject.TryGetComponent(out LayoutElement layoutElement))
+				{
+					layoutElement.minWidth = size.x;
+					layoutElement.minHeight = size.y;
+				}
+				else
+					((RectTransform)transform).sizeDelta = size;
+			}
+
+			if (m_enableBgColorSwitch)
+				m_imgBackground.color = isOn ? m_colorActiveBackground : m_colorInactiveBackground;
+
+			if (m_enableTextColorSwitch)
+			{
+				if (m_txtLabel != null)
+					m_txtLabel.color = isOn ? m_colorActiveText : m_colorInactiveText;
+
+				if (m_additionalLabels != null)
+					foreach (var label in m_additionalLabels)
+						label.color = isOn ? m_colorActiveText : m_colorInactiveText;
+			}
+
+			if (m_enableFontSizeSwitch)
+			{
+				if (m_txtLabel != null)
+					m_txtLabel.fontSize = isOn ? m_fontSizeActive : m_fontSizeInactive;
+
+				if (m_additionalLabels != null)
+					foreach (var label in m_additionalLabels)
+						label.fontSize = isOn ? m_fontSizeActive : m_fontSizeInactive;
+			}
+
+			if (m_customToggleGroup != null && isOn)
+				m_customToggleGroup.SetTarget(transform as RectTransform, m_tweenTime);
+		}
+
+		private void RefreshByTween()
+		{
+#if DOTWEEN
+			if (m_isOn2 == isOn)
+				return;
+
+			m_isOn2 = isOn;
+
+			if (m_contentsActive != null)
+				foreach (var item in m_contentsActive)
+					item.SetActive(isOn);
+
+			if (m_contentsInactive != null)
+				foreach (var item in m_contentsInactive)
+					item.SetActive(!isOn);
+
+			if (Application.isPlaying)
+			{
+				if (m_enableBgSpriteSwitch)
+				{
+					m_imgBackground.DOKill();
+					m_imgBackground.sprite = isOn ? m_sptActiveBackground : m_sptInactiveBackground;
+				}
+				if (m_enableSizeSwitch || m_enableTextColorSwitch || m_enableBgColorSwitch || m_enableFontSizeSwitch)
+				{
+					m_customToggleGroup.SetToggleInteractable(false);
+					var layoutElement = gameObject.GetComponent<LayoutElement>();
+					var txtFromColor = !isOn ? m_colorActiveText : m_colorInactiveText;
+					var txtToColor = isOn ? m_colorActiveText : m_colorInactiveText;
+					var bgFromColor = !isOn ? m_colorActiveBackground : m_colorInactiveBackground;
+					var bgToColor = isOn ? m_colorActiveBackground : m_colorInactiveBackground;
+					var sizeFrom = !isOn ? m_sizeActive : m_sizeInactive;
+					var sizeTo = isOn ? m_sizeActive : m_sizeInactive;
+					float fontSizeFrom = !isOn ? m_fontSizeActive : m_fontSizeInactive;
+					float fontSizeTo = isOn ? m_fontSizeActive : m_fontSizeInactive;
+					float val = 0;
+					var rectTransform = transform as RectTransform;
+					DOTween.Kill(GetInstanceID());
+					DOTween.To(() => val, p_x => val = p_x, 1, m_tweenTime)
+						.OnUpdate(() =>
+						{
+							if (m_enableSizeSwitch)
+							{
+								var size = Vector2.Lerp(sizeFrom, sizeTo, val);
+								if (layoutElement == null)
+								{
+									rectTransform.sizeDelta = size;
+								}
+								else
+								{
+									layoutElement.minWidth = size.x;
+									layoutElement.minHeight = size.y;
+								}
+							}
+							if (m_enableTextColorSwitch)
+							{
+								var color = Color.Lerp(txtFromColor, txtToColor, val);
+								if (m_txtLabel != null)
+									m_txtLabel.color = color;
+
+								if (m_additionalLabels != null)
+									foreach (var label in m_additionalLabels)
+										label.color = color;
+							}
+							if (m_enableBgColorSwitch)
+							{
+								var color = Color.Lerp(bgFromColor, bgToColor, val);
+								m_imgBackground.color = color;
+							}
+							if (m_enableFontSizeSwitch)
+							{
+								if (m_txtLabel != null)
+									m_txtLabel.fontSize = Mathf.Lerp(fontSizeFrom, fontSizeTo, val);
+
+								if (m_additionalLabels != null)
+									foreach (var label in m_additionalLabels)
+										label.fontSize = Mathf.Lerp(fontSizeFrom, fontSizeTo, val);
+							}
+						})
+						.OnComplete(() =>
+						{
+							m_customToggleGroup.SetToggleInteractable(true);
+							if (m_enableSizeSwitch)
+							{
+								var size = isOn ? m_sizeActive : m_sizeInactive;
+								if (layoutElement == null)
+								{
+									rectTransform.sizeDelta = size;
+								}
+								else
+								{
+									layoutElement.minWidth = size.x;
+									layoutElement.minHeight = size.y;
+								}
+							}
+							if (m_enableTextColorSwitch)
+							{
+								if (m_txtLabel != null)
+									m_txtLabel.color = txtToColor;
+
+								if (m_additionalLabels != null)
+									foreach (var label in m_additionalLabels)
+										label.color = isOn ? m_colorActiveText : m_colorInactiveText;
+							}
+							if (m_enableBgColorSwitch)
+								m_imgBackground.color = isOn ? m_colorActiveBackground : m_colorInactiveBackground;
+							if (m_enableFontSizeSwitch)
+							{
+								if (m_txtLabel != null)
+									m_txtLabel.fontSize = isOn ? m_fontSizeActive : m_fontSizeInactive;
+
+								if (m_additionalLabels != null)
+									foreach (var label in m_additionalLabels)
+										label.fontSize = isOn ? m_fontSizeActive : m_fontSizeInactive;
+							}
+						})
+						.SetId(GetInstanceID())
+						.SetEase(Ease.OutCubic);
+				}
+				if (m_customToggleGroup != null)
+					m_customToggleGroup.SetTarget(transform as RectTransform, m_tweenTime);
+			}
+#endif
+		}
+
+		private void OnValueChanged(bool p_pIsOn)
+		{
+			if (p_pIsOn && !string.IsNullOrEmpty(m_sfxClip))
+				EventDispatcher.Raise(new Audio.SFXTriggeredEvent(m_sfxClip));
+			else if (!p_pIsOn && !string.IsNullOrEmpty(m_sfxClipOff))
+				EventDispatcher.Raise(new Audio.SFXTriggeredEvent(m_sfxClipOff));
+
+#if DOTWEEN
+			if (Application.isPlaying && m_tweenTime > 0 && transition != Transition.Animation)
+			{
+				RefreshByTween();
+				return;
+			}
+#endif
+			Refresh();
+		}
 
 #if UNITY_EDITOR
-    [CustomEditor(typeof(CustomToggleTab), true)]
-    class CustomToggleTabEditor : UnityEditor.UI.ToggleEditor
-    {
-        private CustomToggleTab mToggle;
+		[CustomEditor(typeof(CustomToggleTab), true)]
+		class CustomToggleTabEditor : UnityEditor.UI.ToggleEditor
+		{
+			private CustomToggleTab m_mToggle;
 
-        protected override void OnEnable()
-        {
-            base.OnEnable();
+			protected override void OnEnable()
+			{
+				base.OnEnable();
 
-            mToggle = (CustomToggleTab)target;
-        }
+				m_mToggle = (CustomToggleTab)target;
+			}
 
-        public override void OnInspectorGUI()
-        {
-            EditorGUILayout.BeginVertical("box");
-            {
-                EditorHelper.SerializeField(serializedObject, "imgBackground");
-                EditorHelper.SerializeField(serializedObject, "txtLabel");
-                EditorHelper.SerializeField(serializedObject, "contentsActive");
-                EditorHelper.SerializeField(serializedObject, "contentsInactive");
-                EditorHelper.SerializeField(serializedObject, "additionalLabels");
-                EditorHelper.SerializeField(serializedObject, "sfxClip");
+			public override void OnInspectorGUI()
+			{
+				EditorGUILayout.BeginVertical("box");
+				{
+					EditorHelper.SerializeField(serializedObject, "m_imgBackground");
+					EditorHelper.SerializeField(serializedObject, "m_txtLabel");
+					EditorHelper.SerializeField(serializedObject, "m_contentsActive");
+					EditorHelper.SerializeField(serializedObject, "m_contentsInactive");
+					EditorHelper.SerializeField(serializedObject, "m_additionalLabels");
+					EditorHelper.SerializeField(serializedObject, "m_sfxClip");
+					EditorHelper.SerializeField(serializedObject, "m_scaleBounceEffect");
 
-                var enableBgSpriteSwitch = EditorHelper.SerializeField(serializedObject, "enableBgSpriteSwitch");
-                if (enableBgSpriteSwitch.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "sptActiveBackground");
-                    EditorHelper.SerializeField(serializedObject, "sptInactiveBackground");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
+					var enableBgSpriteSwitch = EditorHelper.SerializeField(serializedObject, "m_enableBgSpriteSwitch");
+					if (enableBgSpriteSwitch.boolValue)
+					{
+						EditorGUI.indentLevel++;
+						EditorGUILayout.BeginVertical("box");
+						EditorHelper.SerializeField(serializedObject, "m_sptActiveBackground");
+						EditorHelper.SerializeField(serializedObject, "m_sptInactiveBackground");
+						EditorGUILayout.EndVertical();
+						EditorGUI.indentLevel--;
+					}
 
-                var enableBgColorSwitch = EditorHelper.SerializeField(serializedObject, "enableBgColorSwitch");
-                if (enableBgColorSwitch.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "colorActiveBackground");
-                    EditorHelper.SerializeField(serializedObject, "colorInactiveBackground");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
+					var enableBgColorSwitch = EditorHelper.SerializeField(serializedObject, "m_enableBgColorSwitch");
+					if (enableBgColorSwitch.boolValue)
+					{
+						EditorGUI.indentLevel++;
+						EditorGUILayout.BeginVertical("box");
+						EditorHelper.SerializeField(serializedObject, "m_colorActiveBackground");
+						EditorHelper.SerializeField(serializedObject, "m_colorInactiveBackground");
+						EditorGUILayout.EndVertical();
+						EditorGUI.indentLevel--;
+					}
 
-                var enableTextColorSwitch = EditorHelper.SerializeField(serializedObject, "enableTextColorSwitch");
-                if (enableTextColorSwitch.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "colorActiveText");
-                    EditorHelper.SerializeField(serializedObject, "colorInactiveText");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
+					var enableTextColorSwitch = EditorHelper.SerializeField(serializedObject, "m_enableTextColorSwitch");
+					if (enableTextColorSwitch.boolValue)
+					{
+						EditorGUI.indentLevel++;
+						EditorGUILayout.BeginVertical("box");
+						EditorHelper.SerializeField(serializedObject, "m_colorActiveText");
+						EditorHelper.SerializeField(serializedObject, "m_colorInactiveText");
+						EditorGUILayout.EndVertical();
+						EditorGUI.indentLevel--;
+					}
 
-                var enableSizeSwitch = EditorHelper.SerializeField(serializedObject, "enableSizeSwitch");
-                if (enableSizeSwitch.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "sizeActive");
-                    EditorHelper.SerializeField(serializedObject, "sizeInactive");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
+					var enableSizeSwitch = EditorHelper.SerializeField(serializedObject, "m_enableSizeSwitch");
+					if (enableSizeSwitch.boolValue)
+					{
+						EditorGUI.indentLevel++;
+						EditorGUILayout.BeginVertical("box");
+						EditorHelper.SerializeField(serializedObject, "m_sizeActive");
+						EditorHelper.SerializeField(serializedObject, "m_sizeInactive");
+						EditorGUILayout.EndVertical();
+						EditorGUI.indentLevel--;
+					}
 
-                var enableFontSizeSwitch = EditorHelper.SerializeField(serializedObject, "enableFontSizeSwitch");
-                if (enableFontSizeSwitch.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "fontSizeActive");
-                    EditorHelper.SerializeField(serializedObject, "fontSizeInactive");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
+					var enableFontSizeSwitch = EditorHelper.SerializeField(serializedObject, "m_enableFontSizeSwitch");
+					if (enableFontSizeSwitch.boolValue)
+					{
+						EditorGUI.indentLevel++;
+						EditorGUILayout.BeginVertical("box");
+						EditorHelper.SerializeField(serializedObject, "m_fontSizeActive");
+						EditorHelper.SerializeField(serializedObject, "m_fontSizeInactive");
+						EditorGUILayout.EndVertical();
+						EditorGUI.indentLevel--;
+					}
 
-                EditorHelper.SerializeField(serializedObject, "tweenTime");
+					EditorHelper.SerializeField(serializedObject, "m_tweenTime");
 
-                if (mToggle.txtLabel != null)
-                    mToggle.txtLabel.text = EditorGUILayout.TextField("Label", mToggle.txtLabel.text);
+					if (m_mToggle.m_txtLabel != null)
+						m_mToggle.m_txtLabel.text = EditorGUILayout.TextField("Label", m_mToggle.m_txtLabel.text);
 
-                serializedObject.ApplyModifiedProperties();
-            }
-            EditorGUILayout.EndVertical();
+					serializedObject.ApplyModifiedProperties();
+				}
+				EditorGUILayout.EndVertical();
 
-            base.OnInspectorGUI();
-        }
-    }
+				base.OnInspectorGUI();
+			}
+		}
+	}
 #endif
 }

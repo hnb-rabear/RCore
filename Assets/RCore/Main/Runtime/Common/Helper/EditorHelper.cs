@@ -1290,8 +1290,7 @@ namespace RCore.Editor
         //    return list;
         //}
 
-        public static bool ListObjects<T>(string pName, ref List<T> pObjects, List<string> pLabels,
-            bool pShowObjectBox = true, bool pReadOnly = false, IDraw[] pAdditionalDraws = null) where T : Object
+        public static bool ListObjects<T>(string pName, ref List<T> pObjects, List<string> pLabels, bool pShowObjectBox = true, bool pReadOnly = false, IDraw[] pAdditionalDraws = null) where T : Object
         {
             GUILayout.Space(3);
 
@@ -1314,8 +1313,8 @@ namespace RCore.Editor
                 int to = page * 20 + 20 - 1;
                 if (to > list.Count - 1)
                     to = list.Count - 1;
-
-                BoxVertical(() =>
+                
+	            EditorGUILayout.BeginVertical("box");
                 {
                     int boxSize = 34;
                     if (pShowObjectBox)
@@ -1360,33 +1359,37 @@ namespace RCore.Editor
 
                     for (int i = from; i <= to; i++)
                     {
-                        var i1 = i;
-                        BoxHorizontal(() =>
+	                    if (i >= list.Count)
+		                    continue;
+	                    
+	                    EditorGUILayout.BeginHorizontal();
                         {
+                            EditorGUILayout.LabelField((i + 1).ToString(), GUILayout.Width(25));
+                            if (pLabels != null && i < pLabels.Count)
+                                LabelField(pLabels[i], (int)Mathf.Max(pLabels[i].Length * 8f, 100), false);
+                            list[i] = (T)ObjectField<T>(list[i], "");
                             if (pShowObjectBox)
-                                list[i1] = (T)ObjectField<T>(list[i1], "", 0, boxSize, true);
-                            EditorGUILayout.LabelField((i1 + 1).ToString(), GUILayout.Width(25));
-                            if (pLabels != null && i1 < pLabels.Count)
-                                LabelField(pLabels[i1], (int)Mathf.Max(pLabels[i1].Length * 9f, 100), false);
-                            list[i1] = (T)ObjectField<T>(list[i1], "");
+	                            list[i] = (T)ObjectField<T>(list[i], "", 0, boxSize, true);
+                            
                             if (!pReadOnly)
                             {
-                                if (Button("▲", 23) && i1 > 0)
-                                {
-                                    (list[i1], list[i1 - 1]) = (list[i1 - 1], list[i1]);
-                                }
+                                if (Button("▲", 23) && i > 0)
+	                                (list[i], list[i - 1]) = (list[i - 1], list[i]);
 
-                                if (Button("▼", 23) && i1 < list.Count - 1)
-                                {
-                                    (list[i1], list[i1 + 1]) = (list[i1 + 1], list[i1]);
-                                }
+                                if (Button("▼", 23) && i < list.Count - 1)
+	                                (list[i], list[i + 1]) = (list[i + 1], list[i]);
 
-                                if (ButtonColor("x", Color.red, 23))
-                                    list.RemoveAt(i1);
+                                if (ButtonColor("-", Color.red, 23))
+                                {
+	                                list.RemoveAt(i);
+	                                i--;
+                                }
+                                
                                 if (ButtonColor("+", Color.green, 23))
-                                    list.Insert(i1 + 1, null);
+                                    list.Insert(i + 1, null);
                             }
-                        });
+                        }
+                        EditorGUILayout.EndHorizontal();
                     }
 
                     if (totalPages > 1)
@@ -1456,7 +1459,8 @@ namespace RCore.Editor
                     if (pAdditionalDraws != null)
                         foreach (var draw in pAdditionalDraws)
                             draw.Draw();
-                }, default, true);
+                }
+                EditorGUILayout.EndVertical();
             }
 
             pObjects = list;
@@ -1489,7 +1493,7 @@ namespace RCore.Editor
             if (to > pCount - 1)
                 to = pCount - 1;
 
-            BoxVertical(() =>
+            EditorGUILayout.BeginVertical("box");
             {
                 if (totalPages > 1)
                 {
@@ -1551,13 +1555,13 @@ namespace RCore.Editor
 
                     EditorGUILayout.EndHorizontal();
                 }
-            }, default, true);
+            }
+            EditorGUILayout.EndVertical();
 
             GUI.backgroundColor = prevColor;
         }
 
-        public static void ListObjectsWithSearch<T>(ref List<T> pList, string pName, bool pShowObjectBox = true)
-            where T : Object
+        public static void ListObjectsWithSearch<T>(ref List<T> pList, string pName, bool pShowObjectBox = true) where T : Object
         {
             var prevColor = GUI.color;
             GUI.backgroundColor = new Color(1, 1, 0.5f);
@@ -1585,8 +1589,8 @@ namespace RCore.Editor
                 int to = page * 20 + 20 - 1;
                 if (to > list.Count - 1)
                     to = list.Count - 1;
-
-                BoxVertical(() =>
+                
+				EditorGUILayout.BeginVertical("true");
                 {
                     int boxSize = 34;
                     if (pShowObjectBox)
@@ -1631,29 +1635,32 @@ namespace RCore.Editor
                     bool searching = !string.IsNullOrEmpty(search);
                     for (int i = from; i <= to; i++)
                     {
+	                    if (i >= list.Count)
+		                    continue;
+	                    
                         if (searching && !list[i].name.Contains(search))
                             continue;
 
-                        var i1 = i;
-                        BoxHorizontal(() =>
+                        EditorGUILayout.BeginHorizontal();
                         {
+                            EditorGUILayout.LabelField((i + 1).ToString(), GUILayout.Width(25));
+                            list[i] = (T)ObjectField<T>(list[i], "");
                             if (pShowObjectBox)
-                                list[i1] = (T)ObjectField<T>(list[i1], "", 0, boxSize, true);
-                            EditorGUILayout.LabelField((i1 + 1).ToString(), GUILayout.Width(25));
-                            list[i1] = (T)ObjectField<T>(list[i1], "");
-                            if (Button("▲", 23) && i1 > 0)
-                            {
-                                (list[i1], list[i1 - 1]) = (list[i1 - 1], list[i1]);
-                            }
+	                            list[i] = (T)ObjectField<T>(list[i], "", 0, boxSize, true);
+                            
+                            if (Button("▲", 23) && i > 0)
+	                            (list[i], list[i - 1]) = (list[i - 1], list[i]);
 
-                            if (Button("▼", 23) && i1 < list.Count - 1)
-                            {
-                                (list[i1], list[i1 + 1]) = (list[i1 + 1], list[i1]);
-                            }
+                            if (Button("▼", 23) && i < list.Count - 1)
+	                            (list[i], list[i + 1]) = (list[i + 1], list[i]);
 
-                            if (ButtonColor("x", Color.red, 23))
-                                list.RemoveAt(i1);
-                        });
+                            if (ButtonColor("-", Color.red, 23))
+                            {
+	                            list.RemoveAt(i);
+	                            i--;
+                            }
+                        }
+                        EditorGUILayout.EndHorizontal();
                     }
 
                     if (totalPages > 1)
@@ -1677,7 +1684,8 @@ namespace RCore.Editor
                         EditorGUILayout.EndHorizontal();
                     }
 
-                    BoxHorizontal(() =>
+
+                    EditorGUILayout.BeginHorizontal();
                     {
                         if (ButtonColor("+1", Color.green, 30))
                         {
@@ -1686,9 +1694,9 @@ namespace RCore.Editor
                             EditorPrefs.SetInt($"{pName}_page", page);
                         }
 
-                        if (Button("Sort By Name"))
+                        if (GUILayout.Button("Sort By Name"))
                             list = list.OrderBy(m => m.name).ToList();
-                        if (Button("Remove Duplicate"))
+                        if (GUILayout.Button("Remove Duplicate"))
                         {
                             var duplicate = new List<int>();
                             foreach (var item in list)
@@ -1715,8 +1723,10 @@ namespace RCore.Editor
                         if (ButtonColor("Clear", Color.red, 50))
                             if (ConfirmPopup())
                                 list = new List<T>();
-                    });
-                }, default, true);
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+                EditorGUILayout.EndVertical();
             }
 
             pList = list;
@@ -1730,6 +1740,189 @@ namespace RCore.Editor
             GUI.backgroundColor = prevColor;
         }
 
+        public static bool ListKeyObjects<TKey, TValue>(string pName, ref List<SerializableKeyValue<TKey, TValue>> pList, bool pShowObjectBox = true, IDraw[] pAdditionalDraws = null)
+	        where TValue : Object
+        {
+            GUILayout.Space(3);
+
+            var prevColor = GUI.color;
+            GUI.backgroundColor = new Color(1, 1, 0.5f);
+
+            var list = pList;
+            var show = HeaderFoldout($"{pName} ({pList.Count})", pName);
+            if (show)
+            {
+                int page = EditorPrefs.GetInt($"{pName}_page", 0);
+                int totalPages = Mathf.CeilToInt(list.Count * 1f / 20f);
+                if (totalPages == 0)
+                    totalPages = 1;
+                if (page < 0)
+                    page = 0;
+                if (page >= totalPages)
+                    page = totalPages - 1;
+                int from = page * 20;
+                int to = page * 20 + 20 - 1;
+                if (to > list.Count - 1)
+                    to = list.Count - 1;
+
+                EditorGUILayout.BeginVertical("box");
+                {
+                    int boxSize = 34;
+                    if (pShowObjectBox)
+                    {
+                        boxSize = EditorPrefs.GetInt($"{pName}_Slider", 34);
+                        int boxSizeNew = (int)EditorGUILayout.Slider(boxSize, 34, 68);
+                        if (boxSize != boxSizeNew)
+                        {
+                            EditorPrefs.SetInt($"{pName}_Slider", boxSizeNew);
+                            boxSize = boxSizeNew;
+                        }
+                    }
+
+                    if (totalPages > 1)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        if (GUILayout.Button("<Prev<"))
+                        {
+                            if (page > 0)
+                                page--;
+                            EditorPrefs.SetInt($"{pName}_page", page);
+                        }
+
+                        EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
+                        if (GUILayout.Button(">Next>"))
+                        {
+                            if (page < totalPages - 1)
+                                page++;
+                            EditorPrefs.SetInt($"{pName}_page", page);
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+                    }
+
+                    for (int i = from; i <= to; i++)
+                    {
+	                    if (i >= list.Count || list[i] == null)
+	                        continue;
+                        EditorGUILayout.BeginHorizontal();
+                        {
+                            EditorGUILayout.LabelField((i + 1).ToString(), GUILayout.Width(25));
+                            if (typeof(TKey).IsEnum)
+                            {
+	                            var key = list[i].k;
+	                            var newKey = (TKey)Enum.Parse(typeof(TKey), EditorGUILayout.EnumPopup((Enum)Enum.ToObject(typeof(TKey), key)).ToString());
+	                            list[i].k = newKey;
+                            }
+                            else if (typeof(TKey) == typeof(int))
+                            {
+	                            int key = Convert.ToInt32(list[i].k);
+	                            int newKey = EditorGUILayout.IntField(key, EditorStyles.textField, GUILayout.MinWidth(40));
+	                            list[i].k = (TKey)(object)newKey;
+                            }
+                            else if (typeof(TKey) == typeof(string))
+                            {
+	                            string key = list[i].k.ToString();
+	                            string newKey = EditorGUILayout.TextField(key, EditorStyles.textField, GUILayout.MinWidth(40));
+	                            list[i].k = (TKey)(object)newKey;
+                            }
+                            list[i].v = (TValue)ObjectField<TValue>(list[i].v, "");
+                            if (pShowObjectBox)
+	                            list[i].v = (TValue)ObjectField<TValue>(list[i].v, "", 0, boxSize, true);
+                            
+                            if (Button("▲", 23) && i > 0)
+	                            (list[i], list[i - 1]) = (list[i - 1], list[i]);
+                            if (Button("▼", 23) && i < list.Count - 1)
+	                            (list[i], list[i + 1]) = (list[i + 1], list[i]);
+                            if (ButtonColor("-", Color.red, 23))
+                            {
+	                            list.RemoveAt(i);
+	                            i--;
+                            }
+                            if (ButtonColor("+", Color.green, 23))
+	                            list.Insert(i + 1, null);
+                        }
+                        EditorGUILayout.EndHorizontal();
+                    }
+
+                    if (totalPages > 1)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        if (GUILayout.Button("<Prev<"))
+                        {
+                            if (page > 0)
+                                page--;
+                            EditorPrefs.SetInt($"{pName}_page", page);
+                        }
+
+                        EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
+                        if (GUILayout.Button(">Next>"))
+                        {
+                            if (page < totalPages - 1)
+                                page++;
+                            EditorPrefs.SetInt($"{pName}_page", page);
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+                    }
+
+                    EditorGUILayout.BeginHorizontal();
+                    {
+	                    if (ButtonColor("+1", Color.green, 30))
+	                    {
+		                    list.Add(null);
+		                    page = totalPages - 1;
+		                    EditorPrefs.SetInt($"{pName}_page", page);
+	                    }
+
+	                    if (GUILayout.Button("Sort By Name"))
+		                    list = list.OrderBy(m => m.v.name).ToList();
+	                    if (GUILayout.Button("Remove Duplicate"))
+	                    {
+		                    var duplicate = new List<int>();
+		                    for (int i = 0; i < list.Count; i++)
+		                    {
+			                    int count = 0;
+			                    for (int j = list.Count - 1; j >= 0; j--)
+			                    {
+				                    if (list[j] == list[i])
+				                    {
+					                    count++;
+					                    if (count > 1)
+						                    duplicate.Add(j);
+				                    }
+			                    }
+		                    }
+
+		                    for (int j = list.Count - 1; j >= 0; j--)
+		                    {
+			                    if (duplicate.Contains(j))
+				                    list.Remove(list[j]);
+		                    }
+	                    }
+
+	                    if (ButtonColor("Clear", Color.red, 50))
+		                    if (ConfirmPopup())
+			                    list = new List<SerializableKeyValue<TKey, TValue>>();
+                    }
+                    EditorGUILayout.EndHorizontal();
+
+                    if (pAdditionalDraws != null)
+                        foreach (var draw in pAdditionalDraws)
+                            draw.Draw();
+                }
+                EditorGUILayout.EndVertical();
+            }
+
+            pList = list;
+
+            if (GUI.changed)
+                EditorPrefs.SetBool(pName, show);
+
+            GUI.backgroundColor = prevColor;
+
+            return show;
+        }
+        
         public static string Tabs(string pKey, params string[] pTabsName)
         {
             var tabs = new EditorTabs()
@@ -3186,30 +3379,6 @@ namespace RCore.Editor
                         EditorUtility.SetDirty(go);
                     }
                 }
-        }
-
-        public static bool HasSelectedGameObject(bool showHelpBox)
-        {
-            if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
-            {
-                if (showHelpBox)
-                    EditorGUILayout.HelpBox("Select at least one GameObject", MessageType.Warning);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool HasSelectedObject(bool showHelpBox)
-        {
-            if (Selection.objects == null || Selection.objects.Length == 0)
-            {
-                if (showHelpBox)
-                    EditorGUILayout.HelpBox("Select at least one Object", MessageType.Warning);
-                return false;
-            }
-
-            return true;
         }
 
         public static void DrawAssetsList<T>(AssetsList<T> assets, string pDisplayName, bool @readonly = false, List<string> labels = null) where T : Object

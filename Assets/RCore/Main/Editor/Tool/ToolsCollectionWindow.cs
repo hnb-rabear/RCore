@@ -46,7 +46,7 @@ namespace RCore.Editor.Tool
 				EditorHelper.BoxVertical(() =>
 				{
 					if (m_ReplaceableGameObjects == null || m_ReplaceableGameObjects.Count == 0)
-						EditorGUILayout.HelpBox("Select at least one Object to see how it work", MessageType.Info);
+						EditorGUILayout.HelpBox("Select at least one GameObject in Scene", MessageType.Info);
 
 					EditorHelper.ListObjects("Replaceable Objects", ref m_ReplaceableGameObjects, null, false);
 					EditorHelper.ListObjects("Prefabs", ref m_Prefabs, null, false);
@@ -100,7 +100,7 @@ namespace RCore.Editor.Tool
 				EditorHelper.BoxVertical(() =>
 				{
 					if (m_MeshCount == 0)
-						EditorGUILayout.HelpBox("Select at least one Mesh Object to see how it work", MessageType.Info);
+						EditorGUILayout.HelpBox("Select GameObjects that have MeshFilter component", MessageType.Info);
 
 					if (m_MeshCount > 1)
 					{
@@ -172,7 +172,7 @@ namespace RCore.Editor.Tool
 		{
 			if (EditorHelper.HeaderFoldout("Combine Meshes"))
 			{
-				if (!EditorHelper.HasSelectedGameObject(true))
+				if (!HasSelectedGameObject("Select GameObjects that have a MeshFilter and MeshRenderer component"))
 					return;
 
 				bool available = false;
@@ -188,7 +188,7 @@ namespace RCore.Editor.Tool
 
 				if (!available)
 				{
-					EditorGUILayout.HelpBox("Select at least one Mesh Object to see how it work", MessageType.Info);
+					EditorGUILayout.HelpBox("Select GameObjects that have a MeshFilter and MeshRenderer component", MessageType.Info);
 					return;
 				}
 
@@ -224,16 +224,13 @@ namespace RCore.Editor.Tool
 
 		private static void AlignCenterMeshRendererObj()
 		{
-			if (EditorHelper.HeaderFoldout("Align Center Mesh Renderer obj"))
+			if (EditorHelper.HeaderFoldout("Align Center MeshRenderer obj"))
 			{
-				if (!EditorHelper.HasSelectedGameObject(true))
+				if (!HasSelectedGameObject("Select GameObjects that have a MeshRenderer component"))
 					return;
 
 				foreach (var g in Selection.gameObjects)
 				{
-					if (g.IsPrefab())
-						continue;
-
 					var renderer = g.transform.GetComponent<Renderer>();
 					var center = renderer.bounds.extents;
 					g.transform.localPosition = new Vector3(-center.x, g.transform.localPosition.y, -center.z);
@@ -263,7 +260,6 @@ namespace RCore.Editor.Tool
 			EditorHelper.HeaderFoldout("UI Utilities", "", () =>
 			{
 				FormatTexts();
-				SketchImages();
 				ToggleRaycastAll();
 				ChangeButtonsTransitionColor();
 				ChangeTextsFont();
@@ -278,9 +274,9 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 				{
-					if (m_TextCount == 0)
-						EditorGUILayout.HelpBox("Select at least one Text Object to see how it work", MessageType.Info);
-					else
+					EditorGUILayout.HelpBox("Select GameObjects that have a Text or TextMeshProUGUI component either on them or within their children", MessageType.Info);
+					
+					if (m_TextCount > 0)
 						EditorGUILayout.LabelField("Text Count: ", m_TextCount.ToString());
 
 					m_FormatType = EditorHelper.DropdownListEnum(m_FormatType, "Format Type");
@@ -355,74 +351,6 @@ namespace RCore.Editor.Tool
 			}
 		}
 
-		private float m_ImgWidth;
-		private float m_ImgHeight;
-		private int m_CountImages;
-
-		private void SketchImages()
-		{
-			if (EditorHelper.HeaderFoldout("Sketch Images"))
-			{
-				GUILayout.BeginVertical("box");
-				{
-					if (m_CountImages == 0)
-						EditorGUILayout.HelpBox("Select at least one Image Object to see how it work", MessageType.Info);
-					else
-						EditorGUILayout.LabelField("Image Count: ", m_CountImages.ToString());
-
-					m_ImgWidth = EditorHelper.FloatField(m_ImgWidth, "Width");
-					m_ImgHeight = EditorHelper.FloatField(m_ImgHeight, "Height");
-
-					m_CountImages = 0;
-					var allImages = new List<Image>();
-					foreach (var g in Selection.gameObjects)
-					{
-						var img = g.GetComponent<Image>();
-						if (img != null)
-						{
-							allImages.Add(img);
-							EditorGUILayout.LabelField("Image: ", img.ToString());
-						}
-					}
-
-					var buttons = new List<IDraw>();
-					buttons.Add(new EditorButton()
-					{
-						label = "Sketch By Height",
-						onPressed = () =>
-						{
-							foreach (var img in allImages)
-								img.SketchByHeight(m_ImgHeight);
-						}
-					});
-
-					buttons.Add(new EditorButton()
-					{
-						label = "Sketch By Width",
-						onPressed = () =>
-						{
-							foreach (var img in allImages)
-								img.SketchByWidth(m_ImgWidth);
-						}
-					});
-
-					buttons.Add(new EditorButton()
-					{
-						label = "Sketch",
-						onPressed = () =>
-						{
-							foreach (var img in allImages)
-								img.Sketch(new Vector2(m_ImgWidth, m_ImgHeight));
-						}
-					});
-
-					EditorHelper.GridDraws(2, buttons);
-				}
-
-				GUILayout.EndVertical();
-			}
-		}
-
 		private int m_RaycastOnCount;
 		private int m_RaycastOffCount;
 		private List<Graphic> m_Graphics;
@@ -433,7 +361,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 				{
-					if (!EditorHelper.HasSelectedGameObject(true))
+					if (!HasSelectedGameObject("Select at least one Graphic GameObject"))
 					{
 						GUILayout.EndVertical();
 						return;
@@ -540,7 +468,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!EditorHelper.HasSelectedGameObject(true))
+                if (!HasSelectedGameObject("Select GameObjects that have a Button component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -622,7 +550,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!EditorHelper.HasSelectedGameObject(true))
+                if (!HasSelectedGameObject("Select GameObjects that have a Button component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -682,7 +610,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!EditorHelper.HasSelectedGameObject(true))
+                if (!HasSelectedGameObject("Select GameObjects that have a Text component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -733,7 +661,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!EditorHelper.HasSelectedGameObject(true))
+                if (!HasSelectedGameObject("Select GameObjects that have a TextMeshProUGUI component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -779,7 +707,7 @@ namespace RCore.Editor.Tool
 		{
 			if (EditorHelper.HeaderFoldout("Convert Transform To RectTransform"))
 			{
-				if (!EditorHelper.HasSelectedGameObject(true))
+				if (!HasSelectedGameObject("Select Non-UI GameObjects on Scene or Hierarchy"))
 					return;
 
 				if (EditorHelper.Button("Convert"))
@@ -837,8 +765,10 @@ namespace RCore.Editor.Tool
 		{
 			if (EditorHelper.HeaderFoldout("Generate Animations Pack Script"))
 			{
-				if (!EditorHelper.HasSelectedGameObject(true))
+				if (!HasSelectedGameObject("Select FBX files that have Animations"))
 					return;
+				
+				GUILayout.BeginVertical("box");
 
 				m_AnimationClipsPackScript = new EditorPrefsString("m_AnimationClipsPackScript");
 				m_AnimationClipsPackPath = new EditorPrefsString("m_AnimationClipsPackPath");
@@ -867,7 +797,6 @@ namespace RCore.Editor.Tool
 
 				if (m_AnimationClips != null && m_AnimationClips.Count > 0)
 				{
-					GUILayout.BeginVertical("box");
 					for (int i = 0; i < m_AnimationClips.Count; i++)
 					{
 						var clip = m_AnimationClips[i];
@@ -920,19 +849,21 @@ namespace RCore.Editor.Tool
 
 						m_AnimationClipsPackPath.Value = EditorHelper.SaveFilePanel(m_AnimationClipsPackPath.Value, m_AnimationClipsPackScript.Value, generatedContent, "cs");
 					}
-
+					
 					GUILayout.EndHorizontal();
-					GUILayout.EndVertical();
 				}
+				GUILayout.EndVertical();
 			}
 		}
 
 		private void GenerateJsonListOfFiles()
 		{
-			if (EditorHelper.HeaderFoldout("Generate json contain list for files"))
+			if (EditorHelper.HeaderFoldout("Generate a Json contain list of files"))
 			{
-				if (!EditorHelper.HasSelectedObject(true))
+				if (!HasSelectedObject("Select Text Files"))
 					return;
+				
+				GUILayout.BeginVertical("box");
 
 				if (EditorHelper.Button("Generate"))
 				{
@@ -949,6 +880,7 @@ namespace RCore.Editor.Tool
 					var json = JsonHelper.ToJson(names);
 					EditorHelper.SaveFilePanel(folderPath, "all_files", json, "json");
 				}
+				GUILayout.EndVertical();
 			}
 		}
 
@@ -962,7 +894,7 @@ namespace RCore.Editor.Tool
 		private static readonly List<TextAsset> m_TextFiles = new List<TextAsset>();
 		private static void GenerateCharactersMap()
 		{
-			if (EditorHelper.HeaderFoldout("Generate Characters Map"))
+			if (EditorHelper.HeaderFoldout("Generate Characters Set"))
 			{
 				if (EditorHelper.ButtonColor("Add Txt File", Color.green))
 				{
@@ -1001,7 +933,7 @@ namespace RCore.Editor.Tool
 					m_CombinedTextsResult = string.Concat(m_CombinedTextsResult.OrderBy(c => c));
 				}
 				m_CombinedTextsResult = EditorHelper.TextArea(m_CombinedTextsResult, null);
-				if (EditorHelper.Button("Save Characters Map"))
+				if (EditorHelper.Button("Save Characters Set"))
 				{
 					EditorHelper.SaveFilePanel(null, "combined_text", m_CombinedTextsResult, "txt");
 				}
@@ -1014,6 +946,32 @@ namespace RCore.Editor.Tool
 		{
 			var window = GetWindow<ToolsCollectionWindow>("Tools Collection", true);
 			window.Show();
+		}
+		
+		public static bool HasSelectedGameObject(string message = null)
+		{
+			if (string.IsNullOrEmpty(message))
+				message = $"Select at least one GameObject";
+			if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
+			{
+				EditorGUILayout.HelpBox(message, MessageType.Warning);
+				return false;
+			}
+			EditorGUILayout.HelpBox(message, MessageType.Info);
+			return true;
+		}
+
+		public static bool HasSelectedObject(string message = null)
+		{
+			if (string.IsNullOrEmpty(message))
+				message = "Select at least one Object";
+			if (Selection.objects == null || Selection.objects.Length == 0)
+			{
+				EditorGUILayout.HelpBox(message, MessageType.Warning);
+				return false;
+			}
+			EditorGUILayout.HelpBox(message, MessageType.Info);
+			return true;
 		}
 	}
 }

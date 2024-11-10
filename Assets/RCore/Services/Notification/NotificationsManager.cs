@@ -273,12 +273,11 @@ namespace RCore.Notification
 		/// </summary>
 		public IEnumerator IEInit()
 		{
-#if UNITY_NOTIFICATION
 			if (Initialized)
 				yield break;
-
+			
 			Initialized = true;
-
+#if UNITY_NOTIFICATION
 			var args = NotificationCenterArgs.Default;
 			args.AndroidChannelId = "notifications";
 			args.AndroidChannelName = "Notifications";
@@ -294,8 +293,6 @@ namespace RCore.Notification
 			yield return Platform.RequestNotificationPermission();
 
 			OnForegrounding();
-#else
-			yield break;
 #endif
 		}
 

@@ -7,30 +7,31 @@ namespace RCore.Data.JObject
 	public class SessionDataHandler : JObjectHandler<JObjectDBManager>
 	{
 		public float secondsTillNextDay;
+		
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
 			var sessionData = dbManager.sessionData;
 			if (sessionData.firstActive == 0)
 				sessionData.firstActive = utcNowTimestamp;
-			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive);
-			var utcNow = TimeHelper.UnixTimestampToDateTime(utcNowTimestamp);
-			if ((utcNow - lastActive).TotalDays > 1)
+			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive).ToLocalTime();
+			var now = TimeHelper.UnixTimestampToDateTime(utcNowTimestamp).ToLocalTime();
+			if ((now - lastActive).TotalDays > 1)
 				sessionData.daysStreak = 0; //Reset days streak
-			if (lastActive.Date != utcNow.Date)
+			if (lastActive.Date != now.Date)
 			{
 				sessionData.days++;
 				sessionData.daysStreak++;
 				sessionData.sessionsDaily = 0; // Reset daily sessions count
 			}
-			if (lastActive.Year != utcNow.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(utcNow))
+			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
 				sessionData.sessionsWeekly = 0; // Reset weekly sessions count
-			if (lastActive.Year != utcNow.Year || lastActive.Month != utcNow.Month)
+			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
 				sessionData.sessionsMonthly = 0; // Reset monthly sessions count
 			sessionData.sessionsTotal++;
 			sessionData.sessionsDaily++;
 			sessionData.sessionsWeekly++;
 			sessionData.sessionsMonthly++;
-			secondsTillNextDay = utcNow.Date.AddDays(1).ToUnixTimestampInt() - utcNowTimestamp;
+			secondsTillNextDay = now.Date.AddDays(1).ToUnixTimestampInt() - utcNowTimestamp;
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{
@@ -61,22 +62,25 @@ namespace RCore.Data.JObject
 		private void CheckNewDay()
 		{
 			var sessionData = dbManager.sessionData;
-			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive);
-			var utcNow = TimeHelper.GetServerTimeUtc() ?? DateTime.UtcNow;
-			if ((utcNow - lastActive).TotalDays > 1)
+			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive).ToLocalTime();
+			var now = (TimeHelper.GetServerTimeUtc() ?? DateTime.UtcNow).ToLocalTime();
+			if ((now - lastActive).TotalDays > 1)
 				sessionData.daysStreak = 0; //Reset days streak
-			if (lastActive.Year != utcNow.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(utcNow))
+			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
 				sessionData.sessionsWeekly = 1; // Reset weekly sessions count
-			if (lastActive.Year != utcNow.Year || lastActive.Month != utcNow.Month)
+			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
 				sessionData.sessionsMonthly = 1; // Reset monthly sessions count
-			if (lastActive.Date != utcNow.Date)
-			{
-				sessionData.days++;
-				sessionData.daysStreak++;
-				sessionData.sessionsDaily = 1; // Reset daily sessions count
-				DispatchEvent(new NewDayStartedEvent());
-			}
-			secondsTillNextDay = (float)(utcNow.Date.AddDays(1) - utcNow).TotalSeconds;
+			if (lastActive.Date != now.Date)
+				AddOneDay();
+			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
+		}
+		public void AddOneDay()
+		{
+			var sessionData = dbManager.sessionData;
+			sessionData.days++;
+			sessionData.daysStreak++;
+			sessionData.sessionsDaily = 1; // Reset daily sessions count
+			DispatchEvent(new NewDayStartedEvent());
 		}
 	}
 }
