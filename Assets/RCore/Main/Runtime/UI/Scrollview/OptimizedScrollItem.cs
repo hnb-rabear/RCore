@@ -3,35 +3,37 @@
 **/
 
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.UI
 {
 	public abstract class OptimizedScrollItem : MonoBehaviour
 	{
-		protected int m_Index = -1;
-		public int Index => m_Index;
-		private bool m_Refresh;
+		protected int m_index = -1;
+		public int Index => m_index;
+		private bool m_refresh;
+		public bool visible { get; set; }
 
-		public void UpdateContent(int pIndex, bool pForced)
+		public void UpdateContent(int pIndex, bool pForced = false)
 		{
-			if (m_Index.Equals(pIndex) && !pForced)
+			if (m_index.Equals(pIndex) && !pForced)
 				return;
-			m_Index = pIndex;
-			m_Refresh = true;
+			m_index = pIndex;
+			m_refresh = true;
 		}
         
 		public void ManualUpdate()
 		{
-			if (m_Refresh && gameObject.activeInHierarchy)
+			if (m_refresh && gameObject.activeInHierarchy)
 			{
 				OnUpdateContent();
-				m_Refresh = false;
+				m_refresh = false;
 			}
 		}
 
 		public void Refresh()
 		{
-			m_Refresh = true;
+			m_refresh = true;
 		}
 
 		protected abstract void OnUpdateContent();

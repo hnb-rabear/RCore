@@ -294,9 +294,9 @@ namespace RCore.UI
 		/// <summary>
 		/// Check if panel is prefab or build-in prefab then create and init
 		/// </summary>
-		public virtual T PushPanelToTop<T>(ref T pPanel, bool hideOtherPanels = false) where T : PanelController
+		public virtual T PushPanelToTop<T>(ref T pPanel, bool hidePusher = false) where T : PanelController
 		{
-			if (!hideOtherPanels || parentPanel == null)
+			if (!hidePusher || parentPanel == null)
 			{
 				var panel = CreatePanel(ref pPanel);
 				PushPanelToTop(panel);

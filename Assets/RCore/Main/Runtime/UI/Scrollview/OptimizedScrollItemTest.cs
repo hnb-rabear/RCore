@@ -12,8 +12,8 @@ namespace RCore.UI
 
 		protected override void OnUpdateContent()
 		{
-			name = m_Index.ToString();
-			mTxtIndex.text = m_Index.ToString();
+			name = m_index.ToString();
+			mTxtIndex.text = m_index.ToString();
 		}
 	}
 }

@@ -74,7 +74,7 @@ namespace RCore.UI
 		[SerializeField] private float m_fontSizeInactive;
 
 		[FormerlySerializedAs("tweenTime")]
-		[SerializeField] private float m_tweenTime = 0.5f;
+		[SerializeField] private float m_tweenTime = 0.3f;
 
 		[ReadOnly] public bool isLocked;
 
@@ -349,7 +349,8 @@ namespace RCore.UI
 				}
 				if (m_enableSizeSwitch || m_enableTextColorSwitch || m_enableBgColorSwitch || m_enableFontSizeSwitch)
 				{
-					m_customToggleGroup.SetToggleInteractable(false);
+					if (m_customToggleGroup != null)
+						m_customToggleGroup.SetToggleInteractable(false);
 					var layoutElement = gameObject.GetComponent<LayoutElement>();
 					var txtFromColor = !isOn ? m_colorActiveText : m_colorInactiveText;
 					var txtToColor = isOn ? m_colorActiveText : m_colorInactiveText;
@@ -361,7 +362,7 @@ namespace RCore.UI
 					float fontSizeTo = isOn ? m_fontSizeActive : m_fontSizeInactive;
 					float val = 0;
 					var rectTransform = transform as RectTransform;
-					DOTween.Kill(GetInstanceID());
+					DOTween.Kill(GetInstanceID() + 1);
 					DOTween.To(() => val, p_x => val = p_x, 1, m_tweenTime)
 						.OnUpdate(() =>
 						{
@@ -440,7 +441,7 @@ namespace RCore.UI
 										label.fontSize = isOn ? m_fontSizeActive : m_fontSizeInactive;
 							}
 						})
-						.SetId(GetInstanceID())
+						.SetId(GetInstanceID() + 1)
 						.SetEase(Ease.OutCubic);
 				}
 				if (m_customToggleGroup != null)

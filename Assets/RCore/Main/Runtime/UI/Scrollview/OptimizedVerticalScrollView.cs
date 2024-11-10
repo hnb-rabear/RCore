@@ -40,11 +40,10 @@ namespace RCore.UI
         private Vector2 m_pivot;
 
         //Advance settings, in case the height of View is flexible
-        [Separator("Advance Settings")]
+        [Separator("Advanced Settings")]
         public bool autoMatchHeight;
         public float minViewHeight;
         public float maxViewHeight;
-        public float scrollHeight => (scrollView.transform as RectTransform).sizeDelta.y;
 
         private void Start()
         {
@@ -168,25 +167,56 @@ namespace RCore.UI
                 pNormPos.y = 1f - pNormPos.y;
             if (pNormPos.y > 1)
                 pNormPos.y = 1;
-
+            
+            // Calculate the viewport bounds in world space
+            var viewport = scrollView.viewport;
+            var viewportCorners = new Vector3[4];
+            viewport.GetWorldCorners(viewportCorners);
+            var viewportRect = new Rect(viewportCorners[0], viewportCorners[2] - viewportCorners[0]);
+            
             int numOutOfView = Mathf.CeilToInt(pNormPos.y * (total - m_TotalVisible)); //number of elements beyond the left boundary (or top)
             int firstIndex = Mathf.Max(0, numOutOfView - m_TotalBuffer); //index of first element beyond the left boundary (or top)
             int originalIndex = firstIndex % m_optimizedTotal;
-
 
             int newIndex = firstIndex;
             for (int i = originalIndex; i < m_optimizedTotal; i++)
             {
                 MoveItemByIndex(m_itemsRect[i], newIndex);
-                m_itemsScrolled[i].UpdateContent(newIndex, false);
+                m_itemsScrolled[i].UpdateContent(newIndex);
+                m_itemsScrolled[i].visible = IsItemVisible(viewportRect, i);
                 newIndex++;
             }
             for (int i = 0; i < originalIndex; i++)
             {
                 MoveItemByIndex(m_itemsRect[i], newIndex);
-                m_itemsScrolled[i].UpdateContent(newIndex, false);
+                m_itemsScrolled[i].UpdateContent(newIndex);
+                m_itemsScrolled[i].visible = IsItemVisible(viewportRect, i);
                 newIndex++;
             }
+        }
+
+        private void CheckItemsInViewPort()
+        {
+	        var viewport = scrollView.viewport;
+
+	        // Calculate the viewport bounds in world space
+	        var viewportCorners = new Vector3[4];
+	        viewport.GetWorldCorners(viewportCorners);
+	        var viewportRect = new Rect(viewportCorners[0], viewportCorners[2] - viewportCorners[0]);
+	        
+	        for (var i = 0; i < m_itemsRect.Count; i++)
+		        m_itemsScrolled[i].visible = IsItemVisible(viewportRect, i);
+        }
+
+        private bool IsItemVisible(Rect viewportRect, int index)
+        {
+	        // Calculate item bounds in world space
+	        var itemCorners = new Vector3[4];
+	        m_itemsRect[index].GetWorldCorners(itemCorners);
+	        var itemRect = new Rect(itemCorners[0], itemCorners[2] - itemCorners[0]);
+
+	        // Check if the item's bounds overlap the viewport's bounds
+	        return viewportRect.Overlaps(itemRect);
         }
 
         private void MoveItemByIndex(RectTransform item, int index)
@@ -197,13 +227,9 @@ namespace RCore.UI
             item.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_PrefabSizeX + m_PrefabSizeX * 0.5f,
                 item.anchoredPosition3D.y,
                 item.anchoredPosition3D.z);
-            //Debug.Log(item.anchoredPosition3D);
         }
 
-        public List<OptimizedScrollItem> GetListItem()
-        {
-            return m_itemsScrolled;
-        }
+        public List<OptimizedScrollItem> GetListItem() => m_itemsScrolled;
 
         public void ScrollToIndex(int pIndex, bool pTween = false)
         {
@@ -256,6 +282,25 @@ namespace RCore.UI
             }
         }
 
+        public bool CheckIndexInsideViewPort(int index)
+        {
+	        OptimizedScrollItem item = null;
+	        for (int i = 0; i < m_itemsScrolled.Count; i++)
+	        {
+		        if (m_itemsScrolled[i].Index == index)
+		        {
+			        item = m_itemsScrolled[i];
+			        break;
+		        }
+	        }
+	        if (item == null)
+		        return false;
+	        
+	        var viewportTop = scrollView.viewport.TopRight().y;
+	        var viewportBot = scrollView.viewport.BotLeft().y;
+	        return true;
+        }
+        
 #if UNITY_EDITOR
         [CustomEditor(typeof(OptimizedVerticalScrollView))]
         public class OptimizedVerticalScrollViewEditor : UnityEditor.Editor

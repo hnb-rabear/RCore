@@ -326,29 +326,29 @@ namespace RCore
 
 		public static Vector2 TopLeftWithPivot(this RectTransform rect, Vector2 pivot)
 		{
-			var x = rect.anchoredPosition.x - rect.rect.width * pivot.x;
-			var y = rect.anchoredPosition.y + rect.rect.height * (1 - pivot.y);
+			var x = rect.localPosition.x - rect.rect.width * pivot.x;
+			var y = rect.localPosition.y + rect.rect.height * (1 - pivot.y);
 			return new Vector2(x, y);
 		}
 
 		public static Vector2 TopRightWithPivot(this RectTransform rect, Vector2 pivot)
 		{
-			var x = rect.anchoredPosition.x + rect.rect.width * (1 - pivot.x);
-			var y = rect.anchoredPosition.y + rect.rect.height * (1 - pivot.y);
+			var x = rect.localPosition.x + rect.rect.width * (1 - pivot.x);
+			var y = rect.localPosition.y + rect.rect.height * (1 - pivot.y);
 			return new Vector2(x, y);
 		}
 
 		public static Vector2 BotLeftWithPivot(this RectTransform rect, Vector2 pivot)
 		{
-			var x = rect.anchoredPosition.x - rect.rect.width * pivot.x;
-			var y = rect.anchoredPosition.y - rect.rect.height * pivot.y;
+			var x = rect.localPosition.x - rect.rect.width * pivot.x;
+			var y = rect.localPosition.y - rect.rect.height * pivot.y;
 			return new Vector2(x, y);
 		}
 
 		public static Vector2 BotRightWithPivot(this RectTransform rect, Vector2 pivot)
 		{
-			var x = rect.anchoredPosition.x + rect.rect.width * (1 - pivot.x);
-			var y = rect.anchoredPosition.y - rect.rect.height * pivot.y;
+			var x = rect.localPosition.x + rect.rect.width * (1 - pivot.x);
+			var y = rect.localPosition.y - rect.rect.height * pivot.y;
 			return new Vector2(x, y);
 		}
 
