@@ -1,5 +1,6 @@
 using RCore.Audio;
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.AddressableAssets;
@@ -23,69 +24,90 @@ namespace RCore.Editor.Audio
 
 			EditorHelper.BoxVertical(() =>
 			{
-				m_Script.m_MusicsPath = EditorHelper.FolderField(m_Script.m_MusicsPath, "Musics Sources Path");
-				m_Script.m_SfxsPath = EditorHelper.FolderField(m_Script.m_SfxsPath, "SFX Sources Path");
-				m_Script.m_ConfigPath = EditorHelper.FolderField(m_Script.m_ConfigPath, "Export Config Path");
+				// m_Script.m_MusicsPath = EditorHelper.FolderField(m_Script.m_MusicsPath, "Musics Sources Path");
+				// m_Script.m_SfxsPath = EditorHelper.FolderField(m_Script.m_SfxsPath, "SFX Sources Path");
+				// m_Script.m_ConfigPath = EditorHelper.FolderField(m_Script.m_ConfigPath, "Export Config Path");
 
-				if (EditorHelper.Button("Build"))
+				if (EditorHelper.Button("Build Audio IDs"))
 				{
-					string musicSourcePath = Application.dataPath + m_Script.m_MusicsPath.Replace("Assets", "");
-					string sfxSourcePath = Application.dataPath + m_Script.m_SfxsPath.Replace("Assets", "");
-					string exportConfigPath = Application.dataPath + m_Script.m_ConfigPath.Replace("Assets", "");
-
-					var musicFiles = m_Script.musicClips;
-					var sfxFiles = m_Script.sfxClips;
-					if (m_Script.m_ImportFromFolder)
+					if (!string.IsNullOrEmpty(m_Script.m_MusicsPath))
 					{
-						musicFiles = EditorHelper.GetObjects<AudioClip>(musicSourcePath, "t:AudioClip").ToArray();
-						sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxSourcePath, "t:AudioClip").ToArray();
+						string musicSourcePath = Application.dataPath + m_Script.m_MusicsPath.Replace("Assets", "");
+						var musicFiles = EditorHelper.GetObjects<AudioClip>(musicSourcePath, "t:AudioClip").ToArray();
+						foreach (var clip in musicFiles)
+						{
+							if (!m_Script.musicClips.Contains(clip))
+								m_Script.musicClips.Add(clip, out m_Script.musicClips);
+						}
 					}
-					string result = GetConfigTemplate();
+					if (!string.IsNullOrEmpty(m_Script.m_SfxsPath))
+					{
+						string sfxSourcePath = Application.dataPath + m_Script.m_SfxsPath.Replace("Assets", "");
+						var sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxSourcePath, "t:AudioClip").ToArray();
+						foreach (var clip in sfxFiles)
+						{
+							if (!m_Script.sfxClips.Contains(clip))
+								m_Script.sfxClips.Add(clip, out m_Script.sfxClips);
+						}
+					}
+					for (var i = m_Script.musicClips.Length - 1; i >= 0; i--)
+					{
+						if (m_Script.musicClips[i] == null)
+							m_Script.musicClips.RemoveAt(i, out m_Script.musicClips);
+					}
+					for (var i = m_Script.sfxClips.Length - 1; i >= 0; i--)
+					{
+						if (m_Script.sfxClips[i] == null)
+							m_Script.sfxClips.RemoveAt(i, out m_Script.sfxClips);
+					}
+
+					string exportedContent = GetConfigTemplate();
 
 					//Musics
-					m_Script.musicClips = new AudioClip[musicFiles.Length];
 					string stringKeys = "";
 					string intKeys = "";
 					string enumKeys = "";
-					for (int i = 0; i < musicFiles.Length; i++)
+					for (int i = 0; i < m_Script.musicClips.Length; i++)
 					{
-						m_Script.musicClips[i] = musicFiles[i];
-
-						stringKeys += $"\"{musicFiles[i].name}\"";
-						intKeys += $"{musicFiles[i].name} = {i}";
-						enumKeys += $"{musicFiles[i].name} = {i}";
-						if (i < musicFiles.Length - 1)
+						stringKeys += $"\"{m_Script.musicClips[i].name}\"";
+						intKeys += $"{m_Script.musicClips[i].name} = {i}";
+						enumKeys += $"{m_Script.musicClips[i].name} = {i}";
+						if (i < m_Script.musicClips.Length - 1)
 						{
 							stringKeys += $",{Environment.NewLine}\t\t";
 							intKeys += $",{Environment.NewLine}\t\t";
 							enumKeys += $",{Environment.NewLine}\t\t";
 						}
 					}
-					result = result.Replace("<M_CONSTANT_INT_KEYS>", intKeys).Replace("<M_CONSTANT_STRING_KEYS>", stringKeys).Replace("<M_CONSTANTS_ENUM_KEYS>", enumKeys);
+					exportedContent = exportedContent.Replace("<M_CONSTANT_INT_KEYS>", intKeys).Replace("<M_CONSTANT_STRING_KEYS>", stringKeys).Replace("<M_CONSTANTS_ENUM_KEYS>", enumKeys);
 
 					//SFXs
-					m_Script.sfxClips = new AudioClip[sfxFiles.Length];
 					stringKeys = "";
 					intKeys = "";
 					enumKeys = "";
-					for (int i = 0; i < sfxFiles.Length; i++)
+					for (int i = 0; i < m_Script.sfxClips.Length; i++)
 					{
-						m_Script.sfxClips[i] = sfxFiles[i];
-
-						stringKeys += $"\"{sfxFiles[i].name}\"";
-						intKeys += $"{sfxFiles[i].name} = {i}";
-						enumKeys += $"{sfxFiles[i].name} = {i}";
-						if (i < sfxFiles.Length - 1)
+						stringKeys += $"\"{m_Script.sfxClips[i].name}\"";
+						intKeys += $"{m_Script.sfxClips[i].name} = {i}";
+						enumKeys += $"{m_Script.sfxClips[i].name} = {i}";
+						if (i < m_Script.sfxClips.Length - 1)
 						{
 							stringKeys += $",{Environment.NewLine}\t\t";
 							intKeys += $",{Environment.NewLine}\t\t";
 							enumKeys += $",{Environment.NewLine}\t\t";
 						}
 					}
-					result = result.Replace("<S_CONSTANT_INT_KEYS>", intKeys).Replace("<S_CONSTANT_STRING_KEYS>", stringKeys).Replace("<S_CONSTANTS_ENUM_KEYS>", enumKeys);
+					exportedContent = exportedContent.Replace("<S_CONSTANT_INT_KEYS>", intKeys).Replace("<S_CONSTANT_STRING_KEYS>", stringKeys).Replace("<S_CONSTANTS_ENUM_KEYS>", enumKeys);
 
+					if (!string.IsNullOrEmpty(m_Script.m_Namespace))
+					{
+						exportedContent = AddTabToEachLine(exportedContent);
+						exportedContent = $"namespace {m_Script.m_Namespace}\n" + "{\n" + exportedContent + "\n}";
+					}
+					
 					//Write result
-					System.IO.File.WriteAllText(exportConfigPath + "/AudioIDs.cs", result);
+					string exportConfigPath = Application.dataPath + m_Script.m_AudioIdsPath.Replace("Assets", "");
+					System.IO.File.WriteAllText(exportConfigPath + "/AudioIDs.cs", exportedContent);
 
 					if (EditorHelper.Button("Validate Asset Bundle Sounds"))
 					{
@@ -126,40 +148,51 @@ namespace RCore.Editor.Audio
 						AssetDatabase.Refresh();
 					}
 				}
-			}, ColorHelper.LightAzure, true);
+			}, default, true);
 		}
 
 		private string GetConfigTemplate()
 		{
-			if (string.IsNullOrEmpty(m_Script.m_NameClassSFX))
-				m_Script.m_NameClassSFX = "SfxIDs";
-			if (string.IsNullOrEmpty(m_Script.m_NameClassMusic))
-				m_Script.m_NameClassMusic = "MusicIDs";
+			// if (string.IsNullOrEmpty(m_Script.m_NameClassSFX))
+			// 	m_Script.m_NameClassSFX = "SfxIDs";
+			// if (string.IsNullOrEmpty(m_Script.m_NameClassMusic))
+			// 	m_Script.m_NameClassMusic = "MusicIDs";
+			//
+			// string musicTemplate =
+			// 	$"public static class {m_Script.m_NameClassMusic}\n"
+			// 	+ "{\n"
+			// 	+ "\tpublic const int <M_CONSTANT_INT_KEYS>;\n"
+			// 	+ "\tpublic static readonly string[] idStrings = new string[] { <M_CONSTANT_STRING_KEYS> };\n"
+			// 	+ "\tpublic enum Music { <M_CONSTANTS_ENUM_KEYS> };\n"
+			// 	+ "}";
+			// string sfxTemplate =
+			// 	$"public static class {m_Script.m_NameClassSFX}\n"
+			// 	+ "{\n"
+			// 	+ "\tpublic const int <S_CONSTANT_INT_KEYS>;\n"
+			// 	+ "\tpublic static readonly string[] idStrings = new string[] { <S_CONSTANT_STRING_KEYS> };\n"
+			// 	+ "\tpublic enum Sfx { <S_CONSTANTS_ENUM_KEYS> };\n"
+			// 	+ "}";
+			//
+			// string content = $"{musicTemplate}\n{sfxTemplate}";
+			// return content;
 
-			string musicTemplate =
-				$"public static class {m_Script.m_NameClassMusic}\n"
-				+ "{\n"
-				+ "\tpublic const int <M_CONSTANT_INT_KEYS>;\n"
-				+ "\tpublic static readonly string[] idStrings = new string[] { <M_CONSTANT_STRING_KEYS> };\n"
-				+ "\tpublic enum Music { <M_CONSTANTS_ENUM_KEYS> };\n"
-				+ "}";
-			string sfxTemplate =
-				$"public static class {m_Script.m_NameClassSFX}\n"
-				+ "{\n"
-				+ "\tpublic const int <S_CONSTANT_INT_KEYS>;\n"
-				+ "\tpublic static readonly string[] idStrings = new string[] { <S_CONSTANT_STRING_KEYS> };\n"
-				+ "\tpublic enum Sfx { <S_CONSTANTS_ENUM_KEYS> };\n"
-				+ "}";
-			string content = "";
-			if (!string.IsNullOrEmpty(m_Script.m_Namespace))
-			{
-				content = $"namespace {m_Script.m_Namespace}" + "\n{" + $"\n\t{musicTemplate}" + $"\n\t{sfxTemplate}" + "\n}";
-			}
-			else
-			{
-				content = $"\n{musicTemplate}\n{sfxTemplate}";
-			}
-			return content;
+			string guid = "8f872f9e1f6f8f444a1568810bc25883";
+			string path = AssetDatabase.GUIDToAssetPath(guid);
+			var textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
+			return textAsset.ToString();
+		}
+		
+		public static string AddTabToEachLine(string content)
+		{
+			// Split the content into lines
+			string[] lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+			// Add a tab space to the beginning of each line
+			for (int i = 0; i < lines.Length; i++)
+				lines[i] = "\t" + lines[i];
+
+			// Join the lines back together
+			return string.Join(Environment.NewLine, lines);
 		}
 	}
 }

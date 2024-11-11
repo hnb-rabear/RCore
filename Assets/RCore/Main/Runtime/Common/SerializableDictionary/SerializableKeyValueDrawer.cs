@@ -1,7 +1,9 @@
 /***
  * Author RaBear - HNB - 2024
  */
+
 #if UNITY_EDITOR
+using NPOI.Util.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,7 +13,6 @@ namespace RCore.Editor
 	public class SerializableKeyValueDrawer : PropertyDrawer
 	{
 		private const float THUMBNAIL_SIZE = 40;
-		private bool m_isTexture;
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
@@ -59,10 +60,7 @@ namespace RCore.Editor
 			{
 				var valueObj = valueProperty.objectReferenceValue;
 				if (valueObj is Texture || valueObj is Sprite)
-				{
 					valueRect.width -= THUMBNAIL_SIZE + 5;
-					m_isTexture = true;
-				}
 			}
 
 			// Draw the key property field
@@ -83,9 +81,10 @@ namespace RCore.Editor
 						var imageRect = new Rect(valueRect.x + valueRect.width + 5, valueRect.y, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
 
 						// Draw the texture or sprite thumbnail
-						var texture = valueObj is Sprite sprite ? sprite.texture : valueObj as Texture;
-						if (texture != null)
-							EditorGUI.ObjectField(imageRect, valueObj, typeof(Texture), allowSceneObjects: false);
+						if (valueObj is Texture)
+							valueProperty.objectReferenceValue = EditorGUI.ObjectField(imageRect, valueObj, typeof(Texture), allowSceneObjects: false);
+						else if (valueObj is Sprite)
+							valueProperty.objectReferenceValue = EditorGUI.ObjectField(imageRect, valueObj, typeof(Sprite), allowSceneObjects: false);
 					}
 				}
 				else
@@ -101,7 +100,16 @@ namespace RCore.Editor
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			float lineHeight = EditorGUIUtility.singleLineHeight * (m_isTexture ? 2 : 1);
+			bool isTexture = false;
+			var valueProperty = property.FindPropertyRelative("v");
+			if (valueProperty.propertyType == SerializedPropertyType.ObjectReference)
+			{
+				var valueObj = valueProperty.objectReferenceValue;
+				isTexture = valueObj is Texture || valueObj is Sprite;
+			}
+			float lineHeight = EditorGUIUtility.singleLineHeight;
+			if (isTexture)
+				lineHeight = THUMBNAIL_SIZE;
 			if (!property.IsInList())
 				return lineHeight * 2;
 			bool isFirstElement = property.IsFirstElementOfList();

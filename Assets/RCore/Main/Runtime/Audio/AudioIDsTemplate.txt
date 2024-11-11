@@ -1,0 +1,27 @@
+public static class MusicIDs
+{
+	public const int <M_CONSTANT_INT_KEYS>;
+	public static readonly string[] idStrings = new string[]
+	{
+		<M_CONSTANT_STRING_KEYS>
+	};
+
+	public enum Music
+	{
+		<M_CONSTANTS_ENUM_KEYS>
+	};
+}
+
+public static class SfxIDs
+{
+	public const int <S_CONSTANT_INT_KEYS>;
+	public static readonly string[] idStrings = new string[]
+	{
+		<S_CONSTANT_STRING_KEYS>
+	};
+
+	public enum Sfx
+	{
+		<S_CONSTANTS_ENUM_KEYS>
+	};
+}

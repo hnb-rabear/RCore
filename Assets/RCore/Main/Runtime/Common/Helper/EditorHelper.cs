@@ -834,7 +834,7 @@ namespace RCore.Editor
             }
             else
             {
-                var style = new GUIStyle(EditorStyles.helpBox);
+                var style = new GUIStyle("box");
                 if (pFixedWidth > 0) style.fixedWidth = pFixedWidth;
                 if (pFixedHeight > 0) style.fixedHeight = pFixedHeight;
                 EditorGUILayout.BeginVertical(style);
@@ -863,17 +863,13 @@ namespace RCore.Editor
             }
             else
             {
-                var style = new GUIStyle(EditorStyles.helpBox);
+                var style = new GUIStyle("box");
                 if (pFixedWidth > 0) style.fixedWidth = pFixedWidth;
                 if (pFixedHeight > 0) style.fixedHeight = pFixedHeight;
                 rect = EditorGUILayout.BeginVertical(style);
-                EditorGUI.indentLevel++;
             }
 
             doSomething();
-            
-            if (isBox)
-	            EditorGUI.indentLevel--;
             
             EditorGUILayout.EndVertical();
             if (color != default)
@@ -1340,7 +1336,7 @@ namespace RCore.Editor
                     if (totalPages > 1)
                     {
                         EditorGUILayout.BeginHorizontal();
-                        if (Button("<Prev<"))
+                        if (GUILayout.Button("<Prev<"))
                         {
                             if (page > 0)
                                 page--;
@@ -1348,7 +1344,7 @@ namespace RCore.Editor
                         }
 
                         EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
-                        if (Button(">Next>"))
+                        if (GUILayout.Button(">Next>"))
                         {
                             if (page < totalPages - 1)
                                 page++;
@@ -1396,7 +1392,7 @@ namespace RCore.Editor
                     if (totalPages > 1)
                     {
                         EditorGUILayout.BeginHorizontal();
-                        if (Button("<Prev<"))
+                        if (GUILayout.Button("<Prev<"))
                         {
                             if (page > 0)
                                 page--;
@@ -1404,7 +1400,7 @@ namespace RCore.Editor
                         }
 
                         EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
-                        if (Button(">Next>"))
+                        if (GUILayout.Button(">Next>"))
                         {
                             if (page < totalPages - 1)
                                 page++;
@@ -1594,7 +1590,7 @@ namespace RCore.Editor
                     if (totalPages > 1)
                     {
                         EditorGUILayout.BeginHorizontal();
-                        if (Button("<Prev<"))
+                        if (GUILayout.Button("<Prev<"))
                         {
                             if (page > 0)
                                 page--;
@@ -1602,7 +1598,7 @@ namespace RCore.Editor
                         }
 
                         EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
-                        if (Button("<Next<"))
+                        if (GUILayout.Button("<Next<"))
                         {
                             if (page < totalPages - 1)
                                 page++;
@@ -1648,7 +1644,7 @@ namespace RCore.Editor
                     if (totalPages > 1)
                     {
                         EditorGUILayout.BeginHorizontal();
-                        if (Button("<Prev<"))
+                        if (GUILayout.Button("<Prev<"))
                         {
                             if (page > 0)
                                 page--;
@@ -1656,7 +1652,7 @@ namespace RCore.Editor
                         }
 
                         EditorGUILayout.LabelField($"{from + 1}-{to + 1} ({list.Count})");
-                        if (Button(">Next>"))
+                        if (GUILayout.Button(">Next>"))
                         {
                             if (page < totalPages - 1)
                                 page++;
@@ -2623,9 +2619,7 @@ namespace RCore.Editor
             for (int i = 0; i < paths.Length; i++)
             {
                 if (paths[i] == "Assets")
-                {
-                    startJoint = i;
-                }
+	                startJoint = i;
 
                 if (startJoint != -1 && i >= startJoint)
                 {
@@ -2743,8 +2737,8 @@ namespace RCore.Editor
 
         public static string LastOpenedDirectory
         {
-	        get => EditorPrefs.GetString($"LastOpenedDirectory");
-	        set => EditorPrefs.SetString($"LastOpenedDirectory", value);
+	        get => EditorPrefs.GetString("LastOpenedDirectory");
+	        set => EditorPrefs.SetString("LastOpenedDirectory", value);
         }
         
         public static List<string> OpenFilePanelWithFilters(string title, string[] filter)
@@ -2808,7 +2802,7 @@ namespace RCore.Editor
                 var dependencies = AssetDatabase.GetDependencies(path);
                 foreach (var dependency in dependencies)
                 {
-                    EditorUtility.DisplayProgressBar($"Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
+                    EditorUtility.DisplayProgressBar("Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
 
                     var dependencyGuid = AssetDatabase.AssetPathToGUID(dependency);
                     if (m_InverseReferenceMap.ContainsKey(dependencyGuid))
@@ -2864,7 +2858,7 @@ namespace RCore.Editor
                     var dependencies = AssetDatabase.GetDependencies(path);
                     foreach (var dependency in dependencies)
                     {
-                        EditorUtility.DisplayProgressBar($"Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
+                        EditorUtility.DisplayProgressBar("Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
 
                         var dependencyGuid = AssetDatabase.AssetPathToGUID(dependency);
                         if (inverseReferenceMap.ContainsKey(dependencyGuid))
