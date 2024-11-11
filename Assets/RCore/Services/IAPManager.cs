@@ -80,7 +80,7 @@ namespace RCore.Service
 			}
 #if !UNITY_EDITOR
 			if (IsCurrentStoreSupportedByValidator())
-				m_Validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.identifier);
+				m_validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.identifier);
 #endif
 			m_onInitialized?.Invoke(true);
 		}

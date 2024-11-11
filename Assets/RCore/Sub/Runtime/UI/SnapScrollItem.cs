@@ -11,6 +11,7 @@ namespace RCore.UI
         protected bool m_refreshed;
 
         public bool Showing => m_Main.gameObject.activeSelf;
+        public virtual bool AlwaysEnabled => false;
         public RectTransform RectTransform
         {
             get
@@ -27,7 +28,7 @@ namespace RCore.UI
             {
                 Refresh();
                 m_refreshed = false;
-                enabled = false;
+                enabled = AlwaysEnabled;
             }
         }
 

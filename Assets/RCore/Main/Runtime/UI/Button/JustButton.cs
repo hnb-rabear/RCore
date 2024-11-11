@@ -41,6 +41,7 @@ namespace RCore.UI
 		[SerializeField] protected Image m_img;
 		[FormerlySerializedAs("m_PerfectRatio")]
 		[SerializeField] protected PerfectRatio m_perfectRatio = PerfectRatio.Height;
+		[SerializeField] protected bool m_hapticTouch;
 
 		[FormerlySerializedAs("mGreyMatEnabled")]
 		[SerializeField] protected bool m_greyscaleEffect;
@@ -68,7 +69,7 @@ namespace RCore.UI
 		private PivotForScale m_prePivot;
 		private Action m_inactionStateAction;
 		private bool m_active = true;
-		private int m_PerfectSpriteId;
+		private int m_perfectSpriteId;
 		private Vector2 m_initialScale;
 
 		protected override void Awake()
@@ -134,7 +135,7 @@ namespace RCore.UI
 			if (m_scaleBounceEffect)
 				transform.localScale = m_initialScale;
 
-			if (m_img != null && m_img.sprite != null && m_PerfectSpriteId != m_img.sprite.GetInstanceID())
+			if (m_img != null && m_img.sprite != null && m_perfectSpriteId != m_img.sprite.GetInstanceID())
 				CheckPerfectRatio();
 		}
 
@@ -145,7 +146,7 @@ namespace RCore.UI
 				if (m_inactionStateAction != null)
 				{
 					m_inactionStateAction();
-					if (TryGetComponent(out Animator component))
+					if (TryGetComponent(out Animator component) && component.enabled)
 						component.SetTrigger("Pressed");
 				}
 			}
@@ -155,6 +156,9 @@ namespace RCore.UI
 				base.OnPointerDown(eventData);
 				if (!string.IsNullOrEmpty(m_clickSfx))
 					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(m_clickSfx));
+				
+				if (m_hapticTouch)
+					Vibration.VibratePop();
 			}
 
 			if (m_scaleBounceEffect)
@@ -279,7 +283,7 @@ namespace RCore.UI
 			if (m_perfectRatio == PerfectRatio.Width)
 			{
 				var image1 = m_img;
-				if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_PerfectSpriteId != image1.sprite.GetInstanceID())
+				if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_perfectSpriteId != image1.sprite.GetInstanceID())
 				{
 					var nativeSize = image1.sprite.NativeSize();
 					var rectSize = rectTransform.sizeDelta;
@@ -290,13 +294,13 @@ namespace RCore.UI
 					}
 					else
 						image1.pixelsPerUnitMultiplier = 1;
-					m_PerfectSpriteId = image1.sprite.GetInstanceID();
+					m_perfectSpriteId = image1.sprite.GetInstanceID();
 				}
 			}
 			else if (m_perfectRatio == PerfectRatio.Height)
 			{
 				var image1 = m_img;
-				if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_PerfectSpriteId != image1.sprite.GetInstanceID())
+				if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_perfectSpriteId != image1.sprite.GetInstanceID())
 				{
 					var nativeSize = image1.sprite.NativeSize();
 					var rectSize = rectTransform.sizeDelta;
@@ -307,7 +311,7 @@ namespace RCore.UI
 					}
 					else
 						image1.pixelsPerUnitMultiplier = 1;
-					m_PerfectSpriteId = image1.sprite.GetInstanceID();
+					m_perfectSpriteId = image1.sprite.GetInstanceID();
 				}
 			}
 		}
@@ -338,8 +342,8 @@ namespace RCore.UI
 				if (transition == Transition.Animation)
 					transition = Transition.None;
 
-				if (gameObject.TryGetComponent(out Animator a))
-					a.enabled = false;
+				if (gameObject.TryGetComponent(out Animator component))
+					component.enabled = false;
 			}
 			else if (transition == Transition.Animation)
 			{
@@ -360,7 +364,7 @@ namespace RCore.UI
 
 			RefreshPivot();
 
-			m_PerfectSpriteId = 0;
+			m_perfectSpriteId = 0;
 			CheckPerfectRatio();
 		}
 
@@ -384,19 +388,20 @@ namespace RCore.UI
 				m_target.CheckPerfectRatio();
 				EditorGUILayout.BeginVertical("box");
 				{
-					EditorHelper.SerializeField(serializedObject, "m_img");
-					EditorHelper.SerializeField(serializedObject, "m_pivotForScaleBounce");
-					EditorHelper.SerializeField(serializedObject, "m_scaleBounceEffect");
-					EditorHelper.SerializeField(serializedObject, "m_greyscaleEffect");
-					EditorHelper.SerializeField(serializedObject, "m_clickSfx");
-					EditorHelper.SerializeField(serializedObject, "m_perfectRatio");
-					var imgSwapEnabled = EditorHelper.SerializeField(serializedObject, "m_imgOnOffSwap");
+					serializedObject.SerializeField("m_img");
+					serializedObject.SerializeField("m_pivotForScaleBounce");
+					serializedObject.SerializeField("m_scaleBounceEffect");
+					serializedObject.SerializeField("m_greyscaleEffect");
+					serializedObject.SerializeField("m_clickSfx");
+					serializedObject.SerializeField("m_hapticTouch");
+					serializedObject.SerializeField("m_perfectRatio");
+					var imgSwapEnabled = serializedObject.SerializeField("m_imgOnOffSwap");
 					if (imgSwapEnabled.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						EditorHelper.SerializeField(serializedObject, "m_imgOn");
-						EditorHelper.SerializeField(serializedObject, "m_imgOff");
+						serializedObject.SerializeField("m_imgOn");
+						serializedObject.SerializeField("m_imgOff");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}

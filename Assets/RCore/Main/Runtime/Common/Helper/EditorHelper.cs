@@ -1330,9 +1330,10 @@ namespace RCore.Editor
 
                     if (!pReadOnly)
                     {
+                        var list1 = list;
                         DragDropBox<T>(pName, (objs) =>
                         {
-                            list.AddRange(objs);
+                            list1.AddRange(objs);
                         });
                     }
 
@@ -1415,7 +1416,7 @@ namespace RCore.Editor
 
                     if (!pReadOnly)
                     {
-                        BoxHorizontal(() =>
+                        EditorGUILayout.BeginHorizontal();
                         {
                             if (ButtonColor("+1", Color.green, 30))
                             {
@@ -1424,36 +1425,16 @@ namespace RCore.Editor
                                 EditorPrefs.SetInt($"{pName}_page", page);
                             }
 
-                            if (Button("Sort By Name"))
+                            if (GUILayout.Button("Sort By Name"))
                                 list = list.OrderBy(m => m.name).ToList();
-                            if (Button("Remove Duplicate"))
-                            {
-                                var duplicate = new List<int>();
-                                for (int i = 0; i < list.Count; i++)
-                                {
-                                    int count = 0;
-                                    for (int j = list.Count - 1; j >= 0; j--)
-                                    {
-                                        if (list[j] == list[i])
-                                        {
-                                            count++;
-                                            if (count > 1)
-                                                duplicate.Add(j);
-                                        }
-                                    }
-                                }
-
-                                for (int j = list.Count - 1; j >= 0; j--)
-                                {
-                                    if (duplicate.Contains(j))
-                                        list.Remove(list[j]);
-                                }
-                            }
+                            if (GUILayout.Button("Remove Duplicate"))
+                                list.RemoveDuplicated();
 
                             if (ButtonColor("Clear", Color.red, 50))
                                 if (ConfirmPopup())
                                     list = new List<T>();
-                        });
+                        }
+                        EditorGUILayout.EndHorizontal();
                     }
 
                     if (pAdditionalDraws != null)
@@ -1561,7 +1542,7 @@ namespace RCore.Editor
             GUI.backgroundColor = prevColor;
         }
 
-        public static void ListObjectsWithSearch<T>(ref List<T> pList, string pName, bool pShowObjectBox = true) where T : Object
+        public static void ListObjectsWithSearch<T>(ref List<T> pList, string pName, bool pShowObjectBox = true) where T : UnityEngine.Object
         {
             var prevColor = GUI.color;
             GUI.backgroundColor = new Color(1, 1, 0.5f);
@@ -1604,9 +1585,10 @@ namespace RCore.Editor
                         }
                     }
 
+                    var list1 = list;
                     DragDropBox<T>(pName, (objs) =>
                     {
-                        list.AddRange(objs);
+                        list1.AddRange(objs);
                     });
 
                     if (totalPages > 1)
@@ -1697,28 +1679,7 @@ namespace RCore.Editor
                         if (GUILayout.Button("Sort By Name"))
                             list = list.OrderBy(m => m.name).ToList();
                         if (GUILayout.Button("Remove Duplicate"))
-                        {
-                            var duplicate = new List<int>();
-                            foreach (var item in list)
-                            {
-                                int count = 0;
-                                for (int j = list.Count - 1; j >= 0; j--)
-                                {
-                                    if (list[j] == item)
-                                    {
-                                        count++;
-                                        if (count > 1)
-                                            duplicate.Add(j);
-                                    }
-                                }
-                            }
-
-                            for (int j = list.Count - 1; j >= 0; j--)
-                            {
-                                if (duplicate.Contains(j))
-                                    list.Remove(list[j]);
-                            }
-                        }
+                            list.RemoveDuplicated();
 
                         if (ButtonColor("Clear", Color.red, 50))
                             if (ConfirmPopup())
@@ -1740,7 +1701,7 @@ namespace RCore.Editor
             GUI.backgroundColor = prevColor;
         }
 
-        public static bool ListKeyObjects<TKey, TValue>(string pName, ref List<SerializableKeyValue<TKey, TValue>> pList, bool pShowObjectBox = true, IDraw[] pAdditionalDraws = null)
+        public static bool ListKeyObjects<TKey, TValue>(string pName, ref List<SerializableKeyValue<TKey, TValue>> pList, bool pShowObjectBox = true, bool pReadOnly = false, IDraw[] pAdditionalDraws = null)
 	        where TValue : Object
         {
             GUILayout.Space(3);
@@ -1777,6 +1738,16 @@ namespace RCore.Editor
                             EditorPrefs.SetInt($"{pName}_Slider", boxSizeNew);
                             boxSize = boxSizeNew;
                         }
+                    }
+
+                    if (!pReadOnly)
+                    {
+                        var list1 = list;
+                        DragDropBox<TValue>(pName, (objs) =>
+                        {
+                            foreach (var value in objs)
+                                list1.Add(new SerializableKeyValue<TKey, TValue>(default, value));
+                        });
                     }
 
                     if (totalPages > 1)
@@ -1828,18 +1799,24 @@ namespace RCore.Editor
                             list[i].v = (TValue)ObjectField<TValue>(list[i].v, "");
                             if (pShowObjectBox)
 	                            list[i].v = (TValue)ObjectField<TValue>(list[i].v, "", 0, boxSize, true);
-                            
-                            if (Button("▲", 23) && i > 0)
-	                            (list[i], list[i - 1]) = (list[i - 1], list[i]);
-                            if (Button("▼", 23) && i < list.Count - 1)
-	                            (list[i], list[i + 1]) = (list[i + 1], list[i]);
-                            if (ButtonColor("-", Color.red, 23))
+
+                            if (!pReadOnly)
                             {
-	                            list.RemoveAt(i);
-	                            i--;
+                                if (Button("▲", 23) && i > 0)
+                                    (list[i], list[i - 1]) = (list[i - 1], list[i]);
+
+                                if (Button("▼", 23) && i < list.Count - 1)
+                                    (list[i], list[i + 1]) = (list[i + 1], list[i]);
+                            
+                                if (ButtonColor("-", Color.red, 23))
+                                {
+                                    list.RemoveAt(i);
+                                    i--;
+                                }
+                            
+                                if (ButtonColor("+", Color.green, 23))
+                                    list.Insert(i + 1, null);
                             }
-                            if (ButtonColor("+", Color.green, 23))
-	                            list.Insert(i + 1, null);
                         }
                         EditorGUILayout.EndHorizontal();
                     }
@@ -1864,47 +1841,29 @@ namespace RCore.Editor
 
                         EditorGUILayout.EndHorizontal();
                     }
-
-                    EditorGUILayout.BeginHorizontal();
+                    
+                    if (!pReadOnly)
                     {
-	                    if (ButtonColor("+1", Color.green, 30))
-	                    {
-		                    list.Add(null);
-		                    page = totalPages - 1;
-		                    EditorPrefs.SetInt($"{pName}_page", page);
-	                    }
-
-	                    if (GUILayout.Button("Sort By Name"))
-		                    list = list.OrderBy(m => m.v.name).ToList();
-	                    if (GUILayout.Button("Remove Duplicate"))
-	                    {
-		                    var duplicate = new List<int>();
-		                    for (int i = 0; i < list.Count; i++)
-		                    {
-			                    int count = 0;
-			                    for (int j = list.Count - 1; j >= 0; j--)
-			                    {
-				                    if (list[j] == list[i])
-				                    {
-					                    count++;
-					                    if (count > 1)
-						                    duplicate.Add(j);
-				                    }
-			                    }
-		                    }
-
-		                    for (int j = list.Count - 1; j >= 0; j--)
-		                    {
-			                    if (duplicate.Contains(j))
-				                    list.Remove(list[j]);
-		                    }
-	                    }
-
-	                    if (ButtonColor("Clear", Color.red, 50))
-		                    if (ConfirmPopup())
-			                    list = new List<SerializableKeyValue<TKey, TValue>>();
+                        EditorGUILayout.BeginHorizontal();
+                        {
+                            if (ButtonColor("+1", Color.green, 30))
+                            {
+                                list.Add(null);
+                                page = totalPages - 1;
+                                EditorPrefs.SetInt($"{pName}_page", page);
+                            }
+                            if (GUILayout.Button("Sort By Name"))
+                                list = list.OrderBy(m => m.v.name).ToList();
+                            if (GUILayout.Button("Remove Duplicated Key"))
+                                list.RemoveDuplicatedKey();
+                            if (GUILayout.Button("Remove Duplicated Value"))
+                                list.RemoveDuplicatedValue();
+                            if (ButtonColor("Clear", Color.red, 50))
+                                if (ConfirmPopup())
+                                    list = new List<SerializableKeyValue<TKey, TValue>>();
+                        }
+                        EditorGUILayout.EndHorizontal();
                     }
-                    EditorGUILayout.EndHorizontal();
 
                     if (pAdditionalDraws != null)
                         foreach (var draw in pAdditionalDraws)
@@ -2438,7 +2397,7 @@ namespace RCore.Editor
 
 #region SerializedProperty SerializedObject
 
-		public static void SerializeFields(SerializedProperty pProperty, params string[] properties)
+		public static void SerializeFields(this SerializedProperty pProperty, params string[] properties)
         {
             foreach (var p in properties)
             {
@@ -2447,16 +2406,13 @@ namespace RCore.Editor
             }
         }
 
-        public static void SerializeFields(SerializedObject pObj, params string[] properties)
+        public static void SerializeFields(this SerializedObject pObj, params string[] properties)
         {
             foreach (var p in properties)
-            {
-                var item = pObj.FindProperty(p);
-                EditorGUILayout.PropertyField(item, true);
-            }
+                pObj.SerializeField(p);
         }
 
-        public static SerializedProperty SerializeField(SerializedObject pObj, string pPropertyName, string pDisplayName = null, params GUILayoutOption[] options)
+        public static SerializedProperty SerializeField(this SerializedObject pObj, string pPropertyName, string pDisplayName = null, params GUILayoutOption[] options)
         {
             var property = pObj.FindProperty(pPropertyName);
             if (property == null)

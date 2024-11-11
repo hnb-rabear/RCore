@@ -36,7 +36,8 @@ namespace RCore.UI
 		[SerializeField] private string m_sfxClip = "button";
 		[FormerlySerializedAs("sfxClipOff")]
 		[SerializeField] private string m_sfxClipOff = "button";
-		[SerializeField] protected bool m_scaleBounceEffect = true;
+		[SerializeField] private bool m_scaleBounceEffect = true;
+		[SerializeField] private bool m_hapticTouch;
 
 		[FormerlySerializedAs("enableBgSpriteSwitch")]
 		[SerializeField] private bool m_enableBgSpriteSwitch;
@@ -233,13 +234,16 @@ namespace RCore.UI
 			}
 
 			base.OnPointerClick(p_eventData);
+			
+			if (m_hapticTouch)
+				Vibration.VibratePop();
 		}
 
 		public override void OnPointerDown(PointerEventData eventData)
 		{
 			base.OnPointerDown(eventData);
 			
-			if (m_scaleBounceEffect)
+			if (!isLocked && m_scaleBounceEffect)
 			{
 #if DOTWEEN
 				DOTween.Kill(GetInstanceID());
@@ -258,7 +262,7 @@ namespace RCore.UI
 		{
 			base.OnPointerUp(eventData);
 			
-			if (m_scaleBounceEffect)
+			if (!isLocked && m_scaleBounceEffect)
 			{
 #if DOTWEEN
 				DOTween.Kill(GetInstanceID());
@@ -276,11 +280,11 @@ namespace RCore.UI
 		{
 			if (m_contentsActive != null)
 				foreach (var item in m_contentsActive)
-					item.SetActive(isOn);
+					item.gameObject.SetActive(isOn);
 
 			if (m_contentsInactive != null)
 				foreach (var item in m_contentsInactive)
-					item.SetActive(!isOn);
+					item.gameObject.SetActive(!isOn);
 
 			if (m_enableBgSpriteSwitch)
 				m_imgBackground.sprite = isOn ? m_sptActiveBackground : m_sptInactiveBackground;
@@ -334,11 +338,11 @@ namespace RCore.UI
 
 			if (m_contentsActive != null)
 				foreach (var item in m_contentsActive)
-					item.SetActive(isOn);
+					item.gameObject.SetActive(isOn);
 
 			if (m_contentsInactive != null)
 				foreach (var item in m_contentsInactive)
-					item.SetActive(!isOn);
+					item.gameObject.SetActive(!isOn);
 
 			if (Application.isPlaying)
 			{
@@ -484,70 +488,72 @@ namespace RCore.UI
 			{
 				EditorGUILayout.BeginVertical("box");
 				{
-					EditorHelper.SerializeField(serializedObject, "m_imgBackground");
-					EditorHelper.SerializeField(serializedObject, "m_txtLabel");
-					EditorHelper.SerializeField(serializedObject, "m_contentsActive");
-					EditorHelper.SerializeField(serializedObject, "m_contentsInactive");
-					EditorHelper.SerializeField(serializedObject, "m_additionalLabels");
-					EditorHelper.SerializeField(serializedObject, "m_sfxClip");
-					EditorHelper.SerializeField(serializedObject, "m_scaleBounceEffect");
+					serializedObject.SerializeField("m_imgBackground");
+					serializedObject.SerializeField("m_txtLabel");
+					serializedObject.SerializeField("m_contentsActive");
+					serializedObject.SerializeField("m_contentsInactive");
+					serializedObject.SerializeField("m_additionalLabels");
+					serializedObject.SerializeField("m_sfxClip");
+					serializedObject.SerializeField("m_sfxClipOff");
+					serializedObject.SerializeField("m_scaleBounceEffect");
+					serializedObject.SerializeField("m_hapticTouch");
 
-					var enableBgSpriteSwitch = EditorHelper.SerializeField(serializedObject, "m_enableBgSpriteSwitch");
+					var enableBgSpriteSwitch = serializedObject.SerializeField("m_enableBgSpriteSwitch");
 					if (enableBgSpriteSwitch.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						EditorHelper.SerializeField(serializedObject, "m_sptActiveBackground");
-						EditorHelper.SerializeField(serializedObject, "m_sptInactiveBackground");
+						serializedObject.SerializeField("m_sptActiveBackground");
+						serializedObject.SerializeField("m_sptInactiveBackground");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}
 
-					var enableBgColorSwitch = EditorHelper.SerializeField(serializedObject, "m_enableBgColorSwitch");
+					var enableBgColorSwitch = serializedObject.SerializeField("m_enableBgColorSwitch");
 					if (enableBgColorSwitch.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						EditorHelper.SerializeField(serializedObject, "m_colorActiveBackground");
-						EditorHelper.SerializeField(serializedObject, "m_colorInactiveBackground");
+						serializedObject.SerializeField("m_colorActiveBackground");
+						serializedObject.SerializeField("m_colorInactiveBackground");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}
 
-					var enableTextColorSwitch = EditorHelper.SerializeField(serializedObject, "m_enableTextColorSwitch");
+					var enableTextColorSwitch = serializedObject.SerializeField("m_enableTextColorSwitch");
 					if (enableTextColorSwitch.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						EditorHelper.SerializeField(serializedObject, "m_colorActiveText");
-						EditorHelper.SerializeField(serializedObject, "m_colorInactiveText");
+						serializedObject.SerializeField("m_colorActiveText");
+						serializedObject.SerializeField("m_colorInactiveText");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}
 
-					var enableSizeSwitch = EditorHelper.SerializeField(serializedObject, "m_enableSizeSwitch");
+					var enableSizeSwitch = serializedObject.SerializeField("m_enableSizeSwitch");
 					if (enableSizeSwitch.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						EditorHelper.SerializeField(serializedObject, "m_sizeActive");
-						EditorHelper.SerializeField(serializedObject, "m_sizeInactive");
+						serializedObject.SerializeField("m_sizeActive");
+						serializedObject.SerializeField("m_sizeInactive");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}
 
-					var enableFontSizeSwitch = EditorHelper.SerializeField(serializedObject, "m_enableFontSizeSwitch");
+					var enableFontSizeSwitch = serializedObject.SerializeField("m_enableFontSizeSwitch");
 					if (enableFontSizeSwitch.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						EditorHelper.SerializeField(serializedObject, "m_fontSizeActive");
-						EditorHelper.SerializeField(serializedObject, "m_fontSizeInactive");
+						serializedObject.SerializeField("m_fontSizeActive");
+						serializedObject.SerializeField("m_fontSizeInactive");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}
 
-					EditorHelper.SerializeField(serializedObject, "m_tweenTime");
+					serializedObject.SerializeField("m_tweenTime");
 
 					if (m_mToggle.m_txtLabel != null)
 						m_mToggle.m_txtLabel.text = EditorGUILayout.TextField("Label", m_mToggle.m_txtLabel.text);
@@ -559,6 +565,6 @@ namespace RCore.UI
 				base.OnInspectorGUI();
 			}
 		}
-	}
 #endif
+	}
 }

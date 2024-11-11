@@ -63,7 +63,7 @@ namespace RCore.Data.JObject
 		{
 			var sessionData = dbManager.sessionData;
 			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive).ToLocalTime();
-			var now = (TimeHelper.GetServerTimeUtc() ?? DateTime.UtcNow).ToLocalTime();
+			var now = TimeHelper.GetNow(false);
 			if ((now - lastActive).TotalDays > 1)
 				sessionData.daysStreak = 0; //Reset days streak
 			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))

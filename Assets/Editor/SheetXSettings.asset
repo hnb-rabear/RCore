@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   excelSheetsPath:
     selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting A Excel File/Example.xlsx
+    path: Assets/SheetXExamples/Exporting an Excel File/Example.xlsx
     sheets:
     - name: ExampleConstants
       selected: 1
@@ -54,7 +54,7 @@ MonoBehaviour:
       selected: 1
   excelSheetsPaths:
   - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Challenges.xlsx
+    path: Assets/SheetXExamples/Exporting Multiple Excel Files/Challenges.xlsx
     sheets:
     - name: IDs
       selected: 1
@@ -64,21 +64,7 @@ MonoBehaviour:
       selected: 1
     name: Challenges
   - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Design.xlsx
-    sheets:
-    - name: Map
-      selected: 1
-    - name: Enemy HP
-      selected: 1
-    - name: SKills Price
-      selected: 1
-    - name: WeaponStats
-      selected: 1
-    - name: Exp
-      selected: 1
-    name: Design
-  - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/GameData.xlsx
+    path: Assets/SheetXExamples/Exporting Multiple Excel Files/GameData.xlsx
     sheets:
     - name: Constants
       selected: 1
@@ -88,13 +74,11 @@ MonoBehaviour:
       selected: 1
     - name: Characters
       selected: 1
-    - name: EnemiesV2
+    - name: Enemies
       selected: 1
     - name: EnemyAttacks
       selected: 1
     - name: Mods
-      selected: 1
-    - name: Skins
       selected: 1
     - name: Equipments
       selected: 1
@@ -102,47 +86,19 @@ MonoBehaviour:
       selected: 1
     - name: PlayerLevels
       selected: 1
-    - name: WeaponStats
-      selected: 1
-    - name: Leaderboards
-      selected: 1
-    - name: FakeScores
-      selected: 1
     name: GameData
   - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Localization.xlsx
+    path: Assets/SheetXExamples/Exporting Multiple Excel Files/Localization.xlsx
     sheets:
     - name: LocalizationCommon
       selected: 1
     - name: LocalizationMod
       selected: 1
-    - name: LocalizationTutorial
-      selected: 1
-    - name: LocalizationSkill
-      selected: 1
     - name: LocalizationTask
       selected: 1
     name: Localization
   - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Maps.xlsx
-    sheets:
-    - name: Maps
-      selected: 1
-    - name: Areas
-      selected: 1
-    - name: AreasHard
-      selected: 1
-    - name: EndlessModeAreas
-      selected: 1
-    - name: EndlessModeEnemies
-      selected: 1
-    - name: BossRushMode
-      selected: 1
-    - name: SecretDropRates
-      selected: 1
-    name: Maps
-  - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/ShopItems.xlsx
+    path: Assets/SheetXExamples/Exporting Multiple Excel Files/ShopItems.xlsx
     sheets:
     - name: IDs
       selected: 1
@@ -161,22 +117,6 @@ MonoBehaviour:
     - name: FreeRewards
       selected: 1
     name: ShopItems
-  - selected: 1
-    path: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Skills.xlsx
-    sheets:
-    - name: PassiveAbility
-      selected: 1
-    - name: PassiveAbilityMinor
-      selected: 1
-    - name: PlayerActiveSkills
-      selected: 1
-    - name: PassiveTree
-      selected: 1
-    - name: WeaponPerks
-      selected: 1
-    - name: InBattleUpgradeEvols
-      selected: 1
-    name: Skills
   googleSheetsPaths:
   - selected: 1
     id: 1d53vWQzrp-qNsoeyEmkqQx4KeQObONOk55oWeNS2YXg
@@ -286,11 +226,9 @@ MonoBehaviour:
       selected: 1
     - name: DailyQuests
       selected: 1
-  jsonOutputFolder: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel Files/Json
-  constantsOutputFolder: Assets/RCore/SheetX/Editor/Example/Exporting Multiple Excel
-    Files/Constants
-  localizationOutputFolder: Assets/RCore/SheetX/Editor/Example/Exporting Multiple
-    Excel Files/Localizations
+  jsonOutputFolder: Assets/SheetXExamples/Import/Json
+  constantsOutputFolder: Assets/SheetXExamples/Import/Constants
+  localizationOutputFolder: Assets/SheetXExamples/Import/Localizations
   namespace: _AH
   separateConstants: 0
   separateIDs: 0
@@ -298,7 +236,7 @@ MonoBehaviour:
   combineJson: 0
   onlyEnumAsIDs: 0
   encryptJson: 0
-  langCharSets: japan (jp), korean (kr), chinese
+  langCharSets: jp, ko, cn
   persistentFields: id, key
   googleClientId: nemLtHanO8yTvVCfcmm1olScbLHtgY0GJca44nzXxmm+JshTsX16Ez/egFrn7TyzyaG135y3q0bvEBeUXPKpLH90fSKzeOuk
   googleClientSecret: 75P71h7NJajJuBH/E2OdrGSlUouv9IUberqj0EngjWqYGew=

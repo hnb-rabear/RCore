@@ -644,40 +644,55 @@ namespace RCore
 
 #endregion
 
-		public static List<T> RemoveNull<T>(this List<T> pList)
+		public static List<T> RemoveNull<T>(this List<T> pList) where T : class
 		{
-			for (int i = pList.Count - 1; i >= 0; i--)
-			{
-				if (pList[i].ToString() == "null")
-					pList.RemoveAt(i);
-			}
+			pList.RemoveAll(item => item == null);
 			return pList;
 		}
-
-		public static List<T> RemoveDuplicate<T>(this List<T> pList) where T : UnityEngine.Object
+		
+		public static void RemoveDuplicated<T>(this List<T> list)
 		{
-			var duplicate = new List<int>();
-			for (int i = 0; i < pList.Count; i++)
-			{
-				int count = 0;
-				for (int j = pList.Count - 1; j >= 0; j--)
-				{
-					if (pList[j] == pList[i])
-					{
-						count++;
-						if (count > 1)
-							duplicate.Add(j);
-					}
-				}
-			}
-			for (int j = pList.Count - 1; j >= 0; j--)
-			{
-				if (duplicate.Contains(j))
-					pList.Remove(pList[j]);
-			}
+			var seenItems = new HashSet<T>();
+			var duplicates = new List<T>();
 
-			return pList;
+			foreach (var item in list)
+				if (!seenItems.Add(item))
+					duplicates.Add(item);
+
+			foreach (var duplicate in duplicates)
+				list.Remove(duplicate);
 		}
+		
+		public static void RemoveDuplicatedKey<TKey, TValue>(this List<SerializableKeyValue<TKey, TValue>> list)
+		{
+			var seenKeys = new HashSet<TKey>();
+			var duplicates = new List<SerializableKeyValue<TKey, TValue>>();
+
+			foreach (var item in list)
+				if (seenKeys.Contains(item.k))
+					duplicates.Add(item);
+				else
+					seenKeys.Add(item.k);
+
+			foreach (var duplicate in duplicates)
+				list.Remove(duplicate);
+		}
+
+		public static void RemoveDuplicatedValue<TKey, TValue>(this List<SerializableKeyValue<TKey, TValue>> list)
+		{
+			var seenValues = new HashSet<TValue>();
+			var duplicates = new List<SerializableKeyValue<TKey, TValue>>();
+
+			foreach (var item in list)
+				if (seenValues.Contains(item.v))
+					duplicates.Add(item);
+				else
+					seenValues.Add(item.v);
+
+			foreach (var duplicate in duplicates)
+				list.Remove(duplicate);
+		}
+
 
 		public static void Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
 		{
@@ -846,5 +861,7 @@ namespace RCore
 				pItem = pItem.parent;
 			}
 		}
+
+		
 	}
 }

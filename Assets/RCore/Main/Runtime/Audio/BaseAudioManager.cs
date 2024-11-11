@@ -30,7 +30,7 @@ namespace RCore.Audio
         [FormerlySerializedAs("m_EnabledMusic")]
         [SerializeField] protected bool m_enabledMusic = true;
         [FormerlySerializedAs("mSFXSources")]
-        [SerializeField] protected AudioSource[] m_sfxSources;
+        [SerializeField] protected List<AudioSource> m_sfxSources;
         [FormerlySerializedAs("mSFXSourceUnlimited")]
         [SerializeField] public AudioSource m_sfxSourceUnlimited;
         [FormerlySerializedAs("mMusicSource")]
@@ -118,40 +118,31 @@ namespace RCore.Audio
             }
         }
 
-        public void CreateAudioSources()
+        private AudioSource CreateSfxAudioSource()
         {
-            var sfxSources = new List<AudioSource>();
-            var audioSources = gameObject.FindComponentsInChildren<AudioSource>();
-            for (int i = 0; i < audioSources.Count; i++)
+            if (m_sfxSources.Count == 0)
             {
-                if (i == 0)
+                for (int i = 0; i < 3; i++)
                 {
-                    m_musicSource = audioSources[i];
-                    m_musicSource.name = "Music";
-                }
-                else
-                {
-                    sfxSources.Add(audioSources[i]);
-                    audioSources[i].name = "SFX_" + i;
-                }
-            }
-            if (sfxSources.Count < 5)
-                for (int i = sfxSources.Count; i <= 15; i++)
-                {
-                    var obj = new GameObject("SFX_" + i);
+                    var obj = new GameObject("Sfx_" + m_sfxSources.Count);
                     obj.transform.SetParent(transform);
-                    sfxSources.Add(obj.AddComponent<AudioSource>());
+                    var newAudioSource = obj.AddComponent<AudioSource>();
+                    newAudioSource.playOnAwake = false;
+                    newAudioSource.loop = false;
+                    m_sfxSources.Add(newAudioSource);
                 }
-            m_sfxSources = sfxSources.ToArray();
-        }
-
-        public AudioSource CreateMoreSFXSource()
-        {
-            var obj = new GameObject("SFX_" + m_sfxSources.Length);
-            obj.transform.SetParent(transform);
-            var newAudioSource = obj.AddComponent<AudioSource>();
-            m_sfxSources.Add(newAudioSource, out m_sfxSources);
-            return newAudioSource;
+                return m_sfxSources[0];
+            }
+            else
+            {
+                var obj = new GameObject("Sfx_" + m_sfxSources.Count);
+                obj.transform.SetParent(transform);
+                var newAudioSource = obj.AddComponent<AudioSource>();
+                newAudioSource.playOnAwake = false;
+                newAudioSource.loop = false;
+                m_sfxSources.Add(newAudioSource);
+                return newAudioSource;
+            }
         }
 
         private IEnumerator IELerp(float pTime, Action<float> pOnUpdate, Action pOnFinished)
@@ -306,31 +297,6 @@ namespace RCore.Audio
             }
         }
 
-        public AudioSource PlaySFX(AudioClip pClip, int limitNumber, bool pLoop, float pPitchRandomMultiplier = 1)
-        {
-            if (pClip == null)
-                return null;
-            var source = GetSFXSouce(pClip, limitNumber, pLoop);
-            if (source == null)
-                return null;
-            source.volume = m_masterVolume * m_sfxVolume;
-            source.loop = pLoop;
-            source.clip = pClip;
-            source.pitch = 1;
-            if (pPitchRandomMultiplier != 1)
-            {
-                if (Random.value < .5)
-                    source.pitch *= Random.Range(1 / pPitchRandomMultiplier, 1);
-                else
-                    source.pitch *= Random.Range(1, pPitchRandomMultiplier);
-            }
-            if (!pLoop)
-                source.PlayOneShot(pClip);
-            else
-                source.Play();
-            return source;
-        }
-
         public bool IsPlayingMusic() => m_musicSource.isPlaying;
 
         public void PlayMusic(string pFileName, bool pLoop = false, float pFadeDuration = 0)
@@ -419,7 +385,7 @@ namespace RCore.Audio
             if (pClip == null)
                 return;
 
-            for (int i = 0; i < m_sfxSources.Length; i++)
+            for (int i = 0; i < m_sfxSources.Count; i++)
             {
                 if (m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
                 {
@@ -437,7 +403,7 @@ namespace RCore.Audio
 
         public void StopSFXs()
         {
-            for (int i = 0; i < m_sfxSources.Length; i++)
+            for (int i = 0; i < m_sfxSources.Count; i++)
             {
                 m_sfxSources[i].Stop();
                 m_sfxSources[i].clip = null;
@@ -447,7 +413,7 @@ namespace RCore.Audio
             m_sfxSourceUnlimited.clip = null;
         }
 
-        private AudioSource GetSFXSouce(AudioClip pClip, int pLimitNumber, bool pLoop)
+        private AudioSource GetSFXSource(AudioClip pClip, int pLimitNumber, bool pLoop)
         {
             try
             {
@@ -456,7 +422,7 @@ namespace RCore.Audio
                     if (!pLoop)
                     {
                         int countSameClips = 0;
-                        for (int i = m_sfxSources.Length - 1; i >= 0; i--)
+                        for (int i = m_sfxSources.Count - 1; i >= 0; i--)
                         {
                             if (m_sfxSources[i].isPlaying && m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
                                 countSameClips++;
@@ -465,16 +431,16 @@ namespace RCore.Audio
                         }
                         if (countSameClips < pLimitNumber)
                         {
-                            for (int i = m_sfxSources.Length - 1; i >= 0; i--)
+                            for (int i = m_sfxSources.Count - 1; i >= 0; i--)
                                 if (m_sfxSources[i].clip == null)
                                     return m_sfxSources[i];
 
-                            return CreateMoreSFXSource();
+                            return CreateSfxAudioSource();
                         }
                     }
                     else
                     {
-                        for (int i = m_sfxSources.Length - 1; i >= 0; i--)
+                        for (int i = m_sfxSources.Count - 1; i >= 0; i--)
                             if (m_sfxSources[i].clip == null
                                 || !m_sfxSources[i].isPlaying
                                 || m_sfxSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
@@ -494,14 +460,39 @@ namespace RCore.Audio
             }
         }
 
-        public AudioSource PlaySFX(string pFileName, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
+        public AudioSource PlaySFX(AudioClip pClip, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
+        {
+            if (pClip == null)
+                return null;
+            var source = GetSFXSource(pClip, limitNumber, pLoop);
+            if (source == null)
+                return null;
+            source.volume = m_masterVolume * m_sfxVolume;
+            source.loop = pLoop;
+            source.clip = pClip;
+            source.pitch = 1;
+            if (pPitchRandomMultiplier != 1)
+            {
+                if (Random.value < .5)
+                    source.pitch *= Random.Range(1 / pPitchRandomMultiplier, 1);
+                else
+                    source.pitch *= Random.Range(1, pPitchRandomMultiplier);
+            }
+            if (!pLoop)
+                source.PlayOneShot(pClip);
+            else
+                source.Play();
+            return source;
+        }
+        
+        public AudioSource PlaySFX(string pFileName, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (!m_enabledSfx) return null;
             var clip = audioCollection.GetSFXClip(pFileName);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
 
-        public AudioSource PlaySFX(int pIndex, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
+        public AudioSource PlaySFX(int pIndex, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (!m_enabledSfx) return null;
             var clip = audioCollection.GetSFXClip(pIndex);
@@ -520,40 +511,36 @@ namespace RCore.Audio
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
-            m_sfxSources ??= Array.Empty<AudioSource>();
-            var audioSources = gameObject.FindComponentsInChildren<AudioSource>();
-            for (int i = m_sfxSources.Length - 1; i >= 0; i--)
+            m_sfxSources ??= new List<AudioSource>();
+            var audioSources = gameObject.GetComponentsInChildren<AudioSource>(true);
+            foreach (var source in audioSources)
             {
-                audioSources[i].playOnAwake = false;
-
-                if (audioSources.Contains(m_sfxSources[i]))
-                    audioSources.Remove(m_sfxSources[i]);
+                if (m_musicSource == null && source.gameObject.name.Contains("Music"))
+                    m_musicSource = source;
+                if (m_sfxSourceUnlimited == null && source.gameObject.name.Contains("Sfx"))
+                    m_sfxSourceUnlimited = source;
             }
-            if (m_musicSource == null && audioSources.Count > 0)
-            {
-                m_musicSource = audioSources[0];
-                audioSources.RemoveAt(0);
-                m_musicSource.name = "Music";
-            }
-            else if (m_musicSource == null)
+            if (m_musicSource == null)
             {
                 var obj = new GameObject("Music");
-                obj.AddComponent<AudioSource>();
                 obj.transform.SetParent(transform);
-                m_musicSource = obj.GetComponent<AudioSource>();
+                m_musicSource = obj.AddComponent<AudioSource>();
             }
-            if (m_sfxSourceUnlimited == null && audioSources.Count > 0)
+            if (m_sfxSourceUnlimited == null)
             {
-                m_sfxSourceUnlimited = audioSources[0];
-                audioSources.RemoveAt(0);
-                m_sfxSourceUnlimited.name = "SFXUnlimited";
-            }
-            else if (m_sfxSourceUnlimited == null || m_sfxSourceUnlimited == m_musicSource)
-            {
-                var obj = new GameObject("SFXUnlimited");
-                obj.AddComponent<AudioSource>();
+                var obj = new GameObject("Sfx");
                 obj.transform.SetParent(transform);
-                m_sfxSourceUnlimited = obj.GetComponent<AudioSource>();
+                m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
+            }
+            foreach (var source in audioSources)
+            {
+                if (source != m_musicSource && source != m_sfxSourceUnlimited)
+                {
+                    if (!m_sfxSources.Contains(source))
+                        m_sfxSources.Add(source);
+                }
+                else
+                    m_sfxSources.Remove(source);
             }
             
             m_sfxSourceUnlimited.loop = false;

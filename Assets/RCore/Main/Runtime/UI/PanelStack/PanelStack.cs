@@ -2,7 +2,9 @@
  * Author RaBear - HNB - 2017
  **/
 
+#if UNITY_EDITOR
 using RCore.Editor;
+#endif
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;

@@ -47,12 +47,12 @@ namespace RCore.UI
 
 				EditorGUILayout.BeginVertical("box");
 				{
-					var label = EditorHelper.SerializeField(serializedObject, "m_label");
+					var label = serializedObject.SerializeField("m_label");
 					var text = label.objectReferenceValue as Text;
 					if (text != null)
 					{
 						var textObj = new SerializedObject(text);
-						EditorHelper.SerializeField(textObj, "m_Text");
+						textObj.SerializeField("m_Text");
 
 						if (GUI.changed)
 							textObj.ApplyModifiedProperties();

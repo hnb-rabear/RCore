@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,6 +19,8 @@ namespace RCore
 	
 	public static class WebRequestHelper
 	{
+		public const string WORLD_TIME_API = "https://worldtimeapi.org/api/timezone/Etc/UTC";
+		public const string FC_TIME_API = "https://farmcityer.com/gettime.php";
 		private static bool m_RequestingServerTime;
 		private static float m_GetServerTimeAt;
 		private static DateTime m_ServerTime;
@@ -49,7 +52,7 @@ namespace RCore
 				ipInfo = JsonUtility.FromJson<IPInfo>(w.downloadHandler.text);
 			}
 		}
-		public static async void RequestServerTime(bool renew = false)
+		public static async void RequestFCTime(bool renew = false)
 		{
 			if (Application.internetReachability == NetworkReachability.NotReachable)
 			{
@@ -58,9 +61,8 @@ namespace RCore
 			}
 			if (m_RequestingServerTime || m_GetServerTimeAt > 0 && !renew)
 				return;
-			const string url = "https://farmcityer.com/gettime.php";
 			m_RequestingServerTime = true;
-			var request = await UnityWebRequest.Get(url).SendWebRequest();
+			var request = await UnityWebRequest.Get(FC_TIME_API).SendWebRequest();
 			m_RequestingServerTime = false;
 			if (request.result == UnityWebRequest.Result.Success)
 			{
@@ -70,6 +72,35 @@ namespace RCore
 					var text = request.downloadHandler.text;
 					if (int.TryParse(text, out int timestamp))
 					{
+						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
+						m_GetServerTimeAt = Time.unscaledTime;
+					}
+				}
+			}
+		}
+		public static async void RequestUtcTime(bool renew = false)
+		{
+			if (Application.internetReachability == NetworkReachability.NotReachable)
+			{
+				m_IsOnline = false;
+				return;
+			}
+			if (m_RequestingServerTime || m_GetServerTimeAt > 0 && !renew)
+				return;
+			m_RequestingServerTime = true;
+			var request = await UnityWebRequest.Get(WORLD_TIME_API).SendWebRequest();
+			m_RequestingServerTime = false;
+			if (request.result == UnityWebRequest.Result.Success)
+			{
+				if (request.responseCode == 200)
+				{
+					m_IsOnline = true;
+					
+					var text = request.downloadHandler.text;
+					var jsonParse = SimpleJSON.JSON.Parse(text);
+					if (jsonParse != null)
+					{
+						var timestamp = jsonParse.GetInt("unixtime");
 						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
 						m_GetServerTimeAt = Time.unscaledTime;
 					}

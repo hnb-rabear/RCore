@@ -37,18 +37,18 @@ namespace RCore.Editor.UI
 
             EditorGUILayout.BeginVertical("box");
             {
-                var fontColorSwap = EditorHelper.SerializeField(serializedObject, "m_fontColorOnOffSwap");
+                var fontColorSwap = serializedObject.SerializeField("m_fontColorOnOffSwap");
                 if (fontColorSwap.boolValue)
                 {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "m_fontColorOn");
-                    EditorHelper.SerializeField(serializedObject, "m_fontColorOff");
+                    serializedObject.SerializeField("m_fontColorOn");
+                    serializedObject.SerializeField("m_fontColorOff");
                     EditorGUILayout.EndVertical();
                     EditorGUI.indentLevel--;
                 }
 
-                var labelMatSwap = EditorHelper.SerializeField(serializedObject, "m_labelMatOnOffSwap");
+                var labelMatSwap = serializedObject.SerializeField("m_labelMatOnOffSwap");
                 if (labelMatSwap.boolValue)
                 {
                     EditorGUI.indentLevel++;
@@ -61,12 +61,12 @@ namespace RCore.Editor.UI
                     EditorGUI.indentLevel--;
                 }
 
-                var label = EditorHelper.SerializeField(serializedObject, "m_label");
+                var label = serializedObject.SerializeField("m_label");
                 var text = label.objectReferenceValue as TextMeshProUGUI;
                 if (text != null)
                 {
                     var textObj = new SerializedObject(text);
-                    EditorHelper.SerializeField(textObj, "m_text");
+                    textObj.SerializeField("m_text");
 
                     if (GUI.changed)
                         textObj.ApplyModifiedProperties();

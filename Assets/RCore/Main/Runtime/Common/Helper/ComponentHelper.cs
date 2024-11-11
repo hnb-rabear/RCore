@@ -248,17 +248,14 @@ namespace RCore
 				obj = objRoot;
 				return obj;
 			}
-			else
+			var trnsRoot = objRoot.transform;
+			int iNumChildren = trnsRoot.childCount;
+			for (int i = 0; i < iNumChildren; ++i)
 			{
-				var trnsRoot = objRoot.transform;
-				int iNumChildren = trnsRoot.childCount;
-				for (int i = 0; i < iNumChildren; ++i)
+				obj = trnsRoot.GetChild(i).gameObject.FindChildObject(pName, pContain);
+				if (obj != null)
 				{
-					obj = trnsRoot.GetChild(i).gameObject.FindChildObject(pName, pContain);
-					if (obj != null)
-					{
-						return obj;
-					}
+					return obj;
 				}
 			}
 
@@ -274,31 +271,6 @@ namespace RCore
 			int iNumChildren = trnsRoot.childCount;
 			for (int i = 0; i < iNumChildren; ++i)
 				trnsRoot.GetChild(i).gameObject.FindChildObjects(pName, pOutput, pContain);
-		}
-
-		public static List<T> RemoveDuplicate<T>(this List<T> pList) where T : UnityEngine.Object
-		{
-			var duplicate = new List<int>();
-			for (int i = 0; i < pList.Count; i++)
-			{
-				int count = 0;
-				for (int j = pList.Count - 1; j >= 0; j--)
-				{
-					if (pList[j] == pList[i])
-					{
-						count++;
-						if (count > 1)
-							duplicate.Add(j);
-					}
-				}
-			}
-			for (int j = pList.Count - 1; j >= 0; j--)
-			{
-				if (duplicate.Contains(j))
-					pList.Remove(pList[j]);
-			}
-
-			return pList;
 		}
 
 		public static void StopMove(this UnityEngine.AI.NavMeshAgent pAgent, bool pStop)

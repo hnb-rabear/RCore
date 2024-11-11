@@ -7,55 +7,47 @@ namespace RCore.Editor.Audio
 	[CustomEditor(typeof(BaseAudioManager), true)]
 	public class BaseAudioManagerEditor : UnityEditor.Editor
 	{
-		private BaseAudioManager m_Script;
-		private EditorPrefsString m_AudioCollectionPath;
+		private BaseAudioManager m_script;
+		private EditorPrefsString m_audioCollectionPath;
+		private int m_sfxIndex;
 
 		protected virtual void OnEnable()
 		{
-			m_Script = target as BaseAudioManager;
-			m_AudioCollectionPath = new EditorPrefsString($"{typeof(AudioCollection).FullName}");
+			m_script = target as BaseAudioManager;
+			m_audioCollectionPath = new EditorPrefsString($"{typeof(AudioCollection).FullName}");
 
-			if (m_Script.audioCollection != null)
-				m_AudioCollectionPath.Value = AssetDatabase.GetAssetPath(m_Script.audioCollection);
+			if (m_script.audioCollection != null)
+				m_audioCollectionPath.Value = AssetDatabase.GetAssetPath(m_script.audioCollection);
 		}
 
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
 
-			if (m_Script.audioCollection == null)
+			if (m_script.audioCollection == null)
 				EditorGUILayout.HelpBox("AudioManager require AudioCollection. " + "To create AudioCollection, In project window select Create/RCore/Create Audio Collection", MessageType.Error);
 			else if (GUILayout.Button("Open Audio Collection"))
-				Selection.activeObject = m_Script.audioCollection;
+				Selection.activeObject = m_script.audioCollection;
 
-			if (EditorHelper.ButtonColor("Add Music Audio Source", m_Script.m_musicSource == null ? Color.green : Color.grey))
-			{
-				if (m_Script.m_musicSource == null)
-				{
-					var obj = new GameObject("Music");
-					obj.transform.SetParent(m_Script.transform);
-					obj.AddComponent<AudioSource>();
-					m_Script.m_musicSource = obj.GetComponent<AudioSource>();
-				}
-				if (m_Script.m_sfxSourceUnlimited == null)
-				{
-					var obj = new GameObject("SFX_Unlimited");
-					obj.transform.SetParent(m_Script.transform);
-					obj.AddComponent<AudioSource>();
-					m_Script.m_musicSource = obj.GetComponent<AudioSource>();
-				}
-			}
-			if (EditorHelper.ButtonColor("Add SFX Audio Source"))
-				m_Script.CreateMoreSFXSource();
-			if (EditorHelper.ButtonColor("Create Audio Sources", Color.green))
-				m_Script.CreateAudioSources();
+			EditorGUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Stop Music"))
-				m_Script.StopMusic(1f);
+				m_script.StopMusic(1f);
 			if (EditorHelper.Button("Play Music"))
-				m_Script.PlayMusic();
+				m_script.PlayMusic();
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.BeginHorizontal();
+			if (EditorHelper.Button("Play Sfx"))
+				m_script.PlaySFX(m_sfxIndex, 0);
+			if (EditorHelper.Button("Play Next Sfx"))
+			{
+				m_sfxIndex++;
+				m_script.PlaySFX(m_sfxIndex, 0);
+			}
+			EditorGUILayout.EndHorizontal();
 
 			if (GUI.changed)
-				EditorUtility.SetDirty(m_Script);
+				EditorUtility.SetDirty(m_script);
 		}
 	}
 }

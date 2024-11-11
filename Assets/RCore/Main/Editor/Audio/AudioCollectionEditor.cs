@@ -29,9 +29,9 @@ namespace RCore.Editor.Audio
 
 				if (EditorHelper.Button("Build"))
 				{
-					string musicSourcePath = Application.dataPath + m_Script.m_MusicsPath;
-					string sfxSourcePath = Application.dataPath + m_Script.m_SfxsPath;
-					string exportConfigPath = Application.dataPath + m_Script.m_ConfigPath;
+					string musicSourcePath = Application.dataPath + m_Script.m_MusicsPath.Replace("Assets", "");
+					string sfxSourcePath = Application.dataPath + m_Script.m_SfxsPath.Replace("Assets", "");
+					string exportConfigPath = Application.dataPath + m_Script.m_ConfigPath.Replace("Assets", "");
 
 					var musicFiles = m_Script.musicClips;
 					var sfxFiles = m_Script.sfxClips;
@@ -121,9 +121,6 @@ namespace RCore.Editor.Audio
 
 					if (GUI.changed)
 					{
-						m_Script.m_MusicsPath = musicSourcePath.Replace(Application.dataPath, "");
-						m_Script.m_SfxsPath = sfxSourcePath.Replace(Application.dataPath, "");
-						m_Script.m_ConfigPath = exportConfigPath.Replace(Application.dataPath, "");
 						EditorUtility.SetDirty(m_Script);
 						AssetDatabase.SaveAssets();
 						AssetDatabase.Refresh();

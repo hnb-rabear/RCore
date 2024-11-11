@@ -447,24 +447,25 @@ namespace RCore
         }
 
         /// <summary>
-        /// Get start of week from date
+        /// Get the start time of the next occurrence of a specified weekday based on a given date
         /// </summary>
-        public static DateTime GetStartTimeOfWeekDay(DateTime pDate, DayOfWeek pDay)
+        public static DateTime GetStartTimeOfNextWeekDay(DateTime pDate, DayOfWeek pDay)
         {
-            int dayOfWeek = (int)pDate.DayOfWeek;
-            var startTimeOfMonday = pDate.AddDays(-dayOfWeek + 1).Date;
-            if (pDay > DayOfWeek.Sunday)
-                return startTimeOfMonday.AddDays((int)pDay - 1);
-            else
-                return startTimeOfMonday.AddDays(6);
+            // Calculate the number of days until the next occurrence of the specified day
+            int daysUntilNextWeekDay = ((int)pDay - (int)pDate.DayOfWeek + 7) % 7;
+            if (daysUntilNextWeekDay == 0)
+                daysUntilNextWeekDay = 7;
+            var targetDate = pDate.AddDays(daysUntilNextWeekDay);
+            return new DateTime(targetDate.Year, targetDate.Month, targetDate.Day, 0, 0, 0, 0);
         }
 
+
         /// <summary>
-        /// Get end of week from date
+        /// Get the end time of the next occurrence of a specified weekday based on a given date
         /// </summary>
-        public static DateTime GetEndTimeOfWeekDay(DateTime pDate, DayOfWeek pDay)
+        public static DateTime GetEndTimeOfNextWeekDay(DateTime pDate, DayOfWeek pDay)
         {
-            var startTime = GetStartTimeOfWeekDay(pDate, pDay);
+            var startTime = GetStartTimeOfNextWeekDay(pDate, pDay);
             return startTime.AddDays(1).Date;
         }
 
@@ -481,10 +482,8 @@ namespace RCore
         /// </summary>
         public static DateTime GetEndTimeOfMonth(DateTime pDate)
         {
-            var firstDayOfMonth = new DateTime(pDate.Year, pDate.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-            var lastTimeOfMonth = lastDayOfMonth.AddDays(1).Date;
-            return lastTimeOfMonth;
+            var endOfMonth = new DateTime(pDate.Year, pDate.Month, DateTime.DaysInMonth(pDate.Year, pDate.Month), 23, 59, 59, 999); 
+            return endOfMonth;
         }
 
         /// <summary>
@@ -590,10 +589,15 @@ namespace RCore
         
         public static DateTime? GetServerTimeUtc() => WebRequestHelper.GetServerTimeUtc();
 
+        public static DateTime GetNow(bool utcTime)
+        {
+            var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
+            return utcTime ? utcNow : utcNow.ToLocalTime();
+        }
+        
         public static int GetNowTimestamp(bool utcTime)
         {
-	        var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
-	        int timestamp = DateTimeToUnixTimestampInt(utcTime ? utcNow : utcNow.ToLocalTime());
+	        int timestamp = DateTimeToUnixTimestampInt(GetNow(utcTime));
 	        return timestamp;
         }
 
