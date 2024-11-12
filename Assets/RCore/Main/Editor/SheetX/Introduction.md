@@ -2,6 +2,7 @@ __Download via [Releases page](https://github.com/nbhung100914/excel-to-unity/re
 
 __You can find more detailed instructions and the demo project [Here](https://github.com/nbhung100914/excel-to-unity-example)__
 
+---
 # 1. Introduction
 
 This tool simplifies database design and management for game developers and designers, allowing easy modification of game statistics without needing developer help.
@@ -10,6 +11,7 @@ As game projects grow, so does the need for efficient data table, constant, and 
 
 Originally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.
 
+---
 # 2. Main functions
 
 - **Excel and Google Sheets Integration:** Manage your entire database using Excel or Google Spreadsheets.
@@ -18,56 +20,93 @@ Originally designed for RPGs with extensive databases, it now supports various g
 - **JSON Export:** Convert data tables to JSON files for easy Unity integration.
 - **Flexible Data Formats:** Support a variety of data formats, adaptable to your design needs.
 
-# 3. Introduce features and installation instructions
+---
+# 3. Excel Sheets Exporter
 
-## 3.1. Export single excel
+## 3.1. Export Single Excel File
 
-![excel-2-unity-tab-1](https://github.com/user-attachments/assets/6f57d31a-7995-4878-aca1-96dc1e10dd42)
+Navigate to the main menu and select: RCore > Tools > SheetX > Excel Sheets Exporter
 
-This is a basic but very important function, helping you get acquainted with the tools. If your Static Database is not too large or complex, and only needs an excel file to contain all data, then this function is enough for your needs. However, if your Static Database is complex and needs to be stored in multiple Excel files, you will need to use the **Export Multi Excels** function. This function will be introduced in the next section.
+![SheetXExcel1](https://github.com/user-attachments/assets/b2349e9f-2599-40bb-9c3b-452b9944d080)
 
-The important functions are in the buttons on the right:
+This essential function is designed to help you familiarize yourself with the tools. It's perfect for smaller, less complex Static Databases that only require a single Excel file to contain all the data.
 
-- **Export IDs:** export IDs sheets to C# files.
-- **Export Constants:** export Constants sheets to C# files.
-- **Export Localization:** export Localization Data and corresponding Localization Component, Localization API.
-- **Export Json:** export Data Table sheets to JSON Data.
+Key Functions:
 
-## 3.2. Export multiple Excel Spreadsheets
+- **Export IDs:** Converts ID sheets to C# files.
+- **Export Constants:** Converts Constants sheets to C# files.
+- **Export Json:** Transforms Data Table sheets into JSON data.
+- **Export Localization:** Exports Localization Data, Localization Components, and Localization API.
+- **Export All:** Performs all the functions with a single click.
 
-![excel-2-unity-tab-2](https://github.com/user-attachments/assets/35a4d7ba-d722-4894-a7d1-eb42d837d78f)
+## 3.2. Export multiple Excel Files
 
-This is a comprehensive function, everything will be processed with just one button press:
+![SheetXExcel2](https://github.com/user-attachments/assets/faf954f1-86fa-4a43-9e52-04ac019faa98)
 
-1. Select all the Excel files you want to process.
-2. Choose whether to export IDs and Constants by checking the appropriate boxes for each file.
+For managing complex Static Databases that need to be divided into multiple Excel files, this feature is essential. It allows you to efficiently handle and export all your Excel files with a single button press:
+
+1. Add all the Excel files you wish to process.
+2. For each Excel file, you have the option to choose which sheets to include or exclude.
 3. Press the Export All button to complete the process.
 
-## 3.3. Export multiple Google Spreadsheets
-
-![excel-2-unity-tab-7](https://github.com/user-attachments/assets/5430c82e-e1f6-4a3b-b76b-79755a055b04)
+---
+# 4. Google Spreadsheets
 
 Prefer using Google Spreadsheets? No problem.
 
-1. Enter the IDs for the Google Spreadsheet files you want to process.
-2. Press the Export All button to begin the export.
+## 4.1. Setup Instructions
 
-## 3.4. Settings
+### Step 1: Enable Google Sheets API
+1. Visit the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Click on **Go to APIs overview**.
+4. Select **Enable APIs and Services**.
+5. Search for and select **Google Sheets API**, then click **Enable**.
 
-![excel-2-unity-tab-3](https://github.com/user-attachments/assets/21c4a78b-7c89-4e0f-8386-485aff073301)
+### Step 2: Obtain Credentials
+1. On the top Google Sheets API screen, click on **Create Credentials**.
+2. Choose **Google Sheets API**, **User data**, then click **Next**.
+3. In the Scopes section, click on **Add or remove scopes**.
+4. Find and select the **Google Sheets API** (description: "See all your Google Sheets Spreadsheets"), then **Save and Continue**.
+5. In the OAuth Client ID section, select Application Type as Desktop App, enter any name, then click **Create**.
+6. Click **Done**.
 
-- **Json Data Output:** Converts the data table to JSON format and saves it at the specified address.
-- **Constants Output:** Saves IDs, Constants, Localization Components, and Localization API at the given address.
-- **Localization Output:** Stores Localization Data at the provided address, which should be within the _Resources_ folder or in the _Localizations_ folder if you want to load Localizations by Addressable Asset System.
+### Step 3: Accessing Your Client ID and Client Secret:
+1. On the Google Sheets API screen, go to the **Credentials** tab, you will find the new Client ID.
+2. Click on the Edit button to find the Client ID and Client Secret.
+3. Copy the **Client ID** and **Client Secret**, and paste them into the corresponding settings in the SheetX Settings Window
+
+## 4.2. Export single Google Spreadsheet
+
+![SheetXGoogle1](https://github.com/user-attachments/assets/cda3989b-a4af-491d-80e3-3f41c13a6ff6)
+
+Enter the Google Sheet ID, then click the Download button. You can find the ID in the Google Sheet's URL, formatted like this: 
+```
+https://docs.google.com/spreadsheets/d/[google-sheet-id]/edit?......
+```
+
+## 4.3. Export multiple Google Spreadsheets
+
+![SheetXGoogle2](https://github.com/user-attachments/assets/66a750f1-1997-4c6c-ac1b-b3194fb11167)
+
+![SheetXEditGoogleSheet](https://github.com/user-attachments/assets/ac74f8a0-d59a-4d96-886f-9212395509dc)
+
+## 5. Settings
+
+![SheetXSettings](https://github.com/user-attachments/assets/206194b4-cd6c-4397-bd35-c49ecabf7aa2)
+
+- **Constants Output Folder:** Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
+- **Json Output Folder:** Stores exported JSON data.
+- **Localization Output:** Stores Localization Data, which should be inside the Resources folder for loading via Resources, or in the Localizations folder for loading via Addressable Asset System.
 - **Namespace:** Defines the namespace for the exported C# files.
-- **Separate IDs:**
+- **Separate IDs: Sheets**
   - TRUE: Exports _[%IDs]_ sheets to individual C# files named _[SheetName] + IDs.cs_.
   - FALSE: Merges all _[%IDs]_ sheets from all Excel files into a single C# file named _IDs.cs._
-- **Separate Constants:**
+- **Separate Constants: Sheets**
   - TRUE: Exports _[%Constants]_ sheets to individual C# files named _[SheetName] + %Constants.cs_.
   - FALSE: Merges all _[%Constants]_ sheets from all Excel files into a single C# file named _Constants.cs_.
-- **Separate Localization:**
-  - TRUE: Exports _[Localization%]_ sheets to separate groups, each containing Localization Data, Component, and API, with the following file name structure:
+- **Separate Localization Sheets:**
+  - TRUE (default): Exports _[Localization%]_ sheets to separate groups, each containing Localization Data, Component, and API, with the following file name structure:
     - Localization Data: _[SheetName]\_[language].txt_
     - Component: _[SheetName] + Text.cs_
     - API: _[SheetName].cs_
@@ -75,15 +114,12 @@ Prefer using Google Spreadsheets? No problem.
     - Localization Data: _Localization\_ + [language].txt_
     - Component: _LocalizationText.cs_
     - API: _Localization.cs_
-- **Encrypt Json:** Encrypts JSON Data before exporting to a text file.
 - **Only enum as IDs:** For _[%IDs]_ sheets, columns with the extension _[enum]_ will be exported as enums and will not include the Integer Constant form.
-- **One Json - One Excel:** Merges the Data Table from one Excel file into a single JSON file, named _[ExcelName].txt_.
-- **Language maps:** Used in Localization with TextMeshPro to compile the character table of a language, mainly applied for Korean, Japanese, and Chinese due to their extensive character systems.
+- **Combine Json Sheets:** Merges the Data Table from one Excel file into a single JSON file, named _[ExcelName].txt_.
+- **Language Char Sets:** Used in Localization with TextMeshPro to compile the character table of a language, mainly applied for Korean, Japanese, and Chinese due to their extensive character systems.
 - **Persistent columns:** Specifies the names of columns to retain during processing even if they are empty.
-- **Excluded Sheets:** Specifies the names of sheets to exclude when processing the Data Table.
-- **GG Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
-- **GG Client Secret:** Enter your Google Secret (retrieved from Credentials in Google Console).
-- **Encryption Key:** The key used to encrypt JSON Data.
+- **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
+- **Google Client Secret:** Enter your Google Secret (retrieved from Credentials in Google Console).
 
 ## 3.5. Encrypt & Decrypt Text
 
@@ -91,7 +127,7 @@ Prefer using Google Spreadsheets? No problem.
 
 This function allows you to encrypt or decrypt a string of characters based on the Key provided in the Settings Tab. You can use this function to secure the content of a text, or to open and read the encrypted JSON Data files after they have been exported.
 
-# 4. Data Design Rules in Excel
+# 4. Data Design Rules in Spreadsheet
 
 ## 4.1. IDs
 
