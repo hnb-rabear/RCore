@@ -530,6 +530,46 @@ namespace RCore
 			return type;
 		}
 
+		public static void RefreshPivot(this RectTransform pRect, UIPivot pivot)
+		{
+			switch (pivot)
+			{
+				case UIPivot.Bot:
+					SetPivot(pRect, new Vector2(0.5f, 0));
+					break;
+				case UIPivot.BotLeft:
+					SetPivot(pRect, new Vector2(0, 0));
+					break;
+				case UIPivot.BotRight:
+					SetPivot(pRect, new Vector2(1, 0));
+					break;
+				case UIPivot.Top:
+					SetPivot(pRect, new Vector2(0.5f, 1));
+					break;
+				case UIPivot.TopLeft:
+					SetPivot(pRect, new Vector2(0, 1f));
+					break;
+				case UIPivot.TopRight:
+					SetPivot(pRect, new Vector2(1, 1f));
+					break;
+				case UIPivot.Center:
+					SetPivot(pRect, new Vector2(0.5f, 0.5f));
+					break;
+			}
+			return;
+
+			void SetPivot(RectTransform pRectTransform, Vector2 pivot)
+			{
+				if (pRectTransform == null) return;
+
+				var size = pRectTransform.rect.size;
+				var deltaPivot = pRectTransform.pivot - pivot;
+				var deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
+				pRectTransform.pivot = pivot;
+				pRectTransform.localPosition -= deltaPosition;
+			}
+		}
+
 #endregion
 	}
 }

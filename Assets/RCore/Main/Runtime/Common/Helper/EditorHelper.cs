@@ -2040,7 +2040,7 @@ namespace RCore.Editor
 
                 if (newObject == null)
                 {
-                    Debug.LogError("Error instantiating prefab");
+                    UnityEngine.Debug.LogError("Error instantiating prefab");
                     break;
                 }
 
@@ -2413,7 +2413,7 @@ namespace RCore.Editor
             var property = pObj.FindProperty(pPropertyName);
             if (property == null)
             {
-                Debug.Log($"Not found property {pPropertyName}");
+                UnityEngine.Debug.LogError($"Not found property {pPropertyName}");
                 return null;
             }
 
@@ -3325,7 +3325,7 @@ namespace RCore.Editor
                         textTMP.enableWordWrapping = horizontalOverflow == HorizontalWrapMode.Wrap;
                         if (verticalOverflow == VerticalWrapMode.Truncate)
                             textTMP.overflowMode = TextOverflowModes.Truncate;
-                        Debug.Log($"Replace Text in GameObject {go.name}");
+                        UnityEngine.Debug.Log($"Replace Text in GameObject {go.name}");
                         EditorUtility.SetDirty(go);
                     }
                 }

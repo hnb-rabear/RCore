@@ -277,16 +277,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 6
-  m_scaleBounceEffect: 1
   m_img: {fileID: 6323184087273364650}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 0
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 0
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click
 --- !u!1 &8111541596845424536
 GameObject:
   m_ObjectHideFlags: 0

@@ -659,8 +659,10 @@ MonoBehaviour:
   - {fileID: 875511634}
   contentsInactive: []
   additionalLabels: []
+  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
+  scaleBounceEffect: 1
   enableBgSpriteSwitch: 0
   sptActiveBackground: {fileID: 0}
   sptInactiveBackground: {fileID: 0}
@@ -1283,16 +1285,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 0
-  m_scaleBounceEffect: 1
   m_img: {fileID: 926091324}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 1
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 1
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click
 --- !u!1 &1167726644
 GameObject:
   m_ObjectHideFlags: 0
@@ -1493,23 +1494,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 0
-  m_scaleBounceEffect: 1
   m_img: {fileID: 1189250056}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 1
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
-  m_label: {fileID: 624936466}
-  m_fontColorOnOffSwap: 0
-  m_fontColorOn: {r: 0, g: 0, b: 0, a: 0}
-  m_fontColorOff: {r: 0, g: 0, b: 0, a: 0}
-  m_labelMatOnOffSwap: 0
-  m_labelMatOn: {fileID: 0}
-  m_labelMatOff: {fileID: 0}
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 1
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click
+  label: {fileID: 624936466}
+  fontColorOnOffSwap: 0
+  fontColorOn: {r: 0, g: 0, b: 0, a: 0}
+  fontColorOff: {r: 0, g: 0, b: 0, a: 0}
+  labelMatOnOffSwap: 0
+  labelMatOn: {fileID: 0}
+  labelMatOff: {fileID: 0}
 --- !u!1 &1254777738
 GameObject:
   m_ObjectHideFlags: 0
@@ -2353,15 +2353,16 @@ MonoBehaviour:
       m_Calls: []
   m_IsOn: 1
   txtLabel: {fileID: 1254777740}
-  toggleTransform: {fileID: 2074151102}
-  onPosition: {x: 30, y: 0}
-  offPosition: {x: 270, y: 0}
+  toggleTransform: {fileID: 0}
+  onPosition: {x: 0, y: 0}
+  offPosition: {x: 0, y: 0}
   enableOnOffContent: 0
   onObjects: []
   offObjects: []
   enableOnOffColor: 0
   onColor: {r: 0, g: 0, b: 0, a: 0}
   offColor: {r: 0, g: 0, b: 0, a: 0}
+  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
 --- !u!1 &1718718361
@@ -2495,8 +2496,10 @@ MonoBehaviour:
   - {fileID: 1622762144}
   contentsInactive: []
   additionalLabels: []
+  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
+  scaleBounceEffect: 1
   enableBgSpriteSwitch: 0
   sptActiveBackground: {fileID: 0}
   sptInactiveBackground: {fileID: 0}
@@ -2645,8 +2648,10 @@ MonoBehaviour:
   - {fileID: 1301017659}
   contentsInactive: []
   additionalLabels: []
+  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
+  scaleBounceEffect: 1
   enableBgSpriteSwitch: 0
   sptActiveBackground: {fileID: 0}
   sptInactiveBackground: {fileID: 0}
@@ -2870,8 +2875,10 @@ MonoBehaviour:
   - {fileID: 1458240551}
   contentsInactive: []
   additionalLabels: []
+  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
+  scaleBounceEffect: 1
   enableBgSpriteSwitch: 0
   sptActiveBackground: {fileID: 0}
   sptInactiveBackground: {fileID: 0}
@@ -4371,13 +4378,12 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 0
-  m_scaleBounceEffect: 1
   m_img: {fileID: 5651835835412589269}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 1
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 1
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click

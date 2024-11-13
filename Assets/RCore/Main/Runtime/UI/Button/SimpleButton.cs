@@ -11,20 +11,22 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/SimpleButton")]
 	public class SimpleButton : JustButton
 	{
-		[FormerlySerializedAs("mLabel")]
-		[SerializeField] protected Text m_label;
+		[FormerlySerializedAs("m_label")]
+		public Text label;
+		
 		public Text Label
 		{
 			get
 			{
-				if (m_label == null && !m_findLabel)
+				if (label == null && !m_findLabel)
 				{
-					m_label = GetComponentInChildren<Text>();
+					label = GetComponentInChildren<Text>();
 					m_findLabel = true;
 				}
-				return m_label;
+				return label;
 			}
 		}
+		
 		private bool m_findLabel;
 
 #if UNITY_EDITOR
@@ -33,8 +35,8 @@ namespace RCore.UI
 		{
 			base.OnValidate();
 
-			if (m_label == null)
-				m_label = GetComponentInChildren<Text>();
+			if (label == null)
+				label = GetComponentInChildren<Text>();
 		}
 
 		[CanEditMultipleObjects]

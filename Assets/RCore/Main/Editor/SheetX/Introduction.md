@@ -91,7 +91,7 @@ https://docs.google.com/spreadsheets/d/[google-sheet-id]/edit?......
 
 ![SheetXEditGoogleSheet](https://github.com/user-attachments/assets/ac74f8a0-d59a-4d96-886f-9212395509dc)
 
-## 5. Settings
+# 5. Settings
 
 ![SheetXSettings](https://github.com/user-attachments/assets/206194b4-cd6c-4397-bd35-c49ecabf7aa2)
 
@@ -121,17 +121,9 @@ https://docs.google.com/spreadsheets/d/[google-sheet-id]/edit?......
 - **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
 - **Google Client Secret:** Enter your Google Secret (retrieved from Credentials in Google Console).
 
-## 3.5. Encrypt & Decrypt Text
+# 6. Rules in Spreadsheet
 
-![excel-2-unity-tab-4](https://github.com/user-attachments/assets/f7e50d41-6cac-4f32-9251-91589652c1ca)
-
-This function allows you to encrypt or decrypt a string of characters based on the Key provided in the Settings Tab. You can use this function to secure the content of a text, or to open and read the encrypted JSON Data files after they have been exported.
-
-# 4. Data Design Rules in Spreadsheet
-
-## 4.1. IDs
-
-[Download detail example from GitHub](https://github.com/nbhung100914/excel-to-unity/blob/main/Example.xlsx)
+## 6.1. IDs
 
 | Hero   |     |         | Building      |     |         | Pet      |     |         | Gender[enum]      |     |
 | ------ | --- | ------- | ------------- | --- | ------- | -------- | --- | ------- | ----------------- | --- |
@@ -161,7 +153,7 @@ Sheets named according to the syntax _[%IDs]_ are called IDs sheets. They are us
 | ----- | --- | ------- |
 ```
 
-## 4.2. Constants
+## 6.2. Constants
 
 | Name                  | Type        | Value              | Comment               |
 | --------------------- | ----------- | ------------------ | --------------------- |
@@ -195,7 +187,7 @@ Sheets named according to the syntax _[%Constants]_ are called Constants Sheets.
 | ---- | ---- | ----- | ------- |
 ```
 
-## 4.3. Localization
+## 6.3. Localization
 
 | idstring     | relativeId | english                   | spanish                        |
 | ------------ | ---------- | ------------------------- | ------------------------------ |
@@ -229,7 +221,7 @@ Sheets named according to the syntax _[%Localization%]_ are called Localization 
 | -------- | ---------- | ------- | ------- | ----- | ---- |
 ```
 
-# 4.4 Data table - JSON Data
+# 6.4. Data table - JSON Data
 
 ### Basic data type: Boolean, Number, String
 
@@ -285,7 +277,59 @@ To define an attribute object type, the following rules should be followed:
     Example 1: attribute0, value0, increase0, value0, max0.
     Example 2: attribute1, value1[], increase1[], value1[], max1[].
     ```
+    
+---
+# 7. Integration
 
-# 5. Setup for a Unity Project
+## 7.1. Create folders for exporting files
 
-You can view the demo project [Here](https://github.com/nbhung100914/excel-to-unity-example)
+Create 3 directories to store the files that will be exported:
+
+- A folder to store the C# scripts (IDs, Constants, Localization Component, Localization API).
+- A folder to store the JSON data files.
+- A folder to store the Localization data.
+
+  - There are two ways to set up the folder for Localization data, depending on how you want to load Localizations:
+    - The easiest method is to load from the Resources folder. Create a folder inside the Resources folder to store Localization data. You can name this folder anything you like.
+    - Alternatively, use the Addressable Asset System. In this case, create a "Localizations" folder outside the Resources folder and set it as an Addressable Asset. It's recommended to name this folder "Localizations".
+
+- Navigate to Window > SheetX > Settings
+- In Sheets Exporter Settings, set up the paths for the "Constants Output Folder," "Json Output Folder," and "Localization Output Folder" using the three folders you just created.
+- For information on other settings and their use cases, please [refer to Section 5](#5-settings).
+
+## 7.2. Example and Scripting
+
+### Create a ScriptableObject as Storage for Static Database
+
+```cs
+[Serializable]
+public class DataBasic1
+{
+    public int numberExample1;
+    public int numberExample2;
+    public int numberExample3;
+    public bool boolExample;
+    public string stringExample;
+}
+```
+
+```cs
+[Serializable]
+public class DataBasic2
+{
+    [Serializable]
+    public class Example
+    {
+        public int id;
+        public string name;
+    }
+
+    public string[] array1;
+    public int[] array2;
+    public int[] array3;
+    public bool[] array4;
+    public int[] array5;
+    public string[] array6;
+    public Example json1;
+}
+```

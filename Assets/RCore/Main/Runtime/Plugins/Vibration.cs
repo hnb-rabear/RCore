@@ -112,9 +112,9 @@ public static class Vibration
 		{
 			if (!initialized) return;
 #if UNITY_IOS
-        _VibratePop ();
+			_VibratePop ();
 #elif UNITY_ANDROID
-			VibrateAndroid(50);
+			VibrateAndroid(20);
 #endif
 		}
 	}
@@ -126,7 +126,7 @@ public static class Vibration
 		if (Application.isMobilePlatform)
 		{
 #if UNITY_IOS
-        _VibratePeek ();
+			_VibratePeek ();
 #elif UNITY_ANDROID
 			VibrateAndroid(100);
 #endif
@@ -140,7 +140,7 @@ public static class Vibration
 		if (Application.isMobilePlatform)
 		{
 #if UNITY_IOS
-        _VibrateNope ();
+			_VibrateNope ();
 #elif UNITY_ANDROID
 			long[] pattern = { 0, 50, 50, 50 };
 			VibrateAndroid(pattern, -1);
@@ -228,9 +228,9 @@ public static class Vibration
 			}
 
 #elif UNITY_IOS
-        return _HasVibrator ();
+			return _HasVibrator ();
 #else
-        return false;
+			return false;
 #endif
 		}
 		else

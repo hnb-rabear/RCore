@@ -11,56 +11,55 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/SimpleTMPButton")]
 	public class SimpleTMPButton : JustButton
 	{
-		[FormerlySerializedAs("mLabelTMP")]
-		[SerializeField] protected TextMeshProUGUI m_label;
+		[FormerlySerializedAs("m_label")]
+		public TextMeshProUGUI label;
+		[FormerlySerializedAs("m_fontColorOnOffSwap")]
+		public bool fontColorOnOffSwap;
+		[FormerlySerializedAs("m_fontColorOn")]
+		public Color fontColorOn;
+		[FormerlySerializedAs("m_fontColorOff")]
+		public Color fontColorOff;
+
+		[FormerlySerializedAs("m_labelMatOnOffSwap")]
+		public bool labelMatOnOffSwap;
+		[FormerlySerializedAs("m_labelMatOn")]
+		public Material labelMatOn;
+		[FormerlySerializedAs("m_labelMatOff")]
+		public Material labelMatOff;
 
 		public TextMeshProUGUI Label
 		{
 			get
 			{
-				if (m_label == null && !m_findLabel)
+				if (label == null && !m_findLabel)
 				{
-					m_label = GetComponentInChildren<TextMeshProUGUI>();
+					label = GetComponentInChildren<TextMeshProUGUI>();
 					m_findLabel = true;
 				}
-				return m_label;
+				return label;
 			}
 		}
 
 		private bool m_findLabel;
-
-		[FormerlySerializedAs("mFontColorSwap")]
-		[SerializeField] protected bool m_fontColorOnOffSwap;
-		[FormerlySerializedAs("mFontColorActive")]
-		[SerializeField] protected Color m_fontColorOn;
-		[FormerlySerializedAs("mFontColorInactive")]
-		[SerializeField] protected Color m_fontColorOff;
-
-		[FormerlySerializedAs("m_LabelMatSwap")]
-		[SerializeField] protected bool m_labelMatOnOffSwap;
-		[FormerlySerializedAs("m_LabelMatActive")]
-		[SerializeField] public Material m_labelMatOn;
-		[FormerlySerializedAs("m_LabelMatInactive")]
-		[SerializeField] public Material m_labelMatOff;
-
+		
 #if UNITY_EDITOR
 		[ContextMenu("Validate")]
 		protected override void OnValidate()
 		{
 			base.OnValidate();
 
-			if (m_label == null)
-				m_label = GetComponentInChildren<TextMeshProUGUI>();
-			if (m_label == null)
-				m_labelMatOnOffSwap = false;
-			if (!m_labelMatOnOffSwap)
+			if (label == null)
+				label = GetComponentInChildren<TextMeshProUGUI>();
+			if (label == null)
+				labelMatOnOffSwap = false;
+			if (!labelMatOnOffSwap)
 			{
-				m_labelMatOn = null;
-				m_labelMatOff = null;
+				labelMatOn = null;
+				labelMatOff = null;
 			}
-			else if (m_labelMatOn == null)
+			else if (labelMatOn == null)
 			{
-				m_labelMatOn = m_label.fontSharedMaterial;
+				labelMatOn = label.fontSharedMaterial;
 			}
 		}
 #endif
@@ -71,29 +70,29 @@ namespace RCore.UI
 
 			if (pValue)
 			{
-				if (m_fontColorOnOffSwap)
-					m_label.color = m_fontColorOn;
-				if (m_labelMatOnOffSwap && m_labelMatOn != null && m_labelMatOff != null)
+				if (fontColorOnOffSwap)
+					label.color = fontColorOn;
+				if (labelMatOnOffSwap && labelMatOn != null && labelMatOff != null)
 				{
 					var labels = gameObject.FindComponentsInChildren<TextMeshProUGUI>();
 					foreach (var label in labels)
 					{
-						if (label.font == m_label.font && label.fontSharedMaterial == m_label.fontSharedMaterial)
-							label.fontSharedMaterial = m_labelMatOn;
+						if (label.font == this.label.font && label.fontSharedMaterial == this.label.fontSharedMaterial)
+							label.fontSharedMaterial = labelMatOn;
 					}
 				}
 			}
 			else
 			{
-				if (m_fontColorOnOffSwap)
-					m_label.color = m_fontColorOff;
-				if (m_labelMatOnOffSwap && m_labelMatOn != null && m_labelMatOff != null)
+				if (fontColorOnOffSwap)
+					label.color = fontColorOff;
+				if (labelMatOnOffSwap && labelMatOn != null && labelMatOff != null)
 				{
 					var labels = gameObject.FindComponentsInChildren<TextMeshProUGUI>();
 					foreach (var label in labels)
 					{
-						if (label.font == m_label.font && label.fontSharedMaterial == m_label.fontSharedMaterial)
-							label.fontSharedMaterial = m_labelMatOff;
+						if (label.font == this.label.font && label.fontSharedMaterial == this.label.fontSharedMaterial)
+							label.fontSharedMaterial = labelMatOff;
 					}
 				}
 			}

@@ -279,17 +279,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 0
-  m_scaleBounceEffect: 1
   m_img: {fileID: 6482338001790151083}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 1
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
-  m_label: {fileID: 4127299651347387514}
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 1
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click
+  label: {fileID: 4127299651347387514}
 --- !u!1 &4602843172443095432
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,17 +568,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 0
-  m_scaleBounceEffect: 1
   m_img: {fileID: 1972845239463366328}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 1
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
-  m_label: {fileID: 7944323239106436536}
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 1
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click
+  label: {fileID: 7944323239106436536}
 --- !u!1 &7450802368099544633
 GameObject:
   m_ObjectHideFlags: 0
@@ -701,16 +699,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
-  m_pivotForScaleBounce: 6
-  m_scaleBounceEffect: 1
   m_img: {fileID: 6323184087273364650}
-  m_initialScale: {x: 1, y: 1}
-  m_perfectRatio: 2
-  m_greyscaleEffect: 0
-  m_imgOnOffSwap: 0
-  m_imgOn: {fileID: 0}
-  m_imgOff: {fileID: 0}
-  m_clickSfx: sfx_button_click
+  scaleBounceEffect: 1
+  perfectRatio: 2
+  greyscaleEffect: 0
+  imgOnOffSwap: 0
+  imgOn: {fileID: 0}
+  imgOff: {fileID: 0}
+  tapFeedback: 2
+  clickSfx: sfx_button_click
 --- !u!1 &8111541596845424536
 GameObject:
   m_ObjectHideFlags: 0

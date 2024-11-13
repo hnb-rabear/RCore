@@ -37,31 +37,31 @@ namespace RCore.Editor.UI
 
             EditorGUILayout.BeginVertical("box");
             {
-                var fontColorSwap = serializedObject.SerializeField("m_fontColorOnOffSwap");
+                var fontColorSwap = serializedObject.SerializeField("fontColorOnOffSwap");
                 if (fontColorSwap.boolValue)
                 {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.BeginVertical("box");
-                    serializedObject.SerializeField("m_fontColorOn");
-                    serializedObject.SerializeField("m_fontColorOff");
+                    serializedObject.SerializeField("fontColorOn");
+                    serializedObject.SerializeField("fontColorOff");
                     EditorGUILayout.EndVertical();
                     EditorGUI.indentLevel--;
                 }
 
-                var labelMatSwap = serializedObject.SerializeField("m_labelMatOnOffSwap");
+                var labelMatSwap = serializedObject.SerializeField("labelMatOnOffSwap");
                 if (labelMatSwap.boolValue)
                 {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.BeginVertical("box");
-                    var labelMatActiveName = EditorHelper.DropdownList(m_target.m_labelMatOn ? m_target.m_labelMatOn.name : "", "Active Mat", m_matsName.ToArray());
-                    m_target.m_labelMatOn = m_matsName.Contains(labelMatActiveName) ? m_labelMats[m_matsName.IndexOf(labelMatActiveName)] : null;
-                    var labelMatInactiveName = EditorHelper.DropdownList(m_target.m_labelMatOff ? m_target.m_labelMatOff.name : "", "Inactive Mat", m_matsName.ToArray());
-                    m_target.m_labelMatOff = m_matsName.Contains(labelMatInactiveName) ? m_labelMats[m_matsName.IndexOf(labelMatInactiveName)] : null;
+                    var labelMatActiveName = EditorHelper.DropdownList(m_target.labelMatOn ? m_target.labelMatOn.name : "", "Active Mat", m_matsName.ToArray());
+                    m_target.labelMatOn = m_matsName.Contains(labelMatActiveName) ? m_labelMats[m_matsName.IndexOf(labelMatActiveName)] : null;
+                    var labelMatInactiveName = EditorHelper.DropdownList(m_target.labelMatOff ? m_target.labelMatOff.name : "", "Inactive Mat", m_matsName.ToArray());
+                    m_target.labelMatOff = m_matsName.Contains(labelMatInactiveName) ? m_labelMats[m_matsName.IndexOf(labelMatInactiveName)] : null;
                     EditorGUILayout.EndVertical();
                     EditorGUI.indentLevel--;
                 }
 
-                var label = serializedObject.SerializeField("m_label");
+                var label = serializedObject.SerializeField("label");
                 var text = label.objectReferenceValue as TextMeshProUGUI;
                 if (text != null)
                 {

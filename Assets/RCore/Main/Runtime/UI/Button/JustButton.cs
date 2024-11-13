@@ -20,40 +20,33 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/JustButton")]
 	public class JustButton : Button
 	{
-		protected enum PivotForScale
-		{
-			Bot,
-			Top,
-			TopLeft,
-			BotLeft,
-			TopRight,
-			BotRight,
-			Center,
-		}
-
 		private static Material m_GreyMat;
 
-		[FormerlySerializedAs("mPivotForFX")]
-		[SerializeField] protected PivotForScale m_pivotForScaleBounce = PivotForScale.Center;
-		[FormerlySerializedAs("mEnabledFX")]
-		[SerializeField] protected bool m_scaleBounceEffect = true;
-		[FormerlySerializedAs("mImg")]
 		[SerializeField] protected Image m_img;
+
+		[FormerlySerializedAs("m_scaleBounceEffect")]
+		[FormerlySerializedAs("mEnabledFX")]
+		public bool scaleBounceEffect = true;
+		[FormerlySerializedAs("mImg")]
+		[FormerlySerializedAs("m_perfectRatio")]
 		[FormerlySerializedAs("m_PerfectRatio")]
-		[SerializeField] protected PerfectRatio m_perfectRatio = PerfectRatio.Height;
-		[SerializeField] protected bool m_hapticTouch;
-
+		public PerfectRatio perfectRatio = PerfectRatio.Height;
+		[FormerlySerializedAs("m_greyscaleEffect")]
 		[FormerlySerializedAs("mGreyMatEnabled")]
-		[SerializeField] protected bool m_greyscaleEffect;
+		public bool greyscaleEffect;
+		[FormerlySerializedAs("m_imgOnOffSwap")]
 		[FormerlySerializedAs("mImgSwapEnabled")]
-		[SerializeField] protected bool m_imgOnOffSwap;
+		public bool imgOnOffSwap;
+		[FormerlySerializedAs("m_imgOn")]
 		[FormerlySerializedAs("mImgActive")]
-		[SerializeField] protected Sprite m_imgOn;
+		public Sprite imgOn;
+		[FormerlySerializedAs("m_imgOff")]
 		[FormerlySerializedAs("mImgInactive")]
-		[SerializeField] protected Sprite m_imgOff;
+		public Sprite imgOff;
+		public TapFeedback tapFeedback = TapFeedback.Haptic;
+		[FormerlySerializedAs("m_clickSfx")]
 		[FormerlySerializedAs("m_SfxClip")]
-		[SerializeField] protected string m_clickSfx;
-
+		public string clickSfx = "button";
 		public Image img
 		{
 			get
@@ -66,7 +59,6 @@ namespace RCore.UI
 		public Material imgMaterial { get => img.material; set => img.material = value; }
 		public RectTransform rectTransform => targetGraphic.rectTransform;
 
-		private PivotForScale m_prePivot;
 		private Action m_inactionStateAction;
 		private bool m_active = true;
 		private int m_perfectSpriteId;
@@ -85,23 +77,23 @@ namespace RCore.UI
 			enabled = pValue || m_inactionStateAction != null;
 			if (pValue)
 			{
-				if (m_imgOnOffSwap)
-					m_img.sprite = m_imgOn;
+				if (imgOnOffSwap)
+					m_img.sprite = imgOn;
 				else
 					imgMaterial = null;
 			}
 			else
 			{
-				if (m_imgOnOffSwap)
+				if (imgOnOffSwap)
 				{
-					m_img.sprite = m_imgOff;
+					m_img.sprite = imgOff;
 				}
 				else
 				{
 					transform.localScale = m_initialScale;
 
 					//Use grey material here
-					if (m_greyscaleEffect)
+					if (greyscaleEffect)
 						imgMaterial = GetGreyMat();
 				}
 			}
@@ -113,18 +105,11 @@ namespace RCore.UI
 			enabled = m_active || m_inactionStateAction != null;
 		}
 
-		protected override void Start()
-		{
-			base.Start();
-
-			m_prePivot = m_pivotForScaleBounce;
-		}
-
 		protected override void OnDisable()
 		{
 			base.OnDisable();
 
-			if (m_scaleBounceEffect)
+			if (scaleBounceEffect)
 				transform.localScale = m_initialScale;
 		}
 
@@ -132,7 +117,7 @@ namespace RCore.UI
 		{
 			base.OnEnable();
 
-			if (m_scaleBounceEffect)
+			if (scaleBounceEffect)
 				transform.localScale = m_initialScale;
 
 			if (m_img != null && m_img.sprite != null && m_perfectSpriteId != m_img.sprite.GetInstanceID())
@@ -154,20 +139,16 @@ namespace RCore.UI
 			if (m_active)
 			{
 				base.OnPointerDown(eventData);
-				if (!string.IsNullOrEmpty(m_clickSfx))
-					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(m_clickSfx));
 				
-				if (m_hapticTouch)
+				if (tapFeedback == TapFeedback.Haptic || tapFeedback == TapFeedback.SoundAndHaptic)
 					Vibration.VibratePop();
+				
+				if ((tapFeedback == TapFeedback.Sound || tapFeedback == TapFeedback.SoundAndHaptic) && !string.IsNullOrEmpty(clickSfx))
+					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(clickSfx));
 			}
 
-			if (m_scaleBounceEffect)
+			if (scaleBounceEffect)
 			{
-				if (m_pivotForScaleBounce != m_prePivot)
-				{
-					m_prePivot = m_pivotForScaleBounce;
-					RefreshPivot(rectTransform);
-				}
 #if DOTWEEN
 				DOTween.Kill(GetInstanceID());
 				transform
@@ -186,7 +167,7 @@ namespace RCore.UI
 			if (m_active)
 				base.OnPointerUp(eventData);
 
-			if (m_scaleBounceEffect)
+			if (scaleBounceEffect)
 			{
 #if DOTWEEN
 				DOTween.Kill(GetInstanceID());
@@ -212,50 +193,6 @@ namespace RCore.UI
 				base.OnSelect(eventData);
 		}
 
-		public void RefreshPivot()
-		{
-			RefreshPivot(rectTransform);
-		}
-
-		private void RefreshPivot(RectTransform pRect)
-		{
-			switch (m_pivotForScaleBounce)
-			{
-				case PivotForScale.Bot:
-					SetPivot(pRect, new Vector2(0.5f, 0));
-					break;
-				case PivotForScale.BotLeft:
-					SetPivot(pRect, new Vector2(0, 0));
-					break;
-				case PivotForScale.BotRight:
-					SetPivot(pRect, new Vector2(1, 0));
-					break;
-				case PivotForScale.Top:
-					SetPivot(pRect, new Vector2(0.5f, 1));
-					break;
-				case PivotForScale.TopLeft:
-					SetPivot(pRect, new Vector2(0, 1f));
-					break;
-				case PivotForScale.TopRight:
-					SetPivot(pRect, new Vector2(1, 1f));
-					break;
-				case PivotForScale.Center:
-					SetPivot(pRect, new Vector2(0.5f, 0.5f));
-					break;
-			}
-		}
-
-		public void SetPivot(RectTransform pRectTransform, Vector2 pivot)
-		{
-			if (pRectTransform == null) return;
-
-			var size = pRectTransform.rect.size;
-			var deltaPivot = pRectTransform.pivot - pivot;
-			var deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
-			pRectTransform.pivot = pivot;
-			pRectTransform.localPosition -= deltaPosition;
-		}
-
 		public Material GetGreyMat()
 		{
 			if (m_GreyMat == null)
@@ -265,7 +202,7 @@ namespace RCore.UI
 
 		public void EnableGrey(bool pValue)
 		{
-			m_greyscaleEffect = pValue;
+			greyscaleEffect = pValue;
 		}
 
 		public bool Enabled()
@@ -275,12 +212,12 @@ namespace RCore.UI
 
 		public void SetActiveSprite(Sprite pSprite)
 		{
-			m_imgOn = pSprite;
+			imgOn = pSprite;
 		}
 
 		protected void CheckPerfectRatio()
 		{
-			if (m_perfectRatio == PerfectRatio.Width)
+			if (perfectRatio == PerfectRatio.Width)
 			{
 				var image1 = m_img;
 				if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_perfectSpriteId != image1.sprite.GetInstanceID())
@@ -297,7 +234,7 @@ namespace RCore.UI
 					m_perfectSpriteId = image1.sprite.GetInstanceID();
 				}
 			}
-			else if (m_perfectRatio == PerfectRatio.Height)
+			else if (perfectRatio == PerfectRatio.Height)
 			{
 				var image1 = m_img;
 				if (image1 != null && image1.sprite != null && image1.type == Image.Type.Sliced && m_perfectSpriteId != image1.sprite.GetInstanceID())
@@ -316,13 +253,36 @@ namespace RCore.UI
 			}
 		}
 
+		public void PlayBubbleEffect(float duration)
+		{
+#if DOTWEEN
+			float scaleDuration = 0.6f;
+			int loopCount = Mathf.Max(2, Mathf.RoundToInt(duration / scaleDuration));
+
+			// Ensure loop count is even
+			if (loopCount % 2 != 0)
+				loopCount++;
+
+			DOTween.Kill(GetInstanceID());
+			var bubbleSequence = DOTween.Sequence();
+			bubbleSequence.Append(transform.DOScale(0.9f, scaleDuration * 0.4f));
+			bubbleSequence.Append(transform.DOScale(1.1f, scaleDuration * 0.6f)).SetEase(Ease.OutSine);
+			bubbleSequence.SetLoops(loopCount, LoopType.Yoyo);
+			bubbleSequence.SetId(GetInstanceID());
+			bubbleSequence.OnComplete(() => transform.localScale = m_initialScale);
+#else
+			UnityEngine.Debug.LogError("Bubble Effect Requires DOTween");
+#endif
+		}
+
+
 #if UNITY_EDITOR
 
 		protected override void OnValidate()
 		{
 			if (Application.isPlaying)
 				return;
-
+			
 			base.OnValidate();
 
 			if (targetGraphic == null)
@@ -337,7 +297,7 @@ namespace RCore.UI
 			if (targetGraphic != null && m_img == null)
 				m_img = targetGraphic as Image;
 
-			if (m_scaleBounceEffect)
+			if (scaleBounceEffect)
 			{
 				if (transition == Transition.Animation)
 					transition = Transition.None;
@@ -361,8 +321,6 @@ namespace RCore.UI
 				}
 				_animator.enabled = true;
 			}
-
-			RefreshPivot();
 
 			m_perfectSpriteId = 0;
 			CheckPerfectRatio();
@@ -389,19 +347,18 @@ namespace RCore.UI
 				EditorGUILayout.BeginVertical("box");
 				{
 					serializedObject.SerializeField("m_img");
-					serializedObject.SerializeField("m_pivotForScaleBounce");
-					serializedObject.SerializeField("m_scaleBounceEffect");
-					serializedObject.SerializeField("m_greyscaleEffect");
-					serializedObject.SerializeField("m_clickSfx");
-					serializedObject.SerializeField("m_hapticTouch");
-					serializedObject.SerializeField("m_perfectRatio");
-					var imgSwapEnabled = serializedObject.SerializeField("m_imgOnOffSwap");
+					serializedObject.SerializeField("scaleBounceEffect");
+					serializedObject.SerializeField("greyscaleEffect");
+					serializedObject.SerializeField("clickSfx");
+					serializedObject.SerializeField("tapFeedback");
+					serializedObject.SerializeField("perfectRatio");
+					var imgSwapEnabled = serializedObject.SerializeField("imgOnOffSwap");
 					if (imgSwapEnabled.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("m_imgOn");
-						serializedObject.SerializeField("m_imgOff");
+						serializedObject.SerializeField("imgOn");
+						serializedObject.SerializeField("imgOff");
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}

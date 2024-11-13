@@ -22,7 +22,7 @@ First, open the excel file located at `/Assets/Basic/Data/Example.xlsx`. This is
 | ---- | ---- | ----- | ------- |
 ```
 
-- The sheet name needs to have `Constants` as a prefix or suffix.
+- The sheet name needs to have `Constants` as a suffix.
 - There are four columns: Name, Type, Value, and Comment.
 - Name: This is the name of the constant, it must be written continuously, does not contain special characters, and should be capitalized.
 - Type: This is the data type of the constant. You can use the following data types: `int`, `float`, `bool`, `string`, `int-array`, `float-array`, `vector2`, and `vector3`.
@@ -35,7 +35,7 @@ First, open the excel file located at `/Assets/Basic/Data/Example.xlsx`. This is
 | ----- | --- | ------- |
 ```
 
-- The sheet name needs to have `IDs` as a prefix or suffix.
+- The sheet name needs to have `IDs` as a suffix.
 - In this Sheet, only use the Integer data type.
 - Each group is arranged in 3 consecutive columns.
 - The first row contains the group name for easy lookup.
@@ -64,7 +64,7 @@ For example, if idString is "hero_name" and relativeId is 1, then the key will b
 
 ### Data Table:
 
-- The name of the data table sheet should not contain the strings `IDs`, `Constants`, and `Localization`.
+- The name of the data table sheet should not end with `IDs`, `Constants`, or start with `Localization`.
 - This sheet can use the following data types: `number`, `string`, `boolean`, `list/array`, `JSON object`, and `attribute object`.
 - The first row is used to name the data fields, columns without a name will be skipped when exporting Json data.
 - Add a `[]` suffix to the column name to define the `list/array` data type.

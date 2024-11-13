@@ -15,4 +15,23 @@ namespace RCore
 		Width,
 		Height,
 	}
+	
+	public enum UIPivot
+	{
+		Bot,
+		Top,
+		TopLeft,
+		BotLeft,
+		TopRight,
+		BotRight,
+		Center,
+	}
+
+	public enum TapFeedback
+	{
+		None,
+		Sound,
+		Haptic,
+		SoundAndHaptic,
+	}
 }
