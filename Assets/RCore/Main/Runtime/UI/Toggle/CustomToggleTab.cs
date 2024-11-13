@@ -23,60 +23,35 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/CustomToggleTab")]
 	public class CustomToggleTab : Toggle
 	{
-		[FormerlySerializedAs("m_imgBackground")]
 		public Image imgBackground;
-		[FormerlySerializedAs("m_txtLabel")]
 		public TextMeshProUGUI txtLabel;
-		[FormerlySerializedAs("m_contentsActive")]
 		public List<RectTransform> contentsActive;
-		[FormerlySerializedAs("m_contentsInactive")]
 		public List<RectTransform> contentsInactive;
-		[FormerlySerializedAs("m_additionalLabels")]
 		public List<TextMeshProUGUI> additionalLabels;
-		public TapFeedback tapFeedback = TapFeedback.Haptic;
-		[FormerlySerializedAs("m_sfxClip")]
 		public string sfxClip = "button";
-		[FormerlySerializedAs("m_sfxClipOff")]
 		public string sfxClipOff = "button";
-		[FormerlySerializedAs("m_scaleBounceEffect")]
 		public bool scaleBounceEffect = true;
 
-		[FormerlySerializedAs("m_enableBgSpriteSwitch")]
 		public bool enableBgSpriteSwitch;
-		[FormerlySerializedAs("m_sptActiveBackground")]
 		public Sprite sptActiveBackground;
-		[FormerlySerializedAs("m_sptInactiveBackground")]
 		public Sprite sptInactiveBackground;
 
-		[FormerlySerializedAs("m_enableBgColorSwitch")]
 		public bool enableBgColorSwitch;
-		[FormerlySerializedAs("m_colorActiveBackground")]
 		public Color colorActiveBackground;
-		[FormerlySerializedAs("m_colorInactiveBackground")]
 		public Color colorInactiveBackground;
 
-		[FormerlySerializedAs("m_enableTextColorSwitch")]
 		public bool enableTextColorSwitch;
-		[FormerlySerializedAs("m_colorActiveText")]
 		public Color colorActiveText;
-		[FormerlySerializedAs("m_colorInactiveText")]
 		public Color colorInactiveText;
 
-		[FormerlySerializedAs("m_enableSizeSwitch")]
 		public bool enableSizeSwitch;
-		[FormerlySerializedAs("m_sizeActive")]
 		public Vector2 sizeActive;
-		[FormerlySerializedAs("m_sizeInactive")]
 		public Vector2 sizeInactive;
 
-		[FormerlySerializedAs("m_enableFontSizeSwitch")]
 		public bool enableFontSizeSwitch;
-		[FormerlySerializedAs("m_fontSizeActive")]
 		public float fontSizeActive;
-		[FormerlySerializedAs("m_fontSizeInactive")]
 		public float fontSizeInactive;
 
-		[FormerlySerializedAs("m_tweenTime")]
 		public float tweenTime = 0.3f;
 
 		[ReadOnly] public bool isLocked;
@@ -125,7 +100,7 @@ namespace RCore.UI
 		{
 			if (Application.isPlaying)
 				return;
-			
+
 			base.OnValidate();
 
 			if (txtLabel == null)
@@ -221,7 +196,7 @@ namespace RCore.UI
 		protected override void OnDisable()
 		{
 			base.OnDisable();
-			
+
 			if (scaleBounceEffect)
 				transform.localScale = m_initialScale;
 
@@ -242,7 +217,7 @@ namespace RCore.UI
 		public override void OnPointerDown(PointerEventData eventData)
 		{
 			base.OnPointerDown(eventData);
-			
+
 			if (!isLocked && scaleBounceEffect)
 			{
 #if DOTWEEN
@@ -261,7 +236,7 @@ namespace RCore.UI
 		public override void OnPointerUp(PointerEventData eventData)
 		{
 			base.OnPointerUp(eventData);
-			
+
 			if (!isLocked && scaleBounceEffect)
 			{
 #if DOTWEEN
@@ -458,15 +433,11 @@ namespace RCore.UI
 		{
 			if (m_clicked)
 			{
-				if (tapFeedback == TapFeedback.Haptic || tapFeedback == TapFeedback.SoundAndHaptic)
-					Vibration.VibratePop();
-				if (tapFeedback == TapFeedback.Sound || tapFeedback == TapFeedback.SoundAndHaptic)
-				{
-					if (IsOn && !string.IsNullOrEmpty(sfxClip))
-						EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
-					else if (!isOn && !string.IsNullOrEmpty(sfxClipOff))
-						EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClipOff));
-				}
+				Vibration.VibratePop();
+				if (IsOn && !string.IsNullOrEmpty(sfxClip))
+					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
+				else if (!isOn && !string.IsNullOrEmpty(sfxClipOff))
+					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClipOff));
 				m_clicked = false;
 			}
 #if DOTWEEN
@@ -504,7 +475,6 @@ namespace RCore.UI
 					serializedObject.SerializeField("sfxClip");
 					serializedObject.SerializeField("sfxClipOff");
 					serializedObject.SerializeField("scaleBounceEffect");
-					serializedObject.SerializeField("tapFeedback");
 
 					var enableBgSpriteSwitch = serializedObject.SerializeField("enableBgSpriteSwitch");
 					if (enableBgSpriteSwitch.boolValue)

@@ -16,6 +16,8 @@ using System.Runtime.InteropServices;
 
 public static class Vibration
 {
+    public const int POP_INTENSITY = 3;
+    public const int PEEK_INTENSITY = 50;
 #if UNITY_IOS
     [DllImport ( "__Internal" )]
     private static extern bool _HasVibrator ();
@@ -114,7 +116,7 @@ public static class Vibration
 #if UNITY_IOS
 			_VibratePop ();
 #elif UNITY_ANDROID
-			VibrateAndroid(20);
+			VibrateAndroid(POP_INTENSITY);
 #endif
 		}
 	}
@@ -128,7 +130,7 @@ public static class Vibration
 #if UNITY_IOS
 			_VibratePeek ();
 #elif UNITY_ANDROID
-			VibrateAndroid(100);
+			VibrateAndroid(PEEK_INTENSITY);
 #endif
 		}
 	}
@@ -156,7 +158,6 @@ public static class Vibration
 	///</summary>
 	public static void VibrateAndroid(long milliseconds)
 	{
-
 		if (Application.isMobilePlatform)
 		{
 			if (AndroidVersion >= 26)
