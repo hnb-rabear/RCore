@@ -1,3 +1,8 @@
+/***
+ * Copyright (c) 2018 HNB-RaBear
+ * https://github.com/hnb-rabear
+ */
+
 using System.Collections.Generic;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
@@ -833,7 +838,7 @@ namespace RCore.Editor.SheetX
 			languagesDictBuilder.Append($"\tpublic static readonly string DefaultLanguage = \"{pLanguageTextDict.First().Key}\";");
 
 			//Write file localization constants
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.LOCALIZATION_TEMPLATE_V2).text;
+			string fileContent = Resources.Load<TextAsset>(SheetXConstants.LOCALIZATION_TEMPLATE).text;
 			fileContent = fileContent.Replace("LOCALIZATION_CLASS_NAME", pFileName);
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_ENUM", idBuilder2.ToString());
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_CONST", idBuilder.ToString());

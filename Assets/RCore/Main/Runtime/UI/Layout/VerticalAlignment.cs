@@ -1,5 +1,5 @@
 ﻿/***
- * Author RaBear - HNB - 2017
+ * Author HNB-RaBear - 2017
  **/
 using UnityEngine;
 using System.Collections;

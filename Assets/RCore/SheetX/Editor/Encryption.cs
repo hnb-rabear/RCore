@@ -1,12 +1,11 @@
-﻿namespace RCore.Editor.SheetX
-{
-    public interface IEncryption
-    {
-        string Encrypt(string value);
-        string Decrypt(string value);
-    }
+﻿/***
+ * Copyright (c) 2018 HNB-RaBear
+ * https://github.com/hnb-rabear
+ */
 
-    public class Encryption : IEncryption
+namespace RCore.Editor.SheetX
+{
+    public class Encryption
     {
         private static Encryption m_Singleton { get; set; }
         public static Encryption Singleton => m_Singleton ??= new Encryption();

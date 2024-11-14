@@ -1,3 +1,8 @@
+/***
+ * Copyright (c) 2018 HNB-RaBear
+ * https://github.com/hnb-rabear
+ */
+
 using UnityEditor;
 using UnityEngine;
 

@@ -1,3 +1,8 @@
+/***
+ * Copyright (c) 2018 HNB-RaBear
+ * https://github.com/hnb-rabear
+ */
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -122,13 +127,9 @@ namespace RCore.Editor.SheetX
 			GUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Add Excel SpreadSheets", pWidth: 200, pHeight: 30))
 			{
-				var paths = EditorHelper.OpenFilePanelWithFilters("Select Excel SpreadSheets", new[] { "Excel", "xlsx" });
-				for (int i = 0; i < paths.Count; i++)
-				{
-					if (paths[i].StartsWith(Application.dataPath))
-						paths[i] = EditorHelper.FormatPathToUnityPath(paths[i]);
-					m_settings.AddExcelFileFile(paths[i]);
-				}
+				var path = EditorHelper.OpenFilePanel("Select Excel SpreadSheets", "xlsx");
+				if (!string.IsNullOrEmpty(path))
+					m_settings.AddExcelFileFile(path);
 			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))

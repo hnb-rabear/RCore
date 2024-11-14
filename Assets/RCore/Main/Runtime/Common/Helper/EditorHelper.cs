@@ -1,6 +1,6 @@
-﻿/**
-* Author RaBear - HNB - 2017
-**/
+﻿/***
+ * Author HNB-RaBear - 2017
+ */
 
 #if UNITY_EDITOR
 using System;
@@ -2735,7 +2735,7 @@ namespace RCore.Editor
             return null;
         }
 
-        public static string LastOpenedDirectory
+        private static string LastOpenedDirectory
         {
 	        get => EditorPrefs.GetString("LastOpenedDirectory");
 	        set => EditorPrefs.SetString("LastOpenedDirectory", value);

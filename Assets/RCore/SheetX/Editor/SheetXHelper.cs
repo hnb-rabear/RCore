@@ -1,3 +1,8 @@
+/***
+ * Copyright (c) 2018 HNB-RaBear
+ * https://github.com/hnb-rabear
+ */
+
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;

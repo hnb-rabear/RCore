@@ -1,3 +1,8 @@
+/***
+ * Copyright (c) 2024 Red Games
+ * https://github.com/redclock/SimpleEditorTableView
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

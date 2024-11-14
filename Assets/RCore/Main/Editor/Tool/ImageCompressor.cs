@@ -1,5 +1,5 @@
 /***
- * Author RaBear - HNB - 2023
+ * Author HNB-RaBear - 2023
  **/
 
 using System;

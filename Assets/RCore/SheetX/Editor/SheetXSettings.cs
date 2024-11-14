@@ -1,3 +1,8 @@
+/***
+ * Copyright (c) 2018 HNB-RaBear
+ * https://github.com/hnb-rabear
+ */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,14 +14,12 @@ namespace RCore.Editor.SheetX
 {
 	public static class SheetXConstants
 	{
-		public const string APPLICATION_NAME = "Excel to Unity - Data Converter";
+		public const string APPLICATION_NAME = "SheetX - Sheets Exporter";
 		public const string CONSTANTS_CS_TEMPLATE = "ConstantsTemplate";
 		public const string IDS_CS_TEMPLATE = "IDsTemplate";
 		public const string LOCALIZATION_MANAGER_TEMPLATE = "LocalizationsManagerTemplate";
-		public const string LOCALIZATION_TEMPLATE = "LocalizationTemplate";
-		public const string LOCALIZATION_TEMPLATE_V2 = "LocalizationTemplateV2";
+		public const string LOCALIZATION_TEMPLATE = "LocalizationTemplateV2";
 		public const string LOCALIZATION_TEXT_TEMPLATE = "LocalizationTextTemplate";
-		public const string SETTINGS_CS_TEMPLATE = "SettingsTemplate";
 		public const string IDS_SHEET = "IDs";
 		public const string CONSTANTS_SHEET = "Constants";
 		public const string SETTINGS_SHEET = "Settings";
