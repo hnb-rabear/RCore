@@ -1,0 +1,15 @@
+{
+  "name": "com.rabear.rcore.sheetx",
+  "version": "1.0.0",
+  "displayName": "RCore.SheetX",
+  "description": "",
+  "unity": "2022.3",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  }
+}

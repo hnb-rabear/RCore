@@ -1,5 +1,5 @@
 /***
- * Author RaBear - HNB - 2019
+ * Author HNB-RaBear - 2019
  **/
 
 #pragma warning disable 0649

@@ -1,5 +1,5 @@
 /***
- * Author RaBear - HNB - 2021
+ * Author HNB-RaBear - 2021
  **/
 
 #if MIRROR
