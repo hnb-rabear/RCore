@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.SS.UserModel;
@@ -649,6 +650,11 @@ namespace RCore.Editor.SheetX
 			else
 				cellStr = cell.ToString();
 			return cellStr;
+		}
+		
+		public static string RemoveSpecialCharacters(this string str, string replace = "")
+		{
+			return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);
 		}
 	}
 }

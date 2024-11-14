@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   excelSheetsPath:
     selected: 1
-    path: Assets/SheetXExamples/Exporting an Excel File/Example.xlsx
+    path: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
     sheets:
     - name: ExampleConstants
       selected: 1
+    - name: ExampleData1
+      selected: 1
+    - name: ExampleData2
+      selected: 1
+    - name: ExampleData3
+      selected: 1
     - name: ExampleIDs
       selected: 1
-    - name: LocalizationExample
+    - name: ExampleMergeTable
+      selected: 1
+    - name: LocalizationExample1
       selected: 1
     - name: LocalizationExample2
-      selected: 1
-    - name: ExampleDataBasic1
-      selected: 1
-    - name: ExampleDataBasic2
-      selected: 1
-    - name: ExampleDataAdvanced
-      selected: 1
-    - name: ExampleMergeTable
       selected: 1
     name: Example
   googleSheetsPath:
@@ -42,15 +42,15 @@ MonoBehaviour:
       selected: 1
     - name: ExampleConstants
       selected: 1
-    - name: LocalizationExample
-      selected: 1
     - name: LocalizationExample2
       selected: 1
-    - name: ExampleDataBasic2
+    - name: LocalizationExample1
       selected: 1
-    - name: ExampleDataAdvanced
+    - name: ExampleData1
       selected: 1
-    - name: ExampleDataBasic1
+    - name: ExampleData2
+      selected: 1
+    - name: ExampleData3
       selected: 1
   excelSheetsPaths:
   - selected: 1
@@ -226,10 +226,10 @@ MonoBehaviour:
       selected: 1
     - name: DailyQuests
       selected: 1
-  jsonOutputFolder: Assets/SheetXExamples/Import/Json
-  constantsOutputFolder: Assets/SheetXExamples/Import/Constants
-  localizationOutputFolder: Assets/SheetXExamples/Import/Localizations
-  namespace: _AH
+  jsonOutputFolder: Assets/SheetXExample/DataConfig
+  constantsOutputFolder: Assets/SheetXExample/Scritps
+  localizationOutputFolder: Assets/SheetXExample/Resources/Localizations
+  namespace: SheetXExample
   separateConstants: 0
   separateIDs: 0
   separateLocalizations: 1

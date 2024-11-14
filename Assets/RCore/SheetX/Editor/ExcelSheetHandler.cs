@@ -1596,7 +1596,5 @@ namespace RCore.Editor.SheetX
 					return true;
 			return false;
 		}
-		
-		
 	}
 }
