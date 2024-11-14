@@ -376,20 +376,21 @@ namespace RCore.Editor
             GUILayout.BeginHorizontal();
             foreach (var tabName in tabsName)
             {
+	            bool isOn = CurrentTab == tabName;
                 var buttonStyle = new GUIStyle(EditorStyles.toolbarButton)
                 {
                     fixedHeight = 0,
                     padding = new RectOffset(4, 4, 4, 4),
                     normal =
                     {
-                        textColor = Color.white
+	                    textColor = EditorGUIUtility.isProSkin ? Color.white : (isOn ? Color.black : Color.black * 0.6f)
                     },
                     fontStyle = FontStyle.Bold,
                     fontSize = 13
                 };
 
                 var preColor = GUI.color;
-                var color = CurrentTab == tabName ? Color.white : Color.gray;
+                var color = isOn ? Color.white : Color.gray;
                 GUI.color = color;
 
                 if (GUILayout.Button(tabName, buttonStyle))

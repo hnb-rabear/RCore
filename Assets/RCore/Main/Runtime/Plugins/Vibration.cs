@@ -16,8 +16,8 @@ using System.Runtime.InteropServices;
 
 public static class Vibration
 {
-    public const int POP_INTENSITY = 3;
-    public const int PEEK_INTENSITY = 50;
+    public const int POP_INTENSITY = 20;
+    public const int PEEK_INTENSITY = 60;
 #if UNITY_IOS
     [DllImport ( "__Internal" )]
     private static extern bool _HasVibrator ();
