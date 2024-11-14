@@ -89,7 +89,7 @@ namespace RCore.Editor.SheetX
 		public bool selected = true;
 		public string id;
 		public string name;
-		public List<SheetPath> sheets = new List<SheetPath>();
+		public List<SheetPath> sheets = new();
 		public void AddSheet(string name)
 		{
 			for (int i = 0; i < sheets.Count; i++)
@@ -127,8 +127,8 @@ namespace RCore.Editor.SheetX
 	
 	public class LocalizationBuilder
 	{
-		public List<string> idsString = new List<string>();
-		public Dictionary<string, List<string>> languageTextDict = new Dictionary<string, List<string>>();
+		public List<string> idsString = new();
+		public Dictionary<string, List<string>> languageTextDict = new();
 	}
 	
 	public class FieldValueType
@@ -165,8 +165,8 @@ namespace RCore.Editor.SheetX
 	/// </summary>
 	public class RowContent
 	{
-		public List<string> fieldNames = new List<string>();
-		public List<string> fieldValues = new List<string>();
+		public List<string> fieldNames = new();
+		public List<string> fieldValues = new();
 	}
 	
 	[Serializable]

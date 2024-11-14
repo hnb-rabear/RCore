@@ -160,7 +160,7 @@ namespace RCore.Editor
 			m_multiColumnHeader!.OnGUI(headerRect, xScroll: 0.0f);
 
 			float sumWidth = rowWidth;
-			float sumHeight = rowHeight * data.Count + GUI.skin.horizontalScrollbar.fixedHeight;
+			float sumHeight = rowHeight * (data?.Count ?? 1) + GUI.skin.horizontalScrollbar.fixedHeight;
 
 			UpdateSorting(data);
 
@@ -200,7 +200,7 @@ namespace RCore.Editor
 
 		private void UpdateSorting(List<TData> data)
 		{
-			if (m_sortingDirty)
+			if (m_sortingDirty && data != null)
 			{
 				int sortIndex = m_multiColumnHeader.sortedColumnIndex;
 				if (sortIndex >= 0)
