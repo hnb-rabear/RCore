@@ -24,7 +24,7 @@ namespace RCore.Editor
 		private const string SHIFT = "#";
 		private const string CTRL = "%";
 
-		[MenuItem("RCore/Configuration %_&_j", priority = GROUP_1 + 1)]
+		[MenuItem("RCore/Configuration " + CTRL + "_" + ALT + "_j", priority = GROUP_1 + 1)]
 		private static void OpenEnvSetting()
 		{
 			Selection.activeObject = Configuration.Instance;
@@ -76,14 +76,14 @@ namespace RCore.Editor
 			AssetDatabase.SaveAssets();
 		}
 
-		[MenuItem("RCore/Quick Scene Opener", priority = GROUP_2 + 5)]
+		[MenuItem("RCore/Quick Scene Opener " + CTRL + "_" + ALT + "_k", priority = GROUP_2 + 5)]
 		private static void OpenQuickSceneWindow()
 		{
 			QuickSceneWindow.ShowWindow();
 		}
 
 		public static string[] Scenes = { "Scene 1", "Scene 2", "Scene 3" };
-		
+
 
 		//==========================================================
 

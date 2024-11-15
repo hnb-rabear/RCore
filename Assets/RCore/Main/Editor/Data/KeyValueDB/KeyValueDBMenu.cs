@@ -10,7 +10,11 @@ namespace RCore.Editor.Data.KeyValue
 {
 	public static class KeyValueDBMenu
 	{
-		[MenuItem("RCore/KeyValueDB/KeyValueDB Editor %_#_'", priority = RMenu.GROUP_4 + 1)]
+		private const string ALT = "&";
+		private const string SHIFT = "#";
+		private const string CTRL = "%";
+		
+		[MenuItem("RCore/KeyValueDB/KeyValueDB Editor " + CTRL + "_" + ALT + "_m", priority = RMenu.GROUP_4 + 1)]
 		private static void OpenDataWindow()
 		{
 			var window = EditorWindow.GetWindow<KeyValueDBWindow>("KeyValueDB", true);

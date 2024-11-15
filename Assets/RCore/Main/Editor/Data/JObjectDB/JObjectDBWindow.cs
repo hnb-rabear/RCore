@@ -72,7 +72,12 @@ namespace RCore.Editor.Data.JObject
 					JObjectDB.Save();
 				},
 			});
-			EditorHelper.GridDraws(2, actions);
+			actions.Add(new EditorButton
+			{
+				label = "Reload",
+				onPressed = () => m_data = JObjectDB.GetAllData()
+			});
+			EditorHelper.GridDraws(3, actions);
 
 			EditorHelper.BoxVertical("JObjects", () =>
 			{

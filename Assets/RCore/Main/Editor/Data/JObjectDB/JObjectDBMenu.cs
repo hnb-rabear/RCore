@@ -6,7 +6,11 @@ namespace RCore.Editor.Data.JObject
 {
 	public static class JObjectDBMenu
 	{
-		[MenuItem("RCore/JObjectDB/JObjectDB Editor %_#_'", priority = RMenu.GROUP_4 + 1)]
+		private const string ALT = "&";
+		private const string SHIFT = "#";
+		private const string CTRL = "%";
+		
+		[MenuItem("RCore/JObjectDB/JObjectDB Editor " + CTRL + "_" + ALT + "_n", priority = RMenu.GROUP_4 + 1)]
 		private static void OpenDataWindow()
 		{
 			JObjectDBWindow.ShowWindow();
