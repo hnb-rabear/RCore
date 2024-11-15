@@ -2,6 +2,7 @@
  * Author HNB-RaBear - 2019
  **/
 
+using CandyCoded.HapticFeedback;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -57,7 +58,7 @@ namespace RCore.UI
 		{
 			if (m_clicked)
 			{
-				Vibration.VibratePop();
+				HapticFeedback.LightFeedback();
 				
 				if (isOn && !string.IsNullOrEmpty(sfxClip))
 					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
