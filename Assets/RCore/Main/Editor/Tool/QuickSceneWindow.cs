@@ -1,4 +1,7 @@
-using System;
+/**
+ * Author HNB-RaBear - 2024
+ **/
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;

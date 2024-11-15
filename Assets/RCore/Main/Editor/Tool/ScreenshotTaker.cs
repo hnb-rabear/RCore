@@ -3,27 +3,26 @@ using UnityEngine;
 
 namespace RCore.Editor.Tool
 {
-	[ExecuteInEditMode]
 	public class ScreenshotTaker : EditorWindow
 	{
 		private int m_resWidth = Screen.width * 4;
 		private int m_resHeight = Screen.height * 4;
 
 		public Camera myCamera;
+
 		private int m_scale = 1;
-
 		private string m_path = "";
-		//bool showPreview = true;
 		private RenderTexture m_renderTexture;
-
 		private bool m_isTransparent;
+		private bool m_takeHiResShot;
+		private string m_lastScreenshot = "";
 
 		public static void ShowWindow()
 		{
-			var editorWindow = GetWindow(typeof(ScreenshotTaker));
-			editorWindow.autoRepaintOnSceneChange = true;
-			editorWindow.Show();
-			editorWindow.titleContent = new GUIContent("Screenshot");
+			var window = GetWindow(typeof(ScreenshotTaker));
+			window.autoRepaintOnSceneChange = true;
+			window.Show();
+			window.titleContent = new GUIContent("Screenshot");
 		}
 
 		private void OnGUI()
@@ -45,7 +44,7 @@ namespace RCore.Editor.Tool
 			GUILayout.Label("Save Path", EditorStyles.boldLabel);
 
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.TextField(m_path, GUILayout.ExpandWidth(false));
+			EditorGUILayout.TextField(m_path);
 			if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
 				m_path = EditorUtility.SaveFolderPanel("Path to Save Images", m_path, Application.dataPath);
 
@@ -57,13 +56,13 @@ namespace RCore.Editor.Tool
 			GUILayout.Label("Select Camera", EditorStyles.boldLabel);
 
 			myCamera = EditorGUILayout.ObjectField(myCamera, typeof(Camera), true, null) as Camera;
+			EditorGUILayout.HelpBox("Choose the camera of which to capture the render", MessageType.None);
 
 			if (myCamera == null)
 				myCamera = Camera.main;
 
 			m_isTransparent = EditorGUILayout.Toggle("Transparent Background", m_isTransparent);
-
-			EditorGUILayout.HelpBox("Choose the camera of which to capture the render. You can make the background transparent using the transparency option.", MessageType.None);
+			EditorGUILayout.HelpBox("You can make the background transparent using the transparency option.", MessageType.None);
 
 			EditorGUILayout.Space();
 			EditorGUILayout.BeginVertical();
@@ -87,7 +86,9 @@ namespace RCore.Editor.Tool
 			EditorGUILayout.Space();
 			EditorGUILayout.LabelField("Screenshot will be taken at " + m_resWidth * m_scale + " x " + m_resHeight * m_scale + " px", EditorStyles.boldLabel);
 
-			if (GUILayout.Button("Take Screenshot", GUILayout.MinHeight(60)))
+			var buttonStyle = new GUIStyle(GUI.skin.button);
+			buttonStyle.fontSize = 20;
+			if (GUILayout.Button("Take Screenshot", buttonStyle, GUILayout.MinHeight(60)))
 			{
 				if (m_path == "")
 				{
@@ -100,18 +101,17 @@ namespace RCore.Editor.Tool
 					TakeHiResShot();
 				}
 			}
-
-			EditorGUILayout.Space();
+			
 			EditorGUILayout.BeginHorizontal();
 
-			if (GUILayout.Button("Open Last Screenshot", GUILayout.MaxWidth(160), GUILayout.MinHeight(40)))
-				if (lastScreenshot != "")
+			if (GUILayout.Button("Open Last Screenshot", GUILayout.MinHeight(30)))
+				if (m_lastScreenshot != "")
 				{
-					Application.OpenURL("file://" + lastScreenshot);
-					Debug.Log("Opening File " + lastScreenshot);
+					Application.OpenURL("file://" + m_lastScreenshot);
+					Debug.Log("Opening File " + m_lastScreenshot);
 				}
 
-			if (GUILayout.Button("Open Folder", GUILayout.MaxWidth(100), GUILayout.MinHeight(40)))
+			if (GUILayout.Button("Open Folder", GUILayout.MinHeight(30)))
 				Application.OpenURL("file://" + m_path);
 
 			EditorGUILayout.EndHorizontal();
@@ -139,26 +139,19 @@ namespace RCore.Editor.Tool
 				Application.OpenURL(filename);
 				m_takeHiResShot = false;
 			}
-
-			EditorGUILayout.HelpBox("In case of any error, make sure you have Unity Pro as the plugin requires Unity Pro to work.", MessageType.Info);
 		}
 
-
-		private bool m_takeHiResShot;
-		public string lastScreenshot = "";
-
-
-		public string ScreenShotName(int width, int height)
+		private string ScreenShotName(int width, int height)
 		{
 			string strPath = "";
 
 			strPath = $"{m_path}/screen_{width}x{height}_{System.DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png";
-			lastScreenshot = strPath;
+			m_lastScreenshot = strPath;
 
 			return strPath;
 		}
 
-		public void TakeHiResShot()
+		private void TakeHiResShot()
 		{
 			Debug.Log("Taking Screenshot");
 			m_takeHiResShot = true;

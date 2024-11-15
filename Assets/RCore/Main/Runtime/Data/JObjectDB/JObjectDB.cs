@@ -1,3 +1,7 @@
+/**
+ * Author HNB-RaBear - 2024
+ **/
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

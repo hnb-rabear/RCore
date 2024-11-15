@@ -1,3 +1,7 @@
+/**
+ * Author HNB-RaBear - 2024
+ **/
+
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using RCore.Data.JObject;
@@ -111,7 +115,7 @@ namespace RCore.Editor.Data.JObject
 
 		public static void ShowWindow()
 		{
-			var window = GetWindow<JObjectDBWindow>("JObjectDB", true);
+			var window = GetWindow<JObjectDBWindow>("JObject Database", true);
 			window.Show();
 		}
 	}

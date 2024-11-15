@@ -93,7 +93,7 @@ namespace RCore.Editor.Tool
 			GUILayout.Space(10);
 
 			GUILayout.BeginHorizontal();
-			EditorHelper.TextArea(m_buildName, "Build Name", readOnly: true);
+			EditorHelper.TextArea(m_buildName, "Name of Build", readOnly: true);
 			if (EditorHelper.Button("Copy", 50))
 				GUIUtility.systemCopyBuffer = m_buildName;
 			GUILayout.EndHorizontal();

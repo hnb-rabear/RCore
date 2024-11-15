@@ -11,8 +11,15 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
-	public static partial class RMenu
+	public static class RMenu
 	{
+		// CTRL + ALT + j => Configuration
+		// CTRL + ALT + k => Scene Opener
+		// CTRL + ALT + n => JObject Database
+		// CTRL + ALT + m => KeyValue Database
+		// CTRL + ALT + / => Tools Collection
+		// SHIFT + 1 => Save Assets
+
 		public const int GROUP_1 = 0;
 		public const int GROUP_2 = 20;
 		public const int GROUP_3 = 40;
@@ -28,6 +35,14 @@ namespace RCore.Editor
 		private static void OpenEnvSetting()
 		{
 			Selection.activeObject = Configuration.Instance;
+		}
+
+		[MenuItem("RCore/Get Name of Build", priority = GROUP_1 + 2)]
+		private static void CopyBuildName()
+		{
+			string buildName = EditorHelper.GetBuildName();
+			GUIUtility.systemCopyBuffer = buildName;
+			UnityEngine.Debug.Log("Copied name of Build: " + buildName);
 		}
 
 		//==========================================================
@@ -82,9 +97,6 @@ namespace RCore.Editor
 			QuickSceneWindow.ShowWindow();
 		}
 
-		public static string[] Scenes = { "Scene 1", "Scene 2", "Scene 3" };
-
-
 		//==========================================================
 
 		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_4 + 1)]
@@ -137,7 +149,7 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem("RCore/Tools/Tools Collection", priority = GROUP_6 + 1)]
+		[MenuItem("RCore/Tools/Tools Collection " + CTRL + "_" + ALT + "_/", priority = GROUP_6 + 1)]
 		private static void OpenToolsCollectionWindow()
 		{
 			ToolsCollectionWindow.ShowWindow();

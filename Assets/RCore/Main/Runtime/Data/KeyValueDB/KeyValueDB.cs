@@ -1,4 +1,8 @@
-﻿using System;
+﻿/**
+ * Author HNB-RaBear - 2018
+ **/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;

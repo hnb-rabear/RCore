@@ -1,3 +1,7 @@
+/**
+ * Author HNB-RaBear - 2021
+ **/
+
 using System;
 using System.Globalization;
 using UnityEditor;

@@ -1,3 +1,7 @@
+/**
+ * Author HNB-RaBear - 2024
+ **/
+
 #if ADDRESSABLES
 using System.Collections.Generic;
 using UnityEditor;
