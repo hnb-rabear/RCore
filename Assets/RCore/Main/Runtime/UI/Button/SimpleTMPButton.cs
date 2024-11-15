@@ -11,20 +11,13 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/SimpleTMPButton")]
 	public class SimpleTMPButton : JustButton
 	{
-		[FormerlySerializedAs("m_label")]
 		public TextMeshProUGUI label;
-		[FormerlySerializedAs("m_fontColorOnOffSwap")]
 		public bool fontColorOnOffSwap;
-		[FormerlySerializedAs("m_fontColorOn")]
 		public Color fontColorOn;
-		[FormerlySerializedAs("m_fontColorOff")]
 		public Color fontColorOff;
 
-		[FormerlySerializedAs("m_labelMatOnOffSwap")]
 		public bool labelMatOnOffSwap;
-		[FormerlySerializedAs("m_labelMatOn")]
 		public Material labelMatOn;
-		[FormerlySerializedAs("m_labelMatOff")]
 		public Material labelMatOff;
 
 		public TextMeshProUGUI Label

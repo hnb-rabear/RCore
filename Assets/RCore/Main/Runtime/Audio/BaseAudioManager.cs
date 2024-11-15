@@ -25,21 +25,13 @@ namespace RCore.Audio
     public class BaseAudioManager : MonoBehaviour
     {
         public AudioCollection audioCollection;
-        [FormerlySerializedAs("m_EnabledSFX")]
         [SerializeField] protected bool m_enabledSfx = true;
-        [FormerlySerializedAs("m_EnabledMusic")]
         [SerializeField] protected bool m_enabledMusic = true;
-        [FormerlySerializedAs("mSFXSources")]
         [SerializeField] protected List<AudioSource> m_sfxSources;
-        [FormerlySerializedAs("mSFXSourceUnlimited")]
         [SerializeField] public AudioSource m_sfxSourceUnlimited;
-        [FormerlySerializedAs("mMusicSource")]
         [SerializeField] public AudioSource m_musicSource;
-        [FormerlySerializedAs("m_MasterVolume")]
         [SerializeField, Range(0, 1f)] protected float m_masterVolume = 1f;
-        [FormerlySerializedAs("m_SFXVolume")]
         [SerializeField, Range(0, 1f)] protected float m_sfxVolume = 1f;
-        [FormerlySerializedAs("m_MusicVolume")]
         [SerializeField, Range(0, 1f)] protected float m_musicVolume = 1f;
 
         public bool EnabledSFX => m_enabledSfx;

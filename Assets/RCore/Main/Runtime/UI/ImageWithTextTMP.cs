@@ -19,12 +19,12 @@ namespace RCore.UI
     [AddComponentMenu("RCore/UI/ImageWithTextTMP")]
     public class ImageWithTextTMP : MonoBehaviour
     {
-        [FormerlySerializedAs("mImg")] [SerializeField] protected Image m_Img;
-        [FormerlySerializedAs("mTxt")] [SerializeField] protected TextMeshProUGUI m_Txt;
+        [SerializeField] protected Image m_Img;
+        [SerializeField] protected TextMeshProUGUI m_Txt;
 
 		[Separator("Custom")]
-		[FormerlySerializedAs("mAutoReize")] [SerializeField] protected bool m_AutoResize;
-        [FormerlySerializedAs("mFixedSize")] [SerializeField] protected Vector2 m_FixedSize;
+		[SerializeField] protected bool m_AutoResize;
+        [SerializeField] protected Vector2 m_FixedSize;
 
         public Image image
         {

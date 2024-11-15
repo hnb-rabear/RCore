@@ -11,7 +11,6 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/SimpleButton")]
 	public class SimpleButton : JustButton
 	{
-		[FormerlySerializedAs("m_label")]
 		public Text label;
 		
 		public Text Label

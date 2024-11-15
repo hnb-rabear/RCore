@@ -2,6 +2,7 @@
  * Author HNB-RaBear - 2019
  **/
 
+using RCore.Audio;
 using RCore.Editor.Tool;
 using System.Diagnostics;
 using System.IO;
@@ -28,9 +29,9 @@ namespace RCore.Editor
 		{
 			Selection.activeObject = Configuration.Instance;
 		}
-		
+
 		//==========================================================
-		
+
 		[MenuItem("RCore/Asset Database/Save Assets " + SHIFT + "_1", priority = GROUP_2 + 1)]
 		private static void SaveAssets()
 		{
@@ -42,13 +43,13 @@ namespace RCore.Editor
 			AssetDatabase.SaveAssets();
 		}
 
-		[MenuItem("RCore/Asset Database/Refresh Prefabs in folder", priority = GROUP_2 +  2)]
+		[MenuItem("RCore/Asset Database/Refresh Prefabs in folder", priority = GROUP_2 + 2)]
 		private static void RefreshPrefabs()
 		{
 			RefreshAssets("t:GameObject");
 		}
 
-		[MenuItem("RCore/Asset Database/Refresh ScriptableObjects in folder", priority = GROUP_2 +  3)]
+		[MenuItem("RCore/Asset Database/Refresh ScriptableObjects in folder", priority = GROUP_2 + 3)]
 		private static void RefreshScriptableObjects()
 		{
 			RefreshAssets("t:ScriptableObject");
@@ -77,43 +78,15 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem("RCore/Group Scene Objects " + ALT + "_F1", priority = GROUP_3 + 1)]
-		private static void GroupSceneObjects()
-		{
-			var objs = Selection.gameObjects;
-			if (objs.Length > 1)
-			{
-				var group = new GameObject();
-				for (int i = 0; i < objs.Length; i++)
-				{
-					objs[i].transform.SetParent(group.transform);
-				}
-				Selection.activeObject = group;
-			}
-		}
-
-		[MenuItem("RCore/Ungroup Scene Objects " + ALT + "_F2", priority = GROUP_3 + 2)]
-		private static void UngroupSceneObjects()
-		{
-			var objs = Selection.gameObjects;
-			if (objs.Length > 1)
-			{
-				for (int i = 0; i < objs.Length; i++)
-					objs[i].transform.SetParent(null);
-			}
-		}
-
-		//==========================================================
-
 		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_4 + 1)]
 		private static void ClearPlayerPrefs()
 		{
 			if (EditorHelper.ConfirmPopup("Clear PlayerPrefs"))
 				PlayerPrefs.DeleteAll();
 		}
-		
+
 		//==========================================================
-		
+
 		[MenuItem("RCore/Explorer/DataPath Folder", false, GROUP_5 + 81)]
 		private static void OpenDataPathFolder()
 		{
@@ -121,7 +94,7 @@ namespace RCore.Editor
 			var psi = new ProcessStartInfo(path);
 			Process.Start(psi);
 		}
-		
+
 		[MenuItem("RCore/Explorer/StreamingAssets Folder", false, GROUP_5 + 82)]
 		private static void OpenStreamingAssetsFolder()
 		{
@@ -134,7 +107,7 @@ namespace RCore.Editor
 			var psi = new ProcessStartInfo(path);
 			Process.Start(psi);
 		}
-		
+
 		[MenuItem("RCore/Explorer/PersistentData Folder", false, GROUP_5 + 83)]
 		private static void OpenPersistentDataFolder()
 		{
@@ -144,7 +117,7 @@ namespace RCore.Editor
 			var psi = new ProcessStartInfo(path);
 			Process.Start(psi);
 		}
-		
+
 		[MenuItem("RCore/Explorer/UnityEditor Folder", false, GROUP_5 + 84)]
 		private static void OpenUnityEditorFolder()
 		{
@@ -152,9 +125,9 @@ namespace RCore.Editor
 			var psi = new ProcessStartInfo(path);
 			Process.Start(psi);
 		}
-		
+
 		//==========================================================
-		
+
 		[MenuItem("RCore/Tools/Tools Collection", priority = GROUP_6 + 1)]
 		private static void OpenToolsCollectionWindow()
 		{
@@ -166,19 +139,19 @@ namespace RCore.Editor
 		{
 			ScreenshotTaker.ShowWindow();
 		}
-		
+
 		[MenuItem("RCore/Tools/Find Component Reference", priority = GROUP_6 + 3)]
 		public static void OpenFindComponentReferenceWindow()
 		{
 			FindComponentReferenceWindow.ShowWindow();
 		}
-		
+
 		[MenuItem("RCore/Tools/Find Objects", priority = GROUP_6 + 4)]
 		public static void OpenObjectsFinderWindow()
 		{
 			ObjectsFinderWindow.ShowWindow();
 		}
-		
+
 		[MenuItem("RCore/Tools/Search And Replace Asset Toolkit", priority = GROUP_6 + 5)]
 		public static void OpenSearchAndReplaceAssetWindow()
 		{
@@ -202,19 +175,67 @@ namespace RCore.Editor
 		// {
 		// 	SheetXSettingsWindow.ShowWindow();
 		// }
-		
+
 		//==============================================
-		
-		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (W)")]
+
+		[MenuItem("GameObject/RCore/Group GameObjects", priority = GROUP_1 + 1)]
+		private static void GroupGameObjects()
+		{
+			var objs = Selection.gameObjects;
+			if (objs.Length > 1)
+			{
+				var group = new GameObject();
+				for (int i = 0; i < objs.Length; i++)
+				{
+					objs[i].transform.SetParent(group.transform);
+				}
+				Selection.activeObject = group;
+			}
+		}
+
+		[MenuItem("GameObject/RCore/Ungroup GameObjects", priority = GROUP_1 + 2)]
+		private static void UngroupGameObjects()
+		{
+			var objs = Selection.gameObjects;
+			if (objs.Length > 1)
+			{
+				for (int i = 0; i < objs.Length; i++)
+					objs[i].transform.SetParent(null);
+			}
+		}
+
+		//==============================================
+
+		[MenuItem("GameObject/RCore/Module/Create AudioManager", priority = GROUP_2 + 1)]
+		public static void AddAudioManager()
+		{
+			var audioManager = new GameObject("AudioManager");
+			audioManager.AddComponent<AudioManager>();
+		}
+
+		//==============================================
+
+		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
 		public static void PerfectRatioImagesByWidth()
 		{
 			RUtil.PerfectRatioImagesByWidth(Selection.gameObjects);
 		}
 
-		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (H)")]
+		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (H)", priority = GROUP_3 + 2)]
 		public static void PerfectRatioImagesByHeight()
 		{
 			RUtil.PerfectRatioImagesByHeight(Selection.gameObjects);
+		}
+
+		[MenuItem("GameObject/RCore/UI/Perfect Image Size", priority = GROUP_3 + 3)]
+		public static void SetImagesPerfectRatio()
+		{
+			foreach (var target in Selection.gameObjects)
+			{
+				var images = target.GetComponentsInChildren<UnityEngine.UI.Image>(true);
+				foreach (var image in images)
+					image.PerfectRatio();
+			}
 		}
 
 		[MenuItem("GameObject/RCore/UI/Replace Text By TextMeshProUGUI")]
@@ -223,26 +244,13 @@ namespace RCore.Editor
 			EditorHelper.ReplaceTextsByTextTMP(Selection.gameObjects);
 		}
 
-		[MenuItem("GameObject/RCore/Reorder sorting of SpriteRenderers")]
+		[MenuItem("GameObject/RCore/Reorder SpriteRenderers")]
 		public static void ReorderSortingOfSpriteRenderers()
 		{
 			foreach (var target in Selection.gameObjects)
 			{
 				ComponentHelper.ReorderSortingOfSpriteRenderers(target.GetComponentsInChildren<SpriteRenderer>(true));
 				EditorUtility.SetDirty(target);
-			}
-		}
-		
-		//==============================================
-
-		[MenuItem("GameObject/RCore/Image/Set perfect ratio")]
-		public static void SetImagesPerfectRatio()
-		{
-			foreach (var target in Selection.gameObjects)
-			{
-				var images = target.GetComponentsInChildren<UnityEngine.UI.Image>(true);
-				foreach (var image in images)
-					image.PerfectRatio();
 			}
 		}
 	}

@@ -30,15 +30,10 @@ namespace RCore.UI
             Center,
         }
 
-        [FormerlySerializedAs("tableLayoutType")]
         [SerializeField, Tooltip("Horizontal:L,R,C, Vertical:T,B,C")] private TableLayoutType m_tableLayoutType;
-        [FormerlySerializedAs("alignmentType")]
         [SerializeField] private Alignment m_alignmentType;
-        [FormerlySerializedAs("reverseY")]
         [SerializeField] private bool m_reverseY = true;
-        [FormerlySerializedAs("tweenTime")]
         [SerializeField] private float m_tweenTime = 0.25f;
-        [FormerlySerializedAs("animCurve")]
         [SerializeField] private AnimationCurve m_animCurve;
 
         [Space(10)]

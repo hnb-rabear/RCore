@@ -14,7 +14,7 @@ namespace RCore.UI
 		/// </summary>
 		private void DoForParents<T>(Action<T> action) where T : IEventSystemHandler
 		{
-			Transform parent = transform.parent;
+			var parent = transform.parent;
 			while (parent != null)
 			{
 				foreach (var component in parent.GetComponents<Component>())
@@ -41,7 +41,7 @@ namespace RCore.UI
 		/// <summary>
 		/// Drag event
 		/// </summary>
-		public override void OnDrag(UnityEngine.EventSystems.PointerEventData eventData)
+		public override void OnDrag(PointerEventData eventData)
 		{
 			if (m_routeToParent)
 				DoForParents<IDragHandler>((parent) =>
@@ -55,7 +55,7 @@ namespace RCore.UI
 		/// <summary>
 		/// Begin drag event
 		/// </summary>
-		public override void OnBeginDrag(UnityEngine.EventSystems.PointerEventData eventData)
+		public override void OnBeginDrag(PointerEventData eventData)
 		{
 			if (!horizontal && Math.Abs(eventData.delta.x) > Math.Abs(eventData.delta.y))
 				m_routeToParent = true;
@@ -76,7 +76,7 @@ namespace RCore.UI
 		/// <summary>
 		/// End drag event
 		/// </summary>
-		public override void OnEndDrag(UnityEngine.EventSystems.PointerEventData eventData)
+		public override void OnEndDrag(PointerEventData eventData)
 		{
 			if (m_routeToParent)
 				DoForParents<IEndDragHandler>((parent) =>
