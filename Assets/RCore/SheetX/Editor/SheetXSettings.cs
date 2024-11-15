@@ -73,7 +73,9 @@ namespace RCore.Editor.SheetX
 			if (resourcesIndex != -1)
 			{
 				int startAfterResources = resourcesIndex + resourcesDirName.Length;
-				string pathAfterResources = path.Substring(startAfterResources).TrimStart(System.IO.Path.DirectorySeparatorChar);
+				string pathAfterResources = path.Substring(startAfterResources);
+				// Ensure the path does not start with a directory separator
+				pathAfterResources = pathAfterResources.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 				return pathAfterResources;
 			}
 			isAddressableAsset = true;

@@ -27,7 +27,6 @@ namespace RCore.UI
 		[SerializeField] private float m_MinSpringTime = 0.5f;
 		[SerializeField] private float m_MaxSpringTime = 1f;
 		[SerializeField] private float m_SpringThreshold = 15;
-		[FormerlySerializedAs("m_AutoSetMinScollRection")]
 		[SerializeField] private bool m_AutoSetMinScrollReaction = true;
 		[SerializeField] private float m_MinScrollReaction = 10;
 		[SerializeField] private Vector2 m_TargetPosOffset;
