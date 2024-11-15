@@ -9,8 +9,9 @@ namespace RCore.Editor
 	public class QuickSceneWindow : EditorWindow
 	{
 		private List<string> m_scenes;
+		private EditorPrefsString m_search;
 		private Vector2 m_scrollPosition;
-		
+
 		public static void ShowWindow()
 		{
 			GetWindow<QuickSceneWindow>("Quick Scene Opener");
@@ -18,6 +19,7 @@ namespace RCore.Editor
 
 		private void OnEnable()
 		{
+			m_search = new EditorPrefsString("QuickSceneWindowSearch");
 			m_scenes = GetAllScenesInProject();
 		}
 
@@ -33,11 +35,12 @@ namespace RCore.Editor
 				if (GUILayout.Button(sceneName))
 					OpenScene(scene.path);
 			}
-			
+
 			GUILayout.Label("All Scenes in project", EditorStyles.boldLabel);
+			m_search.Value = EditorHelper.TextField(m_search.Value, "Search");
 			foreach (var scene in m_scenes)
 			{
-				if (GUILayout.Button(scene))
+				if ((m_search.Value == "" || scene.ToLower().Contains(m_search.Value.ToLower())) && GUILayout.Button(scene))
 					OpenScene(scene);
 			}
 			GUILayout.EndScrollView();
@@ -48,7 +51,7 @@ namespace RCore.Editor
 			if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
 				EditorSceneManager.OpenScene(scenePath);
 		}
-		
+
 		private List<string> GetAllScenesInProject()
 		{
 			var scenes = new List<string>();
