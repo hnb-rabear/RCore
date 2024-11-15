@@ -1,5 +1,5 @@
 /***
- * Author RaBear - HNB - 2024
+ * Author HNB-RaBear - 2024
  */
 
 #if UNITY_EDITOR

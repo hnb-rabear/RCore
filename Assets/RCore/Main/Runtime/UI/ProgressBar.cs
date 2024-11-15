@@ -1,5 +1,5 @@
 ﻿/***
- * Author RaBear - HNB - 2019
+ * Author HNB-RaBear - 2019
  **/
 
 using TMPro;
@@ -24,7 +24,6 @@ namespace RCore.UI
 
         public Image imgBackground;
         public Image imgProgressValue;
-        [FormerlySerializedAs("txtProgessValue")]
         public TextMeshProUGUI txtValue;
         public TextMeshProUGUI txtRank;
         /// <summary>
@@ -51,9 +50,9 @@ namespace RCore.UI
         [SerializeField, ReadOnly] private float mValue = -1;
         [SerializeField, ReadOnly] private float mMax = -1;
 
-        private int mRank = -1;
-        private Vector2 mBackgroundSize;
-        private RectTransform mRectProgressValue;
+        private int m_rank = -1;
+        private Vector2 m_backgroundSize;
+        private RectTransform m_rectProgressValue;
 
 
         public virtual float FillAmount
@@ -100,16 +99,16 @@ namespace RCore.UI
         }
         public virtual int Rank
         {
-            get => mRank;
+            get => m_rank;
             set
             {
-                if (mRank != value)
+                if (m_rank != value)
                 {
-                    mRank = value;
+                    m_rank = value;
                     SetRankDisplay();
                 }
                 if (txtRank != null)
-                    txtRank.enabled = mRank >= 0;
+                    txtRank.enabled = m_rank >= 0;
             }
         }
 
@@ -122,15 +121,15 @@ namespace RCore.UI
         {
             if (fillByBarWidth)
             {
-                mBackgroundSize = new Vector2(imgBackground.rectTransform.rect.width, imgBackground.rectTransform.rect.height);
-                mBackgroundSize.x -= mWidthOffset;
+                m_backgroundSize = new Vector2(imgBackground.rectTransform.rect.width, imgBackground.rectTransform.rect.height);
+                m_backgroundSize.x -= mWidthOffset;
             }
 
             if (fillByBarWidth)
             {
-                if (mRectProgressValue == null)
-                    mRectProgressValue = imgProgressValue.rectTransform;
-                mRectProgressValue.sizeDelta = new Vector2(mBackgroundSize.x * pValue, mRectProgressValue.sizeDelta.y);
+                if (m_rectProgressValue == null)
+                    m_rectProgressValue = imgProgressValue.rectTransform;
+                m_rectProgressValue.sizeDelta = new Vector2(m_backgroundSize.x * pValue, m_rectProgressValue.sizeDelta.y);
             }
             else
                 imgProgressValue.fillAmount = pValue;
@@ -171,7 +170,7 @@ namespace RCore.UI
         protected virtual void SetRankDisplay()
         {
             if (txtRank != null)
-                txtRank.text = mRank.ToString();
+                txtRank.text = m_rank.ToString();
         }
 
 #if UNITY_EDITOR

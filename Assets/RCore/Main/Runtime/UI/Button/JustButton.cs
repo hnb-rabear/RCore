@@ -1,7 +1,8 @@
 ﻿/***
- * Author RaBear - HNB - 2018
+ * Author HNB-RaBear - 2018
  **/
 
+using CandyCoded.HapticFeedback;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -124,7 +125,7 @@ namespace RCore.UI
 			{
 				base.OnPointerDown(eventData);
 				
-					Vibration.VibratePop();
+				HapticFeedback.LightFeedback();
 				
 				if (!string.IsNullOrEmpty(clickSfx))
 					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(clickSfx));

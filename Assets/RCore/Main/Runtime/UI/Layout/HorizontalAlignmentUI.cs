@@ -1,5 +1,5 @@
 ﻿/**
- * Author RaBear - HNB - 2017
+ * Author HNB-RaBear - 2017
  **/
 #pragma warning disable 0649
 
@@ -24,24 +24,16 @@ namespace RCore.UI
 			Center,
 		}
 
-		[FormerlySerializedAs("maxContainerWidth")]
 		[SerializeField] private float m_maxContainerWidth;
-		[FormerlySerializedAs("alignmentType")]
 		[SerializeField] private Alignment m_alignmentType;
-		[FormerlySerializedAs("cellDistance")]
 		[SerializeField] private float m_cellDistance;
-		[FormerlySerializedAs("tweenTime")]
 		[SerializeField] private float m_tweenTime = 0.25f;
-		[FormerlySerializedAs("autoWhenStart")]
 		[SerializeField] private bool m_autoWhenStart;
 		
 		[Separator("Optional Config")]
-		[FormerlySerializedAs("yOffset")]
 		[SerializeField] private float m_height;
 		[SerializeField] private AnimationCurve m_heightCurve;
-		[FormerlySerializedAs("moveFromRoot")]
 		[SerializeField] private bool m_moveFromRoot;
-		[FormerlySerializedAs("animCurve")]
 		[SerializeField] private AnimationCurve m_animCurve;
 		[SerializeField, Range(0, 1f)] private float m_lerp;
 

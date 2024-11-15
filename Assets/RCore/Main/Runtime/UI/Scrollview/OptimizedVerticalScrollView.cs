@@ -1,5 +1,5 @@
 ﻿/**
- * Author RaBear - HNB - 2017
+ * Author HNB-RaBear - 2017
  **/
 
 #if DOTWEEN
@@ -26,11 +26,11 @@ namespace RCore.UI
         public int totalCellOnRow = 1;
         public RectTransform content => scrollView.content;
 
-        private int m_TotalVisible;
-        private int m_TotalBuffer = 2;
-        private float m_HalfSizeContainer;
-        private float m_CellSizeY;
-        private float m_PrefabSizeX;
+        private int m_totalVisible;
+        private int m_totalBuffer = 2;
+        private float m_halfSizeContainer;
+        private float m_cellSizeY;
+        private float m_prefabSizeX;
 
         private List<RectTransform> m_itemsRect = new List<RectTransform>();
         private List<OptimizedScrollItem> m_itemsScrolled = new List<OptimizedScrollItem>();
@@ -72,7 +72,7 @@ namespace RCore.UI
             if (pTotalItems == total && !pForce)
                 return;
 
-            m_TotalBuffer = 2;
+            m_totalBuffer = 2;
             m_itemsRect = new List<RectTransform>();
 
             if (m_itemsScrolled == null || m_itemsScrolled.Count == 0)
@@ -89,15 +89,15 @@ namespace RCore.UI
 
             var rectZero = m_itemsScrolled[0].GetComponent<RectTransform>();
             var prefabScale = rectZero.rect.size;
-            m_CellSizeY = prefabScale.y + spacing;
+            m_cellSizeY = prefabScale.y + spacing;
             if (totalCellOnRow > 1)
-                m_PrefabSizeX = prefabScale.x + spacing;
+                m_prefabSizeX = prefabScale.x + spacing;
             else
-                m_PrefabSizeX = prefabScale.x;
+                m_prefabSizeX = prefabScale.x;
             m_pivot = rectZero.pivot;
 
-            container.sizeDelta = new Vector2(m_PrefabSizeX * totalCellOnRow, m_CellSizeY * Mathf.CeilToInt(total * 1f / totalCellOnRow));
-            m_HalfSizeContainer = container.rect.size.y * 0.5f;
+            container.sizeDelta = new Vector2(m_prefabSizeX * totalCellOnRow, m_cellSizeY * Mathf.CeilToInt(total * 1f / totalCellOnRow));
+            m_halfSizeContainer = container.rect.size.y * 0.5f;
 
             var scrollRect = scrollView.transform as RectTransform;
 
@@ -116,12 +116,12 @@ namespace RCore.UI
             }
 
             var viewport = scrollView.viewport;
-            m_TotalVisible = Mathf.CeilToInt(viewport.rect.size.y / m_CellSizeY) * totalCellOnRow;
-            m_TotalBuffer *= totalCellOnRow;
+            m_totalVisible = Mathf.CeilToInt(viewport.rect.size.y / m_cellSizeY) * totalCellOnRow;
+            m_totalBuffer *= totalCellOnRow;
 
             m_offsetVec = Vector3.down;
-            m_startPos = container.anchoredPosition3D - m_offsetVec * m_HalfSizeContainer + m_offsetVec * (prefabScale.y * 0.5f);
-            m_optimizedTotal = Mathf.Min(total, m_TotalVisible + m_TotalBuffer);
+            m_startPos = container.anchoredPosition3D - m_offsetVec * m_halfSizeContainer + m_offsetVec * (prefabScale.y * 0.5f);
+            m_optimizedTotal = Mathf.Min(total, m_totalVisible + m_totalBuffer);
 
             for (int i = 0; i < m_optimizedTotal; i++)
             {
@@ -130,8 +130,8 @@ namespace RCore.UI
 
                 var item = m_itemsScrolled.Obtain(container);
                 var rt = item.transform as RectTransform;
-                rt.anchoredPosition3D = m_startPos + m_offsetVec * rowIndex * m_CellSizeY;
-                rt.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_PrefabSizeX + m_PrefabSizeX * 0.5f,
+                rt.anchoredPosition3D = m_startPos + m_offsetVec * rowIndex * m_cellSizeY;
+                rt.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_prefabSizeX + m_prefabSizeX * 0.5f,
                     rt.anchoredPosition3D.y,
                     rt.anchoredPosition3D.z);
                 m_itemsRect.Add(rt);
@@ -141,7 +141,7 @@ namespace RCore.UI
             }
 
             prefab.gameObject.SetActive(false);
-            container.anchoredPosition3D += m_offsetVec * (m_HalfSizeContainer - viewport.rect.size.y * 0.5f);
+            container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewport.rect.size.y * 0.5f);
         }
 
         public void ScrollToTop()
@@ -174,8 +174,8 @@ namespace RCore.UI
             viewport.GetWorldCorners(viewportCorners);
             var viewportRect = new Rect(viewportCorners[0], viewportCorners[2] - viewportCorners[0]);
             
-            int numOutOfView = Mathf.CeilToInt(pNormPos.y * (total - m_TotalVisible)); //number of elements beyond the left boundary (or top)
-            int firstIndex = Mathf.Max(0, numOutOfView - m_TotalBuffer); //index of first element beyond the left boundary (or top)
+            int numOutOfView = Mathf.CeilToInt(pNormPos.y * (total - m_totalVisible)); //number of elements beyond the left boundary (or top)
+            int firstIndex = Mathf.Max(0, numOutOfView - m_totalBuffer); //index of first element beyond the left boundary (or top)
             int originalIndex = firstIndex % m_optimizedTotal;
 
             int newIndex = firstIndex;
@@ -223,8 +223,8 @@ namespace RCore.UI
         {
             int cellIndex = index % totalCellOnRow;
             int rowIndex = Mathf.FloorToInt(index * 1f / totalCellOnRow);
-            item.anchoredPosition3D = m_startPos + m_offsetVec * rowIndex * m_CellSizeY;
-            item.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_PrefabSizeX + m_PrefabSizeX * 0.5f,
+            item.anchoredPosition3D = m_startPos + m_offsetVec * rowIndex * m_cellSizeY;
+            item.anchoredPosition3D = new Vector3(-container.rect.size.x / 2 + cellIndex * m_prefabSizeX + m_prefabSizeX * 0.5f,
                 item.anchoredPosition3D.y,
                 item.anchoredPosition3D.z);
         }
@@ -238,9 +238,9 @@ namespace RCore.UI
             float contentHeight = content.rect.height;
             float viewHeight = scrollView.viewport.rect.height;
             float scrollLength = contentHeight - viewHeight;
-            float targetPosition = rowIndex * m_CellSizeY;
+            float targetPosition = rowIndex * m_cellSizeY;
 
-            float offsetY = m_CellSizeY * (0.5f - m_pivot.y);
+            float offsetY = m_cellSizeY * (0.5f - m_pivot.y);
             targetPosition -= offsetY;
 
             if (targetPosition > scrollLength)

@@ -1,5 +1,5 @@
 /***
- * Author RaBear - HNB - 2019
+ * Author HNB-RaBear - 2019
  **/
 
 #pragma warning disable 0649
@@ -7,6 +7,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using RCore.Inspector;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
@@ -21,8 +22,8 @@ namespace RCore.Components
 		[SerializeField] protected Text m_Txt;
 
 		[Separator("Custom")]
-		[SerializeField] protected bool mAutoReize;
-		[SerializeField] protected Vector2 mFixedSize;
+		[SerializeField] protected bool m_autoResize;
+		[SerializeField] protected Vector2 m_fixedSize;
 
 		public Image image
 		{
@@ -62,22 +63,22 @@ namespace RCore.Components
 		{
 			m_Img.sprite = pSprite;
 
-			if (mAutoReize)
+			if (m_autoResize)
 			{
 				if (pSprite == null)
 					return;
 
-				if (mFixedSize.x > 0 && mFixedSize.y > 0)
+				if (m_fixedSize.x > 0 && m_fixedSize.y > 0)
 				{
-					m_Img.SetNativeSize(mFixedSize);
+					m_Img.SetNativeSize(m_fixedSize);
 				}
-				else if (mFixedSize.x > 0)
+				else if (m_fixedSize.x > 0)
 				{
-					m_Img.SketchByWidth(mFixedSize.x);
+					m_Img.SketchByWidth(m_fixedSize.x);
 				}
-				else if (mFixedSize.y > 0)
+				else if (m_fixedSize.y > 0)
 				{
-					m_Img.SketchByWidth(mFixedSize.y);
+					m_Img.SketchByWidth(m_fixedSize.y);
 				}
 				m_Img.PerfectRatio();
 			}

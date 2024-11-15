@@ -1,5 +1,5 @@
 ﻿/***
- * Author RaBear - HNB - 2017
+ * Author HNB-RaBear - 2017
  **/
 
 using UnityEngine;
@@ -22,23 +22,15 @@ namespace RCore.UI
 			Center,
 		}
 
-		[FormerlySerializedAs("alignmentType")]
 		[SerializeField] private Alignment m_alignmentType;
-		[FormerlySerializedAs("rowDistance")]
 		[SerializeField] private float m_rowDistance;
-		[FormerlySerializedAs("tweenTime")]
 		[SerializeField] private float m_tweenTime = 0.25f;
-		[FormerlySerializedAs("autoWhenStart")]
 		[SerializeField] private bool m_autoWhenStart;
-		[FormerlySerializedAs("lerp")]
 		[SerializeField, Range(0, 1f)] private float m_lerp;
-		[FormerlySerializedAs("moveFromRoot")]
 		[SerializeField] private bool m_moveFromRoot;
-		[FormerlySerializedAs("animCurve")]
 		[SerializeField] private AnimationCurve m_animCurve;
 
 		[Header("Optional")]
-		[FormerlySerializedAs("xOffset")]
 		[SerializeField] private float m_xOffset;
 
 		private RectTransform[] m_children;
