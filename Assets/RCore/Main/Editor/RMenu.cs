@@ -76,6 +76,15 @@ namespace RCore.Editor
 			AssetDatabase.SaveAssets();
 		}
 
+		[MenuItem("RCore/Quick Scene Opener", priority = GROUP_2 + 5)]
+		private static void OpenQuickSceneWindow()
+		{
+			QuickSceneWindow.ShowWindow();
+		}
+
+		public static string[] Scenes = { "Scene 1", "Scene 2", "Scene 3" };
+		
+
 		//==========================================================
 
 		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_4 + 1)]
