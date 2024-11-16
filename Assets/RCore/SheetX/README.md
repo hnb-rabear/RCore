@@ -18,7 +18,7 @@ Originally designed for RPGs with extensive databases, it now supports various g
 
 ## 3. Settings
 
-![SheetXSettings](https://github.com/user-attachments/assets/206194b4-cd6c-4397-bd35-c49ecabf7aa2)
+![SheetXSettings](https://github.com/user-attachments/assets/80e31126-7a6e-40b5-9bdd-4ffc82d726dc)
 
 - __Constants Output Folder:__ Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
 - __Json Output Folder:__ Stores exported JSON data.
@@ -284,7 +284,7 @@ To define an attribute object type, the following rules should be followed:
 
 First, open the excel file located at `/Assets/SheetX/Examples/Exporting a Single Excel/Example.xlsx`. This is a sample Excel file. Within this file, there are sheets containing sample data that will help you understand how to design various types of data such as IDs, Constants, and Data Tables.
 
-![excel-to-unity-basic-excel-file](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/87454ce5-e7a3-489d-8ffe-2cecb647622c)
+![SheetXExcelFile](https://github.com/user-attachments/assets/2b4c8fe3-3c58-42bc-a85b-dea33c8122cf)
 
 ### 7.1. Create folders for exporting files
 
@@ -303,7 +303,7 @@ Create 3 directories to store the files that will be exported:
 
 For this example I will create 3 folders:
 
-- `Assets\SheetXExample\Scripts`: for C# scripts
+- `Assets\SheetXExample\Scripts\Generated`: for C# scripts
 - `Assets\SheetXExample\DataConfig`: for Json data
 - `Assets\SheetXExample\Resources\Localizations`: for Localization data
 
@@ -379,7 +379,7 @@ public class Attribute
 public class ExampleDataCollection : ScriptableObject
 {
     public List<ExampleData1> exampleData1s;
-    public List<ExampleData3> exampleData2s;
+    public List<ExampleData2> exampleData2s;
     public List<ExampleData3> exampleData3s;
 }
 ```
@@ -395,22 +395,23 @@ private void LoadData()
     #if UNITY_EDITOR
     
     var txt = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Import/Json/ExampleData1.txt");
-    exampleData1s = JsonHelper.ToList<ExampleData1>(txt.text);
+    exampleData1s = JsonConvert.DeserializeObject<List<ExampleData1>>(txt.text);
 
     txt = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/SheetXExample/DataConfig/ExampleData2.txt");
-    exampleData2s = JsonHelper.ToList<ExampleData3>(txt.text);
+    exampleData2s = JsonConvert.DeserializeObject<List<ExampleData2>>(txt.text);
 
     txt = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/SheetXExample/DataConfig/ExampleData3.txt");
-    exampleData3s = JsonHelper.ToList<ExampleData3>(txt.text);
+    exampleData3s = JsonConvert.DeserializeObject<List<ExampleData3>>(txt.text);
 
     #endif
 }
 ```
 
-![excel-to-unity-basic-scriptable-object](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/0b4bd9fb-5a24-4ec6-ba7d-05b7caba1f22)
-![excel-to-unity-basic-load-data](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/3452494e-0a13-4953-af79-900c83ec3809)
+![Example Data Collection](https://github.com/user-attachments/assets/8a0a1dc4-3cac-4c88-bd7e-a3bc2fa7b546)
 
-### Localization
+![Example Data Collection](https://github.com/user-attachments/assets/23e9aec3-cfbd-416c-8459-66cbb0e2fb58)
+
+### 7.3. Localization integration
 
 - Initialization
 
@@ -422,108 +423,88 @@ LocalizationManager.Init();
 
 ```cs
 // Set the language japanese
-Localization.currentLanguage = "japanese";
+LocalizationsManager.CurrentLanguage = "jp";
 ```
 
 - Register an event handler for the language change event.
 
 ```cs
 // Register an action when language changed
-Localization.onLanguageChanged += OnLanguageChanged;
+LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
 ```
 
-```csharp
-// Display current language
-m_txtCurrentLanguage.text = Localization.currentLanguage;
-```
+- You can retrieve localized content using three different methods.
 
-- Get the localized content using a Key. However, with this method, the Text will not automatically update its display when the language changes.
+  1. Retrieve localized content using a Key. Note that the text will not automatically refresh when the language changes using this method.
 
-```cs
-// Get the localized text using integer key
-m_txtExample1.text = Localization.Get(Localization.hero_name_1).ToString();
-// Get the localized text using string key
-m_txtExample2.text = Localization.Get("DAY_X", 100).ToString();
-```
+      ```cs
+      // Retrieve localized text using an integer key
+      m_simpleText1.text = LocalizationExample2.Get(LocalizationExample2.GO_TO_SHOP).ToString();
+      // Retrieve localized text using an integer key with an argument
+      m_simpleText2.text = LocalizationExample2.Get(LocalizationExample2.REQUIRED_CITY_LEVEL_X, 10).ToString();
+      // Retrieve localized text using a string key with an argument
+      m_simpleText3.text = LocalizationExample2.Get("REQUIRED_CITY_LEVEL_X", 25).ToString();
+      ```
 
-- You can link a gameObject which contain a Text or TextMeshProUGUI Component with a Key so that the Text automatically updates when the language changes.
+  2. Link a GameObject containing a Text or TextMeshProUGUI component with a key so that the text automatically updates when the language changes.
 
-```cs
-// Register Dynamic localized Text
-Localization.RegisterDynamicText(m_textGameObject1, Localization.hero_name_5);
-// Register Dynamic localized Text
-Localization.RegisterDynamicText(m_textGameObject2, "TAP_TO_COLLECT");
-// Unregister the gameObject
-Localization.UnregisterDynamicText(m_textGameObject1);
-Localization.UnregisterDynamicText(m_textGameObject2);
-```
+      ```cs
+      // Register dynamic localized text using an integer key
+      LocalizationExample2.RegisterDynamicText(m_dynamicText1.gameObject, LocalizationExample2.TAP_TO_COLLECT);
+      // Register dynamic localized text using an integer key with an argument
+      LocalizationExample2.RegisterDynamicText(m_dynamicText2.gameObject, LocalizationExample2.REQUIRED_LEVEL_X, "3");
+      // Register dynamic localized text using a string key with an argument
+      LocalizationExample2.RegisterDynamicText(m_dynamicText3.gameObject, "REQUIRED_LEVEL_X", "30");
+      // Unregister the gameObject
+      Localization.UnregisterDynamicText(m_textGameObject1);
+      Localization.UnregisterDynamicText(m_textGameObject2);
+      Localization.UnregisterDynamicText(m_dynamicText3);
+      ```
 
-- Using LocalizationText Component.
+  3. Using Localization Component.
 
-![excel-to-unity-basic-localization-component](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/28e9453c-2d25-44b3-ae55-ef08adee8063)
+      ![LocalizationComponent](https://github.com/user-attachments/assets/0f0214b9-51ed-44bf-9b27-f2a210e6f0f6)
 
-### Separate Localization
+#### Combine Localizations
 
-In case you choose Separate Localization in the Settings table. The output Localization data and Localization scripts will look like this.
+If you want to combine all Localization Sheets, simply deselect the "Separate Localization Sheets" checkbox in the Settings. Next, delete all generated files and re-export everything.
 
-![excel-to-unity-basic-exported-multi-localization](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/000b0c23-c1b8-4596-aa15-bbbc3e009e68)
+Then, replace instances of __LocalizationExample1__ and __LocalizationExample2__ with __Localization__. Also, replace component __LocalizationExample1Text__ and __LocalizationExample2Text__ with __LocalizationText__.
 
-The Localization Code will change as follows.
+#### Creating TextMeshPro Fonts for Different Languages
 
-```cs
-LocalizationsManager.currentLanguage = "spanish";
-```
+To create TextMeshPro fonts for Japanese, Korean, and Chinese, follow these steps using the respective character set files __characters_set_jp__, __characters_set_ko__, and __characters_set_cn__, which include all characters from the localization sheets:
 
-```cs
-private IEnumerator Start()
-{
-    yield return LocalizationsManager.InitAsync(null);
-}
-```
-
-```cs
-// Register an action when language changed
-LocalizationsManager.onLanguageChanged += OnLanguageChanged;
-```
-
-```cs
-// Display current language
-m_txtCurrentLanguage.text = LocalizationsManager.currentLanguage;
-```
-
-```cs
-// Get localized string from sheet ExampleLocalization
-m_txtExample1.text = ExampleLocalization.Get(ExampleLocalization.hero_name_1).ToString();
-// Get localized string from sheet ExampleLocalization2
-m_txtExample2.text = ExampleLocalization2.Get("DAY_X", 100).ToString();
-```
-
-```cs
-// Register Dynamic localized Text in sheet ExampleLocalization
-ExampleLocalization.RegisterDynamicText(m_textGameObject1, ExampleLocalization.hero_name_5);
-// Register Dynamic localized Text in sheet ExampleLocalization2
-ExampleLocalization2.RegisterDynamicText(m_textGameObject2, "TAP_TO_COLLECT");
-// Unregister gameObject
-ExampleLocalization.UnregisterDynamicText(m_textGameObject1);
-ExampleLocalization2.UnregisterDynamicText(m_textGameObject2);
-```
-
-![excel-to-unity-basic-localization-component-2](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/0fcb4c69-8816-40d7-a281-6f2f8a35db44)
-
-### TextMeshPro custom font.
-
-We will use three files `characters_set_jp`, `characters_set_ko`, and `characters_set_cn` to create three TextMeshPro fonts for these languages. These three characters sets contain all the characters appearing in the Localization sheet of each language.
-
-In this example, I use three different fonts to create three TextMeshPro fonts:
+Fonts to use in this example:
 
 - Japanese: NotoSerif-Bold
 - Korean: NotoSerifJP-Bold
 - Chinese: NotoSerifTC-Bold
 
-For each of these fonts, create a TextMeshPro font. In the `Font Asset Creator` window, under the `Character Set` section, select `Character From File`. Then, select the corresponding `characters_map` file under the `Character File` section.
+Creating TextMeshPro Fonts:
 
-![excel-to-unity-basic-font-jp](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/f56bc334-18ac-43bd-bad5-7c20eb8ffc2f)
+- For each language font, create a TextMeshPro font asset.
+- Open the Font Asset Creator window in Unity.
+- Under the _Character Set_ section, select _Character From File_.
+- Choose the appropriate character set file (e.g., characters_set_jp) in the Character File section.
 
-![excel-to-unity-basic-font-kr](https://github.com/nbhung100914/excel-to-unity-example/assets/9100041/4f4cd856-f307-4155-b957-489e92a3ad35)
+![characters_set_jp](https://github.com/user-attachments/assets/7bc98c77-9994-4551-8e5a-dae51eba9f45)
 
-With the features shown, you now have all the tools you need to build a Static Database with Excel. This is enough to meet the needs of any Casual or Mid-core game.
+![characters_set_ko](https://github.com/user-attachments/assets/dc14fbbb-b38f-4f56-89b0-844d94b825cb)
+
+![characters_set_cn](https://github.com/user-attachments/assets/08020e00-14b1-47cd-a9f2-be3d4321ca48)
+
+#### Loading Localization Using the Addressable Assets System
+
+To utilize this feature, follow these steps:
+
+- Install the Addressable Assets System.
+- Add `ADDRESSABLES` to the directives list in the Build Settings.
+- Move the Localizations folder out of the Resources folder. Additionally, relocate the Output folder in the SheetX Settings window.
+- Set the Localizations folder as an Addressable Asset.
+
+![SheetX Settings](https://github.com/user-attachments/assets/ee17fdaa-c951-4f9c-8a6b-a5e2614db546)
+
+![Localizations Folder](https://github.com/user-attachments/assets/1ecf2ae1-00e9-4c9f-9056-2867d04e8ee1)
+
+![Build Settings](https://github.com/user-attachments/assets/229da607-da10-4b87-b799-5d9549e5620d)
