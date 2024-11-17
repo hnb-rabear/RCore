@@ -18,12 +18,5 @@
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
-  "documentationUrl": "",
-  "samples": [
-    {
-      "displayName": "SheetX Example",
-      "description": "Demonstrates basic usage of SheetX.",
-      "path": "Samples~/SheetXExample.unitypackage"
-    }
-  ]
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/SheetX/Document/Document.md"
 }
