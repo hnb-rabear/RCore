@@ -20,6 +20,10 @@
   },
   "documentationUrl": "",
   "samples": [
-
+    {
+      "displayName": "SheetX Example",
+      "description": "Demonstrates basic usage of SheetX.",
+      "path": "Samples~/BasicUsage"
+    }
   ]
 }

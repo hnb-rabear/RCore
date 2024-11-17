@@ -1,0 +1,245 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f40899c583a07a4aaeddce65bbf4b81, type: 3}
+  m_Name: ExampleDataCollection
+  m_EditorClassIdentifier: 
+  exampleData1s:
+  - numberExample1: 1
+    numberExample2: 10
+    numberExample3: 1
+    boolExample: 1
+    stringExample: text
+  - numberExample1: 2
+    numberExample2: 20
+    numberExample3: 3
+    boolExample: 1
+    stringExample: text
+  - numberExample1: 3
+    numberExample2: 8
+    numberExample3: 5
+    boolExample: 0
+    stringExample: text
+  - numberExample1: 6
+    numberExample2: 3
+    numberExample3: 10
+    boolExample: 0
+    stringExample: text
+  - numberExample1: 9
+    numberExample2: 2
+    numberExample3: 16
+    boolExample: 0
+    stringExample: text
+  - numberExample1: 14
+    numberExample2: 7
+    numberExample3: 24
+    boolExample: 1
+    stringExample: text
+  - numberExample1: 14
+    numberExample2: 8
+    numberExample3: 24
+    boolExample: 1
+    stringExample: text
+  exampleData2s:
+  - id: 0
+    name: 
+    Attributes: []
+  - id: 0
+    name: 
+    Attributes: []
+  - id: 0
+    name: 
+    Attributes: []
+  - id: 0
+    name: 
+    Attributes: []
+  - id: 0
+    name: 
+    Attributes: []
+  - id: 0
+    name: 
+    Attributes: []
+  - id: 0
+    name: 
+    Attributes: []
+  exampleData3s:
+  - id: 1
+    name: example attribute 1
+    Attributes:
+    - id: 1
+      value: 30
+      unlock: 2
+      increase: 1.2
+      max: 8
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 2
+    name: example attribute 2
+    Attributes:
+    - id: 9
+      value: 25
+      unlock: 3
+      increase: 1.5
+      max: 8
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 3
+      value: 3
+      unlock: 0
+      increase: 0.5
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 3
+    name: example attribute 3
+    Attributes:
+    - id: 5
+      value: 30
+      unlock: 2
+      increase: 1
+      max: 5
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 12
+      value: 0
+      unlock: 0
+      increase: 0
+      max: 0
+      values:
+      - 3
+      - 2
+      increases:
+      - 0.5
+      - 1
+      unlocks:
+      - 0
+      - 11
+      maxes:
+      - 10
+      - 20
+    - id: 2
+      value: 10
+      unlock: 1
+      increase: 1.5
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 4
+    name: example attribute 4
+    Attributes:
+    - id: 2
+      value: 30
+      unlock: 2
+      increase: 1
+      max: 8
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 12
+      value: 0
+      unlock: 0
+      increase: 0
+      max: 0
+      values:
+      - 10
+      - 1
+      increases:
+      - 1.5
+      - 1
+      unlocks:
+      - 1
+      - 12
+      maxes:
+      - 10
+      - 20
+    - id: 2
+      value: 10
+      unlock: 1
+      increase: 1.5
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 6
+      value: 15
+      unlock: 0
+      increase: 0
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 5
+    name: example attribute 5
+    Attributes:
+    - id: 9
+      value: 20
+      unlock: 3
+      increase: 1
+      max: 10
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 12
+      value: 21
+      unlock: 0
+      increase: 0
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 6
+    name: example attribute 6
+    Attributes:
+    - id: 1
+      value: 15
+      unlock: 2
+      increase: 1
+      max: 5
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 10
+      value: 23
+      unlock: 0
+      increase: 0.015
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 7
+    name: example attribute 7
+    Attributes:
+    - id: 11
+      value: 11
+      unlock: 0
+      increase: 0
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
