@@ -61,7 +61,7 @@ public static class LOCALIZATION_CLASS_NAME
             {
                 var operation = Addressables.LoadAssetAsync<TextAsset>(address + ".txt");
 				await operation.Task;
-				if (operation.Status == AsyncOperationStatus.Succeeded)
+				if (operation.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
 				{
 					var textAsset = operation.Result;
 					if (textAsset != null)
