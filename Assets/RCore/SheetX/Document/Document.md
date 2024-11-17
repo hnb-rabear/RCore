@@ -8,6 +8,8 @@ As game projects grow, so does the need for efficient data table, constant, and 
 
 Originally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.
 
+__You can download Example [Here](https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/SheetX/Document/SheetXExample.unitypackage)__
+
 ## 2. Main functions
 
 - __Excel and Google Sheets Integration:__ Manage your entire database using Excel or Google Spreadsheets.
@@ -281,6 +283,8 @@ To define an attribute object type, the following rules should be followed:
     ```
 
 ## 7. How to integration
+
+__Download and import the [Example](https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/SheetX/Document/SheetXExample.unitypackage)__
 
 First, open the excel file located at `/Assets/SheetX/Examples/Exporting a Single Excel/Example.xlsx`. This is a sample Excel file. Within this file, there are sheets containing sample data that will help you understand how to design various types of data such as IDs, Constants, and Data Tables.
 
