@@ -142,7 +142,11 @@ namespace RCore.Editor.SheetX
 			{
 				var path = EditorHelper.OpenFilePanel("Select Excel SpreadSheets", "xlsx");
 				if (!string.IsNullOrEmpty(path))
+				{
+					if (path.StartsWith(Application.dataPath))
+						path = EditorHelper.FormatPathToUnityPath(path);
 					m_settings.AddExcelFileFile(path);
+				}
 			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
