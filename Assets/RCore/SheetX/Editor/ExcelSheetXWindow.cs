@@ -10,6 +10,7 @@ using UnityEditor;
 using UnityEngine;
 using NPOI.SS.UserModel;
 using Object = UnityEngine.Object;
+using UnityEditor.Compilation;
 
 namespace RCore.Editor.SheetX
 {
@@ -107,15 +108,27 @@ namespace RCore.Editor.SheetX
 					m_settings.excelSheetsPath.Load();
 			}
 			if (EditorHelper.Button("Export All", pHeight: 40))
+			{
 				m_excelSheetHandler.ExportExcelAll();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Export IDs", pHeight: 30))
+			{
 				m_excelSheetHandler.ExportIDs();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Export Constants", pHeight: 30))
+			{
 				m_excelSheetHandler.ExportConstants();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_excelSheetHandler.ExportJson();
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
+			{
 				m_excelSheetHandler.ExportLocalizations();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Open Settings", pHeight: 30))
 				SheetXSettingsWindow.ShowWindow();
 			EditorGUILayout.EndVertical();
@@ -133,7 +146,10 @@ namespace RCore.Editor.SheetX
 			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
+			{
 				m_excelSheetHandler.ExportExcelsAll();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 			m_tableExcelSheetsPaths ??= CreateTableExcelSheetsPaths();

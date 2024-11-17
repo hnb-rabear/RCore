@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace RCore.Editor.SheetX
@@ -81,15 +82,27 @@ namespace RCore.Editor.SheetX
 			style.fixedHeight = 250f;
 			EditorGUILayout.BeginVertical(style);
 			if (EditorHelper.Button("Export All", pHeight: 40))
+			{
 				m_googleSheetHandler.ExportAll();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Export IDs", pHeight: 30))
+			{
 				m_googleSheetHandler.ExportIDs();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Export Constants", pHeight: 30))
+			{
 				m_googleSheetHandler.ExportConstants();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_googleSheetHandler.ExportJson();
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
+			{
 				m_googleSheetHandler.ExportLocalizations();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			if (EditorHelper.Button("Open Settings", pHeight: 30))
 				SheetXSettingsWindow.ShowWindow();
 			EditorGUILayout.EndVertical();
@@ -109,7 +122,10 @@ namespace RCore.Editor.SheetX
 			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
+			{
 				m_googleSheetHandler.ExportExcelsAll();
+				CompilationPipeline.RequestScriptCompilation();
+			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 			m_tableGoogleSheetsPaths ??= CreateTableGoogleSheetsPath();
