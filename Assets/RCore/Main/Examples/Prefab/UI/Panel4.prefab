@@ -284,7 +284,6 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click
 --- !u!1 &8111541596845424536
 GameObject:
@@ -386,7 +385,7 @@ MonoBehaviour:
     m_Bits: 4294967295
 --- !u!95 &40560920980484789
 Animator:
-  serializedVersion: 7
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -400,7 +399,6 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1

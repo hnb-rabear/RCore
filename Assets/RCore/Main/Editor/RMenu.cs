@@ -37,7 +37,7 @@ namespace RCore.Editor
 			Selection.activeObject = Configuration.Instance;
 		}
 
-		[MenuItem("RCore/Get Name of Build", priority = GROUP_1 + 2)]
+		[MenuItem("RCore/Copy name of Build", priority = GROUP_1 + 2)]
 		private static void CopyBuildName()
 		{
 			string buildName = EditorHelper.GetBuildName();
@@ -47,6 +47,7 @@ namespace RCore.Editor
 
 		//==========================================================
 
+		[MenuItem("Assets/RCore/Save Assets")]
 		[MenuItem("RCore/Asset Database/Save Assets " + SHIFT + "_1", priority = GROUP_2 + 1)]
 		private static void SaveAssets()
 		{
@@ -54,40 +55,7 @@ namespace RCore.Editor
 			if (objs != null)
 				foreach (var obj in objs)
 					EditorUtility.SetDirty(obj);
-
-			AssetDatabase.SaveAssets();
-		}
-
-		[MenuItem("RCore/Asset Database/Refresh Prefabs in folder", priority = GROUP_2 + 2)]
-		private static void RefreshPrefabs()
-		{
-			RefreshAssets("t:GameObject");
-		}
-
-		[MenuItem("RCore/Asset Database/Refresh ScriptableObjects in folder", priority = GROUP_2 + 3)]
-		private static void RefreshScriptableObjects()
-		{
-			RefreshAssets("t:ScriptableObject");
-		}
-
-		[MenuItem("RCore/Asset Database/Refresh Assets in folder", priority = GROUP_2 + 4)]
-		private static void RefreshAll()
-		{
-			RefreshAssets("t:GameObject t:ScriptableObject");
-		}
-
-		private static void RefreshAssets(string filter)
-		{
-			string folderPath = EditorHelper.OpenFolderPanel();
-			folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
-			var assetGUIDs = AssetDatabase.FindAssets(filter, new[] { folderPath });
-			foreach (string guid in assetGUIDs)
-			{
-				var path = AssetDatabase.GUIDToAssetPath(guid);
-				var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
-				if (asset != null)
-					EditorUtility.SetDirty(asset);
-			}
+		
 			AssetDatabase.SaveAssets();
 		}
 
@@ -273,6 +241,20 @@ namespace RCore.Editor
 				ComponentHelper.ReorderSortingOfSpriteRenderers(target.GetComponentsInChildren<SpriteRenderer>(true));
 				EditorUtility.SetDirty(target);
 			}
+		}
+		
+		//==============================================
+		
+		[MenuItem("Assets/RCore/Refresh Assets in folder")]
+		private static void RefreshAssetsInSelectedFolder()
+		{
+			EditorHelper.RefreshAssetsInSelectedFolder("t:GameObject t:ScriptableObject");
+		}
+
+		[MenuItem("Assets/RCore/Export Selected Folders to Unity Package")]
+		private static void ExportSelectedFoldersToUnityPackage()
+		{
+			EditorHelper.ExportSelectedFoldersToUnityPackage();
 		}
 	}
 }

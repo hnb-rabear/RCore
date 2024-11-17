@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using RCore.Editor.Tool;
 using UnityEditor;
@@ -6,7 +7,7 @@ using Object = System.Object;
 
 namespace RCore.Editor
 {
-	public static partial class RMenu
+	public static class RMenu
 	{
 		public const int GROUP_6 = 100;
 
@@ -26,34 +27,6 @@ namespace RCore.Editor
 		public static void OpenSwapSpriteWindow()
 		{
 			SwapSpriteWindow.ShowWindow();
-		}
-
-		[MenuItem("Assets/RCore/Export Selected Folder to Unity Package")]
-		public static void ExportSelectedFolder()
-		{
-			// Get the selected folder
-			UnityEngine.Object selectedObject = Selection.activeObject;
-			string path = AssetDatabase.GetAssetPath(selectedObject);
-
-			// Ensure that the selected object is a folder
-			if (!AssetDatabase.IsValidFolder(path))
-			{
-				Debug.LogError("Please select a valid folder to export.");
-				return;
-			}
-			var directoryPath = Path.GetDirectoryName(path)?.Replace("Assets/", "");
-			// Define the path to export the package
-			string packagePath = EditorUtility.SaveFilePanel("Export Unity Package", directoryPath, selectedObject.name + ".unitypackage", "unitypackage");
-
-			if (string.IsNullOrEmpty(packagePath))
-			{
-				Debug.Log("Export cancelled.");
-				return;
-			}
-
-			// Export the selected folder as a package
-			AssetDatabase.ExportPackage(path, packagePath, ExportPackageOptions.Recurse);
-			Debug.Log("Package exported successfully to: " + packagePath);
 		}
 	}
 }

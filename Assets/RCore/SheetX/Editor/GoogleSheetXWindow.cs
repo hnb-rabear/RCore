@@ -198,7 +198,6 @@ namespace RCore.Editor.SheetX
 			return table;
 		}
 
-		[MenuItem("Window/SheetX/Google Sheets Exporter")]
 		public static void ShowWindow()
 		{
 			var window = GetWindow<GoogleSheetXWindow>("Google Sheets Exporter", true);

@@ -68,7 +68,8 @@ MonoBehaviour:
   m_text: tab 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -108,17 +109,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -204,7 +203,8 @@ MonoBehaviour:
   m_text: tab 3
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -244,17 +244,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -340,7 +338,8 @@ MonoBehaviour:
   m_text: LOAD
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -380,17 +379,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -659,7 +656,6 @@ MonoBehaviour:
   - {fileID: 875511634}
   contentsInactive: []
   additionalLabels: []
-  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
   scaleBounceEffect: 1
@@ -748,7 +744,8 @@ MonoBehaviour:
   m_text: tab 4
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -788,17 +785,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -960,7 +955,8 @@ MonoBehaviour:
   m_text: SAVE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1000,17 +996,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -1096,7 +1090,8 @@ MonoBehaviour:
   m_text: TAB CONTENT 4
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
-  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
+  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1136,17 +1131,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -1292,7 +1285,6 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click
 --- !u!1 &1167726644
 GameObject:
@@ -1501,7 +1493,6 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click
   label: {fileID: 624936466}
   fontColorOnOffSwap: 0
@@ -1578,7 +1569,8 @@ MonoBehaviour:
   m_text: Slider toggle
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1618,17 +1610,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -1714,7 +1704,8 @@ MonoBehaviour:
   m_text: TAB CONTENT 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
-  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
+  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1754,17 +1745,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -1850,7 +1839,8 @@ MonoBehaviour:
   m_text: TAB CONTENT 3
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
-  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
+  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1890,17 +1880,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -2061,7 +2049,8 @@ MonoBehaviour:
   m_text: TAB CONTENT 2
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
-  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
+  m_sharedMaterial: {fileID: 9062952925556799591, guid: cb9a8fa9d258ae540824f0b86ae7dd22,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2101,17 +2090,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -2197,7 +2184,8 @@ MonoBehaviour:
   m_text: tab 2
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2237,17 +2225,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -2362,7 +2348,6 @@ MonoBehaviour:
   enableOnOffColor: 0
   onColor: {r: 0, g: 0, b: 0, a: 0}
   offColor: {r: 0, g: 0, b: 0, a: 0}
-  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
 --- !u!1 &1718718361
@@ -2496,7 +2481,6 @@ MonoBehaviour:
   - {fileID: 1622762144}
   contentsInactive: []
   additionalLabels: []
-  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
   scaleBounceEffect: 1
@@ -2648,7 +2632,6 @@ MonoBehaviour:
   - {fileID: 1301017659}
   contentsInactive: []
   additionalLabels: []
-  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
   scaleBounceEffect: 1
@@ -2875,7 +2858,6 @@ MonoBehaviour:
   - {fileID: 1458240551}
   contentsInactive: []
   additionalLabels: []
-  tapFeedback: 2
   sfxClip: button
   sfxClipOff: button
   scaleBounceEffect: 1
@@ -3316,7 +3298,8 @@ MonoBehaviour:
   m_text: Enter text...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3356,17 +3339,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 1
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -3452,7 +3433,8 @@ MonoBehaviour:
   m_text: "\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3492,17 +3474,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 3
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 1
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -3588,7 +3568,8 @@ MonoBehaviour:
   m_text: FPS
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
-  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028, type: 2}
+  m_sharedMaterial: {fileID: 3507699816006447822, guid: 72ab8f80d98676a43af5ad96af88c028,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3628,17 +3609,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -3967,13 +3946,10 @@ MonoBehaviour:
   m_GlobalFontAsset: {fileID: 11400000, guid: cb9a8fa9d258ae540824f0b86ae7dd22, type: 2}
   m_OnFocusSelectAll: 1
   m_ResetOnDeActivation: 1
-  m_KeepTextSelectionVisible: 0
   m_RestoreOriginalTextOnEscape: 1
   m_isRichTextEditingAllowed: 0
   m_LineLimit: 0
-  isAlert: 0
   m_InputValidator: {fileID: 0}
-  m_ShouldActivateOnSelect: 1
 --- !u!1 &7526283113814709036
 GameObject:
   m_ObjectHideFlags: 0
@@ -4161,7 +4137,7 @@ MonoBehaviour:
     m_Bits: 4294967295
 --- !u!95 &285375417844571044
 Animator:
-  serializedVersion: 7
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4175,7 +4151,6 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -4385,5 +4360,4 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click

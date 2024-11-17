@@ -247,7 +247,6 @@ namespace RCore.Editor.SheetX
 			return table;
 		}
 
-		[MenuItem("Window/SheetX/Excel Sheets Exporter")]
 		public static void ShowWindow()
 		{
 			var window = GetWindow<ExcelSheetXWindow>("Excel Sheets Exporter", true);

@@ -28,24 +28,38 @@ namespace RCore.Editor
 
 		private void OnGUI()
 		{
+			var buttonStyle = new GUIStyle(GUI.skin.button);
+			buttonStyle.alignment = TextAnchor.MiddleLeft;
+			
+			var labelStyle = new GUIStyle(GUI.skin.label);
+			labelStyle.alignment = TextAnchor.MiddleCenter;
+			labelStyle.fontStyle = FontStyle.Bold;
+			
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-			GUILayout.Label("Scenes in Build", EditorStyles.boldLabel);
-
+			
+			EditorGUILayout.BeginVertical("box");
+			GUILayout.Label("Scenes in Build", labelStyle);
 			var scenes = EditorBuildSettings.scenes;
 			foreach (var scene in scenes)
 			{
 				string sceneName = System.IO.Path.GetFileNameWithoutExtension(scene.path);
-				if (GUILayout.Button(sceneName))
+				if (GUILayout.Button(sceneName, buttonStyle))
 					OpenScene(scene.path);
 			}
+			EditorGUILayout.EndVertical();
 
-			GUILayout.Label("All Scenes in project", EditorStyles.boldLabel);
-			m_search.Value = EditorHelper.TextField(m_search.Value, "Search");
-			foreach (var scene in m_scenes)
+			EditorGUILayout.BeginVertical("box");
+			GUILayout.Label("All Scenes in project", labelStyle);
+			m_search.Value = EditorHelper.TextField(m_search.Value, "Search", 60);
+			GUILayout.Space(5);
+			for (int i = 0; i < m_scenes.Count; i++)
 			{
-				if ((m_search.Value == "" || scene.ToLower().Contains(m_search.Value.ToLower())) && GUILayout.Button(scene))
+				string scene = m_scenes[i];
+				if ((m_search.Value == "" || scene.ToLower().Contains(m_search.Value.ToLower())) && GUILayout.Button($"{i}\t {scene}", buttonStyle))
 					OpenScene(scene);
 			}
+			EditorGUILayout.EndVertical();
+			
 			GUILayout.EndScrollView();
 		}
 

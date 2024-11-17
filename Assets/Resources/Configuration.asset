@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4dc09feedce3f444bfd79c7ee5a0bb5, type: 3}
   m_Name: Configuration
   m_EditorClassIdentifier: 
-  customKeys:
-    dictionaryList: []
+  keyValues:
+    keyValues: []
   envs:
   - name: do_not_remove
     directives:
@@ -146,16 +146,49 @@ MonoBehaviour:
     directives:
     - name: DEVELOPMENT
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 0
+      enabled: 1
     - name: UNITY_IAP
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 0
+      enabled: 1
     - name: ADDRESSABLES
       color: {r: 1, g: 1, b: 1, a: 1}
-      enabled: 0
+      enabled: 1
     - name: do_not_remove_1
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
     - name: do_not_remove_5
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
+    - name: FIREBASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_REMOTE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_DATABASE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_CRASHLYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_ANALYTICS
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_AUTH
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_STORAGE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: DOTWEEN
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: IN_APP_UPDATE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: IN_APP_REVIEW
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: GPGS
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1

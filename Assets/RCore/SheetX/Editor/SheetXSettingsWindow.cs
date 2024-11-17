@@ -43,7 +43,6 @@ namespace RCore.Editor.SheetX
 				m_sheetXSettings.ResetToDefault();
 		}
 
-		[MenuItem("Window/SheetX/Settings")]
 		public static void ShowWindow()
 		{
 			var window = GetWindow<SheetXSettingsWindow>("Sheets Exporter Settings", true);

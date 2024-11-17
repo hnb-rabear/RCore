@@ -286,7 +286,6 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click
   label: {fileID: 4127299651347387514}
 --- !u!1 &4602843172443095432
@@ -575,7 +574,6 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click
   label: {fileID: 7944323239106436536}
 --- !u!1 &7450802368099544633
@@ -706,7 +704,6 @@ MonoBehaviour:
   imgOnOffSwap: 0
   imgOn: {fileID: 0}
   imgOff: {fileID: 0}
-  tapFeedback: 2
   clickSfx: sfx_button_click
 --- !u!1 &8111541596845424536
 GameObject:
@@ -767,8 +764,10 @@ MonoBehaviour:
   btnBack: {fileID: 9131179611000600459}
   m_btnPanel1A: {fileID: 6163827962728830659}
   m_btnPanel1B: {fileID: 3335177475005749348}
-  m_panel1A: {fileID: 1991587941343977979, guid: 3ab316c264e8d6a47a9d9d47c34ad5c8, type: 3}
-  m_panel1B: {fileID: 1949800226534442311, guid: e867fcae63c3cc246809e617a8a518ac, type: 3}
+  m_panel1A: {fileID: 1991587941343977979, guid: 3ab316c264e8d6a47a9d9d47c34ad5c8,
+    type: 3}
+  m_panel1B: {fileID: 1949800226534442311, guid: e867fcae63c3cc246809e617a8a518ac,
+    type: 3}
   m_animator: {fileID: 3079048652013948652}
 --- !u!223 &6484160263824658983
 Canvas:
@@ -812,7 +811,7 @@ MonoBehaviour:
     m_Bits: 4294967295
 --- !u!95 &3079048652013948652
 Animator:
-  serializedVersion: 7
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -826,7 +825,6 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
