@@ -895,7 +895,7 @@ namespace RCore.Editor
             }
             else
             {
-                var style = new GUIStyle(EditorStyles.helpBox);
+                var style = new GUIStyle("box");
                 if (pFixedWidth > 0) style.fixedWidth = pFixedWidth;
                 if (pFixedHeight > 0) style.fixedHeight = pFixedHeight;
                 rect = EditorGUILayout.BeginVertical(style);
@@ -929,7 +929,7 @@ namespace RCore.Editor
             }
             else
             {
-                var style = new GUIStyle(EditorStyles.helpBox);
+                var style = new GUIStyle("box");
                 if (pFixedWidth > 0) style.fixedWidth = pFixedWidth;
                 if (pFixedHeight > 0) style.fixedHeight = pFixedHeight;
                 rect = EditorGUILayout.BeginHorizontal(style);
@@ -966,7 +966,7 @@ namespace RCore.Editor
             }
             else
             {
-                var style = new GUIStyle(EditorStyles.helpBox);
+                var style = new GUIStyle("box");
                 if (pFixedWidth > 0) style.fixedWidth = pFixedWidth;
                 if (pFixedHeight > 0) style.fixedHeight = pFixedHeight;
                 rect = EditorGUILayout.BeginHorizontal(style);
@@ -991,7 +991,7 @@ namespace RCore.Editor
             var bgColor = GUI.backgroundColor;
             if (color != default)
                 GUI.backgroundColor = color;
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.BeginVertical("box");
             for (int i = 0; i < row; i++)
             {
                 EditorGUILayout.BeginHorizontal();

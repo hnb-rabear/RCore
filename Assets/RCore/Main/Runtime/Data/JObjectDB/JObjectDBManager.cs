@@ -2,9 +2,9 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
-	public abstract class JObjectDBManager : MonoBehaviour
+	public abstract class JObjectDBManager<T> : MonoBehaviour where T : JObjectsCollection
 	{
-		[SerializeField] protected JObjectsCollection m_jObjectsCollection;
+		[SerializeField] protected T m_jObjectsCollection;
 		[SerializeField, Range(1, 10)] protected int m_saveDelay = 3;
 		[SerializeField] protected bool m_enabledSave = true;
 		[SerializeField] protected bool m_saveOnPause = true;
@@ -17,7 +17,7 @@ namespace RCore.Data.JObject
 		protected int m_pauseState = -1;
 
 		public bool Initialzied => m_initialized;
-		public JObjectsCollection JObjectsCollection => m_jObjectsCollection;
+		public T JObjectsCollection => m_jObjectsCollection;
 
 		protected virtual void Update()
 		{

@@ -117,29 +117,6 @@ namespace RCore
                 $"Screen size: (width:{sWidth}, height:{sHeight})\nSafe area: {Screen.safeArea}\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
 		}
 
-		public static void CreateBackup(string pContent, string pFileName = null)
-		{
-			pFileName ??= $"{Application.productName}_{DateTime.Now:yyyyMMdd_HHmm}";
-			pFileName = pFileName.RemoveSpecialCharacters();
-			string folder = $"{Application.persistentDataPath}{Path.DirectorySeparatorChar}Backup{Path.DirectorySeparatorChar}";
-#if UNITY_EDITOR
-			folder = $"{Application.dataPath}{Path.DirectorySeparatorChar}Backup{Path.DirectorySeparatorChar}";
-#endif
-			if (!string.IsNullOrEmpty(pContent) && pContent != "{}")
-			{
-				var directoryPath = Path.GetDirectoryName(folder);
-				if (directoryPath != null && !Directory.Exists(directoryPath))
-                    Directory.CreateDirectory(directoryPath);
-
-                string path = $"{folder}{pFileName}.json";
-				File.WriteAllText(path, pContent);
-				Debug.Log($"Created Backup successfully {path}", Color.green);
-#if UNITY_EDITOR
-				UnityEditor.EditorApplication.delayCall += () => System.Diagnostics.Process.Start(folder);
-#endif
-			}
-		}
-
 		public static string DictToString(IDictionary<string, object> d)
 		{
 			return $"{{ {d.Select(kv => $"({kv.Key}, {kv.Value})").Aggregate("", (current, next) => $"{current}{next}, ")}}}";
