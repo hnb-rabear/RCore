@@ -30,24 +30,55 @@ namespace RCore.Data.JObject
 		
 		public static T CreateCollection<T>(string key, T defaultVal = null) where T : JObjectCollection, new()
 		{
-			if (collections.ContainsKey(key))
+			if (!collections.TryGetValue(key, out var collection))
 			{
-				Debug.LogError($"Collection {key} Existed");
-				return null;
+				collection = new T();
+				collections[key] = collection;
+			}
+			else
+			{
+				Debug.LogError($"Overwrite the existed Collection: {key}");
 			}
 
-			var collection = new T();
 			collection.key = key;
+
 			if (!collection.Load() && defaultVal != null)
 			{
 				string json = defaultVal.ToJson();
 				collection = JsonUtility.FromJson<T>(json);
 				collection.key = key;
 			}
-			SaveCollectionKey(key);
-			collections.Add(key, collection);
 
-			return collection;
+			SaveCollectionKey(key);
+			return collection as T;
+			// if (collections.ContainsKey(key))
+			// {
+			// 	Debug.LogError($"Overwrite the existed Collection: {key}");
+			// 	var collection = collections[key];
+			// 	collection.key = key;
+			// 	if (!collection.Load() && defaultVal != null)
+			// 	{
+			// 		string json = defaultVal.ToJson();
+			// 		collection = JsonUtility.FromJson<T>(json);
+			// 		collection.key = key;
+			// 	}
+			// 	SaveCollectionKey(key);
+			// 	return collection as T;
+			// }
+			// else
+			// {
+			// 	var collection = new T();
+			// 	collection.key = key;
+			// 	if (!collection.Load() && defaultVal != null)
+			// 	{
+			// 		string json = defaultVal.ToJson();
+			// 		collection = JsonUtility.FromJson<T>(json);
+			// 		collection.key = key;
+			// 	}
+			// 	SaveCollectionKey(key);
+			// 	collections.Add(key, collection);
+			// 	return collection;
+			// }
 		}
 		
 		private static void SaveCollectionKey(string pKey)

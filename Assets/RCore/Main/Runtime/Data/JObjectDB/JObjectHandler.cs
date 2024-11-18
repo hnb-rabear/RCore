@@ -13,7 +13,7 @@ namespace RCore.Data.JObject
 	}
 	
 	[System.Serializable]
-	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectDBManager
+	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectCollectionSO
 	{
 		public T dbManager;
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);

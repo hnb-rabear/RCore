@@ -2,7 +2,7 @@ using RCore.Data.JObject;
 
 namespace RCore.Example.Data.JObject
 {
-	public class AchievementHandler : JObjectHandler<ExampleJObjectDBManager>
+	public class AchievementHandler : JObjectHandler<ExampleJObjectCollectionSO>
 	{
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{

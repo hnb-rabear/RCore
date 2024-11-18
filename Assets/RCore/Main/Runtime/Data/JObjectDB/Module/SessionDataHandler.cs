@@ -4,7 +4,7 @@ namespace RCore.Data.JObject
 {
 	public class NewDayStartedEvent : BaseEvent { }
 
-	public class SessionDataHandler : JObjectHandler<JObjectDBManager>
+	public class SessionDataHandler : JObjectHandler<JObjectCollectionSO>
 	{
 		public float secondsTillNextDay;
 		

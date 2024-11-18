@@ -8,16 +8,11 @@ namespace RCore.Data.JObject
 {
 	public abstract class JObjectDBManager : MonoBehaviour
 	{
+		[SerializeField] private JObjectCollectionSO m_jObjectCollection;
 		[SerializeField, Range(1, 10)] private int m_saveDelay = 3;
 		[SerializeField] private bool m_enabledSave = true;
 		[SerializeField] private bool m_saveOnPause = true;
 		[SerializeField] private bool m_saveOnQuit = true;
-
-		protected List<JObjectCollection> m_collections = new List<JObjectCollection>();
-		protected List<IJObjectHandler> m_handlers = new List<IJObjectHandler>();
-		
-		public SessionData sessionData;
-		public SessionDataHandler sessionDataHandler;
 		
 		protected bool m_initialized;
 		private float m_saveCountdown;
@@ -32,7 +27,7 @@ namespace RCore.Data.JObject
 			if (!m_initialized)
 				return;
 			
-			foreach (var handler in m_handlers)
+			foreach (var handler in m_jObjectCollection.handlers)
 				handler.OnUpdate(Time.deltaTime);
 
 			//Save with a delay to prevent too many save calls in a short period of time
@@ -54,7 +49,7 @@ namespace RCore.Data.JObject
 			int offlineSeconds = 0;
 			if (!pause)
 				offlineSeconds = GetOfflineSeconds();
-			foreach (var handler in m_handlers)
+			foreach (var handler in m_jObjectCollection.handlers)
 				handler.OnPause(pause, utcNowTimestamp, offlineSeconds);
 			if (pause && m_saveOnPause)
 				Save(true);
@@ -83,8 +78,7 @@ namespace RCore.Data.JObject
 			if (m_initialized)
 				return;
 
-			(sessionData, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectDBManager>("UserSession");
-			Load();
+			m_jObjectCollection.Load();
 			PostLoad();
 			m_initialized = true;
 		}
@@ -100,9 +94,9 @@ namespace RCore.Data.JObject
 				if (Time.unscaledTime - m_lastSave < 0.2f)
 					return;
 				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-				foreach (var handler in m_handlers)
+				foreach (var handler in m_jObjectCollection.handlers)
 					handler.OnPreSave(utcNowTimestamp);
-				foreach (var collection in m_collections)
+				foreach (var collection in m_jObjectCollection.collections)
 					collection.Save();
 				m_saveDelayCustom = 0; // Reset save delay custom
 				m_lastSave = Time.unscaledTime;
@@ -126,8 +120,8 @@ namespace RCore.Data.JObject
 			if (!m_enabledSave)
 				return;
 
-			m_collections.Import(data);
-			foreach (var collection in m_collections)
+			m_jObjectCollection.collections.Import(data);
+			foreach (var collection in m_jObjectCollection.collections)
 				collection.Load();
 			PostLoad();
 		}
@@ -140,10 +134,10 @@ namespace RCore.Data.JObject
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
-			if (sessionData.lastActive > 0)
+			if (m_jObjectCollection.sessionData.lastActive > 0)
 			{
 				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-				offlineSeconds = utcNowTimestamp - sessionData.lastActive;
+				offlineSeconds = utcNowTimestamp - m_jObjectCollection.sessionData.lastActive;
 			}
 			return offlineSeconds;
 		}
@@ -151,49 +145,12 @@ namespace RCore.Data.JObject
 		//============================================================================
 		// Private / Protected
 		//============================================================================
-
-		/// <summary>
-		/// Override this method then create DB Collections and Controller in here
-		/// </summary>
-		protected abstract void Load();
-		
-		protected TCollection CreateCollection<TCollection>(string key, TCollection defaultVal = null)
-			where TCollection : JObjectCollection, new()
-		{
-			if (string.IsNullOrEmpty(key))
-				key = typeof(TCollection).Name;
-			var newCollection = JObjectDB.CreateCollection(key, defaultVal);
-			if (newCollection != null)
-				m_collections.Add(newCollection);
-			return newCollection;
-		}
-		
-		protected THandler CreateController<THandler, TManager>()
-			where THandler : JObjectHandler<TManager>
-			where TManager : JObjectDBManager
-		{
-			var newController = Activator.CreateInstance<THandler>();
-			newController.dbManager = this as TManager;
-			
-			m_handlers.Add(newController);
-			return newController;
-		}
-
-		protected (TCollection, THandler) CreateModule<TCollection, THandler, TManager>(string key, TCollection defaultVal = null) 
-			where TCollection : JObjectCollection, new()
-			where THandler : JObjectHandler<TManager>
-			where TManager : JObjectDBManager
-		{
-			var collection = CreateCollection(key, defaultVal);
-			var controller = CreateController<THandler, TManager>();
-			return (collection, controller);
-		}
 		
 		protected void PostLoad()
 		{
 			int offlineSeconds = GetOfflineSeconds();
 			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-			foreach (var handler in m_handlers)
+			foreach (var handler in m_jObjectCollection.handlers)
 				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}
 	}
