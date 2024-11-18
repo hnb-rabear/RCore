@@ -137,6 +137,24 @@ namespace RCore.Editor.Tool
 				GUI.color = oldColor;
 			}
 		}
+		
+		public static Color GetColorForString(string input)
+		{
+			// Use a hash function to get a unique integer based on the input string
+			int hash = input.GetHashCode();
+        
+			// Use the hash to generate pseudo-random RGB values
+			float r = (hash & 0xFF0000) >> 16;
+			float g = (hash & 0x00FF00) >> 8;
+			float b = (hash & 0x0000FF);
+
+			// Normalize the RGB values to be between 0 and 1
+			r /= 255.0f;
+			g /= 255.0f;
+			b /= 255.0f;
+
+			return new Color(r, g, b);
+		}
 	}
 }
 #endif

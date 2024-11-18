@@ -12,7 +12,7 @@ namespace RCore.Example.Data.JObject
 	}
 
 	[Serializable]
-	public class InventoryRPGCollection<T> : InventoryCollection<InvRPGItemData>
+	public class InventoryRpgData<T> : InventoryData<InvRPGItemData>
 	{
 		public void SortByRarity(bool des = false)
 		{

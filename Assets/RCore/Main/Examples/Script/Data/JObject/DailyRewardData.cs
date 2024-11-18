@@ -4,7 +4,7 @@ using System;
 namespace RCore.Example.Data.JObject
 {
 	[Serializable]
-	public class DailyRewardCollection : JObjectCollection
+	public class DailyRewardData : JObjectData
 	{
 	}
 }

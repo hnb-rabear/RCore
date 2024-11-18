@@ -40,7 +40,7 @@ namespace RCore.Example.Data.JObject
 	}
 	
 	[Serializable]
-	public class AchievementCollection : JObjectCollection
+	public class AchievementData : JObjectData
 	{
 		public Action<TaskData> onTaskUpdated;
 		public List<TaskData> achievements;

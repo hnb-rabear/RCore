@@ -12,7 +12,7 @@ namespace RCore.Example.Data.JObject
 	}
 
 	[Serializable]
-	public class InventoryCollection<T> : JObjectCollection where T : InvItemData
+	public class InventoryData<T> : JObjectData where T : InvItemData
 	{
 		public List<T> items = new List<T>();
 		public int lastItemId;

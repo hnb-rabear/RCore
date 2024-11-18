@@ -5,12 +5,12 @@ using UnityEngine;
 namespace RCore.Data.JObject
 {
 	[Serializable]
-	public abstract class JObjectCollection
+	public abstract class JObjectData
 	{
 		[JsonIgnore] public string key { get; set; }
 
-		public JObjectCollection() { }
-		public JObjectCollection(string pKey)
+		public JObjectData() { }
+		public JObjectData(string pKey)
 		{
 			key = pKey;
 		}

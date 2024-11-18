@@ -2,7 +2,7 @@ using RCore.Data.JObject;
 
 namespace RCore.Example.Data.JObject
 {
-	public class InventoryHandler : JObjectHandler<ExampleJObjectDBManager>
+	public class InventoryHandler : JObjectHandler<ExampleJObjectsCollection>
 	{
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{
@@ -11,8 +11,8 @@ namespace RCore.Example.Data.JObject
 		{
 			dbManager.inventory.Insert(new InvItemData()
 			{
-				fk = 1,
-				id = 1
+				fk = 2,
+				id = 2
 			});
 		}
 		public override void OnUpdate(float deltaTime)

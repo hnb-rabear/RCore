@@ -19,35 +19,38 @@ namespace RCore.Data.JObject
 		/// </summary>
 		private static readonly string COLLECTIONS = "JObjectDB";
 		
-		public static Dictionary<string, JObjectCollection> collections = new Dictionary<string, JObjectCollection>();
+		public static Dictionary<string, JObjectData> collections = new Dictionary<string, JObjectData>();
 
-		public static JObjectCollection GetCollection(string key)
+		public static JObjectData GetCollection(string key)
 		{
 			if (collections.TryGetValue(key, out var collection))
 				return collection;
 			return null;
 		}
 		
-		public static T CreateCollection<T>(string key, T defaultVal = null) where T : JObjectCollection, new()
+		public static T CreateCollection<T>(string key, T defaultVal = null) where T : JObjectData, new()
 		{
-			if (collections.ContainsKey(key))
+			if (!collections.TryGetValue(key, out var collection))
 			{
-				Debug.LogError($"Collection {key} Existed");
-				return null;
+				collection = new T();
+				collections[key] = collection;
+			}
+			else
+			{
+				Debug.LogError($"Overwrite the existed Collection: {key}");
 			}
 
-			var collection = new T();
 			collection.key = key;
+
 			if (!collection.Load() && defaultVal != null)
 			{
 				string json = defaultVal.ToJson();
 				collection = JsonUtility.FromJson<T>(json);
 				collection.key = key;
 			}
-			SaveCollectionKey(key);
-			collections.Add(key, collection);
 
-			return collection;
+			SaveCollectionKey(key);
+			return collection as T;
 		}
 		
 		private static void SaveCollectionKey(string pKey)
@@ -214,19 +217,19 @@ namespace RCore.Data.JObject
 
 	public static class JObjectDBHelper
 	{
-		public static Dictionary<string, string> ToDictionary(this List<JObjectCollection> collections)
+		public static Dictionary<string, string> ToDictionary(this List<JObjectData> collections)
 		{
 			var list = new Dictionary<string, string>();
 			foreach (var pair in collections)
 				list.Add(pair.key, pair.ToJson());
 			return list;
 		}
-		public static string ToJson(this List<JObjectCollection> collections)
+		public static string ToJson(this List<JObjectData> collections)
 		{
 			var list = collections.ToDictionary();
 			return JsonConvert.SerializeObject(list);
 		}
-		public static void Import(this List<JObjectCollection> collections, string jsonData)
+		public static void Import(this List<JObjectData> collections, string jsonData)
 		{
 			var keyValuePairs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
 			if (keyValuePairs != null)

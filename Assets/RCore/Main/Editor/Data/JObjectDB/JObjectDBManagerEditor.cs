@@ -18,12 +18,15 @@ namespace RCore.Editor.Data.JObject
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
-				
+
 			GUILayout.BeginVertical("box");
-				
+
+			if (m_target.JObjectsCollection == null)
+				EditorGUILayout.HelpBox("Create a ScriptableObject derived from JObjectsCollection and assign it to the m_JObjectsCollection field.", MessageType.Error);
+
 			if (GUILayout.Button("Save"))
 				JObjectDB.Save();
-				
+
 			if (GUILayout.Button("Backup"))
 			{
 				var time = DateTime.Now;
@@ -33,15 +36,15 @@ namespace RCore.Editor.Data.JObject
 				if (!string.IsNullOrEmpty(path))
 					JObjectDB.Backup(path);
 			}
-				
+
 			if (GUILayout.Button("Copy All"))
 				JObjectDB.CopyAllData();
-				
+
 			if (!Application.isPlaying)
 			{
 				if (GUILayout.Button("Delete All"))
 					JObjectDB.DeleteAll();
-				
+
 				if (GUILayout.Button("Restore"))
 				{
 					string filePath = EditorUtility.OpenFilePanel("Select Data File", Application.dataPath, "json,txt");
@@ -49,7 +52,7 @@ namespace RCore.Editor.Data.JObject
 						JObjectDB.Restore(filePath);
 				}
 			}
-				
+
 			GUILayout.EndVertical();
 		}
 	}
