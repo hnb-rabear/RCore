@@ -337,7 +337,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d253d6aab734f24bac1bf3e3df46cca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_jObjectCollection: {fileID: 11400000, guid: ef481026c286f1449810fec5f6572c46,
+  m_jObjectsCollection: {fileID: 11400000, guid: ef481026c286f1449810fec5f6572c46,
     type: 2}
   m_saveDelay: 3
   m_enabledSave: 1

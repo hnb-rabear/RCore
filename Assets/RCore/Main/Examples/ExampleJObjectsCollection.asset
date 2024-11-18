@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 015db9476526bb44788cd59ab6e335ea, type: 3}
-  m_Name: ExampleJObjectCollectionSO
+  m_Name: ExampleJObjectsCollection
   m_EditorClassIdentifier: 
   sessionData:
-    sessions: 08000000080000000800000008000000
+    sessions: 01000000010000000100000001000000
     days: 1
     daysStreak: 1
-    activeTime: 70.453255
-    lastActive: 1731887695
-    firstActive: 1731886982
+    activeTime: 12.240871
+    lastActive: 1731894976
+    firstActive: 1731894961
   inventory:
     items:
     - id: 1
