@@ -1,5 +1,3 @@
-using System;
-
 namespace RCore.Data.JObject
 {
 	public class NewDayStartedEvent : BaseEvent { }
