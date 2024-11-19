@@ -12,7 +12,6 @@
   "dependencies": {
     "com.unity.addressables": "1.21.21",
 	"com.unity.textmeshpro": "3.0.9",
-    "com.unity.nuget.newtonsoft-json": "3.2.1",
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
   }
 }
