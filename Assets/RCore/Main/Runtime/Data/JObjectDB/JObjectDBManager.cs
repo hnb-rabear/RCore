@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.Data.JObject
 {
 	public abstract class JObjectDBManager<T> : MonoBehaviour where T : JObjectsCollection
 	{
-		[SerializeField] protected T m_jObjectsCollection;
+		[SerializeField] protected T m_dataCollection;
 		[SerializeField, Range(1, 10)] protected int m_saveDelay = 3;
 		[SerializeField] protected bool m_enabledSave = true;
 		[SerializeField] protected bool m_saveOnPause = true;
@@ -17,14 +18,14 @@ namespace RCore.Data.JObject
 		protected int m_pauseState = -1;
 
 		public bool Initialzied => m_initialized;
-		public T JObjectsCollection => m_jObjectsCollection;
+		public T DataCollection => m_dataCollection;
 
 		protected virtual void Update()
 		{
 			if (!m_initialized)
 				return;
 
-			foreach (var handler in m_jObjectsCollection.handlers)
+			foreach (var handler in m_dataCollection.handlers)
 				handler.OnUpdate(Time.deltaTime);
 
 			//Save with a delay to prevent too many save calls in a short period of time
@@ -46,7 +47,7 @@ namespace RCore.Data.JObject
 			int offlineSeconds = 0;
 			if (!pause)
 				offlineSeconds = GetOfflineSeconds();
-			foreach (var handler in m_jObjectsCollection.handlers)
+			foreach (var handler in m_dataCollection.handlers)
 				handler.OnPause(pause, utcNowTimestamp, offlineSeconds);
 			if (pause && m_saveOnPause)
 				Save(true);
@@ -75,7 +76,7 @@ namespace RCore.Data.JObject
 			if (m_initialized)
 				return;
 
-			m_jObjectsCollection.Load();
+			m_dataCollection.Load();
 			PostLoad();
 			m_initialized = true;
 		}
@@ -91,9 +92,9 @@ namespace RCore.Data.JObject
 				if (Time.unscaledTime - m_lastSave < 0.2f)
 					return;
 				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-				foreach (var handler in m_jObjectsCollection.handlers)
+				foreach (var handler in m_dataCollection.handlers)
 					handler.OnPreSave(utcNowTimestamp);
-				foreach (var collection in m_jObjectsCollection.datas)
+				foreach (var collection in m_dataCollection.datas)
 					collection.Save();
 				m_saveDelayCustom = 0; // Reset save delay custom
 				m_lastSave = Time.unscaledTime;
@@ -117,8 +118,8 @@ namespace RCore.Data.JObject
 			if (!m_enabledSave)
 				return;
 
-			m_jObjectsCollection.datas.Import(data);
-			foreach (var collection in m_jObjectsCollection.datas)
+			m_dataCollection.datas.Import(data);
+			foreach (var collection in m_dataCollection.datas)
 				collection.Load();
 			PostLoad();
 		}
@@ -131,10 +132,10 @@ namespace RCore.Data.JObject
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
-			if (m_jObjectsCollection.sessionData.lastActive > 0)
+			if (m_dataCollection.sessionData.lastActive > 0)
 			{
 				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-				offlineSeconds = utcNowTimestamp - m_jObjectsCollection.sessionData.lastActive;
+				offlineSeconds = utcNowTimestamp - m_dataCollection.sessionData.lastActive;
 			}
 			return offlineSeconds;
 		}
@@ -147,7 +148,7 @@ namespace RCore.Data.JObject
 		{
 			int offlineSeconds = GetOfflineSeconds();
 			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-			foreach (var handler in m_jObjectsCollection.handlers)
+			foreach (var handler in m_dataCollection.handlers)
 				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}
 	}

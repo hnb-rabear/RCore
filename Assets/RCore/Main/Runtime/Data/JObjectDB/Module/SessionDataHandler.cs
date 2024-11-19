@@ -1,3 +1,5 @@
+using UnityEngine.Device;
+
 namespace RCore.Data.JObject
 {
 	public class NewDayStartedEvent : BaseEvent { }
@@ -5,7 +7,7 @@ namespace RCore.Data.JObject
 	public class SessionDataHandler : JObjectHandler<JObjectsCollection>
 	{
 		public float secondsTillNextDay;
-		
+
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
 			var sessionData = dbManager.sessionData;
@@ -44,7 +46,7 @@ namespace RCore.Data.JObject
 		{
 			var sessionData = dbManager.sessionData;
 			sessionData.activeTime += deltaTime;
-			
+
 			if (secondsTillNextDay > 0)
 			{
 				secondsTillNextDay -= deltaTime;
@@ -56,6 +58,14 @@ namespace RCore.Data.JObject
 		{
 			var sessionData = dbManager.sessionData;
 			sessionData.lastActive = utcNowTimestamp;
+#if UNITY_ANDROID
+			string curVersion = $"{Application.version}.{RUtil.GetVersionCode()}";
+#else
+			string curVersion = Application.version;
+#endif
+			if (string.IsNullOrEmpty(sessionData.installVersion))
+				sessionData.installVersion = curVersion;
+			sessionData.updateVersion = curVersion;
 		}
 		private void CheckNewDay()
 		{

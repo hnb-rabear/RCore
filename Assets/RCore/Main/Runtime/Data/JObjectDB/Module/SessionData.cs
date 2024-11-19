@@ -12,6 +12,8 @@ namespace RCore.Data.JObject
 		public float activeTime;
 		public int lastActive;
 		public int firstActive;
+		public string installVersion;
+		public string updateVersion;
 		[JsonIgnore] public int sessionsTotal
 		{
 			get => sessions[0];
