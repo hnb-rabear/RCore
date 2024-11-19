@@ -1,4 +1,4 @@
-# Sheet X Documment
+# SheetX Documment
 
 ## 1. Introduction
 
@@ -8,7 +8,7 @@ As game projects grow, so does the need for efficient data table, constant, and 
 
 Originally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.
 
-__You can download Example [Here](https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/SheetX/Document/SheetXExample.unitypackage)__
+__You can download Example [Here](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)__
 
 ## 2. Main functions
 
@@ -20,7 +20,9 @@ __You can download Example [Here](https://github.com/hnb-rabear/RCore/blob/main/
 
 ## 3. Settings
 
-![SheetXSettings](https://github.com/user-attachments/assets/80e31126-7a6e-40b5-9bdd-4ffc82d726dc)
+Navigate to the main menu and select: RCore > Tools > SheetX > Settings
+
+![SheetX Settings](https://github.com/user-attachments/assets/80e31126-7a6e-40b5-9bdd-4ffc82d726dc)
 
 - __Constants Output Folder:__ Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
 - __Json Output Folder:__ Stores exported JSON data.
@@ -54,7 +56,7 @@ __You can download Example [Here](https://github.com/hnb-rabear/RCore/blob/main/
 
 Navigate to the main menu and select: RCore > Tools > SheetX > Excel Sheets Exporter
 
-![SheetXExcel1](https://github.com/user-attachments/assets/1772d9b2-9ac9-4bf7-9be3-80a157e02e07)
+![Export Excel Spreadsheet](https://github.com/user-attachments/assets/1772d9b2-9ac9-4bf7-9be3-80a157e02e07)
 
 This essential function is designed to help you familiarize yourself with the tools. It's perfect for smaller, less complex Static Databases that only require a single Excel file to contain all the data.
 
@@ -66,9 +68,9 @@ Key Functions:
 - __Export Localization:__ Exports Localization Data, Localization Components, and Localization API.
 - __Export All:__ Performs all the functions with a single click.
 
-### 4.2. Export multiple Excel Files
+### 4.2. Export multiple Excel Files (PRO only)
 
-![SheetXExcel2](https://github.com/user-attachments/assets/93a2c413-7c7e-4747-abe0-d652bf8635ac)
+![Export Multi Excel Spreadsheets](https://github.com/user-attachments/assets/93a2c413-7c7e-4747-abe0-d652bf8635ac)
 
 For managing complex Static Databases that need to be divided into multiple Excel files, this feature is essential. It allows you to efficiently handle and export all your Excel files with a single button press:
 
@@ -79,6 +81,8 @@ For managing complex Static Databases that need to be divided into multiple Exce
 ## 5. Google Spreadsheets
 
 Prefer using Google Spreadsheets? No problem.
+
+Navigate to the main menu and select: RCore > Tools > SheetX > Google Sheets Exporter
 
 ### 5.1. Setup Client ID and Client Secret
 
@@ -105,11 +109,11 @@ Prefer using Google Spreadsheets? No problem.
 2. Click on the Edit button to find the Client ID and Client Secret.
 3. Copy the __Client ID__ and __Client Secret__, and paste them into the corresponding settings in the __Sheets Exporter Settings__ Window
 
-![SheetX_ClientId_ClientSecret](https://github.com/user-attachments/assets/6e1297f5-6d8c-4c10-9ba2-e3f146726e43)
+![Google Client Id and Client Secret](https://github.com/user-attachments/assets/6e1297f5-6d8c-4c10-9ba2-e3f146726e43)
 
 ### 5.2. Export single Google Spreadsheet
 
-![SheetX_Google1](https://github.com/user-attachments/assets/65a7f64f-c93b-41b7-b2fa-358c631dd620)
+![Export Google Spreadsheet](https://github.com/user-attachments/assets/65a7f64f-c93b-41b7-b2fa-358c631dd620)
 
 Enter the Google Sheet ID, then click the Download button. You can find the ID in the Google Sheet's URL, formatted like this: 
 
@@ -117,13 +121,13 @@ Enter the Google Sheet ID, then click the Download button. You can find the ID i
 https://docs.google.com/spreadsheets/d/[GOOGLE_SHEET_ID]/edit?......
 ```
 
-### 5.3. Export multiple Google Spreadsheets
+### 5.3. Export multiple Google Spreadsheets (PRO only)
 
 Click on __Add Google Spreadsheets__, then enter the Google Sheet ID in the popup that appears. Press __Download__, then select the sheets you want to process.
 
-![SheetXGoogle2](https://github.com/user-attachments/assets/66a750f1-1997-4c6c-ac1b-b3194fb11167)
+![Export Multiple Google Spreadsheets](https://github.com/user-attachments/assets/66a750f1-1997-4c6c-ac1b-b3194fb11167)
 
-![SheetXEditGoogleSheet](https://github.com/user-attachments/assets/ac74f8a0-d59a-4d96-886f-9212395509dc)
+![Edit Google Spreadsheet](https://github.com/user-attachments/assets/ac74f8a0-d59a-4d96-886f-9212395509dc)
 
 ## 6. Rules in Spreadsheet
 
@@ -164,7 +168,7 @@ Sheets named according to the syntax _[%IDs]_ are called IDs sheets. They are us
 | EXAMPLE_INT           | int         | 83                 | Integer Example       |
 | EXAMPLE_FLOAT         | float       | 1.021              | Float example         |
 | EXAMPLE_STRING        | string      | 321fda             | String example        |
-| EXAMPLE_INTARRAY_1    | int-array   | 4                  | Integer array example |
+| EXAMPLE_INT_ARRAY_1   | int-array   | 4                  | Integer array example |
 | EXAMPLE_INT_ARRAY_2   | int-array   | 0:3:4:5            | Integer array example |
 | EXAMPLE_FLOAT_ARRAY_1 | float-array | 5                  | FLoat array example   |
 | EXAMPLE_FLOAT_ARRAY_2 | float-array | 5:1:1:3            | FLoat array example   |
@@ -263,7 +267,7 @@ Sheets named according to the syntax _[%Localization%]_ are called Localization 
 
 Attribute is a specific data type, specially created for RPG genre games - where characters and equipment can possess various different and non-fixed attributes and stats. This data type makes character and equipment customization more flexible, without restrictions.
 
-![attribute example](https://github.com/nbhung100914/excel-to-unity/assets/9100041/2d619d56-5fa9-4371-b212-3e857bcbbead)
+![Attribute Example](https://github.com/nbhung100914/excel-to-unity/assets/9100041/2d619d56-5fa9-4371-b212-3e857bcbbead)
 
 To define an attribute object type, the following rules should be followed:
 
@@ -284,11 +288,11 @@ To define an attribute object type, the following rules should be followed:
 
 ## 7. How to integration
 
-__Download and import the [Example](https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/SheetX/Document/SheetXExample.unitypackage)__
+__Download and import the [Example](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)__
 
 First, open the excel file located at `/Assets/SheetX/Examples/Exporting a Single Excel/Example.xlsx`. This is a sample Excel file. Within this file, there are sheets containing sample data that will help you understand how to design various types of data such as IDs, Constants, and Data Tables.
 
-![SheetXExcelFile](https://github.com/user-attachments/assets/2b4c8fe3-3c58-42bc-a85b-dea33c8122cf)
+![Excel File](https://github.com/user-attachments/assets/2b4c8fe3-3c58-42bc-a85b-dea33c8122cf)
 
 ### 7.1. Create folders for exporting files
 
@@ -302,7 +306,7 @@ Create 3 directories to store the files that will be exported:
     - The easiest method is to load from the Resources folder. Create a folder inside the Resources folder to store Localization data. You can name this folder anything you like.
     - Alternatively, use the Addressable Asset System. In this case, create a "Localizations" folder outside the Resources folder and set it as an Addressable Asset. It's recommended to name this folder "Localizations".
 
-- Navigate to Window > SheetX > Settings
+- Navigate to RCore > Tools > SheetX > Settings
 - In Sheets Exporter Settings, set up the paths for the "Constants Output Folder," "Json Output Folder," and "Localization Output Folder" using the three folders you just created.
 
 For this example I will create 3 folders:
@@ -467,7 +471,7 @@ LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
 
   3. Using Localization Component.
 
-      ![LocalizationComponent](https://github.com/user-attachments/assets/0f0214b9-51ed-44bf-9b27-f2a210e6f0f6)
+      ![Using Localization Component](https://github.com/user-attachments/assets/0f0214b9-51ed-44bf-9b27-f2a210e6f0f6)
 
 #### Combine Localizations
 
@@ -492,11 +496,11 @@ Creating TextMeshPro Fonts:
 - Under the _Character Set_ section, select _Character From File_.
 - Choose the appropriate character set file (e.g., characters_set_jp) in the Character File section.
 
-![characters_set_jp](https://github.com/user-attachments/assets/7bc98c77-9994-4551-8e5a-dae51eba9f45)
+![Create Japanese font](https://github.com/user-attachments/assets/7bc98c77-9994-4551-8e5a-dae51eba9f45)
 
-![characters_set_ko](https://github.com/user-attachments/assets/dc14fbbb-b38f-4f56-89b0-844d94b825cb)
+![Create Korean font](https://github.com/user-attachments/assets/dc14fbbb-b38f-4f56-89b0-844d94b825cb)
 
-![characters_set_cn](https://github.com/user-attachments/assets/08020e00-14b1-47cd-a9f2-be3d4321ca48)
+![Create Chinese font](https://github.com/user-attachments/assets/08020e00-14b1-47cd-a9f2-be3d4321ca48)
 
 #### Loading Localization Using the Addressable Assets System
 
