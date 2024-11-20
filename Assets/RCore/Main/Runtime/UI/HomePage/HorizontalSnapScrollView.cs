@@ -40,7 +40,6 @@ namespace RCore.UI
 		[SerializeField, ReadOnly] private int m_FocusedItemIndex = -1;
 		[SerializeField, ReadOnly] private int m_PreviousItemIndex = -1;
 		[SerializeField, ReadOnly] private bool m_IsSnapping;
-		[FormerlySerializedAs("m_IsDraging")]
 		[SerializeField, ReadOnly] private bool m_IsDragging;
 		[SerializeField, ReadOnly] private bool m_Validated;
 

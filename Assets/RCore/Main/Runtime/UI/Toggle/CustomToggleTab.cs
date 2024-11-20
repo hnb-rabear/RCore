@@ -2,7 +2,6 @@
  * Author HNB-RaBear - 2019
  **/
 
-using CandyCoded.HapticFeedback;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +9,6 @@ using UnityEngine.UI;
 using TMPro;
 using RCore.Inspector;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
@@ -434,8 +432,6 @@ namespace RCore.UI
 		{
 			if (m_clicked)
 			{
-				HapticFeedback.LightFeedback();
-				
 				if (IsOn && !string.IsNullOrEmpty(sfxClip))
 					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
 				else if (!isOn && !string.IsNullOrEmpty(sfxClipOff))
