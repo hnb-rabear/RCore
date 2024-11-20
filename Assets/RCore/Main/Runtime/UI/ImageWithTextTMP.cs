@@ -100,25 +100,4 @@ namespace RCore.UI
         }
 #endif
     }
-
-#if UNITY_EDITOR
-    [CustomEditor(typeof(ImageWithTextTMP), true)]
-    public class ImageWithTextTMPEditor : UnityEditor.Editor
-    {
-        private ImageWithTextTMP m_Script;
-
-        private void OnEnable()
-        {
-            m_Script = (ImageWithTextTMP)target;
-        }
-
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
-
-            if (EditorHelper.Button("Auto Resize"))
-                m_Script.SetSprite(m_Script.image.sprite);
-        }
-    }
-#endif
 }

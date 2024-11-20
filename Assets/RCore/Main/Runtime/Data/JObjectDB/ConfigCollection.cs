@@ -41,6 +41,17 @@ namespace RCore.Data.JObject
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(ConfigCollection), true, isFallback = true)]
+#if ODIN_INSPECTOR
+		public class ConfigCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
+		{
+			private ConfigCollection m_config;
+
+			protected override void OnEnable()
+			{
+				base.OnEnable();
+				m_config = target as ConfigCollection;
+			}
+#else
 		public class ConfigCollectionEditor : UnityEditor.Editor
 		{
 			private ConfigCollection m_config;
@@ -49,6 +60,7 @@ namespace RCore.Data.JObject
 			{
 				m_config = target as ConfigCollection;
 			}
+#endif
 
 			public override void OnInspectorGUI()
 			{

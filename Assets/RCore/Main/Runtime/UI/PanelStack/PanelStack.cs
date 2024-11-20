@@ -15,9 +15,9 @@ namespace RCore.UI
 	{
 		internal Stack<PanelController> panelStack = new Stack<PanelController>();
 		internal PanelStack parentPanel;
-		
+
 		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
-		
+
 		public PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 		/// <summary>
 		/// Index in stack
@@ -524,18 +524,32 @@ namespace RCore.UI
 		{
 			Debug.LogError($"<color=red><b>[{gameObject.name}]:</b></color>{pMessage}");
 		}
-		
+
 		//==============================================================
-		
+
 #if UNITY_EDITOR
 		[CustomEditor(typeof(PanelStack), true)]
+#if ODIN_INSPECTOR
+		public class PanelStackEditor : Sirenix.OdinInspector.Editor.OdinEditor
+		{
+			protected PanelStack m_script;
+
+			protected override void OnEnable()
+			{
+				base.OnEnable();
+
+				m_script = target as PanelStack;
+			}
+#else
 		public class PanelStackEditor : UnityEditor.Editor
 		{
 			protected PanelStack m_script;
+
 			protected virtual void OnEnable()
 			{
 				m_script = target as PanelStack;
 			}
+#endif
 			public override void OnInspectorGUI()
 			{
 				base.OnInspectorGUI();

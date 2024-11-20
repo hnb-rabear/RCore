@@ -160,7 +160,11 @@ namespace RCore.Data.KeyValue
 	}
 #if UNITY_EDITOR
 	[CustomEditor(typeof(KeyValueDBManager), true)]
+#if ODIN_INSPECTOR
+	public class KeyValueDBManagerEditor : Sirenix.OdinInspector.Editor.OdinEditor
+#else
 	public class KeyValueDBManagerEditor : UnityEditor.Editor
+#endif
 	{
 		public override void OnInspectorGUI()
 		{

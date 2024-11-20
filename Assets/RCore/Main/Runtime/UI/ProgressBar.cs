@@ -212,6 +212,18 @@ namespace RCore.UI
 
 #if UNITY_EDITOR
         [CustomEditor(typeof(ProgressBar))]
+#if ODIN_INSPECTOR
+        public class ProgressBarEditor : Sirenix.OdinInspector.Editor.OdinEditor
+        {
+            ProgressBar mBar;
+
+            protected override void OnEnable()
+            {
+                base.OnEnable();
+
+                mBar = target as ProgressBar;
+            }
+#else
         public class ProgressBarEditor : UnityEditor.Editor
         {
             ProgressBar mBar;
@@ -220,7 +232,7 @@ namespace RCore.UI
             {
                 mBar = target as ProgressBar;
             }
-
+#endif
             public override void OnInspectorGUI()
             {
                 base.OnInspectorGUI();

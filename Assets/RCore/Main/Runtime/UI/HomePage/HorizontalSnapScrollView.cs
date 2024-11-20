@@ -154,7 +154,7 @@ namespace RCore.UI
 
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!m_ScrollView.horizontal)
+			if (!m_ScrollView.horizontal || m_IsSnapping)
 				return;
 #if DOTWEEN
 			DOTween.Kill(GetInstanceID());
@@ -491,6 +491,19 @@ namespace RCore.UI
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(HorizontalSnapScrollView))]
+#if ODIN_INSPECTOR
+		private class HorizontalSnapScrollViewEditor : Sirenix.OdinInspector.Editor.OdinEditor
+		{
+			private HorizontalSnapScrollView m_target;
+			private int m_ItemIndex;
+
+			protected override void OnEnable()
+			{
+				base.OnEnable();
+				m_target = target as HorizontalSnapScrollView;
+				m_target.Validate();
+			}
+#else
 		private class HorizontalSnapScrollViewEditor : UnityEditor.Editor
 		{
 			private HorizontalSnapScrollView m_target;
@@ -501,6 +514,7 @@ namespace RCore.UI
 				m_target = target as HorizontalSnapScrollView;
 				m_target.Validate();
 			}
+#endif
 
 			public override void OnInspectorGUI()
 			{

@@ -102,25 +102,4 @@ namespace RCore.Components
 		}
 #endif
 	}
-
-#if UNITY_EDITOR
-	[CustomEditor(typeof(ImageWithText), true)]
-	public class ImageWithTextEditor : UnityEditor.Editor
-	{
-		private ImageWithText m_Script;
-
-		private void OnEnable()
-		{
-			m_Script = (ImageWithText)target;
-		}
-
-		public override void OnInspectorGUI()
-		{
-			base.OnInspectorGUI();
-
-			if (EditorHelper.Button("Auto Reize"))
-				m_Script.SetSprite(m_Script.image.sprite);
-		}
-	}
-#endif
 }

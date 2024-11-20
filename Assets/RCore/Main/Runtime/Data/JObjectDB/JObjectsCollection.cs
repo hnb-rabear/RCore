@@ -61,6 +61,17 @@ namespace RCore.Data.JObject
 
 #if UNITY_EDITOR
 	[CustomEditor(typeof(JObjectsCollection), true)]
+#if ODIN_INSPECTOR
+	public class JObjectsCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
+	{
+		private JObjectsCollection m_jObjectsCollection;
+
+		protected override void OnEnable()
+		{
+			base.OnEnable();
+			m_jObjectsCollection = target as JObjectsCollection;
+		}
+#else
 	public class JObjectsCollectionEditor : UnityEditor.Editor
 	{
 		private JObjectsCollection m_jObjectsCollection;
@@ -69,6 +80,7 @@ namespace RCore.Data.JObject
 		{
 			m_jObjectsCollection = target as JObjectsCollection;
 		}
+#endif
 
 		public override void OnInspectorGUI()
 		{

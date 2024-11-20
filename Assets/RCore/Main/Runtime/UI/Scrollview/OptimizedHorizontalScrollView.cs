@@ -251,6 +251,17 @@ namespace RCore.UI
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(OptimizedHorizontalScrollView))]
+#if ODIN_INSPECTOR
+		public class OptimizedHorizontalScrollViewEditor : Sirenix.OdinInspector.Editor.OdinEditor
+		{
+			private OptimizedHorizontalScrollView m_script;
+
+			protected override void OnEnable()
+			{
+				base.OnEnable();
+				m_script = (OptimizedHorizontalScrollView)target;
+			}
+#else
 		public class OptimizedHorizontalScrollViewEditor : UnityEditor.Editor
 		{
 			private OptimizedHorizontalScrollView m_script;
@@ -259,7 +270,7 @@ namespace RCore.UI
 			{
 				m_script = (OptimizedHorizontalScrollView)target;
 			}
-
+#endif
 			public override void OnInspectorGUI()
 			{
 				base.OnInspectorGUI();
