@@ -1,4 +1,4 @@
-﻿#if APPLOVIN
+﻿#if MAX
 using GoogleMobileAds.Ump.Api;
 #endif
 using System;
@@ -14,7 +14,7 @@ namespace RCore.Service
         private static string AD_UNIT_INTERSTITIAL => Configuration.KeyValues["MAX_INTERSTITIAL"];
         private static string AD_UNIT_REWARDED => Configuration.KeyValues["MAX_REWARDED"];
         private static string AD_UNIT_BANNER => Configuration.KeyValues["MAX_BANNER"];
-#if APPLOVIN
+#if MAX
         public void Init()
         {
             // Create a ConsentRequestParameters object     

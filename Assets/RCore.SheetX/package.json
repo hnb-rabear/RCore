@@ -18,5 +18,5 @@
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
-  "documentationUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/SheetX/Document/Document.md"
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.SheetX/Document/Document.md"
 }

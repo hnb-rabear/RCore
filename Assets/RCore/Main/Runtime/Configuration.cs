@@ -66,7 +66,7 @@ namespace RCore
 			public Color color;
 			public bool enabled = true;
 		}
-        
+
 		//==================================
 
 		private static Configuration m_Instance;
@@ -88,13 +88,13 @@ namespace RCore
 				return m_Instance;
 			}
 		}
-		
+
 		public SerializableDictionary<string, string> keyValues;
 		public List<Env> envs = new List<Env>();
 		public Env curEnv;
 
 		public static SerializableDictionary<string, string> KeyValues => Instance.keyValues;
-		
+
 		private void OnValidate()
 		{
 			if (envs.Count == 0 || envs[0].name != "do_not_remove")
@@ -104,11 +104,14 @@ namespace RCore
 					name = "do_not_remove",
 				});
 			}
-			envs[0].AddDirective("DOTWEEN",
+			envs[0].AddDirective("DEVELOPMENT",
+				"UNITY_IAP",
+				"ADDRESSABLES",
+				"DOTWEEN",
 				"GPGS",
 				"IN_APP_REVIEW",
 				"IN_APP_UPDATE",
-				"APPLOVIN",
+				"MAX",
 				"IRONSOURCE",
 				"FIREBASE",
 				"FIREBASE_ANALYTICS",
@@ -123,7 +126,7 @@ namespace RCore
 		}
 
 		//==================================
-		
+
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void RunOnGameStart()
 		{
