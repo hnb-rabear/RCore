@@ -11,11 +11,11 @@ namespace RCore.Editor.Audio
 	[CustomEditor(typeof(AudioCollection))]
 	public class AudioCollectionEditor : UnityEditor.Editor
 	{
-		private AudioCollection m_Script;
+		private AudioCollection m_audioCollection;
 
 		private void OnEnable()
 		{
-			m_Script = target as AudioCollection;
+			m_audioCollection = target as AudioCollection;
 		}
 
 		public override void OnInspectorGUI()
@@ -24,41 +24,42 @@ namespace RCore.Editor.Audio
 
 			EditorHelper.BoxVertical(() =>
 			{
-				// m_Script.m_MusicsPath = EditorHelper.FolderField(m_Script.m_MusicsPath, "Musics Sources Path");
-				// m_Script.m_SfxsPath = EditorHelper.FolderField(m_Script.m_SfxsPath, "SFX Sources Path");
-				// m_Script.m_ConfigPath = EditorHelper.FolderField(m_Script.m_ConfigPath, "Export Config Path");
-
+#if ODIN_INSPECTOR
+				m_audioCollection.m_MusicsPath = EditorHelper.FolderField(m_audioCollection.m_MusicsPath, "Musics Sources Path");
+				m_audioCollection.m_SfxsPath = EditorHelper.FolderField(m_audioCollection.m_SfxsPath, "SFX Sources Path");
+				m_audioCollection.m_AudioIdsPath = EditorHelper.FolderField(m_audioCollection.m_AudioIdsPath, "Audio Ids Export folder");
+#endif
 				if (EditorHelper.Button("Build Audio IDs"))
 				{
-					if (!string.IsNullOrEmpty(m_Script.m_MusicsPath))
+					if (!string.IsNullOrEmpty(m_audioCollection.m_MusicsPath))
 					{
-						string musicSourcePath = Application.dataPath + m_Script.m_MusicsPath.Replace("Assets", "");
+						string musicSourcePath = Application.dataPath + m_audioCollection.m_MusicsPath.Replace("Assets", "");
 						var musicFiles = EditorHelper.GetObjects<AudioClip>(musicSourcePath, "t:AudioClip").ToArray();
 						foreach (var clip in musicFiles)
 						{
-							if (!m_Script.musicClips.Contains(clip))
-								m_Script.musicClips.Add(clip, out m_Script.musicClips);
+							if (!m_audioCollection.musicClips.Contains(clip))
+								m_audioCollection.musicClips.Add(clip, out m_audioCollection.musicClips);
 						}
 					}
-					if (!string.IsNullOrEmpty(m_Script.m_SfxsPath))
+					if (!string.IsNullOrEmpty(m_audioCollection.m_SfxsPath))
 					{
-						string sfxSourcePath = Application.dataPath + m_Script.m_SfxsPath.Replace("Assets", "");
+						string sfxSourcePath = Application.dataPath + m_audioCollection.m_SfxsPath.Replace("Assets", "");
 						var sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxSourcePath, "t:AudioClip").ToArray();
 						foreach (var clip in sfxFiles)
 						{
-							if (!m_Script.sfxClips.Contains(clip))
-								m_Script.sfxClips.Add(clip, out m_Script.sfxClips);
+							if (!m_audioCollection.sfxClips.Contains(clip))
+								m_audioCollection.sfxClips.Add(clip, out m_audioCollection.sfxClips);
 						}
 					}
-					for (var i = m_Script.musicClips.Length - 1; i >= 0; i--)
+					for (var i = m_audioCollection.musicClips.Length - 1; i >= 0; i--)
 					{
-						if (m_Script.musicClips[i] == null)
-							m_Script.musicClips.RemoveAt(i, out m_Script.musicClips);
+						if (m_audioCollection.musicClips[i] == null)
+							m_audioCollection.musicClips.RemoveAt(i, out m_audioCollection.musicClips);
 					}
-					for (var i = m_Script.sfxClips.Length - 1; i >= 0; i--)
+					for (var i = m_audioCollection.sfxClips.Length - 1; i >= 0; i--)
 					{
-						if (m_Script.sfxClips[i] == null)
-							m_Script.sfxClips.RemoveAt(i, out m_Script.sfxClips);
+						if (m_audioCollection.sfxClips[i] == null)
+							m_audioCollection.sfxClips.RemoveAt(i, out m_audioCollection.sfxClips);
 					}
 
 					string exportedContent = GetConfigTemplate();
@@ -67,12 +68,16 @@ namespace RCore.Editor.Audio
 					string stringKeys = "";
 					string intKeys = "";
 					string enumKeys = "";
-					for (int i = 0; i < m_Script.musicClips.Length; i++)
+					for (int i = 0; i < m_audioCollection.musicClips.Length; i++)
 					{
-						stringKeys += $"\"{m_Script.musicClips[i].name}\"";
-						intKeys += $"{m_Script.musicClips[i].name} = {i}";
-						enumKeys += $"{m_Script.musicClips[i].name} = {i}";
-						if (i < m_Script.musicClips.Length - 1)
+						string clipName = m_audioCollection.musicClips[i].name
+							.Replace(" ", "_")
+							.Replace("-", "_")
+							.RemoveSpecialCharacters();
+						stringKeys += $"\"{clipName}\"";
+						intKeys += $"{clipName} = {i}";
+						enumKeys += $"{clipName} = {i}";
+						if (i < m_audioCollection.musicClips.Length - 1)
 						{
 							stringKeys += $",{Environment.NewLine}\t\t";
 							intKeys += $",{Environment.NewLine}\t\t";
@@ -85,12 +90,16 @@ namespace RCore.Editor.Audio
 					stringKeys = "";
 					intKeys = "";
 					enumKeys = "";
-					for (int i = 0; i < m_Script.sfxClips.Length; i++)
+					for (int i = 0; i < m_audioCollection.sfxClips.Length; i++)
 					{
-						stringKeys += $"\"{m_Script.sfxClips[i].name}\"";
-						intKeys += $"{m_Script.sfxClips[i].name} = {i}";
-						enumKeys += $"{m_Script.sfxClips[i].name} = {i}";
-						if (i < m_Script.sfxClips.Length - 1)
+						var clipName = m_audioCollection.sfxClips[i].name
+							.Replace(" ", "_")
+							.Replace("-", "_")
+							.RemoveSpecialCharacters();
+						stringKeys += $"\"{clipName}\"";
+						intKeys += $"{clipName} = {i}";
+						enumKeys += $"{clipName} = {i}";
+						if (i < m_audioCollection.sfxClips.Length - 1)
 						{
 							stringKeys += $",{Environment.NewLine}\t\t";
 							intKeys += $",{Environment.NewLine}\t\t";
@@ -99,56 +108,56 @@ namespace RCore.Editor.Audio
 					}
 					exportedContent = exportedContent.Replace("<S_CONSTANT_INT_KEYS>", intKeys).Replace("<S_CONSTANT_STRING_KEYS>", stringKeys).Replace("<S_CONSTANTS_ENUM_KEYS>", enumKeys);
 
-					if (!string.IsNullOrEmpty(m_Script.m_Namespace))
+					if (!string.IsNullOrEmpty(m_audioCollection.m_Namespace))
 					{
 						exportedContent = AddTabToEachLine(exportedContent);
-						exportedContent = $"namespace {m_Script.m_Namespace}\n" + "{\n" + exportedContent + "\n}";
+						exportedContent = $"namespace {m_audioCollection.m_Namespace}\n" + "{\n" + exportedContent + "\n}";
 					}
-					
+
 					//Write result
-					string exportConfigPath = Application.dataPath + m_Script.m_AudioIdsPath.Replace("Assets", "");
+					string exportConfigPath = Application.dataPath + m_audioCollection.m_AudioIdsPath.Replace("Assets", "");
 					System.IO.File.WriteAllText(exportConfigPath + "/AudioIDs.cs", exportedContent);
 
 					if (EditorHelper.Button("Validate Asset Bundle Sounds"))
 					{
 						var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
-						m_Script.abSfxClips = new AssetReferenceT<AudioClip>[m_Script.sfxClips.Length];
-						for (int i = 0; i < m_Script.sfxClips.Length; i++)
+						m_audioCollection.abSfxClips = new AssetReferenceT<AudioClip>[m_audioCollection.sfxClips.Length];
+						for (int i = 0; i < m_audioCollection.sfxClips.Length; i++)
 						{
-							var clip = m_Script.sfxClips[i];
+							var clip = m_audioCollection.sfxClips[i];
 							string path = AssetDatabase.GetAssetPath(clip);
 							string guid = AssetDatabase.AssetPathToGUID(path);
 							var entry = addressableSettings.FindAssetEntry(guid);
 							if (entry != null)
 							{
-								m_Script.abSfxClips[i] = new AssetReferenceT<AudioClip>(guid);
-								m_Script.sfxClips[i] = null;
+								m_audioCollection.abSfxClips[i] = new AssetReferenceT<AudioClip>(guid);
+								m_audioCollection.sfxClips[i] = null;
 							}
 						}
 
-						m_Script.abMusicClips = new AssetReferenceT<AudioClip>[m_Script.musicClips.Length];
-						for (int i = 0; i < m_Script.musicClips.Length; i++)
+						m_audioCollection.abMusicClips = new AssetReferenceT<AudioClip>[m_audioCollection.musicClips.Length];
+						for (int i = 0; i < m_audioCollection.musicClips.Length; i++)
 						{
-							var clip = m_Script.musicClips[i];
+							var clip = m_audioCollection.musicClips[i];
 							string path = AssetDatabase.GetAssetPath(clip);
 							string guid = AssetDatabase.AssetPathToGUID(path);
 							var entry = addressableSettings.FindAssetEntry(guid);
 							if (entry != null)
 							{
-								m_Script.abMusicClips[i] = new AssetReferenceT<AudioClip>(guid);
-								m_Script.musicClips[i] = null;
+								m_audioCollection.abMusicClips[i] = new AssetReferenceT<AudioClip>(guid);
+								m_audioCollection.musicClips[i] = null;
 							}
 						}
 					}
 
 					if (GUI.changed)
 					{
-						EditorUtility.SetDirty(m_Script);
+						EditorUtility.SetDirty(m_audioCollection);
 						AssetDatabase.SaveAssets();
 						AssetDatabase.Refresh();
 					}
 				}
-			}, default, true);
+			}, ColorHelper.LightAzure, true);
 		}
 
 		private string GetConfigTemplate()
@@ -181,7 +190,7 @@ namespace RCore.Editor.Audio
 			var textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
 			return textAsset.ToString();
 		}
-		
+
 		public static string AddTabToEachLine(string content)
 		{
 			// Split the content into lines

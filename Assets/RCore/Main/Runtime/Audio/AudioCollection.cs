@@ -1,4 +1,8 @@
-﻿using RCore.Inspector;
+﻿#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#else
+using RCore.Inspector;
+#endif
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -30,7 +34,7 @@ namespace RCore.Audio
         {
             for (int i = 0; i < musicClips.Length; i++)
             {
-                if (musicClips[i].name == pKey)
+                if (musicClips[i].name.ToLower() == pKey.ToLower())
                     return musicClips[i];
             }
             return null;
@@ -40,7 +44,7 @@ namespace RCore.Audio
         {
             for (int i = 0; i < musicClips.Length; i++)
             {
-                if (musicClips[i].name == pKey)
+                if (musicClips[i].name.ToLower() == pKey.ToLower())
                 {
                     pIndex = i;
                     return musicClips[i];
@@ -60,7 +64,7 @@ namespace RCore.Audio
         {
             for (int i = 0; i < sfxClips.Length; i++)
             {
-                if (sfxClips[i].name == pName)
+                if (sfxClips[i].name.ToLower() == pName.ToLower())
                     return sfxClips[i];
             }
             return null;

@@ -32,7 +32,6 @@ namespace RCore.Editor.Tool
 		[MenuItem("RCore/Asset Database/Toggle Play Asset Delivery Filter", true)]
 		private static bool ToggleActiveValidate()
 		{
-			// Return true to show the checkmark when m_Active is true
 			Menu.SetChecked("RCore/Asset Database/Toggle Play Asset Delivery Filter", m_Active.Value);
 			return true;
 		}

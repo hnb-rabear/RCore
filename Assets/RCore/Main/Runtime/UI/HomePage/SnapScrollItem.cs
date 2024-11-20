@@ -5,9 +5,8 @@ namespace RCore.UI
     public abstract class SnapScrollItem : MonoBehaviour
     {
         [SerializeField] protected RectTransform m_Main;
-        [SerializeField] protected Canvas m_MainCanvas;
 
-        protected RectTransform m_RectTransform;
+        protected RectTransform m_rectTransform;
         protected bool m_refreshed;
 
         public bool Showing => m_Main.gameObject.activeSelf;
@@ -16,9 +15,9 @@ namespace RCore.UI
         {
             get
             {
-                if (m_RectTransform == null)
-                    m_RectTransform = transform as RectTransform;
-                return m_RectTransform;
+                if (m_rectTransform == null)
+                    m_rectTransform = transform as RectTransform;
+                return m_rectTransform;
             }
         }
 
