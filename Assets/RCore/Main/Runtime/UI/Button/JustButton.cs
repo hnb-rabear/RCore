@@ -6,7 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+#if DOTWEEN
 using DG.Tweening;
+#endif
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;

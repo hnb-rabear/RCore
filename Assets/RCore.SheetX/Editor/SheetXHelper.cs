@@ -178,7 +178,7 @@ namespace RCore.Editor.SheetX
 		public static List<FieldValueType> GetFieldValueTypes(IWorkbook pWorkBook, string pSheetName)
 		{
 			var sheet = pWorkBook.GetSheet(pSheetName);
-			var firstRowData = sheet.GetRow(0);
+			var firstRowData = sheet?.GetRow(0);
 			if (firstRowData == null)
 				return null;
 

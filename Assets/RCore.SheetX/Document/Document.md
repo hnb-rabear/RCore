@@ -20,7 +20,7 @@ __You can download Example [Here](https://github.com/hnb-rabear/hnb-rabear.githu
 
 ## 3. Settings
 
-Navigate to the main menu and select: RCore > Tools > SheetX > Settings
+Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
 
 ![SheetX Settings](https://github.com/user-attachments/assets/80e31126-7a6e-40b5-9bdd-4ffc82d726dc)
 
@@ -54,7 +54,7 @@ Navigate to the main menu and select: RCore > Tools > SheetX > Settings
 
 ### 4.1. Export Single Excel File
 
-Navigate to the main menu and select: RCore > Tools > SheetX > Excel Sheets Exporter
+Navigate to the main menu and select: `RCore > Tools > SheetX > Excel Sheets Exporter`
 
 ![Export Excel Spreadsheet](https://github.com/user-attachments/assets/1772d9b2-9ac9-4bf7-9be3-80a157e02e07)
 
@@ -82,7 +82,7 @@ For managing complex Static Databases that need to be divided into multiple Exce
 
 Prefer using Google Spreadsheets? No problem.
 
-Navigate to the main menu and select: RCore > Tools > SheetX > Google Sheets Exporter
+Navigate to the main menu and select: `RCore > Tools > SheetX > Google Sheets Exporter`
 
 ### 5.1. Setup Client ID and Client Secret
 
@@ -306,7 +306,7 @@ Create 3 directories to store the files that will be exported:
     - The easiest method is to load from the Resources folder. Create a folder inside the Resources folder to store Localization data. You can name this folder anything you like.
     - Alternatively, use the Addressable Asset System. In this case, create a "Localizations" folder outside the Resources folder and set it as an Addressable Asset. It's recommended to name this folder "Localizations".
 
-- Navigate to RCore > Tools > SheetX > Settings
+- Navigate to `RCore > Tools > SheetX > Settings`
 - In Sheets Exporter Settings, set up the paths for the "Constants Output Folder," "Json Output Folder," and "Localization Output Folder" using the three folders you just created.
 
 For this example I will create 3 folders:

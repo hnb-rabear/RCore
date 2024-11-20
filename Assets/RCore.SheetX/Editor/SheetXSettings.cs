@@ -51,6 +51,14 @@ namespace RCore.Editor.SheetX
 		[HideInInspector] public string encryptionKey;
 		private Encryption m_encryption;
 
+		private void OnValidate()
+		{
+			if (string.IsNullOrEmpty(excelSheetsPath.path))
+				excelSheetsPath.sheets.Clear();
+			if (string.IsNullOrEmpty(googleSheetsPath.id))
+				googleSheetsPath.sheets.Clear();
+		}
+		
 		public static SheetXSettings Load()
 		{
 			var collection = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(SheetXSettings)) as SheetXSettings;
