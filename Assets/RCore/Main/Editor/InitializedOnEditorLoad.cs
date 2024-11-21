@@ -9,8 +9,6 @@ namespace RCore.Editor
 	[InitializeOnLoad]
 	public static class InitializedOnEditorLoad
 	{
-		private static bool m_hasRCoreServices;
-		
 		static InitializedOnEditorLoad()
 		{
 			EditorApplication.update += RunOnEditorStart;
@@ -18,8 +16,6 @@ namespace RCore.Editor
 
 		private static void RunOnEditorStart()
 		{
-			m_hasRCoreServices = IsNamespaceAvailable("RCore.Service");
-			
 			EditorApplication.update -= RunOnEditorStart;
 
 			var culture = CultureInfo.CreateSpecificCulture("en-US");
@@ -65,6 +61,18 @@ namespace RCore.Editor
 			return false;
 		}
 
+		private static bool IsClassAvailable(string className)
+		{
+			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+			foreach (var assembly in assemblies)
+			{
+				var type = assembly.GetType(className);
+				if (type != null)
+					return true;
+			}
+			return false;
+		}
+
 		private static void Validate_DOTWEEN()
 		{
 			var dotweenType = Type.GetType("DG.Tweening.DOTween, DOTween");
@@ -85,9 +93,9 @@ namespace RCore.Editor
 
 		private static void Validate_UNITY_IAP()
 		{
-			if (!m_hasRCoreServices) return;
-			Type iapType = Type.GetType("UnityEngine.Purchasing.ConfigurationBuilder, UnityEngine.Purchasing");
-			if (iapType != null)
+			var rcore = IsClassAvailable("RCore.Service.IAPManager");
+			var iapType = Type.GetType("UnityEngine.Purchasing.ConfigurationBuilder, UnityEngine.Purchasing");
+			if (iapType != null && rcore)
 				EditorHelper.AddDirective("UNITY_IAP");
 			else
 				EditorHelper.RemoveDirective("UNITY_IAP");
@@ -95,10 +103,9 @@ namespace RCore.Editor
 
 		private static void Validate_GPGS()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Google Play Games Services (GPGS) is installed
+			var rcore = IsClassAvailable("RCore.Service.GameServices");
 			var gpgsType = Type.GetType("GooglePlayGames.PlayGamesPlatform, Google.Play.Games");
-			if (gpgsType != null)
+			if (gpgsType != null && rcore)
 				EditorHelper.AddDirective("GPGS");
 			else
 				EditorHelper.RemoveDirective("GPGS");
@@ -106,10 +113,9 @@ namespace RCore.Editor
 
 		private static void Validate_IN_APP_REVIEW()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if In-App Review is installed
+			var rcore = IsClassAvailable("RCore.Service.GameServices");
 			var inAppReviewType = Type.GetType("Google.Play.Review.ReviewManager, Google.Play.Review");
-			if (inAppReviewType != null)
+			if (inAppReviewType != null && rcore)
 				EditorHelper.AddDirective("IN_APP_REVIEW");
 			else
 				EditorHelper.RemoveDirective("IN_APP_REVIEW");
@@ -117,10 +123,9 @@ namespace RCore.Editor
 
 		private static void Validate_IN_APP_UPDATE()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if the AppUpdateManager class from the Google Android In-App Update plugin is present
+			var rcore = IsClassAvailable("RCore.Service.GameServices");
 			var inAppUpdateType = Type.GetType("Google.Play.AppUpdate.AppUpdateManager, Google.Play.AppUpdate");
-			if (inAppUpdateType != null)
+			if (inAppUpdateType != null && rcore)
 				EditorHelper.AddDirective("IN_APP_UPDATE");
 			else
 				EditorHelper.RemoveDirective("IN_APP_UPDATE");
@@ -128,10 +133,9 @@ namespace RCore.Editor
 
 		private static void Validate_APPLOVIN()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if AppLovin is installed
+			var rcore = IsClassAvailable("RCore.Service.ApplovinProvider");
 			var appLovinType = Type.GetType("MaxSdk, MaxSdk.Scripts");
-			if (appLovinType != null)
+			if (appLovinType != null && rcore)
 				EditorHelper.AddDirective("MAX");
 			else
 				EditorHelper.RemoveDirective("MAX");
@@ -139,10 +143,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_ANALYTICS()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Analytics is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseAnalyticsType = Type.GetType("Firebase.Analytics.FirebaseAnalytics, Firebase.Analytics");
-			if (firebaseAnalyticsType != null)
+			if (firebaseAnalyticsType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_ANALYTICS", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_ANALYTICS");
@@ -150,10 +153,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_CRASHLYTICS()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Crashlytics is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseCrashlyticsType = Type.GetType("Firebase.Crashlytics.Crashlytics, Firebase.Crashlytics");
-			if (firebaseCrashlyticsType != null)
+			if (firebaseCrashlyticsType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_CRASHLYTICS", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_CRASHLYTICS");
@@ -161,10 +163,10 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_REMOTE_CONFIG()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Remote Config is installed
+
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseRemoteConfigType = Type.GetType("Firebase.RemoteConfig.FirebaseRemoteConfig, Firebase.RemoteConfig");
-			if (firebaseRemoteConfigType != null)
+			if (firebaseRemoteConfigType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_REMOTE_CONFIG", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_REMOTE_CONFIG");
@@ -172,10 +174,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_AUTH()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Auth is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseAuthType = Type.GetType("Firebase.Auth.FirebaseAuth, Firebase.Auth");
-			if (firebaseAuthType != null)
+			if (firebaseAuthType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_AUTH", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_AUTH");
@@ -183,10 +184,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_FIRESTORE()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Firestore is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseFirestoreType = Type.GetType("Firebase.Firestore.FirebaseFirestore, Firebase.Firestore");
-			if (firebaseFirestoreType != null)
+			if (firebaseFirestoreType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_FIRESTORE", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_FIRESTORE");
@@ -194,10 +194,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_DATABASE()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Realtime Database is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseDatabaseType = Type.GetType("Firebase.Database.FirebaseDatabase, Firebase.Database");
-			if (firebaseDatabaseType != null)
+			if (firebaseDatabaseType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_DATABASE", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_DATABASE");
@@ -205,10 +204,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_STORAGE()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Storage is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseStorageType = Type.GetType("Firebase.Storage.FirebaseStorage, Firebase.Storage");
-			if (firebaseStorageType != null)
+			if (firebaseStorageType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_STORAGE", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_STORAGE");
@@ -216,10 +214,9 @@ namespace RCore.Editor
 
 		private static void Validate_FIREBASE_MESSAGING()
 		{
-			if (!m_hasRCoreServices) return;
-			// Check if Firebase Messaging is installed
+			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
 			var firebaseMessagingType = Type.GetType("Firebase.Messaging.FirebaseMessaging, Firebase.Messaging");
-			if (firebaseMessagingType != null)
+			if (firebaseMessagingType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_MESSAGING", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_MESSAGING");
