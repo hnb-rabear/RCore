@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ab2bc8934cee74489e4f1e7950acaa, type: 3}
+  m_Name: SheetXSettings
+  m_EditorClassIdentifier: 
+  excelSheetsPath:
+    selected: 1
+    path: 
+    sheets: []
+    name: 
+  googleSheetsPath:
+    selected: 1
+    id: 
+    name: 
+    sheets: []
+  excelSheetsPaths: []
+  googleSheetsPaths: []
+  jsonOutputFolder: 
+  constantsOutputFolder: 
+  localizationOutputFolder: 
+  namespace: 
+  separateConstants: 0
+  separateIDs: 0
+  separateLocalizations: 0
+  combineJson: 0
+  onlyEnumAsIDs: 0
+  encryptJson: 0
+  langCharSets: 
+  persistentFields: 
+  googleClientId: 
+  googleClientSecret: 
+  encryptionKey: 

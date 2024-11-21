@@ -205,17 +205,6 @@ namespace RCore.Editor.SheetX
 	{
 		private static string LastOpenedDirectory { get => EditorPrefs.GetString("LastOpenedDirectory"); set => EditorPrefs.SetString("LastOpenedDirectory", value); }
 
-		public static string Tabs(string pKey, params string[] pTabsName)
-		{
-			var tabs = new EditorTabs()
-			{
-				key = pKey,
-				tabsName = pTabsName,
-			};
-			tabs.Draw();
-			return tabs.CurrentTab;
-		}
-
 		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, Color color = default)
 		{
 			var text = new EditorText()

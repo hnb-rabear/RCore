@@ -32,8 +32,6 @@ namespace RCore.Editor.SheetX
 
 		public ExcelSheetsPath excelSheetsPath;
 		public GoogleSheetsPath googleSheetsPath;
-		public List<ExcelSheetsPath> excelSheetsPaths;
-		public List<GoogleSheetsPath> googleSheetsPaths;
 		public string jsonOutputFolder;
 		public string constantsOutputFolder;
 		public string localizationOutputFolder;
@@ -143,24 +141,6 @@ namespace RCore.Editor.SheetX
 
 			SheetXHelper.WriteFile(constantsOutputFolder, pExportFileName + ".cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
-		}
-
-		public void AddExcelFileFile(string path)
-		{
-			if (!File.Exists(path))
-				return;
-			foreach (var _excelSheetsPath in excelSheetsPaths)
-			{
-				if (_excelSheetsPath.path == path)
-					return;
-			}
-			var newPath = new ExcelSheetsPath()
-			{
-				path = path,
-				selected = true,
-			};
-			newPath.Load();
-			excelSheetsPaths.Add(newPath);
 		}
 
 		private string m_obfGoogleClientId;

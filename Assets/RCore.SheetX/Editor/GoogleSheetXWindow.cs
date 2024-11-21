@@ -28,19 +28,7 @@ namespace RCore.Editor.SheetX
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-			var tab = EditorHelper.Tabs($"{nameof(GoogleSheetXWindow)}", "Export Google Spreadsheet", "Export Multi Google Spreadsheets");
-			switch (tab)
-			{
-				case "Export Google Spreadsheet":
-					PageSingleFile();
-					break;
-
-				case "Export Multi Google Spreadsheets":
-					GUILayout.BeginVertical("box");
-					PageMultiFiles();
-					GUILayout.EndVertical();
-					break;
-			}
+			PageSingleFile();
 			GUILayout.EndScrollView();
 		}
 
@@ -107,95 +95,6 @@ namespace RCore.Editor.SheetX
 				SheetXSettingsWindow.ShowWindow();
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
-		}
-
-		private void PageMultiFiles()
-		{
-			GUILayout.BeginHorizontal();
-			if (EditorHelper.Button("Add Google SpreadSheets", pWidth: 200, pHeight: 30))
-			{
-				EditGoogleSheetsWindow.ShowWindow(new GoogleSheetsPath(), m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, output =>
-				{
-					if (!m_settings.googleSheetsPaths.Exists(x => x.id == output.id))
-						m_settings.googleSheetsPaths.Add(output);
-				});
-			}
-			GUILayout.FlexibleSpace();
-			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
-			{
-				m_googleSheetHandler.ExportExcelsAll();
-				CompilationPipeline.RequestScriptCompilation();
-			}
-			GUILayout.EndHorizontal();
-			GUILayout.Space(10);
-			m_tableGoogleSheetsPaths ??= CreateTableGoogleSheetsPath();
-			m_tableGoogleSheetsPaths.DrawOnGUI(m_settings.googleSheetsPaths);
-		}
-
-		private EditorTableView<GoogleSheetsPath> CreateTableGoogleSheetsPath()
-		{
-			var table = new EditorTableView<GoogleSheetsPath>(this, "Google Spreadsheets paths");
-			var labelGUIStyle = new GUIStyle(GUI.skin.label)
-			{
-				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
-			};
-			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
-			{
-				normal = new GUIStyleState
-				{
-					textColor = Color.gray
-				}
-			};
-
-			table.AddColumn("Selected", 60, 60, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.selected = EditorGUI.Toggle(rect, item.selected);
-			});
-
-			table.AddColumn("Name", 100, 150, (rect, item) =>
-			{
-				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				EditorGUI.LabelField(rect, item.name, style);
-			}).SetSorting((a, b) => String.Compare(a.id, b.id, StringComparison.Ordinal));
-
-			table.AddColumn("Id", 300, 0, (rect, item) =>
-			{
-				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
-				EditorGUI.LabelField(rect, item.id, style);
-			});
-
-			table.AddColumn("Ping", 50, 50, (rect, item) =>
-			{
-				if (GUI.Button(rect, "Ping"))
-				{
-					string url = $"https://docs.google.com/spreadsheets/d/{item.id}/edit"; 
-					Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-				}
-			});
-
-			table.AddColumn("Edit", 50, 50, (rect, item) =>
-			{
-				if (GUI.Button(rect, "Edit"))
-				{
-					EditGoogleSheetsWindow.ShowWindow(item, m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, output =>
-					{
-						if (!m_settings.googleSheetsPaths.Exists(x => x.id == output.id))
-							m_settings.googleSheetsPaths.Add(output);
-					});
-				}
-			}).SetTooltip("Click to Edit");
-
-			table.AddColumn("Delete", 60, 60, (rect, item) =>
-			{
-				var defaultColor = GUI.color;
-				GUI.backgroundColor = Color.red;
-				if (GUI.Button(rect, "Delete"))
-					m_settings.googleSheetsPaths.Remove(item);
-				GUI.backgroundColor = defaultColor;
-			}).SetTooltip("Click to Delete");
-
-			return table;
 		}
 
 		public static void ShowWindow()

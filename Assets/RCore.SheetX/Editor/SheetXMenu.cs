@@ -9,7 +9,7 @@ namespace RCore.Editor.SheetX
 	{
 		public const int GROUP_6 = 100;
 		
-		[MenuItem("RCore/Tools/SheetX/Excel Sheets Exporter", priority = GROUP_6 + 6)]
+		[MenuItem("RCore/Tools/SheetX/Settings", priority = GROUP_6 + 6)]
 		// [MenuItem("Window/SheetX/Settings")]
 		public static void ShowSheetXSettingsWindow()
 		{
@@ -23,7 +23,7 @@ namespace RCore.Editor.SheetX
 			GoogleSheetXWindow.ShowWindow();
 		}
 		
-		[MenuItem("RCore/Tools/SheetX/Settings", priority = GROUP_6 + 6)]
+		[MenuItem("RCore/Tools/SheetX/Excel Sheets Exporter", priority = GROUP_6 + 6)]
 		// [MenuItem("Window/SheetX/Excel Sheets Exporter")]
 		public static void ShowExcelSheetXWindow()
 		{

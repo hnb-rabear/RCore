@@ -22,6 +22,7 @@ namespace RCore.Editor.SheetX
 	[Serializable]
 	public class ExcelSheetsPath
 	{
+		private const int MAX_SHEETS = 12; // If you find my software helpful for your work, please consider purchasing the PRO version.
 		public bool selected = true;
 		public string path;
 		public List<SheetPath> sheets = new();
@@ -50,6 +51,8 @@ namespace RCore.Editor.SheetX
 					selected = true,
 				});
 			}
+			while (sheets.Count > MAX_SHEETS)
+				sheets.RemoveAt(sheets.Count - 1);
 			name = Path.GetFileNameWithoutExtension(path);
 		}
 		public void Validate()
@@ -86,12 +89,15 @@ namespace RCore.Editor.SheetX
 	[Serializable]
 	public class GoogleSheetsPath : IComparable<GoogleSheetsPath>
 	{
+		private const int MAX_SHEETS = 12; // If you find my software helpful for your work, please consider purchasing the PRO version.
 		public bool selected = true;
 		public string id;
 		public string name;
 		public List<SheetPath> sheets = new();
 		public void AddSheet(string name)
 		{
+			while (sheets.Count > MAX_SHEETS)
+				return;
 			for (int i = 0; i < sheets.Count; i++)
 				if (sheets[i].name == name)
 					return;

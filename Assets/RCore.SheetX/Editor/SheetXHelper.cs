@@ -595,11 +595,7 @@ namespace RCore.Editor.SheetX
 				if (existedSheet != null)
 					sheetPath.selected = existedSheet.selected;
 				else
-					pGoogleSheetsPath.sheets.Add(new SheetPath()
-					{
-						name = sheetPath.name,
-						selected = true,
-					});
+					pGoogleSheetsPath.AddSheet(sheetPath.name);
 			}
 			pGoogleSheetsPath.name = spreadsheet.Properties.Title;
 		}
