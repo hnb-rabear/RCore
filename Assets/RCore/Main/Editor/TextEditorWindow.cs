@@ -20,16 +20,15 @@ namespace RCore.Editor
 			window.ShowUtility();
 		}
 
-		// This method is called to render the editor window
 		private void OnGUI()
 		{
 			EditorGUILayout.LabelField("Content:");
-			m_scrollPosition = EditorGUILayout.BeginScrollView(m_scrollPosition, GUILayout.Height(200));
+			m_scrollPosition = EditorGUILayout.BeginScrollView(m_scrollPosition, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
 			var textAreaStyle = new GUIStyle(EditorStyles.textArea)
 			{
 				wordWrap = true
 			};
-			m_content = EditorGUILayout.TextArea(m_content, textAreaStyle, GUILayout.Height(200));
+			m_content = EditorGUILayout.TextArea(m_content, textAreaStyle, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
 			EditorGUILayout.EndScrollView();
 			GUILayout.Space(10);
 
@@ -46,6 +45,7 @@ namespace RCore.Editor
 			}
 			EditorGUILayout.EndHorizontal();
 		}
+
 		
 		private void OnLostFocus()
 		{

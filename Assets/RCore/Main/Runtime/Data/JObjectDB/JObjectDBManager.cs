@@ -94,11 +94,7 @@ namespace RCore.Data.JObject
 				// Do not allow multiple Save calls within a short period of time.
 				if (Time.unscaledTime - m_lastSave < 0.2f)
 					return;
-				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-				foreach (var handler in m_dataCollection.handlers)
-					handler.OnPreSave(utcNowTimestamp);
-				foreach (var collection in m_dataCollection.datas)
-					collection.Save();
+				m_dataCollection.Save();
 				m_saveDelayCustom = 0; // Reset save delay custom
 				m_lastSave = Time.unscaledTime;
 				return;
@@ -121,6 +117,7 @@ namespace RCore.Data.JObject
 			if (!m_enabledSave)
 				return;
 
+			m_dataCollection.Import(data);
 			m_dataCollection.datas.Import(data);
 			foreach (var collection in m_dataCollection.datas)
 				collection.Load();

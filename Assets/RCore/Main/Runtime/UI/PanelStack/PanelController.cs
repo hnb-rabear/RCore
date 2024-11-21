@@ -89,6 +89,8 @@ namespace RCore.UI
 				if (graphicRaycaster == null)
 					gameObject.AddComponent<GraphicRaycaster>();
 			}
+			if (TryGetComponent(out Animator animator))
+				animator.updateMode = AnimatorUpdateMode.UnscaledTime;
 		}
 		
 		//=================================
@@ -323,6 +325,8 @@ namespace RCore.UI
 					var animator = m_script.gameObject.GetOrAddComponent<Animator>();
 					if (animator.runtimeAnimatorController == null)
 					{
+						//7d5f83b914c1a9b4ca7b5203f47e50c0 Open-ZoomOut, Close-ZoomIn
+						//aacc2936d5462ba48a06864252b2704e Open-ZoomIn, Close-ZoomOut
 						string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("7d5f83b914c1a9b4ca7b5203f47e50c0");
 						if (!string.IsNullOrEmpty(animatorCtrlPath))
 						{

@@ -63,5 +63,12 @@ namespace RCore.Data.JObject
 			};
 			return JsonConvert.SerializeObject(this, serializerSettings);
 		}
+		protected void DispatchEvent<T>(T e, float pDeBounce = 0) where T : BaseEvent
+		{
+			if (pDeBounce > 0)
+				EventDispatcher.RaiseDeBounce(e, pDeBounce);
+			else
+				EventDispatcher.Raise(e);
+		}
 	}
 }

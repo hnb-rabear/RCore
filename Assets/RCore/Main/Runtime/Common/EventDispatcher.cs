@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Cysharp.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace RCore
 {
@@ -14,7 +17,6 @@ namespace RCore
 	/// @example publish an event
 	///     EventManager.Raise(new SomethingHappenedEvent());
 	///
-	/// This class is a minor variation on <http://www.willrmiller.com/?p=87>
 	/// </summary>
 	public static class EventDispatcher
 	{
@@ -30,7 +32,7 @@ namespace RCore
 		/// <summary>
 		/// Lookups only, there is one delegate lookup per listener
 		/// </summary>
-		private static Dictionary<System.Delegate, EventDelegate> delegateLookup = new Dictionary<System.Delegate, EventDelegate>();
+		private static Dictionary<Delegate, EventDelegate> delegateLookup = new Dictionary<Delegate, EventDelegate>();
 
 		/// <summary>
 		/// Add the delegate.
@@ -99,6 +101,46 @@ namespace RCore
 			if (delegates.TryGetValue(id, out EventDelegate del))
 			{
 				del.Invoke(e);
+			}
+		}
+		
+		private static Dictionary<Type, CancellationTokenSource> debounceTokens = new Dictionary<Type, CancellationTokenSource>();
+		
+		public static async void RaiseDeBounce<T>(T e, float pDeBounce = 0) where T : BaseEvent
+		{
+			var eventType = typeof(T);
+
+			// If there's an existing debounce token for this event type, cancel it
+			if (debounceTokens.TryGetValue(eventType, out var existingToken))
+			{
+				existingToken.Cancel();
+				existingToken.Dispose();
+			}
+
+			// Create a new cancellation token source for this event type
+			var cts = new CancellationTokenSource();
+			debounceTokens[eventType] = cts;
+
+			try
+			{
+				// Wait for the specified debounce period
+				await UniTask.Delay(TimeSpan.FromSeconds(pDeBounce), cancellationToken: cts.Token);
+
+				// Raise the event if not canceled
+				Raise(e);
+			}
+			catch (OperationCanceledException)
+			{
+				// If the task was canceled, do nothing
+			}
+			finally
+			{
+				// Clean up the token source
+				if (debounceTokens[eventType] == cts)
+				{
+					debounceTokens.Remove(eventType);
+					cts.Dispose();
+				}
 			}
 		}
 	}

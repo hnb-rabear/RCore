@@ -31,9 +31,11 @@ namespace RCore.Editor.Tool
 				EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
 				EditorSceneManager.OpenScene(SceneUtility.GetScenePathByBuildIndex(0));
 			}
-			else if (state == PlayModeStateChange.ExitingPlayMode && m_PreviousSceneIndex > 0)
+			else if (state == PlayModeStateChange.EnteredEditMode && m_PreviousSceneIndex > 0)
 			{
 				EditorSceneManager.OpenScene(SceneUtility.GetScenePathByBuildIndex(m_PreviousSceneIndex));
+
+				m_PreviousSceneIndex = 0;
 			}
 		}
 
