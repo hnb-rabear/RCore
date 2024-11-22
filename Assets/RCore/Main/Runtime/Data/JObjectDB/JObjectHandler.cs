@@ -11,7 +11,7 @@ namespace RCore.Data.JObject
 	[System.Serializable]
 	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectsCollection
 	{
-		public T dbManager;
+		public T collection;
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnUpdate(float deltaTime);

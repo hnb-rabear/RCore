@@ -223,6 +223,17 @@ namespace RCore.Editor.Tool
 						cloneEnv.name += $" ({m_target.envs.Count})";
 						m_target.envs.Add(cloneEnv);
 					}
+					if (EditorHelper.Button("Add Currents"))
+					{
+						string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+						string[] directives = directivesStr.Split(';');
+						foreach (string directive in directives)
+							if (!pEnv.directives.Exists(x => x.name == directive))
+								pEnv.directives.Add(new Configuration.Directive()
+								{
+									name = directive,
+								});
+					}
 					if (pEnv.name != DEFAULT_ENV_NAME && EditorHelper.ButtonColor("Remove", Color.red))
 						m_target.envs.Remove(pEnv);
 				}

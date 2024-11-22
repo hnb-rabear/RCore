@@ -9,7 +9,7 @@ namespace RCore.Example.Data.JObject
 		}
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
-			dbManager.inventory.Insert(new InvItemData()
+			collection.inventory.Insert(new InvItemData()
 			{
 				fk = 2,
 				id = 2
