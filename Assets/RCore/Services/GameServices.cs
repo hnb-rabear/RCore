@@ -36,13 +36,13 @@ namespace RCore.Service
 		NetworkError = -20,
 		NotInitialized = -30,
 	}
-	
+
 	public static class GameServices
 	{
 		private static Action<bool> m_OnUserLoginSucceeded;
 		public static ILocalUser LocalUser => IsInitialized() ? Social.localUser : null;
 		public static string UserId => IsInitialized() ? Social.localUser.id : "";
-		
+
 		private struct LoadScoreRequest
 		{
 			public bool useLeaderboardDefault;
@@ -378,41 +378,41 @@ namespace RCore.Service
 
 		public static void DoReportScore(long score, string leaderboardId, Action<bool> callback)
 		{
-            try
-            {
-                if (!IsInitialized())
-                {
-                    Debug.Log($"Failed to report score to leaderboard {leaderboardId}: user is not logged in.");
-                    callback?.Invoke(false);
-                    return;
-                }
-                Social.ReportScore(score, leaderboardId, callback);
-            }
-            catch
-            {
-                callback?.Invoke(false);
-            }
-        }
+			try
+			{
+				if (!IsInitialized())
+				{
+					Debug.Log($"Failed to report score to leaderboard {leaderboardId}: user is not logged in.");
+					callback?.Invoke(false);
+					return;
+				}
+				Social.ReportScore(score, leaderboardId, callback);
+			}
+			catch
+			{
+				callback?.Invoke(false);
+			}
+		}
 
 		// Progress of 0.0% means reveal the achievement.
 		// Progress of 100.0% means unlock the achievement.
 		public static void DoReportAchievementProgress(string achievementId, double progress, Action<bool> callback)
 		{
-            try
-            {
-                if (!IsInitialized())
-                {
-                    Debug.Log($"Failed to report progress for achievement {achievementId}: user is not logged in.");
-                    callback?.Invoke(false);
-                    return;
-                }
-                Social.ReportProgress(achievementId, progress, callback);
-            }
-            catch
-            {
-                callback?.Invoke(false);
-            }
-        }
+			try
+			{
+				if (!IsInitialized())
+				{
+					Debug.Log($"Failed to report progress for achievement {achievementId}: user is not logged in.");
+					callback?.Invoke(false);
+					return;
+				}
+				Social.ReportProgress(achievementId, progress, callback);
+			}
+			catch
+			{
+				callback?.Invoke(false);
+			}
+		}
 
 		private static void DoNextLoadScoreRequest()
 		{
@@ -509,7 +509,7 @@ namespace RCore.Service
 				Debug.Log("Got " + achievements.Length + " achievements.");
 			}
 		}
-		
+
 		private static LeaderboardTimeSpan ToGpgsLeaderboardTimeSpan(TimeScope timeScope)
 		{
 			return timeScope switch
@@ -541,7 +541,7 @@ namespace RCore.Service
 			//If after syncing remote data, user has converted to new map, but the game is still on old map, then force update
 			//This case happens when user plays on multi devices, one have new version and the other have old version
 			var updateOption = AppUpdateOptions.ImmediateAppUpdateOptions();
-            
+
 			if (forceUpdate)
 				updateOption = AppUpdateOptions.ImmediateAppUpdateOptions();
 
@@ -551,33 +551,33 @@ namespace RCore.Service
 #endif
 		}
 
-        public static async void ShowInAppReview()
-        {
-#if UNITY_EDITOR
-	        Application.OpenURL("market://details?id=" + Application.identifier);
-	        return;
-#endif
 #if UNITY_ANDROID && IN_APP_REVIEW
-	        var reviewManager = new ReviewManager();
-	        var requestFlowOperation = reviewManager.RequestReviewFlow();
-	        await requestFlowOperation;
-	        if (requestFlowOperation.Error != ReviewErrorCode.NoError)
-	        {
-		        Application.OpenURL("market://details?id=" + Application.identifier);
-		        UnityEngine.Debug.LogError(requestFlowOperation.Error.ToString());
-	        }
-	        else
-	        {
-		        var playReviewInfo = requestFlowOperation.GetResult();
-		        var launchFlowOperation = reviewManager.LaunchReviewFlow(playReviewInfo);
-		        await launchFlowOperation;
-		        if (launchFlowOperation.Error != ReviewErrorCode.NoError)
-		        {
-			        Application.OpenURL("market://details?id=" + Application.identifier);
-			        UnityEngine.Debug.LogError(launchFlowOperation.Error.ToString());
-		        }
-	        }
+		private static ReviewManager m_ReviewManager;
+		public static async void ShowInAppReview()
+		{
+			m_ReviewManager = new ReviewManager();
+			var requestFlowOperation = m_ReviewManager.RequestReviewFlow();
+			await requestFlowOperation;
+			if (requestFlowOperation.Error != ReviewErrorCode.NoError)
+			{
+				Application.OpenURL("market://details?id=" + Application.identifier);
+				UnityEngine.Debug.LogError(requestFlowOperation.Error.ToString());
+				return;
+			}
+			var playReviewInfo = requestFlowOperation.GetResult();
+			var launchFlowOperation = m_ReviewManager.LaunchReviewFlow(playReviewInfo);
+			await launchFlowOperation;
+			if (launchFlowOperation.Error != ReviewErrorCode.NoError)
+			{
+				Application.OpenURL("market://details?id=" + Application.identifier);
+				UnityEngine.Debug.LogError(launchFlowOperation.Error.ToString());
+			}
+		}
+#else
+		public static void ShowInAppReview()
+		{
+	        Application.OpenURL("market://details?id=" + Application.identifier);
+		}
 #endif
-        }
 	}
 }
