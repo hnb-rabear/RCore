@@ -44,6 +44,10 @@ namespace RCore.Editor.SheetX
 				var sheet = workbook.GetSheetAt(i);
 				if (sheets.Exists(x => x.name == sheet.SheetName))
 					continue;
+#if SX_LITE
+				if (sheets.Count > 12)
+					continue;
+#endif
 				sheets.Add(new SheetPath()
 				{
 					name = sheet.SheetName,
@@ -82,7 +86,7 @@ namespace RCore.Editor.SheetX
 			return WorkbookFactory.Create(file);
 		}
 	}
-	
+
 	[Serializable]
 	public class GoogleSheetsPath : IComparable<GoogleSheetsPath>
 	{
@@ -92,6 +96,10 @@ namespace RCore.Editor.SheetX
 		public List<SheetPath> sheets = new();
 		public void AddSheet(string name)
 		{
+#if SX_LITE
+			if (sheets.Count > 12)
+				return;
+#endif
 			for (int i = 0; i < sheets.Count; i++)
 				if (sheets[i].name == name)
 					return;
@@ -111,7 +119,7 @@ namespace RCore.Editor.SheetX
 			return name.CompareTo(other.name);
 		}
 	}
-	
+
 	public class ConstantBuilder : IComparable<ConstantBuilder>
 	{
 		public string name;
@@ -124,42 +132,39 @@ namespace RCore.Editor.SheetX
 			return string.Compare(name, other.name, StringComparison.Ordinal);
 		}
 	}
-	
+
 	public class LocalizationBuilder
 	{
 		public List<string> idsString = new();
 		public Dictionary<string, List<string>> languageTextDict = new();
 	}
-	
+
 	public class FieldValueType
 	{
 		public string name;
 		public string type;
-
 		public FieldValueType(string name)
 		{
 			this.name = name;
 		}
-
 		public FieldValueType(string name, string type)
 		{
 			this.name = name;
 			this.type = type;
 		}
 	}
-	
+
 	public class ID
 	{
 		public string Key { get; set; }
 		public int Value { get; set; }
-
 		public ID(string key, int value)
 		{
 			Key = key;
 			Value = value;
 		}
 	}
-	
+
 	/// <summary>
 	/// Define field name and value type
 	/// </summary>
@@ -168,7 +173,7 @@ namespace RCore.Editor.SheetX
 		public List<string> fieldNames = new();
 		public List<string> fieldValues = new();
 	}
-	
+
 	[Serializable]
 	public class Att
 	{
@@ -202,7 +207,7 @@ namespace RCore.Editor.SheetX
 			if (maxes != null) list.Add($"\"maxes\":{JsonConvert.SerializeObject(maxes)}");
 			if (unlocks != null) list.Add($"\"unlocks\":{JsonConvert.SerializeObject(unlocks)}");
 			return "{" + string.Join(",", list.ToArray()) + "}";
-			
+
 			// Json IDs Constants Localization
 			// JICL For Unity
 		}

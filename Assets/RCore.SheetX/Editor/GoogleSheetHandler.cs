@@ -1484,7 +1484,7 @@ namespace RCore.Editor.SheetX
 			});
 			return m_service;
 		}
-
+#if !SX_LITE
 		public void ExportExcelsAll()
 		{
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
@@ -1682,5 +1682,6 @@ namespace RCore.Editor.SheetX
 
 			Debug.Log("Done!");
 		}
+#endif
 	}
 }

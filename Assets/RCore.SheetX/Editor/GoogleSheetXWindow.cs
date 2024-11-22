@@ -28,6 +28,9 @@ namespace RCore.Editor.SheetX
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
+#if SX_LITE
+			PageSingleFile();
+#else
 			var tab = EditorHelper.Tabs($"{nameof(GoogleSheetXWindow)}", "Export Google Spreadsheet", "Export Multi Google Spreadsheets");
 			switch (tab)
 			{
@@ -41,6 +44,7 @@ namespace RCore.Editor.SheetX
 					GUILayout.EndVertical();
 					break;
 			}
+#endif
 			GUILayout.EndScrollView();
 		}
 
@@ -109,6 +113,7 @@ namespace RCore.Editor.SheetX
 			GUILayout.EndHorizontal();
 		}
 
+#if !SX_LITE
 		private void PageMultiFiles()
 		{
 			GUILayout.BeginHorizontal();
@@ -169,7 +174,7 @@ namespace RCore.Editor.SheetX
 			{
 				if (GUI.Button(rect, "Ping"))
 				{
-					string url = $"https://docs.google.com/spreadsheets/d/{item.id}/edit"; 
+					string url = $"https://docs.google.com/spreadsheets/d/{item.id}/edit";
 					Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
 				}
 			});
@@ -197,6 +202,7 @@ namespace RCore.Editor.SheetX
 
 			return table;
 		}
+#endif
 
 		public static void ShowWindow()
 		{

@@ -311,7 +311,8 @@ namespace RCore.Editor.SheetX
 		public static bool IsValidJson(string strInput)
 		{
 			strInput = strInput.Trim();
-			if (strInput.StartsWith("{") && strInput.EndsWith("}") || //For object
+			if (strInput.StartsWith("{") && strInput.EndsWith("}")
+			    || //For object
 			    strInput.StartsWith("[") && strInput.EndsWith("]")) //For array
 			{
 				try
@@ -335,7 +336,6 @@ namespace RCore.Editor.SheetX
 
 		public static IEnumerable<ID> SortIDsByLength(IEnumerable<ID> list)
 		{
-			// Use LINQ to sort the array received and return a copy.
 			var sorted = from s in list
 				orderby s.Key.Length descending
 				select s;
@@ -528,8 +528,8 @@ namespace RCore.Editor.SheetX
 			}
 			return output;
 		}
-		
-				public static string GetSaveDirectory()
+
+		public static string GetSaveDirectory()
 		{
 			var path = Path.Combine(Application.dataPath, "Editor");
 			if (!Directory.Exists(path))
@@ -595,11 +595,7 @@ namespace RCore.Editor.SheetX
 				if (existedSheet != null)
 					sheetPath.selected = existedSheet.selected;
 				else
-					pGoogleSheetsPath.sheets.Add(new SheetPath()
-					{
-						name = sheetPath.name,
-						selected = true,
-					});
+					pGoogleSheetsPath.AddSheet(sheetPath.name);
 			}
 			pGoogleSheetsPath.name = spreadsheet.Properties.Title;
 		}
@@ -656,7 +652,7 @@ namespace RCore.Editor.SheetX
 				cellStr = cell.ToString();
 			return cellStr;
 		}
-		
+
 		public static string RemoveSpecialCharacters(this string str, string replace = "")
 		{
 			return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);

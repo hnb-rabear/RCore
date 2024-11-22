@@ -1416,6 +1416,7 @@ namespace RCore.Editor.SheetX
 			ExportLocalizations();
 		}
 
+#if !SX_LITE
 		public void ExportExcelsAll()
 		{
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
@@ -1593,6 +1594,7 @@ namespace RCore.Editor.SheetX
 
 			UnityEngine.Debug.Log("Done!");
 		}
+#endif
 
 		private bool CheckExistedId(string pKey)
 		{

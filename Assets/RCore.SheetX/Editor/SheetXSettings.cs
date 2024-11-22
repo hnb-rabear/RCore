@@ -32,8 +32,10 @@ namespace RCore.Editor.SheetX
 
 		public ExcelSheetsPath excelSheetsPath;
 		public GoogleSheetsPath googleSheetsPath;
+#if !SX_LITE
 		public List<ExcelSheetsPath> excelSheetsPaths;
 		public List<GoogleSheetsPath> googleSheetsPaths;
+#endif
 		public string jsonOutputFolder;
 		public string constantsOutputFolder;
 		public string localizationOutputFolder;
@@ -58,7 +60,7 @@ namespace RCore.Editor.SheetX
 			if (string.IsNullOrEmpty(googleSheetsPath.id))
 				googleSheetsPath.sheets.Clear();
 		}
-		
+
 		public static SheetXSettings Load()
 		{
 			var collection = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(SheetXSettings)) as SheetXSettings;
@@ -144,7 +146,7 @@ namespace RCore.Editor.SheetX
 			SheetXHelper.WriteFile(constantsOutputFolder, pExportFileName + ".cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
 		}
-
+#if !SX_LITE
 		public void AddExcelFileFile(string path)
 		{
 			if (!File.Exists(path))
@@ -162,7 +164,7 @@ namespace RCore.Editor.SheetX
 			newPath.Load();
 			excelSheetsPaths.Add(newPath);
 		}
-
+#endif
 		private string m_obfGoogleClientId;
 		public string ObfGoogleClientId
 		{

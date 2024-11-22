@@ -32,6 +32,9 @@ namespace RCore.Editor.SheetX
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
+#if SX_LITE
+			PageSingleFile();
+#else
 			var tab = EditorHelper.Tabs($"{nameof(ExcelSheetXWindow)}", "Export Excel Spreadsheet", "Export Multi Excel Spreadsheets");
 			switch (tab)
 			{
@@ -45,6 +48,7 @@ namespace RCore.Editor.SheetX
 					GUILayout.EndVertical();
 					break;
 			}
+#endif
 			GUILayout.EndScrollView();
 		}
 
@@ -135,6 +139,7 @@ namespace RCore.Editor.SheetX
 			GUILayout.EndHorizontal();
 		}
 
+#if !SX_LITE
 		private void PageMultiFiles()
 		{
 			GUILayout.BeginHorizontal();
@@ -246,6 +251,7 @@ namespace RCore.Editor.SheetX
 
 			return table;
 		}
+#endif
 
 		public static void ShowWindow()
 		{

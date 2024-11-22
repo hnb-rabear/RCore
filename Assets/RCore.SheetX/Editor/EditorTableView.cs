@@ -174,23 +174,24 @@ namespace RCore.Editor
 			    alwaysShowHorizontal: false,
 			    alwaysShowVertical: false
 			);
-			
-			for (int row = 0; row < data.Count; row++)
-			{
-				var rowRect = new Rect(0, rowHeight * row, rowWidth, rowHeight);
 
-				EditorGUI.DrawRect(rect: rowRect, color: row % 2 == 0 ? m_darkerColor : m_lighterColor);
-
-				for (int col = 0; col < m_columns.Length; col++)
+			if (data != null)
+				for (int row = 0; row < data.Count; row++)
 				{
-					if (m_multiColumnHeader.IsColumnVisible(col))
+					var rowRect = new Rect(0, rowHeight * row, rowWidth, rowHeight);
+
+					EditorGUI.DrawRect(rect: rowRect, color: row % 2 == 0 ? m_darkerColor : m_lighterColor);
+
+					for (int col = 0; col < m_columns.Length; col++)
 					{
-						int visibleColumnIndex = m_multiColumnHeader.GetVisibleColumnIndex(col);
-						var cellRect = m_multiColumnHeader.GetCellRect(visibleColumnIndex, rowRect);
-						m_columnDefs[col].onDraw(cellRect, data[row]);
+						if (m_multiColumnHeader.IsColumnVisible(col))
+						{
+							int visibleColumnIndex = m_multiColumnHeader.GetVisibleColumnIndex(col);
+							var cellRect = m_multiColumnHeader.GetCellRect(visibleColumnIndex, rowRect);
+							m_columnDefs[col].onDraw(cellRect, data[row]);
+						}
 					}
 				}
-			}
 
 			GUI.EndScrollView(handleScrollWheel: true);
 			
