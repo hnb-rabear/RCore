@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace RCore.UI
 {
-	public abstract class PanelController : PanelStack
+	public class PanelController : PanelStack
 	{
 		[Tooltip("Set True if this panel is prefab and rarely use in game")]
 		public bool useOnce;

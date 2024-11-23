@@ -197,7 +197,7 @@ namespace RCore.UI
 			OnRequestPanelPush(e.panelType, e.value);
 		}
 
-		protected abstract void OnRequestPanelPush(string panelTypeFullName, object eValue);
+		protected abstract void OnRequestPanelPush(string panelTypeFullName, object value);
 		
 		//======================================================
 
