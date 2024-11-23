@@ -1,6 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 #if UNITY_EDITOR
-using RCore.Editor;
 using UnityEditor;
 #endif
 using UnityEngine;
@@ -16,18 +17,16 @@ namespace RCore.UI
 
 		protected virtual void OnEnable()
 		{
-			EventDispatcher.AddListener<PushPanelToTopEvent>(OnPushPanelToTop);
-			EventDispatcher.AddListener<PushPanelEvent>(OnPushPanel);
-			EventDispatcher.AddListener<PushPanelToQueueEvent>(OnPushPanelToQueue);
+			EventDispatcher.AddListener<PushOuterPanelEvent>(OnPushOuterPanel);
 			EventDispatcher.AddListener<PushInterPanelEvent>(OnPushInterPanel);
+			EventDispatcher.AddListener<RequestPanelPushEvent>(OnRequestPanelPush);
 		}
 
 		protected virtual void OnDisable()
 		{
-			EventDispatcher.RemoveListener<PushPanelToTopEvent>(OnPushPanelToTop);
-			EventDispatcher.RemoveListener<PushPanelEvent>(OnPushPanel);
-			EventDispatcher.RemoveListener<PushPanelToQueueEvent>(OnPushPanelToQueue);
+			EventDispatcher.RemoveListener<PushOuterPanelEvent>(OnPushOuterPanel);
 			EventDispatcher.RemoveListener<PushInterPanelEvent>(OnPushInterPanel);
+			EventDispatcher.RemoveListener<RequestPanelPushEvent>(OnRequestPanelPush);
 		}
 
 		private void OnValidate()
@@ -138,29 +137,67 @@ namespace RCore.UI
 			return button;
 		}
 
-		protected void OnPushPanelToTop(PushPanelToTopEvent e)
+		private void OnPushOuterPanel(PushOuterPanelEvent e)
 		{
-			if (e.rootType != GetType().Name)
+			if (e.rootType != GetType().FullName)
 				return;
-			PushPanelToTop(ref e.panel);
+			switch (e.pushMode)
+			{
+				case PushMode.OnTop:
+					PushPanelToTop(ref e.panel);
+					break;
+				case PushMode.Replacement:
+					PushPanel(ref e.panel, e.keepCurrentAndReplace);
+					break;
+				case PushMode.Queued:
+					AddPanelToQueue(ref e.panel);
+					break;
+			}
+		}
+
+		private void OnPushInterPanel(PushInterPanelEvent e)
+		{
+			if (e.rootType != GetType().FullName)
+				return;
+			
+			var fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+			object panelInstance = null;
+
+			foreach (var field in fields)
+				if (field.FieldType.FullName == e.panelType)
+				{
+					panelInstance = field.GetValue(this);
+					break;
+				}
+
+			if (panelInstance != null && panelInstance is PanelController panelController)
+			{
+				switch (e.pushMode)
+				{
+					case PushMode.OnTop:
+						e.panel = PushPanelToTop(ref panelController);
+						break;
+					case PushMode.Replacement:
+						e.panel = PushPanel(ref panelController, e.keepCurrentAndReplace);
+						break;
+					case PushMode.Queued:
+						e.panel = AddPanelToQueue(ref panelController);
+						break;
+				}
+			}
+			else
+				Debug.LogError($"Property or field of type {e.panelType} not found in {GetType().Name}.");
 		}
 		
-		
-		private void OnPushPanel(PushPanelEvent e)
+		private void OnRequestPanelPush(RequestPanelPushEvent e)
 		{
-			if (e.rootType != GetType().Name)
+			if (e.rootType != GetType().FullName)
 				return;
-			PushPanel(ref e.panel, e.keepCurrentInStack);
+			OnRequestPanelPush(e.panelType, e.value);
 		}
-		
-		private void OnPushPanelToQueue(PushPanelToQueueEvent e)
-		{
-			if (e.rootType != GetType().Name)
-				return;
-			AddPanelToQueue(ref e.panel);
-		}
-		
-		protected abstract void OnPushInterPanel()
+
+		protected abstract void OnRequestPanelPush(string panelTypeFullName, object eValue);
 		
 		//======================================================
 
@@ -172,38 +209,59 @@ namespace RCore.UI
 	
 	//======================================================
 	
-	public class PushPanelToTopEvent : BaseEvent
+	/// <summary>
+	/// Example of dispatching an event:
+	/// EventDispatcher.Raise(new PushOuterPanelEvent(typeof(PanelHome), m_panelSettings));
+	/// </summary>
+	public class PushOuterPanelEvent : BaseEvent
 	{
 		public string rootType;
 		public PanelController panel;
-		public PushPanelToTopEvent(System.Type root, PanelController pPanel, object pValue = null)
+		public PanelStack.PushMode pushMode;
+		public bool keepCurrentAndReplace;
+		public PushOuterPanelEvent(Type root, PanelController pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
 		{
-			rootType = root.Name;
+			rootType = root.FullName;
 			panel = pPanel;
+			pushMode = pPushMode;
+			keepCurrentAndReplace = pKeepCurrentAndReplace;
 		}
 	}
-	
-	public class PushPanelEvent : PushPanelToTopEvent
-	{
-		public bool keepCurrentInStack;
-		public PushPanelEvent(System.Type root, PanelController pPanel, object pValue = null) : base(root, pPanel, pValue) { }
-	}
-	
-	public class PushPanelToQueueEvent : PushPanelToTopEvent
-	{
-		public PushPanelToQueueEvent(System.Type root, PanelController pPanel, object pValue = null) : base(root, pPanel, pValue) { }
-	}
 
+	/// <summary>
+	/// Example of dispatching an event:
+	/// EventDispatcher.Raise(new PushInterPanelEvent(typeof(PanelHome), typeof(PanelSettings)));
+	/// </summary>
 	public class PushInterPanelEvent : BaseEvent
 	{
 		public string rootType;
 		public string panelType;
-		public PanelStack.PushType pushType;
+		public PanelStack.PushMode pushMode;
 		public bool keepCurrentAndReplace;
-		public PushInterPanelEvent(System.Type root, System.Type pPanel)
+		public PanelController panel;
+		public PushInterPanelEvent(Type root, Type pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
 		{
-			rootType = root.Name;
-			panelType = pPanel.Name;
+			rootType = root.FullName;
+			panelType = pPanel.FullName;
+			pushMode = pPushMode;
+			keepCurrentAndReplace = pKeepCurrentAndReplace;
+		}
+	}
+
+	/// <summary>
+	/// Example of dispatching an event:
+	/// EventDispatcher.Raise(new RequestPanelPushEvent(typeof(PanelHome), typeof(PopupRewardChest), rewards));
+	/// </summary>
+	public class RequestPanelPushEvent : BaseEvent
+	{
+		public string rootType;
+		public string panelType;
+		public object value;
+		public RequestPanelPushEvent(Type root, Type pPanel, object pValue = null)
+		{
+			rootType = root.FullName;
+			panelType = pPanel.FullName;
+			value = pValue;
 		}
 	}
 }

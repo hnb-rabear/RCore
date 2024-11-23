@@ -13,7 +13,7 @@ namespace RCore.UI
 {
 	public abstract class PanelStack : MonoBehaviour
 	{
-		public enum PushType
+		public enum PushMode
 		{
 			OnTop,
 			Replacement,
