@@ -8,11 +8,27 @@ using UnityEngine.UI;
 
 namespace RCore.UI
 {
-	public class PanelRoot : PanelStack
+	public abstract class PanelRoot : PanelStack
 	{
 		[SerializeField] private Button m_dimmerOverlay;
 
 		private readonly List<PanelController> m_panelsInQueue = new List<PanelController>();
+
+		protected virtual void OnEnable()
+		{
+			EventDispatcher.AddListener<PushPanelToTopEvent>(OnPushPanelToTop);
+			EventDispatcher.AddListener<PushPanelEvent>(OnPushPanel);
+			EventDispatcher.AddListener<PushPanelToQueueEvent>(OnPushPanelToQueue);
+			EventDispatcher.AddListener<PushInterPanelEvent>(OnPushInterPanel);
+		}
+
+		protected virtual void OnDisable()
+		{
+			EventDispatcher.RemoveListener<PushPanelToTopEvent>(OnPushPanelToTop);
+			EventDispatcher.RemoveListener<PushPanelEvent>(OnPushPanel);
+			EventDispatcher.RemoveListener<PushPanelToQueueEvent>(OnPushPanelToQueue);
+			EventDispatcher.RemoveListener<PushInterPanelEvent>(OnPushInterPanel);
+		}
 
 		private void OnValidate()
 		{
@@ -122,11 +138,72 @@ namespace RCore.UI
 			return button;
 		}
 
+		protected void OnPushPanelToTop(PushPanelToTopEvent e)
+		{
+			if (e.rootType != GetType().Name)
+				return;
+			PushPanelToTop(ref e.panel);
+		}
+		
+		
+		private void OnPushPanel(PushPanelEvent e)
+		{
+			if (e.rootType != GetType().Name)
+				return;
+			PushPanel(ref e.panel, e.keepCurrentInStack);
+		}
+		
+		private void OnPushPanelToQueue(PushPanelToQueueEvent e)
+		{
+			if (e.rootType != GetType().Name)
+				return;
+			AddPanelToQueue(ref e.panel);
+		}
+		
+		protected abstract void OnPushInterPanel()
+		
 		//======================================================
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(PanelRoot), true)]
 		public class PanelRootEditor : PanelStackEditor { }
 #endif
+	}
+	
+	//======================================================
+	
+	public class PushPanelToTopEvent : BaseEvent
+	{
+		public string rootType;
+		public PanelController panel;
+		public PushPanelToTopEvent(System.Type root, PanelController pPanel, object pValue = null)
+		{
+			rootType = root.Name;
+			panel = pPanel;
+		}
+	}
+	
+	public class PushPanelEvent : PushPanelToTopEvent
+	{
+		public bool keepCurrentInStack;
+		public PushPanelEvent(System.Type root, PanelController pPanel, object pValue = null) : base(root, pPanel, pValue) { }
+	}
+	
+	public class PushPanelToQueueEvent : PushPanelToTopEvent
+	{
+		public PushPanelToQueueEvent(System.Type root, PanelController pPanel, object pValue = null) : base(root, pPanel, pValue) { }
+	}
+
+	public class PushInterPanelEvent : BaseEvent
+	{
+		public string rootType;
+		public string panelType;
+		public PanelStack.PushType pushType;
+		public bool keepCurrentAndReplace;
+		public PushInterPanelEvent(System.Type root, System.Type pPanel)
+		{
+			rootType = root.Name;
+			panelType = pPanel.Name;
+		}
 	}
 }

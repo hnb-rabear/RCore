@@ -1,5 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -124,7 +123,7 @@ namespace RCore
 			try
 			{
 				// Wait for the specified debounce period
-				await UniTask.Delay(TimeSpan.FromSeconds(pDeBounce), cancellationToken: cts.Token);
+				await Cysharp.Threading.Tasks.UniTask.Delay(TimeSpan.FromSeconds(pDeBounce), cancellationToken: cts.Token);
 
 				// Raise the event if not canceled
 				Raise(e);

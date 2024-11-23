@@ -10,7 +10,7 @@ namespace RCore.Data.JObject
 
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
-			var sessionData = collection.sessionData;
+			var sessionData = dataCollection.sessionData;
 			if (sessionData.firstActive == 0)
 				sessionData.firstActive = utcNowTimestamp;
 			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive).ToLocalTime();
@@ -35,7 +35,7 @@ namespace RCore.Data.JObject
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{
-			var sessionData = collection.sessionData;
+			var sessionData = dataCollection.sessionData;
 			if (!pause)
 			{
 				CheckNewDay();
@@ -44,7 +44,7 @@ namespace RCore.Data.JObject
 		}
 		public override void OnUpdate(float deltaTime)
 		{
-			var sessionData = collection.sessionData;
+			var sessionData = dataCollection.sessionData;
 			sessionData.activeTime += deltaTime;
 
 			if (secondsTillNextDay > 0)
@@ -56,7 +56,7 @@ namespace RCore.Data.JObject
 		}
 		public override void OnPreSave(int utcNowTimestamp)
 		{
-			var sessionData = collection.sessionData;
+			var sessionData = dataCollection.sessionData;
 			sessionData.lastActive = utcNowTimestamp;
 #if UNITY_ANDROID
 			string curVersion = $"{Application.version}.{RUtil.GetVersionCode()}";
@@ -69,7 +69,7 @@ namespace RCore.Data.JObject
 		}
 		private void CheckNewDay()
 		{
-			var sessionData = collection.sessionData;
+			var sessionData = dataCollection.sessionData;
 			var lastActive = TimeHelper.UnixTimestampToDateTime(sessionData.lastActive).ToLocalTime();
 			var now = TimeHelper.GetNow(false);
 			if ((now - lastActive).TotalDays > 1)
@@ -84,7 +84,7 @@ namespace RCore.Data.JObject
 		}
 		public void AddOneDay()
 		{
-			var sessionData = collection.sessionData;
+			var sessionData = dataCollection.sessionData;
 			sessionData.days++;
 			sessionData.daysStreak++;
 			sessionData.sessionsDaily = 1; // Reset daily sessions count

@@ -60,7 +60,7 @@ namespace RCore.Data.JObject
 			where TJObjectsCollection : JObjectsCollection
 		{
 			var newController = Activator.CreateInstance<THandler>();
-			newController.collection = this as TJObjectsCollection;
+			newController.dataCollection = this as TJObjectsCollection;
 
 			handlers.Add(newController);
 			return newController;

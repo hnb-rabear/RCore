@@ -11,8 +11,15 @@ using UnityEngine;
 
 namespace RCore.UI
 {
-	public class PanelStack : MonoBehaviour
+	public abstract class PanelStack : MonoBehaviour
 	{
+		public enum PushType
+		{
+			OnTop,
+			Replacement,
+			Queued,
+		}
+
 		internal Stack<PanelController> panelStack = new Stack<PanelController>();
 		internal PanelStack parentPanel;
 
