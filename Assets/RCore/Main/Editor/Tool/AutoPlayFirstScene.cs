@@ -8,11 +8,11 @@ namespace RCore.Editor.Tool
 	public class AutoPlayFirstScene
 	{
 		private static int m_PreviousSceneIndex;
-		private static EditorPrefsBool m_Active;
+		private static REditorPrefBool m_Active;
 
 		static AutoPlayFirstScene()
 		{
-			m_Active = new EditorPrefsBool(nameof(AutoPlayFirstScene), true);
+			m_Active = new REditorPrefBool(nameof(AutoPlayFirstScene), true);
 
 			EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 		}
@@ -39,16 +39,16 @@ namespace RCore.Editor.Tool
 			}
 		}
 
-		[MenuItem("RCore/Asset Database/Toggle Auto play first Scene")]
-		private static void ToggleAutoLoadScene()
+		[MenuItem(RMenu.R_TOOLS + "Toggle Auto play first Scene")]
+		private static void ToggleActive()
 		{
 			m_Active.Value = !m_Active.Value;
 		}
 
-		[MenuItem("RCore/Asset Database/Toggle Auto play first Scene", true)]
-		private static bool ToggleAutoLoadSceneValidate()
+		[MenuItem(RMenu.R_TOOLS + "Toggle Auto play first Scene", true)]
+		private static bool ToggleActiveValidate()
 		{
-			Menu.SetChecked("RCore/Asset Database/Toggle Always play first Scene", m_Active.Value);
+			Menu.SetChecked(RMenu.R_TOOLS + "Toggle Auto play first Scene", m_Active.Value);
 			return true;
 		}
 	}

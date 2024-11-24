@@ -111,6 +111,7 @@ namespace RCore.Editor.SheetX
 				if (ValidateExcelPath(m_settings.excelSheetsPath.path, out _))
 					m_settings.excelSheetsPath.Load();
 			}
+#if !SX_LOCALIZATION
 			if (EditorHelper.Button("Export All", pHeight: 40))
 			{
 				m_excelSheetHandler.ExportExcelAll();
@@ -128,6 +129,7 @@ namespace RCore.Editor.SheetX
 			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_excelSheetHandler.ExportJson();
+#endif
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 			{
 				m_excelSheetHandler.ExportLocalizations();
@@ -180,13 +182,13 @@ namespace RCore.Editor.SheetX
 					textColor = Color.gray
 				}
 			};
-			
+
 			table.AddColumn("Selected", 60, 60, (rect, item) =>
 			{
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
 			});
-			
+
 			table.AddColumn("Name", 100, 120, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;

@@ -27,6 +27,14 @@ namespace RCore.Editor
 		public const int GROUP_5 = 80;
 		public const int GROUP_6 = 100;
 
+		public const string GAMEOBJECT_R = "GameObject/RCore/";
+		public const string GAMEOBJECT_R_CREATE = "GameObject/RCore/Create/";
+		public const string GAMEOBJECT_R_UI = "GameObject/RCore/UI/";
+
+		public const string R_ASSETS = "Assets/RCore/";
+		public const string R_TOOLS = "RCore/Tools/";
+		public const string R_EXPLORER = "RCore/Explorer/";
+
 		private const string ALT = "&";
 		private const string SHIFT = "#";
 		private const string CTRL = "%";
@@ -47,19 +55,19 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem("Assets/RCore/Save Assets")]
-		[MenuItem("RCore/Asset Database/Save Assets " + SHIFT + "_1", priority = GROUP_2 + 1)]
+		[MenuItem(R_ASSETS + "Save Assets")]
+		[MenuItem("RCore/Save Assets " + SHIFT + "_1", priority = GROUP_2 + 1)]
 		private static void SaveAssets()
 		{
 			var objs = Selection.objects;
 			if (objs != null)
 				foreach (var obj in objs)
 					EditorUtility.SetDirty(obj);
-		
+
 			AssetDatabase.SaveAssets();
 		}
 
-		[MenuItem("RCore/Quick Scene Opener " + CTRL + "_" + ALT + "_k", priority = GROUP_2 + 5)]
+		[MenuItem("RCore/Quick Scene Opener " + CTRL + "_" + ALT + "_k", priority = GROUP_2 + 2)]
 		private static void OpenQuickSceneWindow()
 		{
 			QuickSceneWindow.ShowWindow();
@@ -76,7 +84,7 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem("RCore/Explorer/DataPath Folder", false, GROUP_5 + 81)]
+		[MenuItem(R_EXPLORER + "DataPath Folder", false, GROUP_5 + 81)]
 		private static void OpenDataPathFolder()
 		{
 			string path = Application.dataPath;
@@ -84,7 +92,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem("RCore/Explorer/StreamingAssets Folder", false, GROUP_5 + 82)]
+		[MenuItem(R_EXPLORER + "StreamingAssets Folder", false, GROUP_5 + 82)]
 		private static void OpenStreamingAssetsFolder()
 		{
 			string path = Application.streamingAssetsPath;
@@ -97,7 +105,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem("RCore/Explorer/PersistentData Folder", false, GROUP_5 + 83)]
+		[MenuItem(R_EXPLORER + "PersistentData Folder", false, GROUP_5 + 83)]
 		private static void OpenPersistentDataFolder()
 		{
 			string path = Application.persistentDataPath;
@@ -107,7 +115,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem("RCore/Explorer/UnityEditor Folder", false, GROUP_5 + 84)]
+		[MenuItem(R_EXPLORER + "UnityEditor Folder", false, GROUP_5 + 84)]
 		private static void OpenUnityEditorFolder()
 		{
 			string path = EditorApplication.applicationPath.Substring(0, EditorApplication.applicationPath.LastIndexOf("/"));
@@ -117,57 +125,39 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem("RCore/Tools/Tools Collection " + CTRL + "_" + ALT + "_/", priority = GROUP_6 + 1)]
+		[MenuItem(R_TOOLS + "Tools Collection " + CTRL + "_" + ALT + "_/", priority = GROUP_6 + 1)]
 		private static void OpenToolsCollectionWindow()
 		{
 			ToolsCollectionWindow.ShowWindow();
 		}
 
-		[MenuItem("RCore/Tools/Screenshot Taker", priority = GROUP_6 + 2)]
+		[MenuItem(R_TOOLS + "Screenshot Taker", priority = GROUP_6 + 2)]
 		public static void OpenScreenshotTaker()
 		{
 			ScreenshotTaker.ShowWindow();
 		}
 
-		[MenuItem("RCore/Tools/Find Component Reference", priority = GROUP_6 + 3)]
+		[MenuItem(R_TOOLS + "Find Component Reference", priority = GROUP_6 + 3)]
 		public static void OpenFindComponentReferenceWindow()
 		{
 			FindComponentReferenceWindow.ShowWindow();
 		}
 
-		[MenuItem("RCore/Tools/Find Objects", priority = GROUP_6 + 4)]
+		[MenuItem(R_TOOLS + "Find Objects", priority = GROUP_6 + 4)]
 		public static void OpenObjectsFinderWindow()
 		{
 			ObjectsFinderWindow.ShowWindow();
 		}
 
-		[MenuItem("RCore/Tools/Search And Replace Asset Toolkit", priority = GROUP_6 + 5)]
+		[MenuItem(R_TOOLS + "Find And Replace Assets", priority = GROUP_6 + 5)]
 		public static void OpenSearchAndReplaceAssetWindow()
 		{
-			SearchAndReplaceAssetWindow.ShowWindow();
+			FindAndReplaceAssetWindow.ShowWindow();
 		}
-
-		// [MenuItem("RCore/Tools/SheetX/Excel Sheets Exporter", priority = GROUP_6 + 6)]
-		// public static void OpenExcelSheetsExporter()
-		// {
-		// 	ExcelSheetXWindow.ShowWindow();
-		// }
-		//
-		// [MenuItem("RCore/Tools/SheetX/Google Sheets Exporter", priority = GROUP_6 + 6)]
-		// public static void OpenGoogleSheetsExporter()
-		// {
-		// 	GoogleSheetXWindow.ShowWindow();
-		// }
-		//
-		// [MenuItem("RCore/Tools/SheetX/Settings", priority = GROUP_6 + 6)]
-		// public static void OpenSheetXSettingsWindow()
-		// {
-		// 	SheetXSettingsWindow.ShowWindow();
-		// }
 
 		//==============================================
 
-		[MenuItem("GameObject/RCore/Group GameObjects", priority = GROUP_1 + 1)]
+		[MenuItem(GAMEOBJECT_R + "Group GameObjects", priority = GROUP_1 + 1)]
 		private static void GroupGameObjects()
 		{
 			var objs = Selection.gameObjects;
@@ -182,7 +172,7 @@ namespace RCore.Editor
 			}
 		}
 
-		[MenuItem("GameObject/RCore/Ungroup GameObjects", priority = GROUP_1 + 2)]
+		[MenuItem(GAMEOBJECT_R + "Ungroup GameObjects", priority = GROUP_1 + 2)]
 		private static void UngroupGameObjects()
 		{
 			var objs = Selection.gameObjects;
@@ -192,31 +182,30 @@ namespace RCore.Editor
 					objs[i].transform.SetParent(null);
 			}
 		}
-
-		//==============================================
-
-		[MenuItem("GameObject/RCore/Module/Create AudioManager", priority = GROUP_2 + 1)]
-		public static void AddAudioManager()
+		
+		[MenuItem(GAMEOBJECT_R + "Reorder SpriteRenderers")]
+		public static void ReorderSortingOfSpriteRenderers()
 		{
-			var audioManager = new GameObject("AudioManager");
-			audioManager.AddComponent<AudioManager>();
+			foreach (var target in Selection.gameObjects)
+			{
+				ComponentHelper.ReorderSortingOfSpriteRenderers(target.GetComponentsInChildren<SpriteRenderer>(true));
+				EditorUtility.SetDirty(target);
+			}
 		}
-
-		//==============================================
-
-		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
+		
+		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
 		public static void PerfectRatioImagesByWidth()
 		{
 			RUtil.PerfectRatioImagesByWidth(Selection.gameObjects);
 		}
 
-		[MenuItem("GameObject/RCore/UI/Perfect Image pixels per unit multiplier (H)", priority = GROUP_3 + 2)]
+		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (H)", priority = GROUP_3 + 2)]
 		public static void PerfectRatioImagesByHeight()
 		{
 			RUtil.PerfectRatioImagesByHeight(Selection.gameObjects);
 		}
 
-		[MenuItem("GameObject/RCore/UI/Perfect Image Size", priority = GROUP_3 + 3)]
+		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image Size", priority = GROUP_3 + 3)]
 		public static void SetImagesPerfectRatio()
 		{
 			foreach (var target in Selection.gameObjects)
@@ -227,31 +216,28 @@ namespace RCore.Editor
 			}
 		}
 
-		[MenuItem("GameObject/RCore/UI/Replace Text By TextMeshProUGUI")]
+		[MenuItem(GAMEOBJECT_R_UI + "Replace Text By TextMeshProUGUI")]
 		public static void ReplaceTextsByTextTMP()
 		{
 			EditorHelper.ReplaceTextsByTextTMP(Selection.gameObjects);
 		}
-
-		[MenuItem("GameObject/RCore/Reorder SpriteRenderers")]
-		public static void ReorderSortingOfSpriteRenderers()
+		
+		[MenuItem(GAMEOBJECT_R_CREATE + "AudioManager", priority = GROUP_2 + 1)]
+		public static void AddAudioManager()
 		{
-			foreach (var target in Selection.gameObjects)
-			{
-				ComponentHelper.ReorderSortingOfSpriteRenderers(target.GetComponentsInChildren<SpriteRenderer>(true));
-				EditorUtility.SetDirty(target);
-			}
+			var gameObject = new GameObject("AudioManager");
+			gameObject.AddComponent<AudioManager>();
 		}
-		
+
 		//==============================================
-		
-		[MenuItem("Assets/RCore/Refresh Assets in folder")]
+
+		[MenuItem(R_ASSETS + "Refresh Assets in folder")]
 		private static void RefreshAssetsInSelectedFolder()
 		{
 			EditorHelper.RefreshAssetsInSelectedFolder("t:GameObject t:ScriptableObject");
 		}
 
-		[MenuItem("Assets/RCore/Export Selected Folders to Unity Package")]
+		[MenuItem(R_ASSETS + "Export Selected Folders to Unity Package")]
 		private static void ExportSelectedFoldersToUnityPackage()
 		{
 			EditorHelper.ExportSelectedFoldersToUnityPackage();

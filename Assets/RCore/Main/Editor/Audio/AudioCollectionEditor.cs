@@ -12,10 +12,21 @@ namespace RCore.Editor.Audio
 	public class AudioCollectionEditor : UnityEditor.Editor
 	{
 		private AudioCollection m_audioCollection;
+		private REditorPrefString m_namespace;
+		private REditorPrefString m_musicsPath;
+		private REditorPrefString m_sfxsPath;
+		private REditorPrefString m_audioIdsPath;
 
 		private void OnEnable()
 		{
+			string assetPath = AssetDatabase.GetAssetPath(target);
+			string assetGUID = AssetDatabase.AssetPathToGUID(assetPath);
+
 			m_audioCollection = target as AudioCollection;
+			m_namespace = new REditorPrefString(assetGUID + nameof(m_namespace));
+			m_musicsPath = new REditorPrefString(assetGUID + nameof(m_musicsPath));
+			m_sfxsPath = new REditorPrefString(assetGUID + nameof(m_sfxsPath));
+			m_audioIdsPath = new REditorPrefString(assetGUID + nameof(m_audioIdsPath));
 		}
 
 		public override void OnInspectorGUI()
@@ -24,16 +35,15 @@ namespace RCore.Editor.Audio
 
 			EditorHelper.BoxVertical(() =>
 			{
-#if ODIN_INSPECTOR
-				m_audioCollection.m_MusicsPath = EditorHelper.FolderField(m_audioCollection.m_MusicsPath, "Musics Sources Path");
-				m_audioCollection.m_SfxsPath = EditorHelper.FolderField(m_audioCollection.m_SfxsPath, "SFX Sources Path");
-				m_audioCollection.m_AudioIdsPath = EditorHelper.FolderField(m_audioCollection.m_AudioIdsPath, "Audio Ids Export folder");
-#endif
+				m_musicsPath.Value = EditorHelper.FolderField(m_musicsPath.Value, "Musics Sources Path");
+				m_sfxsPath.Value = EditorHelper.FolderField(m_sfxsPath.Value, "SFX Sources Path");
+				m_audioIdsPath.Value = EditorHelper.FolderField(m_audioIdsPath.Value, "Audio Ids Export folder");
+
 				if (EditorHelper.Button("Build Audio IDs"))
 				{
-					if (!string.IsNullOrEmpty(m_audioCollection.m_MusicsPath))
+					if (!string.IsNullOrEmpty(m_musicsPath.Value))
 					{
-						string musicSourcePath = Application.dataPath + m_audioCollection.m_MusicsPath.Replace("Assets", "");
+						string musicSourcePath = Application.dataPath + m_musicsPath.Value.Replace("Assets", "");
 						var musicFiles = EditorHelper.GetObjects<AudioClip>(musicSourcePath, "t:AudioClip").ToArray();
 						foreach (var clip in musicFiles)
 						{
@@ -41,9 +51,9 @@ namespace RCore.Editor.Audio
 								m_audioCollection.musicClips.Add(clip, out m_audioCollection.musicClips);
 						}
 					}
-					if (!string.IsNullOrEmpty(m_audioCollection.m_SfxsPath))
+					if (!string.IsNullOrEmpty(m_sfxsPath.Value))
 					{
-						string sfxSourcePath = Application.dataPath + m_audioCollection.m_SfxsPath.Replace("Assets", "");
+						string sfxSourcePath = Application.dataPath + m_sfxsPath.Value.Replace("Assets", "");
 						var sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxSourcePath, "t:AudioClip").ToArray();
 						foreach (var clip in sfxFiles)
 						{
@@ -108,14 +118,14 @@ namespace RCore.Editor.Audio
 					}
 					exportedContent = exportedContent.Replace("<S_CONSTANT_INT_KEYS>", intKeys).Replace("<S_CONSTANT_STRING_KEYS>", stringKeys).Replace("<S_CONSTANTS_ENUM_KEYS>", enumKeys);
 
-					if (!string.IsNullOrEmpty(m_audioCollection.m_Namespace))
+					if (!string.IsNullOrEmpty(m_namespace.Value))
 					{
 						exportedContent = AddTabToEachLine(exportedContent);
-						exportedContent = $"namespace {m_audioCollection.m_Namespace}\n" + "{\n" + exportedContent + "\n}";
+						exportedContent = $"namespace {m_namespace.Value}\n" + "{\n" + exportedContent + "\n}";
 					}
 
 					//Write result
-					string exportConfigPath = Application.dataPath + m_audioCollection.m_AudioIdsPath.Replace("Assets", "");
+					string exportConfigPath = Application.dataPath + m_audioIdsPath.Value.Replace("Assets", "");
 					System.IO.File.WriteAllText(exportConfigPath + "/AudioIDs.cs", exportedContent);
 
 					if (EditorHelper.Button("Validate Asset Bundle Sounds"))

@@ -16,7 +16,21 @@ namespace RCore.Notification
 	public class NotificationsManager : MonoBehaviour
 	{
 		private static NotificationsManager m_Instance;
-		public static NotificationsManager Instance => m_Instance;
+		public static NotificationsManager Instance
+		{
+			get
+			{
+				if (m_Instance == null)
+					m_Instance = FindObjectOfType<NotificationsManager>();
+				if (m_Instance == null)
+				{
+					var gameObject = new GameObject("NotificationsManager");
+					m_Instance = gameObject.AddComponent<NotificationsManager>();
+					gameObject.hideFlags = HideFlags.DontSave;
+				}
+				return m_Instance;
+			}
+		}
 		
 		// Default filename for notifications serializer
 		private const string DEFAULT_FILENAME = "notifications.bin";

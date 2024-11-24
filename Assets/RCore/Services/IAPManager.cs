@@ -7,14 +7,27 @@ using UnityEngine.Purchasing.Security;
 
 namespace RCore.Service
 {
-	public struct IAPProduct
-	{
-		public string productId;
-		public ProductType productType;
-	}
-
 	public class IAPManager : MonoBehaviour, IDetailedStoreListener
 	{
+		private static IAPManager m_Instance;
+		public static IAPManager Instance
+		{
+			get
+			{
+				if (m_Instance == null)
+					m_Instance = FindObjectOfType<IAPManager>();
+				if (m_Instance == null)
+				{
+					var gameObject = new GameObject("NotificationsManager");
+					m_Instance = gameObject.AddComponent<IAPManager>();
+					gameObject.hideFlags = HideFlags.DontSave;
+				}
+				return m_Instance;
+			}
+		}
+		
+		[SerializeField] private SerializableDictionary<string, ProductType> m_products;
+		
 		private Action<Product> m_onPurchaseDeferred;
 		private Action<Product> m_onPurchaseFailed;
 		private Action<Product> m_onPurchaseSucceed;
@@ -28,7 +41,7 @@ namespace RCore.Service
 
 #region Init
 
-		public void Init(List<IAPProduct> pProducts, Action<bool> pCallback)
+		public void Init(Dictionary<string, ProductType> pProducts, Action<bool> pCallback)
 		{
 			if (m_initialized)
 				return;
@@ -39,7 +52,10 @@ namespace RCore.Service
 			var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
 			foreach (var product in pProducts)
-				builder.AddProduct(product.productId, product.productType);
+				m_products.TryAdd(product.Key, product.Value);
+			
+			foreach (var product in m_products)
+				builder.AddProduct(product.Key, product.Value);
 
 			if (Application.platform == RuntimePlatform.Android)
 			{

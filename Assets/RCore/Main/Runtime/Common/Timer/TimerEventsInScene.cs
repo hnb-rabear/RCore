@@ -9,18 +9,15 @@ namespace RCore
         {
             get
             {
-                if (m_Instance == null)
-                    CreatInstance();
+	            if (m_Instance == null)
+	            {
+		            var obj = new GameObject("TimerEventsInScene");
+		            m_Instance = obj.AddComponent<TimerEventsInScene>();
+		            obj.hideFlags = HideFlags.HideInHierarchy;
+	            }
 
                 return m_Instance;
             }
-        }
-
-        private static void CreatInstance()
-        {
-            var obj = new GameObject("TimerEventsInScene");
-            m_Instance = obj.AddComponent<TimerEventsInScene>();
-            obj.hideFlags = HideFlags.HideInHierarchy;
         }
     }
 }

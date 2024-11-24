@@ -12,7 +12,7 @@ namespace RCore.Editor
 	public class QuickSceneWindow : EditorWindow
 	{
 		private List<string> m_scenes;
-		private EditorPrefsString m_search;
+		private REditorPrefString m_search;
 		private Vector2 m_scrollPosition;
 
 		public static void ShowWindow()
@@ -22,7 +22,7 @@ namespace RCore.Editor
 
 		private void OnEnable()
 		{
-			m_search = new EditorPrefsString("QuickSceneWindowSearch");
+			m_search = new REditorPrefString(typeof(QuickSceneWindow).FullName);
 			m_scenes = GetAllScenesInProject();
 		}
 

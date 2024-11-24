@@ -16,16 +16,16 @@ namespace RCore
         private CountdownEventsGroup m_countdownEventsGroup = new CountdownEventsGroup();
         private ConditionEventsGroup m_conditionEventsGroup = new ConditionEventsGroup();
         private List<DelayableEvent> m_DelayableEvents = new List<DelayableEvent>();
-        private List<IUpdate> m_UpdateActions = new List<IUpdate>();
+        private List<IUpdate> m_updateActions = new List<IUpdate>();
         public Benchmark benchmark;
         private void Update()
         {
-            for (int i = m_UpdateActions.Count - 1; i >= 0; i--)
+            for (int i = m_updateActions.Count - 1; i >= 0; i--)
             {
-                var d = m_UpdateActions[i];
+                var d = m_updateActions[i];
                 d.Update(Time.deltaTime);
                 if (d.stop)
-                    m_UpdateActions.RemoveAt(i);
+                    m_updateActions.RemoveAt(i);
             }
         }
         private void LateUpdate()
@@ -45,7 +45,7 @@ namespace RCore
                     }
                 }
             }
-            enabled = !m_countdownEventsGroup.IsEmpty || !m_conditionEventsGroup.IsEmpty || m_UpdateActions.Count > 0 || m_DelayableEvents.Count > 0;
+            enabled = !m_countdownEventsGroup.IsEmpty || !m_conditionEventsGroup.IsEmpty || m_updateActions.Count > 0 || m_DelayableEvents.Count > 0;
         }
 
 #region Countdown Events
@@ -144,7 +144,7 @@ namespace RCore
 
         public void RemoveUpdate(IUpdate pUpdate)
         {
-            m_UpdateActions.Remove(pUpdate);
+            m_updateActions.Remove(pUpdate);
         }
         public void OnApplicationPause(bool pause)
         {
@@ -167,8 +167,8 @@ namespace RCore
         }
         public IUpdate AddUpdate(IUpdate pUpdater)
         {
-            if (!m_UpdateActions.Contains(pUpdater))
-                m_UpdateActions.Add(pUpdater);
+            if (!m_updateActions.Contains(pUpdater))
+                m_updateActions.Add(pUpdater);
             enabled = true;
             return pUpdater;
         }
@@ -177,7 +177,7 @@ namespace RCore
             m_countdownEventsGroup = new CountdownEventsGroup();
             m_conditionEventsGroup = new ConditionEventsGroup();
             m_DelayableEvents = new List<DelayableEvent>();
-            m_UpdateActions = new List<IUpdate>();
+            m_updateActions = new List<IUpdate>();
             enabled = false;
         }
 

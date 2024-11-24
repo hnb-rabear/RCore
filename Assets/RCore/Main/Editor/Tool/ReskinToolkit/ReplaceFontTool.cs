@@ -28,7 +28,7 @@ namespace RCore.Editor.Tool
 				label = "Add Targets And Replace",
 			};
 
-			if (EditorHelper.HeaderFoldout("Search And Replace Font", null, false, btn))
+			if (EditorHelper.HeaderFoldout("Find And Replace Font", null, false, btn))
 			{
 				EditorGUILayout.BeginVertical("box");
 				{
@@ -80,7 +80,7 @@ namespace RCore.Editor.Tool
 						EditorGUILayout.Separator();
 					}
 
-					if (EditorHelper.Button("Search and replace in Projects"))
+					if (EditorHelper.Button("Find And Replace in Projects"))
 					{
 						AssetDatabase.StartAssetEditing();
 
@@ -98,7 +98,7 @@ namespace RCore.Editor.Tool
 						AssetDatabase.Refresh();
 					}
 
-					if (EditorHelper.Button("Search and replace in Scene"))
+					if (EditorHelper.Button("Find And Replace in Scene"))
 					{
 						AssetDatabase.StartAssetEditing();
 

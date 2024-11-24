@@ -27,7 +27,7 @@ namespace RCore.Editor.Tool
 				label = "Add Targets And Replace",
 			};
 
-			if (EditorHelper.HeaderFoldout("Search And Replace Object", null, false, btn))
+			if (EditorHelper.HeaderFoldout("Find And Replace Object", null, false, btn))
 			{
 				EditorGUILayout.BeginVertical("box");
 				{
@@ -79,7 +79,7 @@ namespace RCore.Editor.Tool
 						EditorGUILayout.Separator();
 					}
 
-					if (EditorHelper.Button("Search and replace"))
+					if (EditorHelper.Button("Find And Replace"))
 					{
 						AssetDatabase.StartAssetEditing();
 
@@ -124,7 +124,7 @@ namespace RCore.Editor.Tool
 				label = "Add Targets And Replace",
 			};
 
-			if (EditorHelper.HeaderFoldout("Search And Replace Object", null, false, btn))
+			if (EditorHelper.HeaderFoldout("Find And Replace Object", null, false, btn))
 			{
 				EditorGUILayout.BeginVertical("box");
 				{
@@ -176,7 +176,7 @@ namespace RCore.Editor.Tool
 						EditorGUILayout.Separator();
 					}
 
-					if (EditorHelper.Button("Search and replace"))
+					if (EditorHelper.Button("Find And Replace"))
 					{
 						AssetDatabase.StartAssetEditing();
 

@@ -12,7 +12,7 @@ namespace RCore.Editor.Audio
 	public class SfxSourceEditor : UnityEditor.Editor
 	{
 		private AudioCollection m_tempAudioCollection;
-		private EditorPrefsString m_audioCollectionPath;
+		private REditorPrefString m_audioCollectionPath;
 		private SfxSource m_script;
 		private string m_search = "";
 		private UnityEngine.UI.Button m_button;
@@ -24,7 +24,7 @@ namespace RCore.Editor.Audio
 			m_script.mClips ??= Array.Empty<string>();
 
 			m_button = m_script.GetComponent<UnityEngine.UI.Button>();
-			m_audioCollectionPath = new EditorPrefsString($"{typeof(AudioCollection).FullName}");
+			m_audioCollectionPath = new REditorPrefString($"{typeof(AudioCollection).FullName}");
 
 			if (m_tempAudioCollection == null)
 			{

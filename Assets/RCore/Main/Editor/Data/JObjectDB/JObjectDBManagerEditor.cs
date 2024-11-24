@@ -8,11 +8,11 @@ namespace RCore.Editor.Data.JObject
 	[CustomEditor(typeof(JObjectDBManager<>), true)]
 	public class JObjectDBManagerEditor : UnityEditor.Editor
 	{
-		private SerializedProperty m_jObjectsCollection;
+		private SerializedProperty m_dataCollection;
 
 		private void OnEnable()
 		{
-			m_jObjectsCollection = serializedObject.FindProperty("m_jObjectsCollection");
+			m_dataCollection = serializedObject.FindProperty("m_dataCollection");
 		}
 
 		public override void OnInspectorGUI()
@@ -21,8 +21,8 @@ namespace RCore.Editor.Data.JObject
 
 			EditorGUILayout.Space(5);
 			
-			if (m_jObjectsCollection.objectReferenceValue == null)
-				EditorGUILayout.HelpBox("Create a ScriptableObject derived from JObjectsCollection and assign it to the m_jObjectsCollection field.", MessageType.Error);
+			if (m_dataCollection.objectReferenceValue == null)
+				EditorGUILayout.HelpBox("Create a ScriptableObject derived from JObjectsCollection and assign it to the m_dataCollection field.", MessageType.Error);
 
 			EditorHelper.BoxVertical("JObject DB", () =>
 			{

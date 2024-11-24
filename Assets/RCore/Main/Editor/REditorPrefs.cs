@@ -3,243 +3,414 @@
  **/
 
 using System;
-using System.Globalization;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
 namespace RCore.Editor
 {
-    public class REditorPrefs
-    {
-        protected string mainKey;
-        protected int subKey;
-
-        protected string Key => $"{mainKey}_{subKey}";
-
-        public REditorPrefs(int pMainKey, int pSubKey = 0)
+	[InitializeOnLoad]
+	public static class REditorPrefContainer
+	{
+		private static readonly List<REditorPref> m_REditorPrefs = new List<REditorPref>();
+		static REditorPrefContainer()
+		{
+			EditorApplication.update += SaveChanges;
+			EditorApplication.playModeStateChanged += _ =>
+			{
+				SaveChanges();
+			};
+		}
+		public static void DeleteAll()
+		{
+			for (int i = 0; i < m_REditorPrefs.Count; i++)
+				m_REditorPrefs[i].Delete();
+		}
+		public static void Register(REditorPref pChange)
         {
-            mainKey = $"{pMainKey}_{pSubKey}";
-        }
-
-        public REditorPrefs(string pMainKey, int pSubKey = 0)
-        {
-            mainKey = $"{pMainKey}_{pSubKey}";
-        }
-    }
-
-    public class EditorPrefsBool : REditorPrefs
-    {
-        private bool m_value;
-
-        public EditorPrefsBool(int pMainKey, bool pDefault = false, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetBool(Key, pDefault);
-        }
-
-        public EditorPrefsBool(string pMainKey, bool pDefault = false, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetBool(Key, pDefault);
-        }
-
-        public bool Value
-        {
-            get => m_value;
-            set
+            for (int i = 0; i < m_REditorPrefs.Count; i++)
             {
-                if (m_value != value)
+                if (m_REditorPrefs[i].key == pChange.key)
                 {
-                    m_value = value;
-                    EditorPrefs.SetBool(Key, value);
+                    m_REditorPrefs[i] = pChange;
+                    return;
                 }
             }
+            m_REditorPrefs.Add(pChange);
         }
+		public static void SaveChanges()
+		{
+			for (int i = 0; i < m_REditorPrefs.Count; i++)
+				m_REditorPrefs[i].SaveChange();
+		}
+	}
 
-        public override string ToString()
-        {
-            return m_value.ToString();
-        }
-    }
+	public abstract class REditorPref
+	{
+		public string key;
+		protected bool changed;
+		protected REditorPref(string pKey)
+		{
+			key = pKey;
+			changed = false;
+			REditorPrefContainer.Register(this);
+		}
+		public void Delete()
+		{
+			EditorPrefs.DeleteKey(key);
+		}
+		public abstract void SaveChange();
+	}
 
-    public class EditorPrefsString : REditorPrefs
-    {
-        private string m_value;
+	public class REditorPrefBool : REditorPref
+	{
+		private bool m_value;
+		public bool Value
+		{
+			get => m_value;
+			set
+			{
+				if (m_value == value)
+					return;
+				m_value = value;
+				changed = true;
+			}
+		}
+		public REditorPrefBool(string pKey, bool pDefault = false) : base(pKey)
+		{
+			m_value = EditorPrefs.GetInt(pKey, pDefault ? 1 : 0) == 1;
+		}
+		public override string ToString()
+		{
+			return m_value.ToString();
+		}
+		public override void SaveChange()
+		{
+			if (!changed)
+				return;
+			EditorPrefs.SetInt(key, m_value ? 1 : 0);
+			changed = false;
+		}
+	}
 
-        public EditorPrefsString(int pMainKey, string pDefault = "", int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetString(Key, pDefault);
-        }
+	public class REditorPrefInt : REditorPref
+	{
+		private int m_value;
+		public int Value
+		{
+			get => m_value;
+			set
+			{
+				if (m_value == value)
+					return;
+				m_value = value;
+				changed = true;
+			}
+		}
+		public REditorPrefInt(string pKey, int pDefault = 0) : base(pKey)
+		{
+			m_value = EditorPrefs.GetInt(pKey, pDefault);
+		}
+		public override string ToString()
+		{
+			return m_value.ToString();
+		}
+		public override void SaveChange()
+		{
+			if (!changed)
+				return;
+			EditorPrefs.SetInt(key, m_value);
+			changed = false;
+		}
+	}
 
-        public EditorPrefsString(string pMainKey, string pDefault = "", int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetString(Key, pDefault);
-        }
+	public class REditorPrefFloat : REditorPref
+	{
+		private float m_value;
+		public float Value
+		{
+			get => m_value;
+			set
+			{
+				if (m_value == value)
+					return;
+				m_value = value;
+				changed = true;
+			}
+		}
+		public REditorPrefFloat(string pKey, float pDefault = 0) : base(pKey)
+		{
+			m_value = EditorPrefs.GetFloat(pKey, pDefault);
+		}
+		public override string ToString()
+		{
+			return m_value.ToString();
+		}
+		public override void SaveChange()
+		{
+			if (!changed)
+				return;
+			EditorPrefs.SetFloat(key, m_value);
+			changed = false;
+		}
+	}
 
-        public string Value
-        {
-            get => m_value;
-            set
-            {
-                if (m_value != value)
-                {
-                    m_value = value;
-                    EditorPrefs.SetString(Key, value);
-                }
-            }
-        }
+    [Obsolete]
+	public class REditorPrefDateTime : REditorPref
+	{
+		private DateTime m_value;
+		public DateTime Value { get => m_value; set => m_value = value; }
+		public REditorPrefDateTime(string pKey, DateTime pDefault) : base(pKey)
+		{
+			m_value = pDefault;
 
-        public override string ToString()
-        {
-            return m_value;
-        }
-    }
+			string dateStr = EditorPrefs.GetString(key);
+			if (DateTime.TryParse(dateStr, out DateTime date))
+				m_value = date;
+		}
+		public override string ToString()
+		{
+			return m_value.ToString();
+		}
+		public override void SaveChange()
+		{
+			EditorPrefs.SetString(key, m_value.ToString());
+		}
+	}
 
-    public class EditorPrefsVector : REditorPrefs
-    {
-        private Vector3 m_value;
+	public class REditorPrefString : REditorPref
+	{
+		private string m_value;
+		public string Value
+		{
+			get => m_value;
+			set
+			{
+				if (m_value == value)
+					return;
+				m_value = value;
+				changed = true;
+			}
+		}
 
-        public EditorPrefsVector(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            float x = EditorPrefs.GetFloat($"{Key}x");
-            float y = EditorPrefs.GetFloat($"{Key}y");
-            float z = EditorPrefs.GetFloat($"{Key}z");
-            m_value = new Vector3(x, y, z);
-        }
+		public REditorPrefString(string pKey, string pDefault = "") : base(pKey)
+		{
+			m_value = EditorPrefs.GetString(pKey, pDefault);
+		}
+		public override string ToString()
+		{
+			return m_value;
+		}
+		public override void SaveChange()
+		{
+			if (!changed)
+				return;
+			EditorPrefs.SetString(key, m_value);
+			changed = false;
+		}
+	}
 
-        public EditorPrefsVector(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            float x = EditorPrefs.GetFloat($"{Key}x");
-            float y = EditorPrefs.GetFloat($"{Key}y");
-            float z = EditorPrefs.GetFloat($"{Key}z");
-            m_value = new Vector3(x, y, z);
-        }
+	public class REditorPrefList<T> : REditorPref
+	{
+		private List<T> m_values;
+		public REditorPrefList(string pKey, List<T> pDefaultValues = null) : base(pKey)
+		{
+			m_values = pDefaultValues;
 
-        public Vector3 Value
-        {
-            get => m_value;
-            set
-            {
-                if (m_value != value)
-                {
-                    m_value = value;
-                    EditorPrefs.SetFloat($"{Key}x", value.x);
-                    EditorPrefs.SetFloat($"{Key}y", value.y);
-                    EditorPrefs.SetFloat($"{Key}z", value.z);
-                }
-            }
-        }
+			if (EditorPrefs.HasKey(key))
+				m_values = JsonHelper.ToList<T>(EditorPrefs.GetString(key));
+		}
+		public List<T> Values
+		{
+			get => m_values;
+			set
+			{
+				m_values = value;
+				changed = true;
+			}
+		}
+		public T this[int index]
+		{
+			get => m_values[index];
+			set
+			{
+				m_values[index] = value;
+				changed = true;
+			}
+		}
+		public void Add(T pValue)
+		{
+			m_values.Add(pValue);
+			changed = true;
+		}
+		public void TryAdd(T pValue)
+		{
+			if (Contain(pValue))
+				return;
+			Add(pValue);
+			changed = true;
+		}
+		public void AddRange(params T[] pValues)
+		{
+			m_values.AddRange(pValues);
+			changed = true;
+		}
+		public void AddRange(List<T> pValues)
+		{
+			m_values.AddRange(pValues);
+			changed = true;
+		}
+		public void Remove(T pValue)
+		{
+			if (m_values.Remove(pValue))
+				changed = true;
+		}
+		public bool Contain(T value)
+		{
+			return m_values.Contains(value);
+		}
+		public void RemoveAt(int pIndex)
+		{
+			m_values.RemoveAt(pIndex);
+			changed = true;
+		}
+		public override void SaveChange()
+		{
+			if (m_values == null || m_values.Count == 0)
+			{
+				EditorPrefs.DeleteKey(key);
+				return;
+			}
+			if (!changed)
+				return;
+			EditorPrefs.SetString(key, JsonHelper.ToJson(m_values));
+			changed = false;
+		}
+		public void Clear()
+		{
+			m_values.Clear();
+			changed = true;
+		}
+	}
 
-        public override string ToString()
-        {
-            return m_value.ToString();
-        }
-    }
+	public class REditorPrefDict<TKey, TVal> : REditorPref
+	{
+		private Dictionary<TKey, TVal> m_values;
 
-    public class EditorPrefsEnum<T> : REditorPrefs
-    {
-        private T m_value;
+		public REditorPrefDict(string pKey, Dictionary<TKey, TVal> pDefaultValues = null) : base(pKey)
+		{
+			m_values = pDefaultValues;
 
-        public EditorPrefsEnum(int pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            string strValue = EditorPrefs.GetString(Key);
-            foreach (T item in Enum.GetValues(typeof(T)))
-                if (item.ToString() == strValue)
-                    m_value = item;
-        }
+			if (EditorPrefs.HasKey(key))
+				m_values = JsonConvert.DeserializeObject<Dictionary<TKey, TVal>>(EditorPrefs.GetString(key));
 
-        public EditorPrefsEnum(string pMainKey, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            string strValue = EditorPrefs.GetString(Key);
-            foreach (T item in Enum.GetValues(typeof(T)))
-                if (item.ToString() == strValue)
-                    m_value = item;
-        }
+			m_values ??= new Dictionary<TKey, TVal>();
+		}
 
-        public T Value
-        {
-            get => m_value;
-            set
-            {
-                if (!typeof(T).IsEnum)
-                    throw new ArgumentException("T must be an enumerated type");
-                var inputValue = value.ToString();
-                var strValue = m_value.ToString();
-                if (strValue != inputValue)
-                {
-                    m_value = value;
-                    EditorPrefs.SetString(Key, inputValue);
-                }
-            }
-        }
+		public Dictionary<TKey, TVal> Values { get => m_values; set => m_values = value; }
 
-        public override string ToString()
-        {
-            return m_value.ToString();
-        }
-    }
+		public TVal this[TKey index] { get => m_values[index]; set => m_values[index] = value; }
 
-    public class EditorPrefsFloat : REditorPrefs
-    {
-        private float m_value;
+		public void Add(TKey pKey, TVal pVal)
+		{
+			m_values[pKey] = pVal;
+			changed = true;
+		}
 
-        public EditorPrefsFloat(int pMainKey, float pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetFloat(Key, pDefault);
-        }
+		public void Remove(TKey pValue)
+		{
+			if (m_values.Remove(pValue))
+				changed = true;
+		}
 
-        public EditorPrefsFloat(string pMainKey, float pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetFloat(Key, pDefault);
-        }
+		public bool Contain(TKey value)
+		{
+			return m_values.ContainsKey(value);
+		}
 
-        public float Value
-        {
-            get => m_value;
-            set
-            {
-                if (m_value != value)
-                {
-                    m_value = value;
-                    EditorPrefs.SetFloat(Key, value);
-                }
-            }
-        }
+		public override void SaveChange()
+		{
+			if (m_values.Count == 0)
+			{
+				EditorPrefs.DeleteKey(key);
+				return;
+			}
+			if (!changed)
+				return;
+			EditorPrefs.SetString(key, JsonConvert.SerializeObject(m_values));
+			changed = false;
+		}
 
-        public override string ToString()
-        {
-            return m_value.ToString(CultureInfo.InvariantCulture);
-        }
-    }
+		public void Clear()
+		{
+			m_values.Clear();
+			changed = true;
+		}
+	}
+	
+	public class REditorPrefObject<T> : REditorPref
+	{
+		public T value;
+		public REditorPrefObject(string pKey, T pDefault) : base(pKey)
+		{
+			value = pDefault;
+			key = pKey;
 
-    public class EditorPrefsInt : REditorPrefs
-    {
-        private int m_value;
+			if (EditorPrefs.HasKey(key))
+			{
+				var val = EditorPrefs.GetString(key);
+				try
+				{
+					value = JsonConvert.DeserializeObject<T>(val);
+				}
+				catch
+				{
+					value = pDefault;
+				}
+			}
+		}
+		public override void SaveChange()
+		{
+			var json = JsonConvert.SerializeObject(value, new JsonSerializerSettings()
+			{
+				NullValueHandling = NullValueHandling.Ignore,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+			});
+			EditorPrefs.SetString(key, json);
+		}
+	}
 
-        public EditorPrefsInt(int pMainKey, int pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetInt(Key, pDefault);
-        }
+	public class REditorPrefSerializableObject<T> : REditorPref
+	{
+		public T value;
+        private bool m_encrypted;
+		public REditorPrefSerializableObject(string pKey, bool pEncrypted, T pDefault) : base(pKey)
+		{
+            m_encrypted = pEncrypted;
+			value = pDefault;
+			key = pEncrypted ? Encryption.Singleton.Encrypt(pKey) : pKey;
 
-        public EditorPrefsInt(string pMainKey, int pDefault = 0, int pSubKey = 0) : base(pMainKey, pSubKey)
-        {
-            m_value = EditorPrefs.GetInt(Key, pDefault);
-        }
-
-        public int Value
-        {
-            get => m_value;
-            set
-            {
-                if (m_value != value)
-                {
-                    m_value = value;
-                    EditorPrefs.SetInt(Key, value);
-                }
-            }
-        }
-
-        public override string ToString()
-        {
-            return m_value.ToString();
-        }
-    }
+			if (EditorPrefs.HasKey(key))
+			{
+				var val = EditorPrefs.GetString(key);
+				try
+				{
+					string content = pEncrypted ? Encryption.Singleton.Decrypt(val) : val;
+					value = JsonUtility.FromJson<T>(content);
+				}
+				catch
+				{
+					value = pDefault;
+				}
+			}
+		}
+		public override void SaveChange()
+		{
+            var json = JsonUtility.ToJson(value);
+            if (m_encrypted)
+                json = Encryption.Singleton.Encrypt(json);
+            EditorPrefs.SetString(key, json);
+		}
+	}
 }

@@ -156,7 +156,7 @@ namespace RCore.Editor.Tool
 						EditorHelper.CopyPivotAndBorder(input.spriteOriginal, input.spriteNew, true);
 				}
 			};
-			if (EditorHelper.HeaderFoldout("Search And Replace Sprites", null))
+			if (EditorHelper.HeaderFoldout("Find And Replace Sprites", null))
 			{
 				EditorGUILayout.BeginVertical("box");
 				{
@@ -531,7 +531,7 @@ namespace RCore.Editor.Tool
 					});
 
 					if (m_inputs.Count > 0)
-						if (EditorHelper.Button("Search and replace R by L"))
+						if (EditorHelper.Button("Find And Replace R by L"))
 						{
 							for (int i = 0; i < m_inputs.Count; i++)
 							{

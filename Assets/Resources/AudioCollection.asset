@@ -9,7 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bc051753de86a14c95f0eaa9b8a489b, type: 3}
-  m_Name: EnvsCollection
+  m_Script: {fileID: 11500000, guid: 98f3c254eb5dd8e4aa5ebabcb349ba1f, type: 3}
+  m_Name: AudioCollection
   m_EditorClassIdentifier: 
-  envs: []
+  sfxClips: []
+  musicClips: []
+  abSfxClips: []
+  abMusicClips: []

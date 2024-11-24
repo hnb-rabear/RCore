@@ -85,6 +85,7 @@ namespace RCore.Editor.SheetX
 			style.fixedWidth = position.width * 0.2f - 7;
 			style.fixedHeight = 250f;
 			EditorGUILayout.BeginVertical(style);
+#if !SX_LOCALIZATION
 			if (EditorHelper.Button("Export All", pHeight: 40))
 			{
 				m_googleSheetHandler.ExportAll();
@@ -102,6 +103,7 @@ namespace RCore.Editor.SheetX
 			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_googleSheetHandler.ExportJson();
+#endif
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 			{
 				m_googleSheetHandler.ExportLocalizations();

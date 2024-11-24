@@ -11,13 +11,6 @@ namespace RCore.Audio
     [CreateAssetMenu(fileName = "AudioCollection", menuName = "RCore/Audio Collection")]
     public class AudioCollection : ScriptableObject
     {
-#if UNITY_EDITOR
-	    [SerializeField] public string m_Namespace;
-	    [SerializeField, FolderPath] public string m_MusicsPath;
-	    [SerializeField, FolderPath] public string m_SfxsPath;
-	    [SerializeField, FolderPath] public string m_AudioIdsPath;
-#endif
-
         public AudioClip[] sfxClips;
         public AudioClip[] musicClips;
         public AssetReferenceT<AudioClip>[] abSfxClips;

@@ -17,22 +17,20 @@ namespace RCore.Editor.Tool
 		private static Dictionary<string, Color> m_Colors;
 		private static Dictionary<string, Color> m_Directories;
 		private static HashSet<string> m_ignoreGuids;
-		private static EditorPrefsBool m_Active;
+		private static REditorPrefBool m_Active;
 		private static Dictionary<string, string> m_PathCache = new Dictionary<string, string>();
 
-		// Menu item to toggle Active state
-		[MenuItem("RCore/Asset Database/Toggle Play Asset Delivery Filter")]
+		[MenuItem(RMenu.R_TOOLS + "Toggle Play Asset Delivery Filter")]
 		private static void ToggleActive()
 		{
-			m_Active.Value = !m_Active.Value;
 			Init(); // Reinitialize when toggled
+			m_Active.Value = !m_Active.Value;
 		}
 
-		// Menu item with a checkbox to display the active state
-		[MenuItem("RCore/Asset Database/Toggle Play Asset Delivery Filter", true)]
+		[MenuItem(RMenu.R_TOOLS + "Toggle Play Asset Delivery Filter", true)]
 		private static bool ToggleActiveValidate()
 		{
-			Menu.SetChecked("RCore/Asset Database/Toggle Play Asset Delivery Filter", m_Active.Value);
+			Menu.SetChecked(RMenu.R_TOOLS + "Toggle Play Asset Delivery Filter", m_Active.Value);
 			return true;
 		}
 
@@ -46,7 +44,7 @@ namespace RCore.Editor.Tool
 
 		private static void Init()
 		{
-			m_Active = new EditorPrefsBool(nameof(PlayAssetDeliveryFilter), true);
+			m_Active = new REditorPrefBool(nameof(PlayAssetDeliveryFilter), true);
 			m_ignoreGuids = new HashSet<string>();
 			m_Colors = new Dictionary<string, Color>();
 			m_Directories = new Dictionary<string, Color>();

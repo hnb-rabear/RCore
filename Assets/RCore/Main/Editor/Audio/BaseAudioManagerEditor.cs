@@ -8,13 +8,13 @@ namespace RCore.Editor.Audio
 	public class BaseAudioManagerEditor : UnityEditor.Editor
 	{
 		private BaseAudioManager m_script;
-		private EditorPrefsString m_audioCollectionPath;
+		private REditorPrefString m_audioCollectionPath;
 		private int m_sfxIndex;
 
 		protected virtual void OnEnable()
 		{
 			m_script = target as BaseAudioManager;
-			m_audioCollectionPath = new EditorPrefsString($"{typeof(AudioCollection).FullName}");
+			m_audioCollectionPath = new REditorPrefString($"{typeof(AudioCollection).FullName}");
 
 			if (m_script.audioCollection != null)
 				m_audioCollectionPath.Value = AssetDatabase.GetAssetPath(m_script.audioCollection);

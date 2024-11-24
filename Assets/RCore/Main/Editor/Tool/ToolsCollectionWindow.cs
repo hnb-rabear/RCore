@@ -746,10 +746,10 @@ namespace RCore.Editor.Tool
 
 #region Generator
 
-		private List<AnimationClip> m_AnimationClips;
-		private List<string> m_AnimationPaths;
-		private EditorPrefsString m_AnimationClipsPackScript;
-		private EditorPrefsString m_AnimationClipsPackPath;
+		private List<AnimationClip> m_animationClips;
+		private List<string> m_animationPaths;
+		private REditorPrefString m_animationClipsPackScript;
+		private REditorPrefString m_animationClipsPackPath;
 
 		private void DrawGenerators()
 		{
@@ -770,13 +770,13 @@ namespace RCore.Editor.Tool
 				
 				GUILayout.BeginVertical("box");
 
-				m_AnimationClipsPackScript = new EditorPrefsString("m_AnimationClipsPackScript");
-				m_AnimationClipsPackPath = new EditorPrefsString("m_AnimationClipsPackPath");
+				m_animationClipsPackScript = new REditorPrefString(nameof(m_animationClipsPackScript));
+				m_animationClipsPackPath = new REditorPrefString(nameof(m_animationClipsPackPath));
 
 				if (EditorHelper.Button("Scan"))
 				{
-					m_AnimationClips = new List<AnimationClip>();
-					m_AnimationPaths = new List<string>();
+					m_animationClips = new List<AnimationClip>();
+					m_animationPaths = new List<string>();
 
 					var objs = Selection.gameObjects;
 					for (int i = 0; i < objs.Length; i++)
@@ -788,27 +788,27 @@ namespace RCore.Editor.Tool
 							var clip = asset as AnimationClip;
 							if (clip != null)
 							{
-								m_AnimationClips.Add(clip);
-								m_AnimationPaths.Add(path);
+								m_animationClips.Add(clip);
+								m_animationPaths.Add(path);
 							}
 						}
 					}
 				}
 
-				if (m_AnimationClips != null && m_AnimationClips.Count > 0)
+				if (m_animationClips != null && m_animationClips.Count > 0)
 				{
-					for (int i = 0; i < m_AnimationClips.Count; i++)
+					for (int i = 0; i < m_animationClips.Count; i++)
 					{
-						var clip = m_AnimationClips[i];
+						var clip = m_animationClips[i];
 						EditorGUILayout.LabelField($"{i}: {clip.name} | {clip.length} | {clip.wrapMode} | {clip.isLooping}");
 					}
 
 					GUILayout.BeginHorizontal();
-					m_AnimationClipsPackScript.Value = EditorHelper.TextField(m_AnimationClipsPackScript.Value, "Script Name");
+					m_animationClipsPackScript.Value = EditorHelper.TextField(m_animationClipsPackScript.Value, "Script Name");
 
 					if (EditorHelper.Button("Generate Script"))
 					{
-						if (string.IsNullOrEmpty(m_AnimationClipsPackScript.Value))
+						if (string.IsNullOrEmpty(m_animationClipsPackScript.Value))
 							return;
 						
 						string fieldsName = "";
@@ -819,7 +819,7 @@ namespace RCore.Editor.Tool
 						string names = "";
 						string validateFields = "";
 						int i = 0;
-						foreach (var clip in m_AnimationClips)
+						foreach (var clip in m_animationClips)
 						{
 							string fieldName = clip.name.ToCapitalizeEachWord().Replace(" ", "").RemoveSpecialCharacters();
 							fieldsName += $"\tpublic AnimationClip {fieldName};\n";
@@ -827,7 +827,7 @@ namespace RCore.Editor.Tool
 							indexes += $"\tpublic const int {fieldName}_ID = {i};\n";
 							names += $"\tpublic const string {fieldName}_NAME = \"{clip.name}\";\n";
 							arrayElements += $"\t\t\t\t{fieldName},\n";
-							paths += $"\tprivate const string {fieldName}_PATH = \"{m_AnimationPaths[i]}\";\n";
+							paths += $"\tprivate const string {fieldName}_PATH = \"{m_animationPaths[i]}\";\n";
 							validateFields += $"\t\t\tif ({fieldName} == null) {fieldName} = RCore.Editor.EditorHelper.GetAnimationFromModel({fieldName}_PATH, {fieldName}_NAME);\n";
 							validateFields += $"\t\t\tif ({fieldName} == null) Debug.LogError(nameof({fieldName}) + \" is Null\");\n";
 							i++;
@@ -836,7 +836,7 @@ namespace RCore.Editor.Tool
 						enum_ += "\t}\n";
 						var generatedContent = Resources.Load<TextAsset>("AnimationsPackTemplate.txt").text;
 						generatedContent = generatedContent
-							.Replace("<class_name>", m_AnimationClipsPackScript.Value)
+							.Replace("<class_name>", m_animationClipsPackScript.Value)
 							.Replace("<enum_>", enum_)
 							.Replace("<const>", indexes)
 							.Replace("<fieldsName>", fieldsName)
@@ -847,7 +847,7 @@ namespace RCore.Editor.Tool
 
 						Debug.Log($"{generatedContent}");
 
-						m_AnimationClipsPackPath.Value = EditorHelper.SaveFilePanel(m_AnimationClipsPackPath.Value, m_AnimationClipsPackScript.Value, generatedContent, "cs");
+						m_animationClipsPackPath.Value = EditorHelper.SaveFilePanel(m_animationClipsPackPath.Value, m_animationClipsPackScript.Value, generatedContent, "cs");
 					}
 					
 					GUILayout.EndHorizontal();
