@@ -23,16 +23,16 @@ namespace RCore.Editor.Tool
 			switch (m_tab)
 			{
 				case "Replace Sprite":
-					m_findAndReplaceAssetToolkit.replaceSpriteTool.Draw();
+					m_findAndReplaceAssetToolkit.spriteReplacer.Draw();
 					break;
 				case "Cut Sprite Sheet":
-					m_findAndReplaceAssetToolkit.cutSpriteSheetTool.Draw();
+					m_findAndReplaceAssetToolkit.spriteSheetCutter.Draw();
 					break;
 				case "Update Image Property":
-					m_findAndReplaceAssetToolkit.updateImagePropertyTool.Draw();
+					m_findAndReplaceAssetToolkit.imagePropertyFixer.Draw();
 					break;
 				case "Replace Object":
-					m_findAndReplaceAssetToolkit.replaceObjectTool.Draw();
+					m_findAndReplaceAssetToolkit.objectReplacer.Draw();
 					break;
 			}
 			GUILayout.EndVertical();

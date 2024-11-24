@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 namespace RCore.Editor.Tool
 {
 	[Serializable]
-	public class ReplaceFontTool
+	public class FontReplacer
 	{
 		[Serializable]
 		public class Input

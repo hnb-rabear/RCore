@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Serialization;
 
 namespace RCore.Editor.Tool
 {
 	[Serializable]
-	public class CutSpriteSheetTool
+	public class SpriteSheetCutter
 	{
 		[SerializeField] private List<Texture2D> m_spriteSheets = new List<Texture2D>();
 		[SerializeField] private bool m_renameSprites;
@@ -15,7 +16,7 @@ namespace RCore.Editor.Tool
 		[SerializeField] private string m_stringRemovedInName;
 		[SerializeField] private string m_prefix;
 		[SerializeField] private string m_suffix;
-		[SerializeField] private bool m_RenameOrigin;
+		[SerializeField] private bool m_renameOrigin;
 		
 		public void Clear()
 		{
@@ -55,9 +56,9 @@ namespace RCore.Editor.Tool
 				m_stringRemovedInName = EditorHelper.TextField(m_stringRemovedInName, "String removed in name", 150);
 				m_prefix = EditorHelper.TextField(m_prefix, "Prefix in name", 150);
 				m_suffix = EditorHelper.TextField(m_suffix, "Suffix in name", 150);
-				m_RenameOrigin = EditorHelper.Toggle(m_RenameOrigin, "Rename originals", 150);
+				m_renameOrigin = EditorHelper.Toggle(m_renameOrigin, "Rename originals", 150);
 			}
-			bool renameOrigin = m_renameSprites && m_RenameOrigin;
+			bool renameOrigin = m_renameSprites && m_renameOrigin;
 			EditorHelper.DragDropBox<Texture2D>("Sprite sheet", objs =>
 			{
 				foreach (var obj in objs)

@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 namespace RCore.Editor.Tool
 {
 	[System.Serializable]
-	public class UpdateImagePropertyTool
+	public class ImagePropertyFixer
 	{
 		private bool m_displayIcon;
 		private List<Sprite> m_sprites = new List<Sprite>();
@@ -52,19 +52,19 @@ namespace RCore.Editor.Tool
 					}
 					else if (obj is GameObject)
 					{
-						var images = (obj as GameObject).GetComponentsInChildren<Image>();
+						var images = (obj as GameObject).GetComponentsInChildren<Image>(true);
 						foreach (var image in images)
 							if (!m_sprites.Contains(image.sprite))
 								m_sprites.Add(image.sprite);
-						// var spriteRenderers = (obj as GameObject).GetComponentsInChildren<SpriteRenderer>();
-						// foreach (var image in spriteRenderers)
-						//     if (!this.sprites.Contains(image.sprite))
-						//         this.sprites.Add(image.sprite);
+						var spriteRenderers = (obj as GameObject).GetComponentsInChildren<SpriteRenderer>(true);
+						foreach (var image in spriteRenderers)
+						    if (!m_sprites.Contains(image.sprite))
+						        m_sprites.Add(image.sprite);
 					}
 				}
 			});
 			m_displayIcon = EditorHelper.Toggle(m_displayIcon, "Display icon");
-			EditorHelper.PagesForList(m_sprites.Count, $"this.sprites", i =>
+			EditorHelper.PagesForList(m_sprites.Count, nameof(m_sprites), i =>
 			{
 				EditorGUILayout.BeginHorizontal();
 				{
@@ -90,7 +90,7 @@ namespace RCore.Editor.Tool
 				}
 			});
 			EditorGUILayout.HelpBox("If the searching sources is empty, the tool will scan all the objects in Assets folder", MessageType.Info);
-			EditorHelper.PagesForList(m_targets.Count, $"this.targets", i =>
+			EditorHelper.PagesForList(m_targets.Count, nameof(m_targets), i =>
 			{
 				EditorGUILayout.BeginHorizontal();
 				{
