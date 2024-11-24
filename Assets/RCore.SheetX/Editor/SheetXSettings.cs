@@ -127,6 +127,7 @@ namespace RCore.Editor.SheetX
 
 		public void CreateFileIDs(string exportFileName, string content)
 		{
+#if !SX_LOCALIZATION
 			string fileContent = Resources.Load<TextAsset>(SheetXConstants.IDS_CS_TEMPLATE).text;
 			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", exportFileName);
 			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", content);
@@ -134,10 +135,12 @@ namespace RCore.Editor.SheetX
 
 			SheetXHelper.WriteFile(constantsOutputFolder, $"{exportFileName}.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {exportFileName}.cs!");
+#endif
 		}
 
 		public void CreateFileConstants(string pContent, string pExportFileName)
 		{
+#if !SX_LOCALIZATION
 			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
 			fileContent = fileContent.Replace("_CONST_CLASS_NAME_", pExportFileName);
 			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
@@ -145,6 +148,7 @@ namespace RCore.Editor.SheetX
 
 			SheetXHelper.WriteFile(constantsOutputFolder, pExportFileName + ".cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
+#endif
 		}
 #if !SX_LITE
 		public void AddExcelFileFile(string path)

@@ -60,6 +60,7 @@ namespace RCore.Editor.SheetX
 
 		public void ExportIDs()
 		{
+#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -117,10 +118,12 @@ namespace RCore.Editor.SheetX
 					m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 				}
 			}
+#endif
 		}
 
 		private bool BuildContentOfFileIDs(string pSheetName, IList<IList<object>> rowsData)
 		{
+#if !SX_LOCALIZATION
 			if (rowsData == null || rowsData.Count == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
@@ -263,15 +266,16 @@ namespace RCore.Editor.SheetX
 			}
 			else
 				m_idsBuilderDict.Add(pSheetName, builder);
-
+#endif
 			return true;
 		}
 
 		private Dictionary<string, IList<IList<object>>> GetSheetIDsValues()
 		{
+			var ids = new Dictionary<string, IList<IList<object>>>();
+#if !SX_LOCALIZATION
 			var service = GetService();
 			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
-			var ids = new Dictionary<string, IList<IList<object>>>();
 			foreach (var sheet in m_settings.googleSheetsPath.sheets)
 			{
 				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
@@ -292,11 +296,13 @@ namespace RCore.Editor.SheetX
 				var values = response.Values;
 				ids[sheet.name] = values;
 			}
+#endif
 			return ids;
 		}
 
 		private void LoadSheetIDsValues(IList<IList<object>> rowsData, string pSheetName)
 		{
+#if !SX_LOCALIZATION
 			if (rowsData == null || rowsData.Count == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
@@ -327,10 +333,12 @@ namespace RCore.Editor.SheetX
 			}
 
 			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
+#endif
 		}
 
 		private int GetReferenceId(string pKey, out bool pFound)
 		{
+#if !SX_LOCALIZATION
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
 			{
 				m_allIDsSorted = m_allIds.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
@@ -351,15 +359,18 @@ namespace RCore.Editor.SheetX
 				}
 			}
 
+#endif
 			pFound = false;
 			return 0;
 		}
 
 		private bool CheckExistedId(string pKey)
 		{
+#if !SX_LOCALIZATION
 			foreach (var id in m_allIds)
 				if (id.Key == pKey.Trim())
 					return true;
+#endif
 			return false;
 		}
 
@@ -369,6 +380,7 @@ namespace RCore.Editor.SheetX
 
 		public void ExportConstants()
 		{
+#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -424,10 +436,12 @@ namespace RCore.Editor.SheetX
 				}
 				m_settings.CreateFileConstants(builder.ToString(), "Constants");
 			}
+#endif
 		}
 
 		private void LoadSheetConstantsData(string pSheetName, IList<IList<object>> rowsData)
 		{
+#if !SX_LOCALIZATION
 			if (rowsData == null || rowsData.Count == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
@@ -461,10 +475,12 @@ namespace RCore.Editor.SheetX
 			}
 			constants.Sort();
 			BuildContentOfFileConstants(constants, pSheetName);
+#endif
 		}
 
 		private void BuildContentOfFileConstants(List<ConstantBuilder> constants, string constantsSheet)
 		{
+#if !SX_LOCALIZATION
 			var constantsSB = new StringBuilder("");
 			for (int i = 0; i < constants.Count; i++)
 			{
@@ -571,6 +587,7 @@ namespace RCore.Editor.SheetX
 			else
 				m_constantsBuilderDict.Add(constantsSheet, new StringBuilder());
 			m_constantsBuilderDict[constantsSheet].Append(constantsSB);
+#endif
 		}
 
 #endregion
@@ -950,6 +967,7 @@ namespace RCore.Editor.SheetX
 
 		public void ExportJson()
 		{
+#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Json Output Folder!");
@@ -1017,18 +1035,23 @@ namespace RCore.Editor.SheetX
 				else
 					UnityEngine.Debug.Log($"Exported Json data to {mergedFileName}.txt.");
 			}
+#endif
 		}
 
 		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
 		{
+#if !SX_LOCALIZATION
 			var fieldValueTypes = SheetXHelper.GetFieldValueTypes(pValues);
 			if (fieldValueTypes == null)
 				return "{}";
 			return ConvertSheetToJson(pValues, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
+#endif
+			return "{}";
 		}
 
 		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
+#if !SX_LOCALIZATION
 			var unminifiedFields = m_settings.GetPersistentFields();
 
 			if (pValues == null || pValues.Count == 0)
@@ -1456,6 +1479,8 @@ namespace RCore.Editor.SheetX
 					UnityEngine.Debug.Log($"Exported Json data to {pOutputFile}.txt.");
 			}
 			return finalContent;
+#endif
+			return "{}";
 		}
 
 #endregion
@@ -1484,9 +1509,10 @@ namespace RCore.Editor.SheetX
 			});
 			return m_service;
 		}
-#if !SX_LITE
+		
 		public void ExportExcelsAll()
 		{
+#if !SX_LITE
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
@@ -1681,7 +1707,7 @@ namespace RCore.Editor.SheetX
 			CreateLocalizationsManagerFile();
 
 			Debug.Log("Done!");
-		}
 #endif
+		}
 	}
 }

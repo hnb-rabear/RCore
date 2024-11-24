@@ -215,7 +215,7 @@ namespace RCore.Service
 				if (pd.storeSpecificIds != null && pd.storeSpecificIds.Length > 0)
 				{
 					// Add store-specific id if any
-					var storeIDs = new IDs();
+					var storeIDs = new UnityEngine.Purchasing.IDs();
 
 					foreach (var sId in pd.storeSpecificIds)
 					{
