@@ -17,14 +17,14 @@ namespace RCore.UI
 
 		protected virtual void OnEnable()
 		{
-			EventDispatcher.AddListener<PushPanelEvent>(OnPushPanel);
-			EventDispatcher.AddListener<RequestPanelPushEvent>(OnRequestPanelPush);
+			EventDispatcher.AddListener<PushPanelEvent>(PushPanelHandler);
+			EventDispatcher.AddListener<RequestPanelEvent>(RequestPanelHandler);
 		}
 
 		protected virtual void OnDisable()
 		{
-			EventDispatcher.RemoveListener<PushPanelEvent>(OnPushPanel);
-			EventDispatcher.RemoveListener<RequestPanelPushEvent>(OnRequestPanelPush);
+			EventDispatcher.RemoveListener<PushPanelEvent>(PushPanelHandler);
+			EventDispatcher.RemoveListener<RequestPanelEvent>(RequestPanelHandler);
 		}
 
 		private void OnValidate()
@@ -135,7 +135,7 @@ namespace RCore.UI
 			return button;
 		}
 
-		private void OnPushPanel(PushPanelEvent e)
+		private void PushPanelHandler(PushPanelEvent e)
 		{
 			if (e.rootType != GetType().FullName)
 				return;
@@ -187,14 +187,35 @@ namespace RCore.UI
 			}
 		}
 		
-		private void OnRequestPanelPush(RequestPanelPushEvent e)
+		private void RequestPanelHandler(RequestPanelEvent e)
 		{
 			if (e.rootType != GetType().FullName)
 				return;
-			OnRequestPanelPush(e.panelType, e.value);
+			OnReceivedPanelRequest(e.panelType, e.value);
 		}
 
-		protected abstract void OnRequestPanelPush(string panelTypeFullName, object value);
+		protected abstract void OnReceivedPanelRequest(string panelTypeFullName, object value);
+
+		//======================================================
+		
+		public static T PushOuterPanel<T>(Type root, T pPanel, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true) where T : PanelController
+		{
+			var @event = new PushPanelEvent(root, pPanel, pPushMode, pKeepCurrentAndReplace);
+			EventDispatcher.Raise(@event);
+			return @event.panel as T;
+		}
+		
+		public static T PushInternalPanel<T>(Type root, Type pPanel, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true) where T : PanelController
+		{
+			var @event = new PushPanelEvent(root, pPanel, pPushMode, pKeepCurrentAndReplace);
+			EventDispatcher.Raise(@event);
+			return @event.panel as T;
+		}
+
+		public static void RequestPanel(Type root, Type panel, object value)
+		{
+			EventDispatcher.Raise(new RequestPanelEvent(root, panel, value));
+		}
 		
 		//======================================================
 
@@ -206,11 +227,7 @@ namespace RCore.UI
 	
 	//======================================================
 	
-	/// <summary>
-	/// Example of dispatching an event:
-	/// EventDispatcher.Raise(new PushOuterPanelEvent(typeof(PanelHome), m_panelSettings));
-	/// </summary>
-	public class PushPanelEvent : BaseEvent
+	internal class PushPanelEvent : BaseEvent
 	{
 		public string rootType;
 		public string panelType;
@@ -232,17 +249,13 @@ namespace RCore.UI
 			keepCurrentAndReplace = pKeepCurrentAndReplace;
 		}
 	}
-
-	/// <summary>
-	/// Example of dispatching an event:
-	/// EventDispatcher.Raise(new RequestPanelPushEvent(typeof(PanelHome), typeof(PopupRewardChest), rewards));
-	/// </summary>
-	public class RequestPanelPushEvent : BaseEvent
+	
+	internal class RequestPanelEvent : BaseEvent
 	{
 		public string rootType;
 		public string panelType;
 		public object value;
-		public RequestPanelPushEvent(Type root, Type pPanel, object pValue = null)
+		public RequestPanelEvent(Type root, Type pPanel, object pValue = null)
 		{
 			rootType = root.FullName;
 			panelType = pPanel.FullName;
