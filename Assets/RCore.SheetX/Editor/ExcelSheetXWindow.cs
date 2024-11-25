@@ -17,7 +17,7 @@ namespace RCore.Editor.SheetX
 	public class ExcelSheetXWindow
 	{
 		public EditorWindow editorWindow;
-		
+
 		private SheetXSettings m_settings;
 		private ExcelSheetHandler m_excelSheetHandler;
 		private EditorTableView<SheetPath> m_tableSheets;
@@ -34,7 +34,10 @@ namespace RCore.Editor.SheetX
 		{
 #if SX_LITE
 			PageSingleFile();
+#elif SX_LOCALIZATION
+			PageMultiFiles();
 #else
+			EditorHelper.DrawLine();
 			var tab = EditorHelper.Tabs($"{nameof(ExcelSheetXWindow)}", "Export Single File", "Export Multi Files");
 			switch (tab)
 			{

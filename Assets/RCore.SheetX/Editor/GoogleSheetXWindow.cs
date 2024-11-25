@@ -30,7 +30,10 @@ namespace RCore.Editor.SheetX
 		{
 #if SX_LITE
 			PageSingleFile();
+#elif SX_LOCALIZATION
+			PageMultiFiles();
 #else
+			EditorHelper.DrawLine();
 			var tab = EditorHelper.Tabs($"{nameof(GoogleSheetXWindow)}", "Export Single File", "Export Multi Files");
 			switch (tab)
 			{

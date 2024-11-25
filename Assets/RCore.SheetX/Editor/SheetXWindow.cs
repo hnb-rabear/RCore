@@ -34,14 +34,12 @@ namespace RCore.Editor.SheetX
 			switch (tab)
 			{
 				case "Excel Spreadsheets":
-					EditorHelper.DrawLine();
 					m_excelSheetXWindow.OnGUI();
 					break;
 				case "Settings":
 					m_settingsWindow.OnGUI();
 					break;
 				case "Google Spreadsheets":
-					EditorHelper.DrawLine();
 					m_googleSheetXWindow.OnGUI();
 					break;
 			}

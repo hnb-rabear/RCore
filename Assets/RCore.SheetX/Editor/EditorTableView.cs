@@ -1,6 +1,5 @@
 /***
- * Copyright (c) 2024 Red Games
- * https://github.com/redclock/SimpleEditorTableView
+ * This is modification of https://github.com/redclock/SimpleEditorTableView
  */
 
 using System;
@@ -72,17 +71,11 @@ namespace RCore.Editor
 		}
 
 		private readonly List<ColumnDef> m_columnDefs = new List<ColumnDef>();
-		
+
 		public EditorTableView(EditorWindow pWindow, string header = null)
 		{
 			m_editorWindow = pWindow;
 			m_header = header;
-		}
-
-		public void ClearColumns()
-		{
-			m_columnDefs.Clear();
-			m_columnResized = true;
 		}
 
 		public ColumnDef AddColumn(string title, int minWidth, int maxWidth, DrawItem onDrawItem)
@@ -94,7 +87,8 @@ namespace RCore.Editor
 					allowToggleVisibility = false,
 					autoResize = true,
 					minWidth = minWidth,
-					maxWidth = maxWidth > 0 ? maxWidth : 1000000f,
+					maxWidth = maxWidth > 0 ? maxWidth : 1000f,
+					width = minWidth, // Initialize width with minWidth
 					canSort = false,
 					sortingArrowAlignment = TextAlignment.Right,
 					headerContent = new GUIContent(title),
@@ -110,15 +104,50 @@ namespace RCore.Editor
 
 		private void ReBuild()
 		{
-			m_columns = m_columnDefs.Select((def) => def.column).ToArray();
+			m_columns = m_columnDefs.Select(def => def.column).ToArray();
 			m_multiColumnHeaderState = new MultiColumnHeaderState(m_columns);
 			m_multiColumnHeader = new MultiColumnHeader(m_multiColumnHeaderState);
-			m_multiColumnHeader.visibleColumnsChanged += (multiColumnHeader) => multiColumnHeader.ResizeToFit();
-			m_multiColumnHeader.sortingChanged += (multiColumnHeader) => m_sortingDirty = true;
+			m_multiColumnHeader.visibleColumnsChanged += multiColumnHeader => multiColumnHeader.ResizeToFit();
+			m_multiColumnHeader.sortingChanged += multiColumnHeader => m_sortingDirty = true;
+			AdjustColumnWidths();
 			m_multiColumnHeader.ResizeToFit();
 			m_columnResized = false;
 		}
 
+		private void AdjustColumnWidths()
+		{
+			// Calculate total minimum width required
+			float totalMinWidth = m_columns.Sum(c => c.minWidth);
+			float availableWidth = m_editorWindow.position.width;
+
+			// Ensure total width doesn't exceed window width
+			if (totalMinWidth > availableWidth)
+			{
+				// If total minimum width exceeds available width, set widths to minimum values
+				foreach (var column in m_columns)
+				{
+					column.width = column.minWidth;
+				}
+			}
+			else
+			{
+				// Distribute the available width proportionally
+				float extraWidth = availableWidth - totalMinWidth;
+				foreach (var column in m_columns)
+				{
+					if (column.maxWidth == 1000f)
+					{
+						column.width = column.minWidth + (extraWidth / m_columns.Count(c => c.maxWidth == 1000f));
+					}
+					else
+					{
+						column.width = column.minWidth;
+					}
+				}
+			}
+		}
+
+		private GUIStyle m_headerStyle;
 		public void DrawOnGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
 		{
 			if (m_multiColumnHeader == null || m_columnResized)
@@ -133,25 +162,42 @@ namespace RCore.Editor
 				_viewWidth = viewWidthFillRatio * m_editorWindow.position.width - 7;
 			if (viewHeightFillRatio > 0 && viewHeightFillRatio < 1 && m_editorWindow.position.height > 0)
 				_viewHeight = viewHeightFillRatio * m_editorWindow.position.height;
-			
+
 			if (_viewWidth > 0) style.fixedWidth = _viewWidth;
 			if (_viewHeight > 0) style.fixedHeight = _viewHeight;
 			if (_viewWidth > 0 || _viewHeight > 0)
 				EditorGUILayout.BeginVertical(style);
-			
+
 			if (!string.IsNullOrEmpty(m_header))
 			{
-				var headerStyle = new GUIStyle(EditorStyles.boldLabel)
+				m_headerStyle ??= new GUIStyle(EditorStyles.boldLabel)
 				{
 					alignment = TextAnchor.MiddleCenter,
-					margin = new RectOffset(0, 0, 0, 0),
-					fontSize = 15,
+					fontSize = 16,
 					fontStyle = FontStyle.Bold,
-					padding = new RectOffset(0, 0, 3, 3)
+					padding = new RectOffset(10, 10, 5, 5),
+					normal = new GUIStyleState
+					{
+						textColor = EditorGUIUtility.isProSkin ? Color.white : Color.black,
+						background = CreateTexture(1, 1, EditorGUIUtility.isProSkin ? new Color(0.25f, 0.25f, 0.25f) : new Color(0.9f, 0.9f, 0.9f))
+					}
 				};
-				GUILayout.Label(m_header, headerStyle);
+				GUILayout.Label(m_header, m_headerStyle);
 			}
-			
+
+			Texture2D CreateTexture(int width, int height, Color color)
+			{
+				var pixels = new Color[width * height];
+				for (int i = 0; i < pixels.Length; i++)
+				{
+					pixels[i] = color;
+				}
+				var texture = new Texture2D(width, height);
+				texture.SetPixels(pixels);
+				texture.Apply();
+				return texture;
+			}
+
 			float rowWidth = m_multiColumnHeaderState.widthOfAllVisibleColumns;
 			if (rowHeight < 0)
 				rowHeight = EditorGUIUtility.singleLineHeight;
@@ -168,11 +214,11 @@ namespace RCore.Editor
 			var viewRect = new Rect(0, 0, sumWidth, sumHeight);
 
 			m_scrollPosition = GUI.BeginScrollView(
-			    position: scrollViewPos,
-			    scrollPosition: m_scrollPosition,
-			    viewRect: viewRect,
-			    alwaysShowHorizontal: false,
-			    alwaysShowVertical: false
+				position: scrollViewPos,
+				scrollPosition: m_scrollPosition,
+				viewRect: viewRect,
+				alwaysShowHorizontal: false,
+				alwaysShowVertical: false
 			);
 
 			if (data != null)
@@ -194,7 +240,7 @@ namespace RCore.Editor
 				}
 
 			GUI.EndScrollView(handleScrollWheel: true);
-			
+
 			if (_viewWidth > 0 || _viewHeight > 0)
 				EditorGUILayout.EndVertical();
 		}

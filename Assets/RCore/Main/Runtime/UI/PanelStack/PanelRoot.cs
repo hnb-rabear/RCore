@@ -191,10 +191,10 @@ namespace RCore.UI
 		{
 			if (e.rootType != GetType().FullName)
 				return;
-			OnReceivedPanelRequest(e.panelType, e.value);
+			e.panel = OnReceivedPanelRequest(e.panelType, e.value);
 		}
 
-		protected abstract void OnReceivedPanelRequest(string panelTypeFullName, object value);
+		protected abstract PanelController OnReceivedPanelRequest(string panelTypeFullName, object value);
 
 		//======================================================
 		
@@ -212,9 +212,11 @@ namespace RCore.UI
 			return @event.panel as T;
 		}
 
-		public static void RequestPanel(Type root, Type panel, object value)
+		public static T RequestPanel<T>(Type root, Type panel, object value) where T : PanelController
 		{
-			EventDispatcher.Raise(new RequestPanelEvent(root, panel, value));
+			var @event = new RequestPanelEvent(root, panel, value);
+			EventDispatcher.Raise(@event);
+			return @event.panel as T;
 		}
 		
 		//======================================================
@@ -255,6 +257,7 @@ namespace RCore.UI
 		public string rootType;
 		public string panelType;
 		public object value;
+		public PanelController panel;
 		public RequestPanelEvent(Type root, Type pPanel, object pValue = null)
 		{
 			rootType = root.FullName;
