@@ -104,7 +104,7 @@ namespace RCore.Editor.SheetX
 			combineJson = false;
 			onlyEnumAsIDs = false;
 			encryptJson = false;
-			langCharSets = "japan, korean, chinese";
+			langCharSets = "jp, ko, cn";
 			persistentFields = "id, key";
 			googleClientId = "";
 			googleClientSecret = "";

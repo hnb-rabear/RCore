@@ -11,41 +11,40 @@ using UnityEngine;
 
 namespace RCore.Editor.SheetX
 {
-	public class GoogleSheetXWindow : EditorWindow
+	public class GoogleSheetXWindow
 	{
-		private Vector2 m_scrollPosition;
+		public EditorWindow editorWindow;
+		
 		private SheetXSettings m_settings;
 		private GoogleSheetHandler m_googleSheetHandler;
 		private EditorTableView<SheetPath> m_tableSheets;
 		private EditorTableView<GoogleSheetsPath> m_tableGoogleSheetsPaths;
 
-		private void OnEnable()
+		public void OnEnable()
 		{
 			m_settings = SheetXSettings.Load();
 			m_googleSheetHandler = new GoogleSheetHandler(m_settings);
 		}
 
-		private void OnGUI()
+		public void OnGUI()
 		{
-			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 #if SX_LITE
 			PageSingleFile();
 #else
-			var tab = EditorHelper.Tabs($"{nameof(GoogleSheetXWindow)}", "Export Google Spreadsheet", "Export Multi Google Spreadsheets");
+			var tab = EditorHelper.Tabs($"{nameof(GoogleSheetXWindow)}", "Export Single File", "Export Multi Files");
 			switch (tab)
 			{
-				case "Export Google Spreadsheet":
+				case "Export Single File":
 					PageSingleFile();
 					break;
 
-				case "Export Multi Google Spreadsheets":
+				case "Export Multi Files":
 					GUILayout.BeginVertical("box");
 					PageMultiFiles();
 					GUILayout.EndVertical();
 					break;
 			}
 #endif
-			GUILayout.EndScrollView();
 		}
 
 		private void PageSingleFile()
@@ -76,13 +75,13 @@ namespace RCore.Editor.SheetX
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow);
 			m_tableSheets.viewWidthFillRatio = 0.8f;
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.googleSheetsPath.sheets);
 
 			var style = new GUIStyle("box");
-			style.fixedWidth = position.width * 0.2f - 7;
+			style.fixedWidth = editorWindow.position.width * 0.2f - 7;
 			style.fixedHeight = 250f;
 			EditorGUILayout.BeginVertical(style);
 #if !SX_LOCALIZATION
@@ -109,8 +108,6 @@ namespace RCore.Editor.SheetX
 				m_googleSheetHandler.ExportLocalizations();
 				CompilationPipeline.RequestScriptCompilation();
 			}
-			if (EditorHelper.Button("Open Settings", pHeight: 30))
-				SheetXSettingsWindow.ShowWindow();
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}
@@ -141,7 +138,7 @@ namespace RCore.Editor.SheetX
 
 		private EditorTableView<GoogleSheetsPath> CreateTableGoogleSheetsPath()
 		{
-			var table = new EditorTableView<GoogleSheetsPath>(this, "Google Spreadsheets paths");
+			var table = new EditorTableView<GoogleSheetsPath>(editorWindow, "Google Spreadsheets paths");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
@@ -205,11 +202,5 @@ namespace RCore.Editor.SheetX
 			return table;
 		}
 #endif
-
-		public static void ShowWindow()
-		{
-			var window = GetWindow<GoogleSheetXWindow>("Google Sheets Exporter", true);
-			window.Show();
-		}
 	}
 }

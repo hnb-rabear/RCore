@@ -1009,6 +1009,21 @@ namespace RCore.Editor
             if (color != default)
                 GUI.backgroundColor = bgColor;
         }
+        
+        public static void DrawLine(float padding = 0)
+        {
+	        if (padding > 0)
+		        EditorGUILayout.Space(padding);
+	        var lineColor = EditorGUIUtility.isProSkin ? new Color(0.25f, 0.25f, 0.25f) : new Color(0.6f, 0.6f, 0.6f);
+	        var originalColor = GUI.color;
+	        GUI.color = lineColor;
+	        float lineThickness = 1;
+	        var lineRect = EditorGUILayout.GetControlRect(false, lineThickness);
+	        EditorGUI.DrawRect(lineRect, lineColor);
+	        GUI.color = originalColor;
+	        if (padding > 0)
+		        EditorGUILayout.Space(padding);
+        }
 
         public static void Separator(string label = null, Color labelColor = default)
         {

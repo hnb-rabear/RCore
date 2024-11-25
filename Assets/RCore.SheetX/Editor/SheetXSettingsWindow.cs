@@ -8,17 +8,16 @@ using UnityEngine;
 
 namespace RCore.Editor.SheetX
 {
-	public class SheetXSettingsWindow : EditorWindow
+	public class SheetXSettingsWindow
 	{
-		private Vector2 m_scrollPosition;
 		private SheetXSettings m_sheetXSettings;
 		
-		private void OnEnable()
+		public void OnEnable()
 		{
 			m_sheetXSettings = SheetXSettings.Load();
 		}
 
-		private void OnGUI()
+		public void OnGUI()
 		{
 			EditorGUI.BeginChangeCheck();
 			GUILayout.BeginVertical("box");
@@ -41,12 +40,6 @@ namespace RCore.Editor.SheetX
 				EditorUtility.SetDirty(m_sheetXSettings);
 			if (GUILayout.Button("Reset to default settings"))
 				m_sheetXSettings.ResetToDefault();
-		}
-
-		public static void ShowWindow()
-		{
-			var window = GetWindow<SheetXSettingsWindow>("Sheets Exporter Settings", true);
-			window.Show();
 		}
 	}
 }
