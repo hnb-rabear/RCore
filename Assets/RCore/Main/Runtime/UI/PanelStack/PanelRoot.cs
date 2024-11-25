@@ -17,15 +17,13 @@ namespace RCore.UI
 
 		protected virtual void OnEnable()
 		{
-			EventDispatcher.AddListener<PushOuterPanelEvent>(OnPushOuterPanel);
-			EventDispatcher.AddListener<PushInterPanelEvent>(OnPushInterPanel);
+			EventDispatcher.AddListener<PushPanelEvent>(OnPushPanel);
 			EventDispatcher.AddListener<RequestPanelPushEvent>(OnRequestPanelPush);
 		}
 
 		protected virtual void OnDisable()
 		{
-			EventDispatcher.RemoveListener<PushOuterPanelEvent>(OnPushOuterPanel);
-			EventDispatcher.RemoveListener<PushInterPanelEvent>(OnPushInterPanel);
+			EventDispatcher.RemoveListener<PushPanelEvent>(OnPushPanel);
 			EventDispatcher.RemoveListener<RequestPanelPushEvent>(OnRequestPanelPush);
 		}
 
@@ -137,57 +135,56 @@ namespace RCore.UI
 			return button;
 		}
 
-		private void OnPushOuterPanel(PushOuterPanelEvent e)
+		private void OnPushPanel(PushPanelEvent e)
 		{
 			if (e.rootType != GetType().FullName)
 				return;
-			switch (e.pushMode)
-			{
-				case PushMode.OnTop:
-					PushPanelToTop(ref e.panel);
-					break;
-				case PushMode.Replacement:
-					PushPanel(ref e.panel, e.keepCurrentAndReplace);
-					break;
-				case PushMode.Queued:
-					AddPanelToQueue(ref e.panel);
-					break;
-			}
-		}
-
-		private void OnPushInterPanel(PushInterPanelEvent e)
-		{
-			if (e.rootType != GetType().FullName)
-				return;
-			
-			var fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-			object panelInstance = null;
-
-			foreach (var field in fields)
-				if (field.FieldType.FullName == e.panelType)
-				{
-					panelInstance = field.GetValue(this);
-					break;
-				}
-
-			if (panelInstance != null && panelInstance is PanelController panelController)
+			if (e.panel != null)
 			{
 				switch (e.pushMode)
 				{
 					case PushMode.OnTop:
-						e.panel = PushPanelToTop(ref panelController);
+						PushPanelToTop(ref e.panel);
 						break;
 					case PushMode.Replacement:
-						e.panel = PushPanel(ref panelController, e.keepCurrentAndReplace);
+						PushPanel(ref e.panel, e.keepCurrentAndReplace);
 						break;
 					case PushMode.Queued:
-						e.panel = AddPanelToQueue(ref panelController);
+						AddPanelToQueue(ref e.panel);
 						break;
 				}
 			}
-			else
-				Debug.LogError($"Property or field of type {e.panelType} not found in {GetType().Name}.");
+			else if (!string.IsNullOrEmpty(e.panelType))
+			{
+				var fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+				object panelInstance = null;
+
+				foreach (var field in fields)
+					if (field.FieldType.FullName == e.panelType)
+					{
+						panelInstance = field.GetValue(this);
+						break;
+					}
+
+				if (panelInstance != null && panelInstance is PanelController panelController)
+				{
+					switch (e.pushMode)
+					{
+						case PushMode.OnTop:
+							e.panel = PushPanelToTop(ref panelController);
+							break;
+						case PushMode.Replacement:
+							e.panel = PushPanel(ref panelController, e.keepCurrentAndReplace);
+							break;
+						case PushMode.Queued:
+							e.panel = AddPanelToQueue(ref panelController);
+							break;
+					}
+				}
+				else
+					Debug.LogError($"Property or field of type {e.panelType} not found in {GetType().Name}.");
+			}
 		}
 		
 		private void OnRequestPanelPush(RequestPanelPushEvent e)
@@ -213,33 +210,21 @@ namespace RCore.UI
 	/// Example of dispatching an event:
 	/// EventDispatcher.Raise(new PushOuterPanelEvent(typeof(PanelHome), m_panelSettings));
 	/// </summary>
-	public class PushOuterPanelEvent : BaseEvent
+	public class PushPanelEvent : BaseEvent
 	{
 		public string rootType;
+		public string panelType;
 		public PanelController panel;
 		public PanelStack.PushMode pushMode;
 		public bool keepCurrentAndReplace;
-		public PushOuterPanelEvent(Type root, PanelController pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
+		public PushPanelEvent(Type root, PanelController pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
 		{
 			rootType = root.FullName;
 			panel = pPanel;
 			pushMode = pPushMode;
 			keepCurrentAndReplace = pKeepCurrentAndReplace;
 		}
-	}
-
-	/// <summary>
-	/// Example of dispatching an event:
-	/// EventDispatcher.Raise(new PushInterPanelEvent(typeof(PanelHome), typeof(PanelSettings)));
-	/// </summary>
-	public class PushInterPanelEvent : BaseEvent
-	{
-		public string rootType;
-		public string panelType;
-		public PanelStack.PushMode pushMode;
-		public bool keepCurrentAndReplace;
-		public PanelController panel;
-		public PushInterPanelEvent(Type root, Type pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
+		public PushPanelEvent(Type root, Type pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
 		{
 			rootType = root.FullName;
 			panelType = pPanel.FullName;

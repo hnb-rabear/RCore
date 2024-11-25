@@ -13,7 +13,7 @@ using RCore.Editor;
 using UnityEditor;
 #endif
 
-namespace RCore.Components
+namespace RCore.UI
 {
 	[AddComponentMenu("RCore/UI/ImageWithText")]
 	public class ImageWithText : MonoBehaviour

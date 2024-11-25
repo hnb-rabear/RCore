@@ -1,6 +1,6 @@
 using System;
 
-namespace RCore.Notification
+namespace RCore.Service
 {
     /// <summary>
     /// Represents a notification that was scheduled with <see cref="NotificationsManager.ScheduleNotification(RCore.Notification.GameNotification,System.DateTime)"/>.

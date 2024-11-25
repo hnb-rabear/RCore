@@ -1,4 +1,4 @@
-namespace RCore.Notification
+namespace RCore.Service
 {
 	/// <summary>
 	/// Represents a notification that will be delivered for this application.

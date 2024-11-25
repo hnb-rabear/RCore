@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace RCore.Notification
+namespace RCore.Service
 {
 	/// <summary>
 	/// Standard serializer used by the <see cref="NotificationsManager"/> if no others

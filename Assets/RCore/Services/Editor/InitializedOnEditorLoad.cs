@@ -14,7 +14,9 @@ namespace RCore.Editor.Service
 
 		private static void RunOnEditorStart()
 		{
+			
 			Validate_UNITY_IAP();
+			Validate_UNITY_NOTIFICATION();
 			Validate_GPGS();
 			Validate_IN_APP_REVIEW();
 			Validate_IN_APP_UPDATE();
@@ -64,6 +66,16 @@ namespace RCore.Editor.Service
 				EditorHelper.RemoveDirective("UNITY_IAP");
 		}
 
+		private static void Validate_UNITY_NOTIFICATION()
+		{
+			var rcore = IsClassAvailable("RCore.Service.NotificationsManager");
+			var iapType = Type.GetType("Unity.Notifications.NotificationCenter, Unity.Notifications.Unified");
+			if (iapType != null && rcore)
+				EditorHelper.AddDirective("UNITY_NOTIFICATION");
+			else
+				EditorHelper.RemoveDirective("UNITY_NOTIFICATION");
+		}
+		
 		private static void Validate_GPGS()
 		{
 			var rcore = IsClassAvailable("RCore.Service.GameServices");

@@ -11,10 +11,20 @@ namespace RCore.Audio
     [CreateAssetMenu(fileName = "AudioCollection", menuName = "RCore/Audio Collection")]
     public class AudioCollection : ScriptableObject
     {
+        [System.Serializable]
+        public struct ScriptGenerator
+        {
+            public string @namespace;
+            public string inputMusicsFolder;
+            public string inputSfxsFolder;
+            public string outputIDsFolder;
+        }
+        
         public AudioClip[] sfxClips;
         public AudioClip[] musicClips;
         public AssetReferenceT<AudioClip>[] abSfxClips;
         public AssetReferenceT<AudioClip>[] abMusicClips;
+        public ScriptGenerator generator;
         
         public AudioClip GetMusicClip(int pIndex)
         {

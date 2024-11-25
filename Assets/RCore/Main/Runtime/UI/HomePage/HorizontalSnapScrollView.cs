@@ -66,8 +66,15 @@ namespace RCore.UI
 
 		private void Start()
 		{
-			if (!m_Validated)
-				Validate();
+			float parentWidth = m_ScrollView.viewport.rect.width;
+			foreach (var item in m_Items)
+			{
+				var itemRectTransform = item.GetComponent<RectTransform>();
+				if (itemRectTransform != null)
+					itemRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, parentWidth);
+			}
+			
+			Validate();
 
 			m_PreviousItemIndex = m_StartIndex;
 			MoveToItem(m_StartIndex, true);

@@ -23,6 +23,9 @@ namespace RCore.Editor.Tool
 				return;
 			if (state == PlayModeStateChange.ExitingEditMode)
 			{
+				if (!IsSceneInBuildSettings(SceneManager.GetActiveScene().path))
+					return;
+
 				if (SceneManager.GetActiveScene().buildIndex == 0)
 					return;
 
@@ -50,6 +53,13 @@ namespace RCore.Editor.Tool
 		{
 			Menu.SetChecked(RMenu.R_TOOLS + "Toggle Auto play first Scene", m_Active.Value);
 			return true;
+		}
+
+		private static bool IsSceneInBuildSettings(string scenePath)
+		{
+			foreach (var scene in EditorBuildSettings.scenes)
+				if (scene.path == scenePath) return true;
+			return false;
 		}
 	}
 }

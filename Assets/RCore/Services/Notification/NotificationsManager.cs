@@ -8,7 +8,7 @@ using UnityEngine;
 using Unity.Notifications;
 #endif
 
-namespace RCore.Notification
+namespace RCore.Service
 {
 	/// <summary>
 	/// Global notifications manager that serves as a wrapper for multiple platforms' notification systems.

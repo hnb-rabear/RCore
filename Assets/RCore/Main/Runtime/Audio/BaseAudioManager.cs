@@ -47,14 +47,14 @@ namespace RCore.Audio
 #endif
         private Coroutine m_playMusicsCoroutine;
 
-        private void Awake()
+        protected virtual void Start()
         {
             m_musicSource.volume = m_masterVolume * m_musicVolume;
             m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
             foreach (var sound in m_sfxSources)
                 sound.volume = m_masterVolume * m_sfxVolume;
         }
-        
+
 #region Common
 
         public void SetMasterVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)

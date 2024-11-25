@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RCore.Notification
+namespace RCore.Service
 {
     /// <summary>
     /// Responsible for the serialization and deserialization of pending notifications for a
