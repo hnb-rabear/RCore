@@ -136,10 +136,10 @@ namespace RCore.UI
 						float height = m_height;
 						if (m_height > 0 && m_heightCurve.length > 1)
 						{
-							if (m_children.Count > 1)
+							if (m_children.Count > 2)
 								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / (m_children.Count - 1)));
 							else
-								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / m_children.Count));
+								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(0.5f));
 						}
 						m_childrenNewPosition[i] = i * new Vector2(m_cellDistance, 0) + new Vector2(0, height);
 					}
@@ -153,10 +153,10 @@ namespace RCore.UI
 						float height = m_height;
 						if (m_height > 0 && m_heightCurve.length > 1)
 						{
-							if (m_children.Count > 1)
+							if (m_children.Count > 2)
 								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / (m_children.Count - 1)));
 							else
-								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / m_children.Count));
+								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(0.5f));
 						}
 						m_childrenNewPosition[i] = new Vector2(m_cellDistance, 0) * ((m_children.Count - 1 - i) * -1) + new Vector2(0, height);
 					}
@@ -174,10 +174,10 @@ namespace RCore.UI
 						float height = m_height;
 						if (m_height > 0 && m_heightCurve.length > 1)
 						{
-							if (m_children.Count > 1)
+							if (m_children.Count > 2)
 								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / (m_children.Count - 1)));
 							else
-								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(i * 1f / m_children.Count));
+								height = Mathf.Lerp(0, m_height, m_heightCurve.Evaluate(0.5f));
 						}
 						m_childrenNewPosition[i] = new Vector2(
 							m_childrenNewPosition[i].x - m_childrenNewPosition[m_children.Count - 1].x / 2,

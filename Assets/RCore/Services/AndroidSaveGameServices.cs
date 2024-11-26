@@ -1,4 +1,8 @@
-﻿#if UNITY_ANDROID && GPGS
+﻿/***
+ * Author HNB-RaBear - 2022
+ ***/
+
+#if UNITY_ANDROID && GPGS
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
 using GooglePlayGames.BasicApi.SavedGame;
