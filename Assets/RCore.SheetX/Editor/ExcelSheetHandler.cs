@@ -26,7 +26,8 @@ namespace RCore.Editor.SheetX
 		private Dictionary<string, LocalizationBuilder> m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
 		private List<string> m_localizedSheetsExported = new List<string>();
 		private List<string> m_localizedLanguages = new List<string>();
-		private Dictionary<string, string> m_langCharSets = new Dictionary<string, string>();
+		private Dictionary<string, string> m_langCharSets;
+		private StringBuilder m_langCharSetsAll;
 
 		public ExcelSheetHandler(SheetXSettings settings)
 		{
@@ -558,6 +559,7 @@ namespace RCore.Editor.SheetX
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
+			m_langCharSetsAll = new StringBuilder();
 
 			for (int i = 0; i < sheets.Count; i++)
 			{
@@ -596,12 +598,18 @@ namespace RCore.Editor.SheetX
 			//Create language character sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
-				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
+				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
 				foreach (var map in maps)
 				{
 					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
 					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
 				}
+			}
+			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
+			{
+				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
+				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
+				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
 			}
 
 			CreateLocalizationsManagerFile();
@@ -778,6 +786,7 @@ namespace RCore.Editor.SheetX
 					else
 						m_langCharSets[listText.Key] = json;
 				}
+				m_langCharSetsAll.Append(json);
 			}
 
 			//Build language dictionary
@@ -1439,6 +1448,7 @@ namespace RCore.Editor.SheetX
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
+			m_langCharSetsAll = new StringBuilder();
 
 			//Process all IDs sheets first
 			foreach (var file in m_settings.excelSheetsPaths)
@@ -1593,12 +1603,18 @@ namespace RCore.Editor.SheetX
 			//Create language character sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
-				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
+				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
 				foreach (var map in maps)
 				{
 					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
 					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
 				}
+			}
+			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
+			{
+				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
+				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
+				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
 			}
 
 			//Create localization manager file

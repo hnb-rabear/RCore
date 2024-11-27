@@ -514,19 +514,22 @@ namespace RCore.Editor.SheetX
 			return table;
 		}
 
-		public static Dictionary<string, string> GenerateLangCharSets(Dictionary<string, string> pCharacterMaps)
+		public static Dictionary<string, string> GenerateCharacterSets(Dictionary<string, string> pContentGroups)
 		{
 			var output = new Dictionary<string, string>();
-			foreach (var map in pCharacterMaps)
-			{
-				string combinedStr = "";
-				var unique = new HashSet<char>(map.Value);
-				foreach (char c in unique)
-					combinedStr += c;
-				combinedStr = string.Concat(combinedStr.OrderBy(c => c));
-				output.Add(map.Key, combinedStr);
-			}
+			foreach (var map in pContentGroups)
+				output.Add(map.Key, GenerateCharacterSet(map.Value));
 			return output;
+		}
+		
+		public static string GenerateCharacterSet(string pContent)
+		{
+			string charactersSet = "";
+			var unique = new HashSet<char>(pContent);
+			foreach (char c in unique)
+				charactersSet += c;
+			charactersSet = string.Concat(charactersSet.OrderBy(c => c));
+			return charactersSet;
 		}
 
 		public static string GetSaveDirectory()

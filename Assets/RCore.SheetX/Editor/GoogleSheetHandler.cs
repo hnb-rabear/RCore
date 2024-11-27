@@ -29,6 +29,7 @@ namespace RCore.Editor.SheetX
 		private List<string> m_localizedSheetsExported;
 		private List<string> m_localizedLanguages;
 		private Dictionary<string, string> m_langCharSets;
+		private StringBuilder m_langCharSetsAll;
 		private Dictionary<string, Spreadsheet> m_cachedSpreadsheet = new Dictionary<string, Spreadsheet>();
 
 		public GoogleSheetHandler(SheetXSettings settings)
@@ -603,6 +604,7 @@ namespace RCore.Editor.SheetX
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
+			m_langCharSetsAll = new StringBuilder();
 
 			var service = GetService();
 			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
@@ -1486,6 +1488,7 @@ namespace RCore.Editor.SheetX
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
+			m_langCharSetsAll = new StringBuilder();
 
 			var service = GetService();
 			var googleSheetsPaths = m_settings.googleSheetsPaths;
@@ -1658,12 +1661,18 @@ namespace RCore.Editor.SheetX
 			//Create characters sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
-				var maps = SheetXHelper.GenerateLangCharSets(m_langCharSets);
+				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
 				foreach (var map in maps)
 				{
 					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
 					Debug.Log($"Exported characters_set_{map.Key}.txt");
 				}
+			}
+			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
+			{
+				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
+				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
+				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
 			}
 
 			//Create localization manager file

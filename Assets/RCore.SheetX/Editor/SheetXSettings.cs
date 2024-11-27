@@ -64,10 +64,12 @@ namespace RCore.Editor.SheetX
 
 		private void OnValidate()
 		{
+#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(excelSheetsPath.path))
 				excelSheetsPath.sheets.Clear();
 			if (string.IsNullOrEmpty(googleSheetsPath.id))
 				googleSheetsPath.sheets.Clear();
+#endif
 		}
 
 		public static SheetXSettings Load()
@@ -103,18 +105,20 @@ namespace RCore.Editor.SheetX
 
 		public void ResetToDefault()
 		{
+#if !SX_LOCALIZATION
 			jsonOutputFolder = "";
+			separateConstants = false;
+			separateIDs = false;
+			combineJson = false;
+			onlyEnumAsIDs = false;
+			persistentFields = "id, key";
+#endif
 			constantsOutputFolder = "";
 			localizationOutputFolder = "";
 			@namespace = "";
-			separateConstants = false;
-			separateIDs = false;
 			separateLocalizations = true;
-			combineJson = false;
-			onlyEnumAsIDs = false;
 			encryptJson = false;
 			langCharSets = "jp, ko, cn";
-			persistentFields = "id, key";
 			googleClientId = "";
 			googleClientSecret = "";
 			encryptionKey =

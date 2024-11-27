@@ -682,18 +682,14 @@ namespace RCore.Editor
         {
             bool developmentBuild = EditorUserBuildSettings.development;
             string bundleVersion = PlayerSettings.bundleVersion;
-            string identifier = Application.identifier;
+            string appName = PlayerSettings.productName.Replace(" ", "").RemoveSpecialCharacters();
 
-            var idParts = identifier.Split('.');
-            string name = string.IsNullOrEmpty(identifier) ? "" : $"{idParts[idParts.Length - 1]}_";
+            string name = $"{appName}_";
             string version = string.IsNullOrEmpty(bundleVersion) ? "" : $"v{bundleVersion}_";
             string bundleCode = "";
 #if UNITY_ANDROID
             int bundleVersionCode = PlayerSettings.Android.bundleVersionCode;
             bundleCode = bundleVersionCode == 0 ? "" : $"b{bundleVersionCode}_";
-#elif UNITY_IOS
-            string buildNumber = PlayerSettings.iOS.buildNumber;
-            bundleCode = $"b{buildNumber}_";
 #endif
             const string NAME_BUILD_PATTERN = "#ProductName#Version#BundleCode#Time";
             var time = DateTime.Now;
