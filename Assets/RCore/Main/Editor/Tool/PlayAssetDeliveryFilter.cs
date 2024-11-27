@@ -14,23 +14,25 @@ namespace RCore.Editor.Tool
 	[InitializeOnLoad]
 	public class PlayAssetDeliveryFilter
 	{
+		private const string MENU_ITEM = "Toggle PAD Filter";
+		
 		private static Dictionary<string, Color> m_Colors;
 		private static Dictionary<string, Color> m_Directories;
-		private static HashSet<string> m_ignoreGuids;
+		private static HashSet<string> m_IgnoreGuids;
 		private static REditorPrefBool m_Active;
 		private static Dictionary<string, string> m_PathCache = new Dictionary<string, string>();
 
-		[MenuItem(RMenu.R_TOOLS + "Toggle Play Asset Delivery Filter")]
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM)]
 		private static void ToggleActive()
 		{
 			Init(); // Reinitialize when toggled
 			m_Active.Value = !m_Active.Value;
 		}
 
-		[MenuItem(RMenu.R_TOOLS + "Toggle Play Asset Delivery Filter", true)]
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM, true)]
 		private static bool ToggleActiveValidate()
 		{
-			Menu.SetChecked(RMenu.R_TOOLS + "Toggle Play Asset Delivery Filter", m_Active.Value);
+			Menu.SetChecked(RMenu.R_TOOLS + MENU_ITEM, m_Active.Value);
 			return true;
 		}
 
@@ -45,7 +47,7 @@ namespace RCore.Editor.Tool
 		private static void Init()
 		{
 			m_Active = new REditorPrefBool(nameof(PlayAssetDeliveryFilter), true);
-			m_ignoreGuids = new HashSet<string>();
+			m_IgnoreGuids = new HashSet<string>();
 			m_Colors = new Dictionary<string, Color>();
 			m_Directories = new Dictionary<string, Color>();
 			m_PathCache = new Dictionary<string, string>();
@@ -63,7 +65,7 @@ namespace RCore.Editor.Tool
 
 		private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
 		{
-			if (!m_Active.Value || string.IsNullOrEmpty(guid) || Event.current.type != EventType.Repaint || m_ignoreGuids.Contains(guid))
+			if (!m_Active.Value || string.IsNullOrEmpty(guid) || Event.current.type != EventType.Repaint || m_IgnoreGuids.Contains(guid))
 				return;
 
 			DrawColorMark(guid, selectionRect);
@@ -86,7 +88,7 @@ namespace RCore.Editor.Tool
 				var path = GetAssetPath(guid);
 				if (path.EndsWith(".cs"))
 				{
-					m_ignoreGuids.Add(guid);
+					m_IgnoreGuids.Add(guid);
 					return;
 				}
 				var aaSettings = AddressableAssetSettingsDefaultObject.Settings;
@@ -123,7 +125,7 @@ namespace RCore.Editor.Tool
 							break;
 						}
 					if (!isSubAsset)
-						m_ignoreGuids.Add(guid);
+						m_IgnoreGuids.Add(guid);
 				}
 			}
 			else

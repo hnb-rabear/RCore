@@ -14,7 +14,11 @@ namespace RCore.Editor.SheetX
 {
 	public static class SheetXConstants
 	{
+#if !SX_LOCALIZATION
 		public const string APPLICATION_NAME = "SheetX - Sheets Exporter";
+#else
+		public const string APPLICATION_NAME = "LocalizationX - Localization Exporter";
+#endif
 		public const string CONSTANTS_CS_TEMPLATE = "ConstantsTemplate";
 		public const string IDS_CS_TEMPLATE = "IDsTemplate";
 		public const string LOCALIZATION_MANAGER_TEMPLATE = "LocalizationsManagerTemplate";
@@ -26,12 +30,12 @@ namespace RCore.Editor.SheetX
 		public const string LOCALIZATION_SHEET = "Localization";
 	}
 
-	public partial class SheetXSettings : ScriptableObject
+	public class SheetXSettings : ScriptableObject
 	{
 		private const string FILE_PATH = "Assets/Editor/SheetXSettings.asset";
 
-		public List<ExcelSheetsPath> excelSheetsPaths;
-		public List<GoogleSheetsPath> googleSheetsPaths;
+		public List<ExcelSheetsPath> excelSheetsPaths = new List<ExcelSheetsPath>();
+		public List<GoogleSheetsPath> googleSheetsPaths = new List<GoogleSheetsPath>();
 		public string constantsOutputFolder;
 		public string localizationOutputFolder;
 		public string @namespace;

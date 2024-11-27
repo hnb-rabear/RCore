@@ -8,8 +8,16 @@ namespace RCore.Editor.SheetX
 {
 	public class SheetXWindow : EditorWindow
 	{
+#if !SX_LOCALIZATION
+		private const string NAME = "SheetX: Sheets Exporter";
+		private const string MENU = "SheetX";
+#else
+		private const string NAME = "LocalizationX: Localization Exporter";
+		private const string MENU = "LocalizationX";
+#endif
+
 		private Vector2 m_scrollPosition;
-		
+
 		private ExcelSheetXWindow m_excelSheetXWindow;
 		private GoogleSheetXWindow m_googleSheetXWindow;
 		private SheetXSettingsWindow m_settingsWindow;
@@ -29,7 +37,7 @@ namespace RCore.Editor.SheetX
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-			
+
 			var tab = EditorHelper.Tabs($"{nameof(SheetXWindow)}", "Excel Spreadsheets", "Google Spreadsheets", "Settings");
 			switch (tab)
 			{
@@ -43,18 +51,18 @@ namespace RCore.Editor.SheetX
 					m_googleSheetXWindow.OnGUI();
 					break;
 			}
-			
+
 			GUILayout.EndScrollView();
 		}
-		
+
 #if ASSETS_STORE
-		[MenuItem("Window/SheetX")]
+		[MenuItem("Window/" + MENU)]
 #else
-		[MenuItem("RCore/Tools/SheetX")]
+		[MenuItem("RCore/Tools/" + MENU)]
 #endif
 		public static void ShowWindow()
 		{
-			var window = GetWindow<SheetXWindow>("Sheet X: Sheets Exporter", true);
+			var window = GetWindow<SheetXWindow>(NAME, true);
 			window.Show();
 		}
 	}

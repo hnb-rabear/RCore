@@ -14,6 +14,7 @@
     "com.unity.ide.vscode": "1.2.5",
     "com.unity.jobs": "0.50.0-preview.9",
     "com.unity.purchasing": "4.12.2",
+    "com.unity.serialization": "3.1.2",
     "com.unity.test-framework": "1.1.33",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.7.6",
@@ -49,6 +50,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.unity.mobile.notifications": "2.3.2"
   }
 }

@@ -7,6 +7,7 @@ namespace RCore.Editor.Tool
 	[InitializeOnLoad]
 	public class AutoPlayFirstScene
 	{
+		private const string MENU_ITEM = "Toggle Auto Play First Scene";
 		private static int m_PreviousSceneIndex;
 		private static REditorPrefBool m_Active;
 
@@ -42,16 +43,16 @@ namespace RCore.Editor.Tool
 			}
 		}
 
-		[MenuItem(RMenu.R_TOOLS + "Toggle Auto play first Scene")]
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM)]
 		private static void ToggleActive()
 		{
 			m_Active.Value = !m_Active.Value;
 		}
 
-		[MenuItem(RMenu.R_TOOLS + "Toggle Auto play first Scene", true)]
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM, true)]
 		private static bool ToggleActiveValidate()
 		{
-			Menu.SetChecked(RMenu.R_TOOLS + "Toggle Auto play first Scene", m_Active.Value);
+			Menu.SetChecked(RMenu.R_TOOLS + MENU_ITEM, m_Active.Value);
 			return true;
 		}
 
