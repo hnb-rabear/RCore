@@ -37,7 +37,6 @@ namespace RCore.Editor.SheetX
 
 		public void ExportIDs()
 		{
-#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -78,12 +77,10 @@ namespace RCore.Editor.SheetX
 				}
 				m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 			}
-#endif
 		}
 
 		private bool BuildContentOfFileIDs(IWorkbook pWorkBook, string pSheetName)
 		{
-#if !SX_LOCALIZATION
 			var sheet = pWorkBook.GetSheet(pSheetName);
 
 			if (sheet == null || sheet.LastRowNum == 0)
@@ -232,13 +229,11 @@ namespace RCore.Editor.SheetX
 			}
 			else
 				m_idsBuilderDict.Add(pSheetName, builder);
-#endif
 			return true;
 		}
 
 		private int GetReferenceId(string pKey, out bool pFound)
 		{
-#if !SX_LOCALIZATION
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
 			{
 				m_allIDsSorted = m_allIds.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
@@ -258,14 +253,12 @@ namespace RCore.Editor.SheetX
 					return id;
 				}
 			}
-#endif
 			pFound = false;
 			return 0;
 		}
 
 		private void LoadSheetIDsValues(IWorkbook pWorkBook, string pSheetName)
 		{
-#if !SX_LOCALIZATION
 			var sheet = pWorkBook.GetSheet(pSheetName);
 
 			if (sheet == null || sheet.LastRowNum == 0)
@@ -298,7 +291,6 @@ namespace RCore.Editor.SheetX
 			}
 
 			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
-#endif
 		}
 
 #endregion
@@ -1435,11 +1427,10 @@ namespace RCore.Editor.SheetX
 			ExportJson();
 			ExportLocalizations();
 		}
-
-#if !SX_LITE
-		public void ExportExcelsAll()
+		
+		public void ExportAllFiles()
 		{
-#if !SX_LOCALIZATION
+#if !SX_LITE
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
@@ -1616,7 +1607,6 @@ namespace RCore.Editor.SheetX
 			UnityEngine.Debug.Log("Done!");
 #endif
 		}
-#endif
 
 		private bool CheckExistedId(string pKey)
 		{

@@ -71,6 +71,7 @@ namespace RCore.Editor.SheetX
 			return true;
 		}
 
+#if !SX_LOCALIZATION
 		private void PageSingleFile()
 		{
 			GUILayout.BeginHorizontal("box");
@@ -113,7 +114,6 @@ namespace RCore.Editor.SheetX
 				if (ValidateExcelPath(m_settings.excelSheetsPath.path, out _))
 					m_settings.excelSheetsPath.Load();
 			}
-#if !SX_LOCALIZATION
 			if (EditorHelper.Button("Export All", pHeight: 40))
 			{
 				m_excelSheetHandler.ExportAll();
@@ -131,7 +131,6 @@ namespace RCore.Editor.SheetX
 			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_excelSheetHandler.ExportJson();
-#endif
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 			{
 				m_excelSheetHandler.ExportLocalizations();
@@ -140,7 +139,8 @@ namespace RCore.Editor.SheetX
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}
-
+#endif
+		
 #if !SX_LITE
 		private void PageMultiFiles()
 		{
@@ -158,7 +158,7 @@ namespace RCore.Editor.SheetX
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
 			{
-				m_excelSheetHandler.ExportExcelsAll();
+				m_excelSheetHandler.ExportAllFiles();
 				CompilationPipeline.RequestScriptCompilation();
 			}
 			GUILayout.EndHorizontal();

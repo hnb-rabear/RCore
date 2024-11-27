@@ -26,31 +26,40 @@ namespace RCore.Editor.SheetX
 		public const string LOCALIZATION_SHEET = "Localization";
 	}
 
-	public class SheetXSettings : ScriptableObject
+	public partial class SheetXSettings : ScriptableObject
 	{
 		private const string FILE_PATH = "Assets/Editor/SheetXSettings.asset";
 
-		public ExcelSheetsPath excelSheetsPath;
-		public GoogleSheetsPath googleSheetsPath;
-#if !SX_LITE
 		public List<ExcelSheetsPath> excelSheetsPaths;
 		public List<GoogleSheetsPath> googleSheetsPaths;
-#endif
-		public string jsonOutputFolder;
 		public string constantsOutputFolder;
 		public string localizationOutputFolder;
 		public string @namespace;
-		public bool separateConstants;
-		public bool separateIDs;
 		public bool separateLocalizations;
-		public bool combineJson;
-		public bool onlyEnumAsIDs;
-		[HideInInspector] public bool encryptJson;
 		public string langCharSets;
-		public string persistentFields;
+		[HideInInspector] public bool encryptJson;
 		public string googleClientId;
 		public string googleClientSecret;
 		[HideInInspector] public string encryptionKey;
+#if !SX_LOCALIZATION
+		public ExcelSheetsPath excelSheetsPath;
+		public GoogleSheetsPath googleSheetsPath;
+		public string jsonOutputFolder;
+		public bool separateConstants;
+		public bool separateIDs;
+		public bool combineJson;
+		public bool onlyEnumAsIDs;
+		public string persistentFields;
+#else
+		public ExcelSheetsPath excelSheetsPath => null;
+		public GoogleSheetsPath googleSheetsPath => null;
+		public string jsonOutputFolder => null;
+		public bool separateConstants => false;
+		public bool separateIDs => false;
+		public bool combineJson => false;
+		public bool onlyEnumAsIDs => false;
+		public string persistentFields => null;
+#endif
 		private Encryption m_encryption;
 
 		private void OnValidate()
@@ -125,29 +134,31 @@ namespace RCore.Editor.SheetX
 			return m_encryption ?? Encryption.Singleton;
 		}
 
-		public void CreateFileIDs(string exportFileName, string content)
+		public void CreateFileIDs(string pFileName, string pContent)
 		{
-#if !SX_LOCALIZATION
+			if (string.IsNullOrEmpty(pContent))
+				return;
 			string fileContent = Resources.Load<TextAsset>(SheetXConstants.IDS_CS_TEMPLATE).text;
-			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", exportFileName);
-			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", content);
-			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
-
-			SheetXHelper.WriteFile(constantsOutputFolder, $"{exportFileName}.cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {exportFileName}.cs!");
-#endif
-		}
-
-		public void CreateFileConstants(string pContent, string pExportFileName)
-		{
-#if !SX_LOCALIZATION
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
-			fileContent = fileContent.Replace("_CONST_CLASS_NAME_", pExportFileName);
+			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", pFileName);
 			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
 			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
 
-			SheetXHelper.WriteFile(constantsOutputFolder, pExportFileName + ".cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {pExportFileName}.cs!");
+			SheetXHelper.WriteFile(constantsOutputFolder, $"{pFileName}.cs", fileContent);
+			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
+		}
+
+		public void CreateFileConstants(string pContent, string pFileName)
+		{
+#if !SX_LOCALIZATION
+			if (string.IsNullOrEmpty(pContent))
+				return;
+			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
+			fileContent = fileContent.Replace("_CONST_CLASS_NAME_", pFileName);
+			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
+			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
+
+			SheetXHelper.WriteFile(constantsOutputFolder, pFileName + ".cs", fileContent);
+			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
 #endif
 		}
 #if !SX_LITE

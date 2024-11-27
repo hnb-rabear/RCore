@@ -36,14 +36,6 @@ namespace RCore.Editor.SheetX
 			m_settings = settings;
 		}
 
-		public void ExportAll()
-		{
-			ExportIDs();
-			ExportConstants();
-			ExportJson();
-			ExportLocalizations();
-		}
-
 		private Spreadsheet GetCacheMetadata(string googleSpreadsheetsId)
 		{
 			if (m_cachedSpreadsheet.TryGetValue(googleSpreadsheetsId, out var metadata))
@@ -60,7 +52,6 @@ namespace RCore.Editor.SheetX
 
 		public void ExportIDs()
 		{
-#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -118,12 +109,10 @@ namespace RCore.Editor.SheetX
 					m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 				}
 			}
-#endif
 		}
 
 		private bool BuildContentOfFileIDs(string pSheetName, IList<IList<object>> rowsData)
 		{
-#if !SX_LOCALIZATION
 			if (rowsData == null || rowsData.Count == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
@@ -266,14 +255,13 @@ namespace RCore.Editor.SheetX
 			}
 			else
 				m_idsBuilderDict.Add(pSheetName, builder);
-#endif
+
 			return true;
 		}
 
 		private Dictionary<string, IList<IList<object>>> GetSheetIDsValues()
 		{
 			var ids = new Dictionary<string, IList<IList<object>>>();
-#if !SX_LOCALIZATION
 			var service = GetService();
 			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
 			foreach (var sheet in m_settings.googleSheetsPath.sheets)
@@ -296,13 +284,11 @@ namespace RCore.Editor.SheetX
 				var values = response.Values;
 				ids[sheet.name] = values;
 			}
-#endif
 			return ids;
 		}
 
 		private void LoadSheetIDsValues(IList<IList<object>> rowsData, string pSheetName)
 		{
-#if !SX_LOCALIZATION
 			if (rowsData == null || rowsData.Count == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
@@ -333,12 +319,10 @@ namespace RCore.Editor.SheetX
 			}
 
 			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
-#endif
 		}
 
 		private int GetReferenceId(string pKey, out bool pFound)
 		{
-#if !SX_LOCALIZATION
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
 			{
 				m_allIDsSorted = m_allIds.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
@@ -358,19 +342,15 @@ namespace RCore.Editor.SheetX
 					return id;
 				}
 			}
-
-#endif
 			pFound = false;
 			return 0;
 		}
 
 		private bool CheckExistedId(string pKey)
 		{
-#if !SX_LOCALIZATION
 			foreach (var id in m_allIds)
 				if (id.Key == pKey.Trim())
 					return true;
-#endif
 			return false;
 		}
 
@@ -1485,32 +1465,15 @@ namespace RCore.Editor.SheetX
 
 #endregion
 
-		public static string GetColumnLetter(int columnNumber)
+		public void ExportAll()
 		{
-			int dividend = columnNumber;
-			string columnLetter = string.Empty;
-
-			while (dividend > 0)
-			{
-				int modulo = (dividend - 1) % 26;
-				columnLetter = (char)(65 + modulo) + columnLetter; // 65 is the ASCII value for 'A'
-				dividend = (dividend - modulo) / 26;
-			}
-
-			return columnLetter;
-		}
-
-		private SheetsService GetService()
-		{
-			m_service ??= new SheetsService(new BaseClientService.Initializer()
-			{
-				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret),
-				ApplicationName = SheetXConstants.APPLICATION_NAME,
-			});
-			return m_service;
+			ExportIDs();
+			ExportConstants();
+			ExportJson();
+			ExportLocalizations();
 		}
 		
-		public void ExportExcelsAll()
+		public void ExportAllFiles()
 		{
 #if !SX_LITE
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
@@ -1708,6 +1671,31 @@ namespace RCore.Editor.SheetX
 
 			Debug.Log("Done!");
 #endif
+		}
+		
+		public static string GetColumnLetter(int columnNumber)
+		{
+			int dividend = columnNumber;
+			string columnLetter = string.Empty;
+
+			while (dividend > 0)
+			{
+				int modulo = (dividend - 1) % 26;
+				columnLetter = (char)(65 + modulo) + columnLetter; // 65 is the ASCII value for 'A'
+				dividend = (dividend - modulo) / 26;
+			}
+
+			return columnLetter;
+		}
+
+		private SheetsService GetService()
+		{
+			m_service ??= new SheetsService(new BaseClientService.Initializer()
+			{
+				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret),
+				ApplicationName = SheetXConstants.APPLICATION_NAME,
+			});
+			return m_service;
 		}
 	}
 }
