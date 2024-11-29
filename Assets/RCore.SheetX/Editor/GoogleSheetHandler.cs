@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public class GoogleSheetHandler
 	{
@@ -821,6 +821,7 @@ namespace RCore.Editor.SheetX
 					else
 						m_langCharSets[listText.Key] = json;
 				}
+				m_langCharSetsAll.Append(json);
 			}
 
 			//Build language dictionary

@@ -14,7 +14,7 @@ using NPOI.SS.UserModel;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public class ExcelSheetHandler
 	{

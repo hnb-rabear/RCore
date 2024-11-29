@@ -12,7 +12,7 @@ using NPOI.SS.UserModel;
 using Object = UnityEngine.Object;
 using UnityEditor.Compilation;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public class ExcelSheetXWindow
 	{

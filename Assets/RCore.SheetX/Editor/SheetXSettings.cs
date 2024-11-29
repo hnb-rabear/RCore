@@ -10,7 +10,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public static class SheetXConstants
 	{

@@ -1,4 +1,4 @@
-# SheetX Documment
+# SheetX Document
 
 ## 1. Introduction
 
@@ -22,9 +22,9 @@ __You can download Example [Here](https://github.com/hnb-rabear/hnb-rabear.githu
 
 Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
 
-![SheetX Settings](https://github.com/user-attachments/assets/80e31126-7a6e-40b5-9bdd-4ffc82d726dc)
+![tab_settings](https://github.com/user-attachments/assets/8d339afe-3323-4f03-99d0-34b3cc7dc56e)
 
-- __Constants Output Folder:__ Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
+- __Scripts Output Folder:__ Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
 - __Json Output Folder:__ Stores exported JSON data.
 - __Localization Output:__ Stores Localization Data, which should be inside the Resources folder for loading via Resources, or in the Localizations folder for loading via Addressable Asset System.
 - __Namespace:__ Defines the namespace for the exported C# files.
@@ -54,11 +54,11 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
 
 ### 4.1. Export Single Excel File
 
-Navigate to the main menu and select: `RCore > Tools > SheetX > Excel Sheets Exporter`
+Navigate to the main menu and select: `RCore > Tools > SheetX > Excel Spreadsheets`
 
-![Export Excel Spreadsheet](https://github.com/user-attachments/assets/1772d9b2-9ac9-4bf7-9be3-80a157e02e07)
+![tab_excel_1](https://github.com/user-attachments/assets/b8ef6183-21c6-43b9-b952-8b5d57fc4c0b)
 
-This essential function is designed to help you familiarize yourself with the tools. It's perfect for smaller, less complex Static Databases that only require a single Excel file to contain all the data.
+This function is ideal for learning how to use the tools. It's great for small, simple Static Databases that only need one Excel file for all the data.
 
 Key Functions:
 
@@ -70,11 +70,12 @@ Key Functions:
 
 ### 4.2. Export multiple Excel Files (PRO only)
 
-![Export Multi Excel Spreadsheets](https://github.com/user-attachments/assets/93a2c413-7c7e-4747-abe0-d652bf8635ac)
+![tab_excel_2](https://github.com/user-attachments/assets/54b3632d-18f9-4053-b2fe-3feef6f71f92)
+![tab_excel_2_edit](https://github.com/user-attachments/assets/d958d749-5410-416b-9095-a598f9fe5a82)
 
-For managing complex Static Databases that need to be divided into multiple Excel files, this feature is essential. It allows you to efficiently handle and export all your Excel files with a single button press:
+This feature is essential for managing complex Static Databases divided into multiple Excel files. It helps you efficiently handle and export all your files with one click:
 
-1. Add all the Excel files you wish to process.
+1. Add all the Excel files you want to process.
 2. For each Excel file, you have the option to choose which sheets to include or exclude.
 3. Press the Export All button to complete the process.
 
@@ -82,9 +83,9 @@ For managing complex Static Databases that need to be divided into multiple Exce
 
 Prefer using Google Spreadsheets? No problem.
 
-Navigate to the main menu and select: `RCore > Tools > SheetX > Google Sheets Exporter`
+Navigate to the main menu and select: `RCore > Tools > SheetX > Google Spreadsheets`
 
-### 5.1. Setup Client ID and Client Secret
+### 5.1. Setup Google Client ID and Client Secret
 
 #### Step 1: Enable Google Sheets API
 
@@ -109,11 +110,11 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Google Sheets Ex
 2. Click on the Edit button to find the Client ID and Client Secret.
 3. Copy the __Client ID__ and __Client Secret__, and paste them into the corresponding settings in the __Sheets Exporter Settings__ Window
 
-![Google Client Id and Client Secret](https://github.com/user-attachments/assets/6e1297f5-6d8c-4c10-9ba2-e3f146726e43)
+![tab_settings_2](https://github.com/user-attachments/assets/4140a3e8-05df-4bbe-a3b8-a2fb0576f1ee)
 
 ### 5.2. Export single Google Spreadsheet
 
-![Export Google Spreadsheet](https://github.com/user-attachments/assets/65a7f64f-c93b-41b7-b2fa-358c631dd620)
+![tab_google_1](https://github.com/user-attachments/assets/02d6e2a9-3c39-4087-9a1e-0e77eec73a19)
 
 Enter the Google Sheet ID, then click the Download button. You can find the ID in the Google Sheet's URL, formatted like this: 
 
@@ -125,9 +126,8 @@ https://docs.google.com/spreadsheets/d/[GOOGLE_SHEET_ID]/edit?......
 
 Click on __Add Google Spreadsheets__, then enter the Google Sheet ID in the popup that appears. Press __Download__, then select the sheets you want to process.
 
-![Export Multiple Google Spreadsheets](https://github.com/user-attachments/assets/66a750f1-1997-4c6c-ac1b-b3194fb11167)
-
-![Edit Google Spreadsheet](https://github.com/user-attachments/assets/ac74f8a0-d59a-4d96-886f-9212395509dc)
+![tab_google_2](https://github.com/user-attachments/assets/f2ba3d93-7785-42b3-b33b-13b2687f699f)
+![tab_google_2_edit](https://github.com/user-attachments/assets/3386dda3-a2ba-4f88-87d0-f25e43ebfa56)
 
 ## 6. Rules in Spreadsheet
 
@@ -145,16 +145,16 @@ Click on __Add Google Spreadsheets__, then enter the Google Sheet ID in the popu
 |        |     |         | BUILDING_7    | 7   |         | PET_7    | 7   |         |                   |     |
 |        |     |         | BUILDING_8    | 8   |         |          |     |         |                   |     |
 
-Sheets named according to the syntax _[%IDs]_ are called IDs sheets. They are used to compile all ids into Integer Constants. The design rules are as follows:
+ID Sheets, named with the suffix `IDs` are used to compile all IDs into Integer Constants. The design rules are:
 
-- The sheet name needs to have `IDs` as a prefix or suffix.
-- In this Sheet, only use the Integer data type.
-- Each group is arranged in 3 consecutive columns.
-- The first row contains the group name for easy lookup.
-- The first column contains the Key Name, and the next column contains the Key Value.
+- The sheet name must end with `IDs`.
+- Only the Integer data type is allowed.
+- Each group is organized in 3 consecutive columns.
+- The first row contains the group name for easy reference.
+- The first column holds the Key Name, and the next column holds the Key Value.
 - Key Value must be an integer.
-- By default, all ids of a column will be exported as Integer Constants, but you can also export them as enum by adding the suffix [enum] to the group name.
-- You can choose to only export enum and ignore Integer Constant by selecting `Only enum as IDs` in the Settings section.
+- By default, all IDs in a column will be exported as Integer Constants. Add the suffix [enum] to the group name to export them as an enum.
+- To only export enums and skip Integer Constants, select `Only enum as IDs` in the Settings.
 
 ```a
 | Group | Key | Comment |
@@ -182,13 +182,13 @@ Sheets named according to the syntax _[%IDs]_ are called IDs sheets. They are us
 | EXAMPLE_FORMULA_1     | int         | =1\*10\*36         | Excel formula example |
 | EXAMPLE_FORMULA_2     | float       | =1+2+3+4+5+6+7+8+9 | Excel formula example |
 
-Sheets named according to the syntax _[%Constants]_ are called Constants Sheets. They are used to compile the Constants in the project. The table below will help you refer to all the data types that can be used in this sheet. The design rules are as follows:
+Constants Sheets, named with the suffix `Constants` compile project constants. The design rules are:
 
-- The sheet name needs to have `Constants` as a prefix or suffix.
+- The sheet name must end with `Constants`.
 - There are four columns: Name, Type, Value, and Comment.
-- Name: This is the name of the constant, it must be written continuously, does not contain special characters, and should be capitalized.
-- Type: This is the data type of the constant. You can use the following data types: `int`, `float`, `bool`, `string`, `int-array`, `float-array`, `vector2`, and `vector3`.
-- Value: The value corresponding to the data type. For array data types, elements must be separated by `:` or `|` or `newline`.
+  - Name: The name of the constant; must be continuous, without special characters.
+  - Type: The data type of the constant. Possible data types include: `int`, `float`, `bool`, `string`, `int-array`, `float-array`, `vector2`, and `vector3`.
+  - Value: The value matching the data type. For array types, separate elements with `:` or `|` or `newline`.
 
 ```a
 | Name | Type | Value | Comment |
@@ -217,12 +217,13 @@ Sheets named according to the syntax _[%Constants]_ are called Constants Sheets.
 | hero_name    | HERO_2     | hero name 2               | nombre del héroe 2             |
 | hero_name    | HERO_3     | hero name 3               | nombre del héroe 3             |
 
-Sheets named according to the syntax _[%Localization%]_ are called Localization Sheets. The design rules are as follows:
+Localization Sheets are named with the prefix `Localization` and follow these rules:
 
-- The sheet name needs to have `Localization` as a prefix or suffix.
-- This sheet has a structure of 2 key columns, one is the main key `idString` and one is the additional key `relativeId`.
-- The next columns will contain localized content.
-- The key of a row is the combination of `idString` and `relativeId`.
+- TThe sheet name must start with `Localization`.
+- Each sheet has two key columns: the main key `idString` and an additional key `relativeId`.
+- The following columns contain localized content.
+- The key for each row is a combination of `idString` and `relativeId`.
+- `relativeId` can reference an ID from the IDs sheets.
 
 ```a
 | idString | relativeId | english | spanish | japan | .... |
@@ -252,8 +253,8 @@ Sheets named according to the syntax _[%Localization%]_ are called Localization 
 | text3                   | 4 \| 2      | BUILDING_3 \| HERO_1 \| HERO_2 | TRUE \| FALSE         | 123<br/>76 | aaa<br/>ccc | [\{"id":HERO_1, "name":"John Doe 1"},\{"id":HERO_2, "name":"Mary Sue 2"}] |
 | text1 \| text2 \| text7 | 5           | 1 \| 2 \| 4 \| PET_5           | TRUE                  | 123<br/>78 | aaa<br/>ccc | [\{"id":HERO_1, "name":"John Doe 1"},\{"id":HERO_2, "name":"Mary Sue 2"}] |
 
-- For array type, the column name must have a suffix [].
-- For JSON object type, the column name must have a suffix \{}.
+- For array types, the column name must end with `[]`.
+- For JSON object types, the column name must end with `{}`.
 
 #### Special data type: Attributes list
 
@@ -271,7 +272,7 @@ Attribute is a specific data type, specially created for RPG genre games - where
 
 To define an attribute object type, the following rules should be followed:
 
-- The attribute column should be placed at the end of the data table.
+- The attribute columns should be placed at the end of the data table.
 - Attribute id is a constant integer, so it should be defined in the IDs sheet.
 - An attribute has the following structure:
 
@@ -294,6 +295,17 @@ First, open the excel file located at `/Assets/SheetX/Examples/Exporting a Singl
 
 ![Excel File](https://github.com/user-attachments/assets/2b4c8fe3-3c58-42bc-a85b-dea33c8122cf)
 
+__For the example using Google Sheets, you can view the file here.__
+
+Example for exporting single file
+[__Example__](https://docs.google.com/spreadsheets/d/1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo/edit?usp=drive_link)
+
+Example for exporting multiple files
+[__Example 1__](https://docs.google.com/spreadsheets/d/1l9_elk7QfABbWlKanOHqkSIYlWcxWO1EIPt9Ax4XtUE/edit?usp=drive_link)
+[__Example 2__](https://docs.google.com/spreadsheets/d/1d53vWQzrp-qNsoeyEmkqQx4KeQObONOk55oWeNS2YXg/edit?usp=drive_link)
+[__Example 3__](https://docs.google.com/spreadsheets/d/1i2CmDGYpAYuX_8vBUbHXBAhuWPKHi_gd52uwzsegLdY/edit?usp=drive_link)
+[__Example 4__](https://docs.google.com/spreadsheets/d/1kq0KaQxQ129f1OABm62x6GtfOKTg_3t4M8gODGHzSu8/edit?usp=drive_link)
+
 ### 7.1. Create folders for exporting files
 
 Create 3 directories to store the files that will be exported:
@@ -307,7 +319,7 @@ Create 3 directories to store the files that will be exported:
     - Alternatively, use the Addressable Asset System. In this case, create a "Localizations" folder outside the Resources folder and set it as an Addressable Asset. It's recommended to name this folder "Localizations".
 
 - Navigate to `RCore > Tools > SheetX > Settings`
-- In Sheets Exporter Settings, set up the paths for the "Constants Output Folder," "Json Output Folder," and "Localization Output Folder" using the three folders you just created.
+- In Sheets Exporter Settings, set up the paths for the "Scripts Output Folder," "Json Output Folder," and "Localization Output Folder" using the three folders you just created.
 
 For this example I will create 3 folders:
 

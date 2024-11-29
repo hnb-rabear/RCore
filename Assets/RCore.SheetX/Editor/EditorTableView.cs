@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace RCore.Editor
+namespace RCore.SheetX.Editor
 {
 	public class EditorTableView<TData>
 	{

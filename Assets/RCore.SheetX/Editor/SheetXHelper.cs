@@ -23,7 +23,7 @@ using UnityEditor;
 using UnityEngine;
 using Color = UnityEngine.Color;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public class SheetXHelper : MonoBehaviour
 	{
@@ -51,16 +51,6 @@ namespace RCore.Editor.SheetX
 				using (File.Create(filePath)) { }
 
 			using var sw = new StreamWriter(filePath, false, Encoding.UTF8);
-			sw.WriteLine(pContent);
-			sw.Close();
-		}
-
-		public static void WriteFile(string pFilePath, string pContent)
-		{
-			if (!File.Exists(pFilePath))
-				using (File.Create(pFilePath)) { }
-
-			using var sw = new StreamWriter(pFilePath);
 			sw.WriteLine(pContent);
 			sw.Close();
 		}
@@ -334,14 +324,6 @@ namespace RCore.Editor.SheetX
 			return false;
 		}
 
-		public static IEnumerable<ID> SortIDsByLength(IEnumerable<ID> list)
-		{
-			var sorted = from s in list
-				orderby s.Key.Length descending
-				select s;
-			return sorted;
-		}
-
 		public static Dictionary<string, int> SortIDsByLength(Dictionary<string, int> dict)
 		{
 			var sortedDict = dict.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
@@ -506,7 +488,7 @@ namespace RCore.Editor.SheetX
 				rect.xMin += 10;
 				item.selected = EditorGUI.Toggle(rect, item.selected);
 			});
-			table.AddColumn("Sheet name", 200, 300, (rect, item) =>
+			table.AddColumn("Sheet name", 200, 0, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
 				EditorGUI.LabelField(rect, item.name, style);
@@ -521,7 +503,7 @@ namespace RCore.Editor.SheetX
 				output.Add(map.Key, GenerateCharacterSet(map.Value));
 			return output;
 		}
-		
+
 		public static string GenerateCharacterSet(string pContent)
 		{
 			string charactersSet = "";
@@ -553,6 +535,12 @@ namespace RCore.Editor.SheetX
 
 		private static void AuthenticateGoogleSheet(string googleClientId, string googleClientSecret, GoogleSheetsPath pGoogleSheetsPath)
 		{
+			if (string.IsNullOrEmpty(googleClientId) || string.IsNullOrEmpty(googleClientSecret))
+			{
+				UnityEngine.Debug.LogError("Invalid Google Client ID and Client Secret");
+				return;
+			}
+
 			var service = new SheetsService(new BaseClientService.Initializer()
 			{
 				HttpClientInitializer = AuthenticateGoogleUser(googleClientId, googleClientSecret),

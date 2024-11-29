@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public class GoogleSheetXWindow
 	{
@@ -42,9 +42,9 @@ namespace RCore.Editor.SheetX
 					break;
 
 				case "Export Multi Files":
-					GUILayout.BeginVertical("box");
+					EditorGUILayout.BeginVertical("box");
 					PageMultiFiles();
-					GUILayout.EndVertical();
+					EditorGUILayout.EndVertical();
 					break;
 			}
 #endif
@@ -53,12 +53,13 @@ namespace RCore.Editor.SheetX
 #if !SX_LOCALIZATION
 		private void PageSingleFile()
 		{
-			GUILayout.BeginHorizontal("box");
+			EditorGUILayout.BeginVertical("box");
+			EditorGUILayout.BeginHorizontal();
 			{
-				GUILayout.BeginVertical();
+				EditorGUILayout.BeginVertical();
 				{
 					m_settings.googleSheetsPath.id = EditorHelper.TextField(m_settings.googleSheetsPath.id, "Google Spreadsheets Id", 160);
-					GUILayout.BeginHorizontal();
+					EditorGUILayout.BeginHorizontal();
 					{
 						EditorHelper.TextField(m_settings.googleSheetsPath.name, "Google Spreadsheets Name", 160, readOnly: true);
 						if (!string.IsNullOrEmpty(m_settings.googleSheetsPath.name))
@@ -70,15 +71,26 @@ namespace RCore.Editor.SheetX
 							}
 						}
 					}
-					GUILayout.EndHorizontal();
+					EditorGUILayout.EndHorizontal();
 				}
-				GUILayout.EndVertical();
+				EditorGUILayout.EndVertical();
 				if (EditorHelper.Button("Download", pHeight: 41))
 					SheetXHelper.DownloadGoogleSheet(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, m_settings.googleSheetsPath);
 			}
-			GUILayout.EndHorizontal();
+			EditorGUILayout.EndVertical();
+			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
+			{
+				// Custom error message without border and default HelpBox style
+				GUIStyle customStyle = new GUIStyle(GUI.skin.label);
+				customStyle.normal.textColor = Color.red; // Set text color to red
+				customStyle.fontSize = 12; // Set font size if needed
+				customStyle.wordWrap = true; // Enable word wrap if needed
+				customStyle.alignment = TextAnchor.MiddleCenter;
+				GUILayout.Label("Google Client ID or Client Secret is missing.", customStyle);
+			}
+			EditorGUILayout.EndHorizontal();
 			//-----
-			GUILayout.BeginHorizontal();
+			EditorGUILayout.BeginHorizontal();
 			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow);
 			m_tableSheets.viewWidthFillRatio = 0.8f;
 			m_tableSheets.viewHeight = 250f;
@@ -111,14 +123,14 @@ namespace RCore.Editor.SheetX
 				CompilationPipeline.RequestScriptCompilation();
 			}
 			EditorGUILayout.EndVertical();
-			GUILayout.EndHorizontal();
+			EditorGUILayout.EndHorizontal();
 		}
 #endif
 
 #if !SX_LITE
 		private void PageMultiFiles()
 		{
-			GUILayout.BeginHorizontal();
+			EditorGUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Add Google SpreadSheets", pWidth: 200, pHeight: 30))
 			{
 				EditGoogleSheetsWindow.ShowWindow(new GoogleSheetsPath(), m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, output =>
@@ -133,8 +145,20 @@ namespace RCore.Editor.SheetX
 				m_googleSheetHandler.ExportAllFiles();
 				CompilationPipeline.RequestScriptCompilation();
 			}
-			GUILayout.EndHorizontal();
-			GUILayout.Space(10);
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.Space(8);
+			
+			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
+			{
+				// Custom error message without border and default HelpBox style
+				GUIStyle customStyle = new GUIStyle(GUI.skin.label);
+				customStyle.normal.textColor = Color.red; // Set text color to red
+				customStyle.fontSize = 12; // Set font size if needed
+				customStyle.wordWrap = true; // Enable word wrap if needed
+				customStyle.alignment = TextAnchor.MiddleCenter;
+				GUILayout.Label("Google Client ID or Client Secret is missing.", customStyle);
+			}
+			
 			m_tableGoogleSheetsPaths ??= CreateTableGoogleSheetsPath();
 			m_tableGoogleSheetsPaths.DrawOnGUI(m_settings.googleSheetsPaths);
 		}

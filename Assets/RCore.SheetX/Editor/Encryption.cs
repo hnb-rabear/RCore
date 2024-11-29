@@ -3,7 +3,7 @@
  * https://github.com/hnb-rabear
  */
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
     public class Encryption
     {

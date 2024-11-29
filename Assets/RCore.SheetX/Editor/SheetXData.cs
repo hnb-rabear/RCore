@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	[Serializable]
 	public class SheetPath

@@ -8,7 +8,7 @@ using UnityEngine;
 using System;
 using System.IO;
 
-namespace RCore.Editor.SheetX
+namespace RCore.SheetX.Editor
 {
 	public interface IDraw
 	{
