@@ -13,7 +13,7 @@ namespace RCore.Editor.Tool
 
 		static AutoPlayFirstScene()
 		{
-			m_Active = new REditorPrefBool(nameof(AutoPlayFirstScene), true);
+			m_Active = new REditorPrefBool(MENU_ITEM);
 
 			EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 		}

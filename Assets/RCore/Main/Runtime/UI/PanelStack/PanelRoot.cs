@@ -106,7 +106,7 @@ namespace RCore.UI
 		{
 			if (queueInvolved && m_panelsInQueue.Count > 0)
 				return true;
-			return StackCount == 0;
+			return StackCount > 0;
 		}
 
 		private Button CreatDimmerOverlay()

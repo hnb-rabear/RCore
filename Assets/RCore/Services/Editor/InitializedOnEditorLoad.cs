@@ -7,14 +7,24 @@ namespace RCore.Editor.Service
 	[InitializeOnLoad]
 	public static class InitializedOnEditorLoad
 	{
+		private const string MENU_ITEM = "Toggle Directives Validator";
+		private static REditorPrefBool m_Active;
+
 		static InitializedOnEditorLoad()
 		{
+			m_Active = new REditorPrefBool(MENU_ITEM);
+
 			EditorApplication.update += RunOnEditorStart;
 		}
 
 		private static void RunOnEditorStart()
 		{
-			
+			if (m_Active.Value)
+				ValidateDirectives();
+		}
+
+		private static void ValidateDirectives()
+		{
 			Validate_UNITY_IAP();
 			Validate_UNITY_NOTIFICATION();
 			Validate_GPGS();
@@ -75,7 +85,7 @@ namespace RCore.Editor.Service
 			else
 				EditorHelper.RemoveDirective("UNITY_NOTIFICATION");
 		}
-		
+
 		private static void Validate_GPGS()
 		{
 			var rcore = IsClassAvailable("RCore.Service.GameServices");
@@ -195,6 +205,23 @@ namespace RCore.Editor.Service
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_MESSAGING", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_MESSAGING");
+		}
+
+		//===============================================
+
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM)]
+		private static void ToggleActive()
+		{
+			m_Active.Value = !m_Active.Value;
+			if (m_Active.Value)
+				ValidateDirectives();
+		}
+
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM, true)]
+		private static bool ToggleActiveValidate()
+		{
+			Menu.SetChecked(RMenu.R_TOOLS + MENU_ITEM, m_Active.Value);
+			return true;
 		}
 	}
 }
