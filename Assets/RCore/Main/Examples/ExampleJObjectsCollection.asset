@@ -13,21 +13,14 @@ MonoBehaviour:
   m_Name: ExampleJObjectsCollection
   m_EditorClassIdentifier: 
   sessionData:
-    sessions: 01000000010000000100000001000000
-    days: 1
-    daysStreak: 1
-    activeTime: 12.240871
-    lastActive: 1731894976
-    firstActive: 1731894961
-  inventory:
-    items:
-    - id: 1
-      fk: 1
-    - id: 2
-      fk: 2
-    lastItemId: 2
-    freedIds: 
-    noticedItemIds: 
+    sessions: 00000000000000000000000000000000
+    days: 0
+    daysStreak: 0
+    activeTime: 0
+    lastActive: 0
+    firstActive: 0
+    installVersion: 
+    updateVersion: 
   inventoryRpg:
     items: []
     lastItemId: 0

@@ -1,6 +1,7 @@
 using RCore.Data.JObject;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RCore.Example.Data.JObject
 {
@@ -10,8 +11,7 @@ namespace RCore.Example.Data.JObject
 		public int id; // Auto increment id
 		public int fk; // Foreign key, Id of configured item
 	}
-
-	[Serializable]
+	
 	public class InventoryData<T> : JObjectData where T : InvItemData
 	{
 		public List<T> items = new List<T>();

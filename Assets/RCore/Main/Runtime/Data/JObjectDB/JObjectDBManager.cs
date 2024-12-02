@@ -129,6 +129,12 @@ namespace RCore.Data.JObject
 			m_enabledSave = value;
 		}
 
+		public void EnableAutoSave(bool value)
+		{
+			m_saveOnPause = value;
+			m_saveOnQuit = value;
+		}
+		
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
