@@ -18,7 +18,7 @@ namespace RCore.Service
 					m_Instance = FindObjectOfType<IAPManager>();
 				if (m_Instance == null)
 				{
-					var gameObject = new GameObject("NotificationsManager");
+					var gameObject = new GameObject("IAPManager");
 					m_Instance = gameObject.AddComponent<IAPManager>();
 					gameObject.hideFlags = HideFlags.DontSave;
 				}
@@ -27,7 +27,9 @@ namespace RCore.Service
 		}
 		
 		[SerializeField] private SerializableDictionary<string, ProductType> m_products;
-		
+
+		public static Action<Product> OnIAPSucceed;
+		public static Action<Product> OnIAPFailed;
 		private Action<Product> m_onPurchaseDeferred;
 		private Action<Product> m_onPurchaseFailed;
 		private Action<Product> m_onPurchaseSucceed;
@@ -127,15 +129,22 @@ namespace RCore.Service
 
 			var isPurchaseValid = IsPurchaseValid(product);
 			if (isPurchaseValid)
+			{
 				m_onPurchaseSucceed?.Invoke(product);
+				OnIAPSucceed?.Invoke(product);
+			}
 			else
+			{
 				m_onPurchaseFailed?.Invoke(product);
+				OnIAPFailed?.Invoke(product);
+			}
 			return PurchaseProcessingResult.Complete;
 		}
 
 		public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
 		{
 			m_onPurchaseFailed?.Invoke(product);
+			OnIAPFailed?.Invoke(product);
 
 			Debug.Log($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
 		}
@@ -143,6 +152,7 @@ namespace RCore.Service
 		public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
 		{
 			m_onPurchaseFailed?.Invoke(product);
+			OnIAPFailed?.Invoke(product);
 
 			Debug.Log($"Purchase failed - Product: '{product.definition.id}'," + $" Purchase failure reason: {failureDescription.reason}," + $" Purchase failure details: {failureDescription.message}");
 		}
