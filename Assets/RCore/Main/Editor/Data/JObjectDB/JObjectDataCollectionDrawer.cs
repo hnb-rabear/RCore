@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace RCore.Editor.Data.JObject
 {
-	[CustomPropertyDrawer(typeof(JObjectDataSO), true)]
-	public class JObjectSODrawer : PropertyDrawer
+	[CustomPropertyDrawer(typeof(JObjectDataCollection), true)]
+	public class JObjectDataCollectionDrawer : PropertyDrawer
 	{
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
@@ -18,14 +18,17 @@ namespace RCore.Editor.Data.JObject
 			// Draw the property field
 			EditorGUI.PropertyField(new Rect(position.x, position.y, position.width - 70, position.height), property, label, true);
 
+			// Check if the object is null
+			GUI.enabled = property.objectReferenceValue == null;
+
 			// Draw the Create button
 			if (GUI.Button(new Rect(position.x + position.width - 65, position.y, 60, position.height), "Create"))
 			{
 				// Get the type of the property
-				Type objectType = fieldInfo.FieldType;
+				var objectType = fieldInfo.FieldType;
 
 				// Create an instance of the type
-				JObjectDataSO newObjectData = ScriptableObject.CreateInstance(objectType) as JObjectDataSO;
+				var newObjectData = ScriptableObject.CreateInstance(objectType) as JObjectDataCollection;
 
 				if (newObjectData != null)
 				{
@@ -64,6 +67,9 @@ namespace RCore.Editor.Data.JObject
 					Debug.LogError("Failed to create a new instance of " + objectType.Name);
 				}
 			}
+
+			// Re-enable GUI for other elements
+			GUI.enabled = true;
 
 			// End the horizontal group
 			EditorGUILayout.EndHorizontal();

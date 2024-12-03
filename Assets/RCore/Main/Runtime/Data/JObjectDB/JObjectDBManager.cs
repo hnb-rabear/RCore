@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 using System;
+using RCore.Inspector;
 
 namespace RCore.Data.JObject
 {
-	public abstract class JObjectDBManager<T> : MonoBehaviour where T : JObjectsCollection
+	public abstract class JObjectDBManager<T> : MonoBehaviour where T : JObjectDataCollection
 	{
 		public Action onInitialized;
 		[SerializeField] protected T m_dataCollection;
@@ -18,6 +19,7 @@ namespace RCore.Data.JObject
 		protected float m_saveDelayCustom;
 		protected float m_lastSave;
 		protected int m_pauseState = -1;
+		protected bool m_enableAutoSave = true;
 
 		public bool Initialzied => m_initialized;
 		public T DataCollection => m_dataCollection;
@@ -51,7 +53,7 @@ namespace RCore.Data.JObject
 				offlineSeconds = GetOfflineSeconds();
 			foreach (var handler in m_dataCollection.handlers)
 				handler.OnPause(pause, utcNowTimestamp, offlineSeconds);
-			if (pause && m_saveOnPause)
+			if (pause && m_saveOnPause && m_enableAutoSave)
 				Save(true);
 		}
 
@@ -62,7 +64,7 @@ namespace RCore.Data.JObject
 
 		protected virtual void OnApplicationQuit()
 		{
-			if (m_initialized && m_saveOnQuit)
+			if (m_initialized && m_saveOnQuit && m_enableAutoSave)
 				Save(true);
 		}
 
@@ -129,12 +131,11 @@ namespace RCore.Data.JObject
 			m_enabledSave = value;
 		}
 
-		public void EnableAutoSave(bool value)
+		protected void EnableAutoSave(bool pValue)
 		{
-			m_saveOnPause = value;
-			m_saveOnQuit = value;
+			m_enableAutoSave = pValue;
 		}
-		
+
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;

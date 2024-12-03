@@ -8,20 +8,20 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
-	public class JObjectsCollection : ScriptableObject
+	public class JObjectDataCollection : ScriptableObject
 	{
 		public SessionData sessionData;
 		public SessionDataHandler sessionDataHandler;
 
 		internal List<JObjectData> datas;
-		internal List<IJObjectHandler> handlers;
+		internal List<IJObjectController> handlers;
 
 		public virtual void Load()
 		{
 			datas = new List<JObjectData>();
-			handlers = new List<IJObjectHandler>();
+			handlers = new List<IJObjectController>();
 
-			(sessionData, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectsCollection>("SessionData");
+			(sessionData, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectDataCollection>("SessionData");
 		}
 		
 		public virtual void Save()
@@ -44,35 +44,35 @@ namespace RCore.Data.JObject
 				collection.Load();
 		}
 
-		protected TCollection CreateCollection<TCollection>(string key, TCollection defaultVal = null)
-			where TCollection : JObjectData, new()
+		protected TData CreateJObjectData<TData>(string key, TData defaultVal = null)
+			where TData : JObjectData, new()
 		{
 			if (string.IsNullOrEmpty(key))
-				key = typeof(TCollection).Name;
+				key = typeof(TData).Name;
 			var newCollection = JObjectDB.CreateCollection(key, defaultVal);
 			if (newCollection != null)
 				datas.Add(newCollection);
 			return newCollection;
 		}
 
-		protected THandler CreateController<THandler, TJObjectsCollection>()
-			where THandler : JObjectHandler<TJObjectsCollection>
-			where TJObjectsCollection : JObjectsCollection
+		protected THandler CreateJObjectHandler<THandler, TData>()
+			where THandler : JObjectHandler<TData>
+			where TData : JObjectDataCollection
 		{
 			var newController = Activator.CreateInstance<THandler>();
-			newController.dataCollection = this as TJObjectsCollection;
+			newController.dataCollection = this as TData;
 
 			handlers.Add(newController);
 			return newController;
 		}
 
-		protected (TCollection, THandler) CreateModule<TCollection, THandler, TJObjectsCollection>(string key, TCollection defaultVal = null)
-			where TCollection : JObjectData, new()
-			where THandler : JObjectHandler<TJObjectsCollection>
-			where TJObjectsCollection : JObjectsCollection
+		protected (TData, THandler) CreateModule<TData, THandler, TDataCollection>(string key, TData defaultVal = null)
+			where TData : JObjectData, new()
+			where THandler : JObjectHandler<TDataCollection>
+			where TDataCollection : JObjectDataCollection
 		{
-			var collection = CreateCollection(key, defaultVal);
-			var controller = CreateController<THandler, TJObjectsCollection>();
+			var collection = CreateJObjectData(key, defaultVal);
+			var controller = CreateJObjectHandler<THandler, TDataCollection>();
 			return (collection, controller);
 		}
 	}
@@ -80,7 +80,7 @@ namespace RCore.Data.JObject
 	//===============================================================
 
 #if UNITY_EDITOR
-	[CustomEditor(typeof(JObjectsCollection), true)]
+	[CustomEditor(typeof(JObjectDataCollection), true)]
 #if ODIN_INSPECTOR
 	public class JObjectsCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
 	{
@@ -94,11 +94,11 @@ namespace RCore.Data.JObject
 #else
 	public class JObjectsCollectionEditor : UnityEditor.Editor
 	{
-		private JObjectsCollection m_jObjectsCollection;
+		private JObjectDataCollection m_jObjectDataCollection;
 
 		private void OnEnable()
 		{
-			m_jObjectsCollection = target as JObjectsCollection;
+			m_jObjectDataCollection = target as JObjectDataCollection;
 		}
 #endif
 
@@ -111,10 +111,10 @@ namespace RCore.Data.JObject
 			EditorGUILayout.BeginHorizontal();
 			{
 				if (GUILayout.Button("Load"))
-					m_jObjectsCollection.Load();
+					m_jObjectDataCollection.Load();
 
 				if (GUILayout.Button("Save"))
-					foreach (var collection in m_jObjectsCollection.datas)
+					foreach (var collection in m_jObjectDataCollection.datas)
 						collection.Save();
 			}
 			EditorGUILayout.EndHorizontal();

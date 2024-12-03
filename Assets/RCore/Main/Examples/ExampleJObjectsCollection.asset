@@ -21,6 +21,10 @@ MonoBehaviour:
     firstActive: 0
     installVersion: 
     updateVersion: 
+  inventoryModel: {fileID: 11400000, guid: bb937bea1da0e684592ef1aba80d8244, type: 2}
+  inventoryRpgModel: {fileID: 11400000, guid: c9ce00fc8970cd74f94ed835948bfe9b, type: 2}
+  achievementModel: {fileID: 11400000, guid: f6ef3d1f5b322534e85730b3114cbda2, type: 2}
+  dailyRewardModel: {fileID: 11400000, guid: aed130d3d7309ca43889015dbf3eabcf, type: 2}
   inventoryRpg:
     items: []
     lastItemId: 0

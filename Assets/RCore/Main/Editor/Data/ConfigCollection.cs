@@ -6,7 +6,7 @@ using UnityEditor;
 #endif
 using UnityEngine;
 
-namespace RCore.Data.JObject
+namespace RCore.Data
 {
 	public abstract class ConfigCollection : ScriptableObject
 	{
