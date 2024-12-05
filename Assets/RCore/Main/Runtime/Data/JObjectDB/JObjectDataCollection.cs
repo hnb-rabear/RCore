@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
@@ -13,37 +14,57 @@ namespace RCore.Data.JObject
 		public SessionData sessionData;
 		public SessionDataHandler sessionDataHandler;
 
-		internal List<JObjectData> datas;
-		internal List<IJObjectController> handlers;
+		private List<JObjectData> m_datas;
+		private List<IJObjectHandler> m_handlers;
 
 		public virtual void Load()
 		{
-			datas = new List<JObjectData>();
-			handlers = new List<IJObjectController>();
+			m_datas = new List<JObjectData>();
+			m_handlers = new List<IJObjectHandler>();
 
-			(sessionData, sessionDataHandler) = CreateModule<SessionData, SessionDataHandler, JObjectDataCollection>("SessionData");
+			(sessionData, sessionDataHandler) = CreateModel<SessionData, SessionDataHandler, JObjectDataCollection>("SessionData");
 		}
 		
 		public virtual void Save()
 		{
-			if (handlers == null)
-				return;
 			int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-			foreach (var handler in handlers)
-				handler.OnPreSave(utcNowTimestamp);
-			foreach (var collection in datas)
-				collection.Save();
+			if (m_handlers != null)
+				foreach (var handler in m_handlers)
+					handler.OnPreSave(utcNowTimestamp);
+			if (m_datas != null)
+				foreach (var collection in m_datas)
+					collection.Save();
 		}
 
-		public virtual void Import(string data)
+		public virtual void Import(string jsonData)
 		{
-			if (datas == null)
+			if (m_datas == null)
 				return;
-			datas.Import(data);
-			foreach (var collection in datas)
-				collection.Load();
+
+			var keyValuePairs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
+			foreach (var collection in m_datas)
+				if (keyValuePairs.TryGetValue(collection.key, out string value))
+					collection.Load(value);
 		}
 
+		public void OnUpdate(float deltaTime)
+		{
+			foreach (var controller in m_handlers)
+				controller.OnUpdate(deltaTime);
+		}
+
+		public void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
+		{
+			foreach (var handler in m_handlers)
+				handler.OnPause(pause, utcNowTimestamp, offlineSeconds);
+		}
+
+		public void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
+		{
+			foreach (var handler in m_handlers)
+				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
+		}
+		
 		protected TData CreateJObjectData<TData>(string key, TData defaultVal = null)
 			where TData : JObjectData, new()
 		{
@@ -51,7 +72,7 @@ namespace RCore.Data.JObject
 				key = typeof(TData).Name;
 			var newCollection = JObjectDB.CreateCollection(key, defaultVal);
 			if (newCollection != null)
-				datas.Add(newCollection);
+				m_datas.Add(newCollection);
 			return newCollection;
 		}
 
@@ -62,11 +83,11 @@ namespace RCore.Data.JObject
 			var newController = Activator.CreateInstance<THandler>();
 			newController.dataCollection = this as TData;
 
-			handlers.Add(newController);
+			m_handlers.Add(newController);
 			return newController;
 		}
 
-		protected (TData, THandler) CreateModule<TData, THandler, TDataCollection>(string key, TData defaultVal = null)
+		protected (TData, THandler) CreateModel<TData, THandler, TDataCollection>(string key, TData defaultVal = null)
 			where TData : JObjectData, new()
 			where THandler : JObjectHandler<TDataCollection>
 			where TDataCollection : JObjectDataCollection
@@ -82,23 +103,23 @@ namespace RCore.Data.JObject
 #if UNITY_EDITOR
 	[CustomEditor(typeof(JObjectDataCollection), true)]
 #if ODIN_INSPECTOR
-	public class JObjectsCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
+	public class JObjectDataCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
 	{
-		private JObjectsCollection m_jObjectsCollection;
+		private JObjectDataCollection m_collection;
 
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			m_jObjectsCollection = target as JObjectsCollection;
+			m_collection = target as JObjectDataCollection;
 		}
 #else
-	public class JObjectsCollectionEditor : UnityEditor.Editor
+	public class JObjectDataCollectionEditor : UnityEditor.Editor
 	{
-		private JObjectDataCollection m_jObjectDataCollection;
+		private JObjectDataCollection m_collection;
 
 		private void OnEnable()
 		{
-			m_jObjectDataCollection = target as JObjectDataCollection;
+			m_collection = target as JObjectDataCollection;
 		}
 #endif
 
@@ -111,11 +132,10 @@ namespace RCore.Data.JObject
 			EditorGUILayout.BeginHorizontal();
 			{
 				if (GUILayout.Button("Load"))
-					m_jObjectDataCollection.Load();
+					m_collection.Load();
 
 				if (GUILayout.Button("Save"))
-					foreach (var collection in m_jObjectDataCollection.datas)
-						collection.Save();
+					m_collection.Save();
 			}
 			EditorGUILayout.EndHorizontal();
 

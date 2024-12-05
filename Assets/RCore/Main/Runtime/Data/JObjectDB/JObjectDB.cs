@@ -229,12 +229,5 @@ namespace RCore.Data.JObject
 			var list = collections.ToDictionary();
 			return JsonConvert.SerializeObject(list);
 		}
-		public static void Import(this List<JObjectData> collections, string jsonData)
-		{
-			var keyValuePairs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
-			if (keyValuePairs != null)
-				foreach (var pair in keyValuePairs)
-					PlayerPrefs.SetString(pair.Key, pair.Value);
-		}
 	}
 }

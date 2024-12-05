@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76f31455d4bc2fe4c94595a780fa6a87, type: 3}
-  m_Name: NewInventoryRpgModel
+  m_Name: InventoryRpgModel
   m_EditorClassIdentifier: 
   data:
     items: []

@@ -30,7 +30,7 @@ namespace RCore.Example.Data.JObject
 			base.Load();
 
 			// Example of basic inventory module
-			(inventory, inventoryHandler) = CreateModule<InventoryData<InvItemData>, InventoryHandler, ExampleJObjectDataCollection>("Inventory");
+			(inventory, inventoryHandler) = CreateModel<InventoryData<InvItemData>, InventoryHandler, ExampleJObjectDataCollection>("Inventory");
 
 			// Example of a rpg inventory module
 			inventoryRpg = CreateJObjectData<InventoryRpgData<InvRPGItemData>>("InventoryRPG");
@@ -41,7 +41,7 @@ namespace RCore.Example.Data.JObject
 			achievementHandler = CreateJObjectHandler<AchievementHandler, ExampleJObjectDataCollection>();
 
 			// Example of Daily reward module
-			(dailyReward, dailyRewardHandler) = CreateModule<DailyRewardData, DailyRewardHandler, ExampleJObjectDataCollection>("DailyReward");
+			(dailyReward, dailyRewardHandler) = CreateModel<DailyRewardData, DailyRewardHandler, ExampleJObjectDataCollection>("DailyReward");
 		}
 	}
 }

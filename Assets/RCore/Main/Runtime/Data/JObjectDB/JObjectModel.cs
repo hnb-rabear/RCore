@@ -2,7 +2,12 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
-	public abstract class JObjectModel<T> : ScriptableObject, IJObjectController where T : JObjectData
+	public interface IJObjectModel : IJObjectHandler
+	{
+		public JObjectData Data { get; }
+	}
+
+	public abstract class JObjectModel<T> : ScriptableObject, IJObjectModel where T : JObjectData
 	{
 		public T data;
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
@@ -13,6 +18,7 @@ namespace RCore.Data.JObject
 		{
 			data.Save();
 		}
+		public JObjectData Data => data;
 		/// <summary>
 		/// Triggers an event when data changes.
 		/// </summary>

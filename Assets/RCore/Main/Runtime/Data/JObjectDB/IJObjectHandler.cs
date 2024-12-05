@@ -1,6 +1,6 @@
 namespace RCore.Data.JObject
 {
-	public interface IJObjectController
+	public interface IJObjectHandler
 	{
 		public void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
 		public void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
