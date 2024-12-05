@@ -8,6 +8,9 @@ namespace RCore.Example.Data.JObject
 {
 	public class ExampleJObjectDBManagerV2 : JObjectDBManagerV2<ExampleJObjectModelCollection>
 	{
+		[AutoFill("9-Sliced (6)")] public SpriteRenderer stest;
+		[AutoFill] public List<SpriteRenderer> tests;
+
 		private void Start()
 		{
 			Init();

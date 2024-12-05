@@ -10,7 +10,7 @@ namespace RCore.Data.JObject
 {
 	public class JObjectModelCollection : ScriptableObject
 	{
-		public SessionModel session;
+		[AutoFill] public SessionModel session;
 
 		private List<IJObjectModel> m_models;
 
