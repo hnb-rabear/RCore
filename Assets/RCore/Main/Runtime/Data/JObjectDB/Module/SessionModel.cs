@@ -18,16 +18,16 @@ namespace RCore.Data.JObject
 			{
 				data.days++;
 				data.daysStreak++;
-				data.sessionsDaily = 0; // Reset daily sessions count
+				data.SessionsDaily = 0; // Reset daily sessions count
 			}
 			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
-				data.sessionsWeekly = 0; // Reset weekly sessions count
+				data.SessionsWeekly = 0; // Reset weekly sessions count
 			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
-				data.sessionsMonthly = 0; // Reset monthly sessions count
-			data.sessionsTotal++;
-			data.sessionsDaily++;
-			data.sessionsWeekly++;
-			data.sessionsMonthly++;
+				data.SessionsMonthly = 0; // Reset monthly sessions count
+			data.SessionsTotal++;
+			data.SessionsDaily++;
+			data.SessionsWeekly++;
+			data.SessionsMonthly++;
 			secondsTillNextDay = now.Date.AddDays(1).ToUnixTimestampInt() - utcNowTimestamp;
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
@@ -69,9 +69,9 @@ namespace RCore.Data.JObject
 			if ((now - lastActive).TotalDays > 1)
 				data.daysStreak = 0; //Reset days streak
 			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
-				data.sessionsWeekly = 1; // Reset weekly sessions count
+				data.SessionsWeekly = 1; // Reset weekly sessions count
 			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
-				data.sessionsMonthly = 1; // Reset monthly sessions count
+				data.SessionsMonthly = 1; // Reset monthly sessions count
 			if (lastActive.Date != now.Date)
 				AddOneDay();
 			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
@@ -80,7 +80,7 @@ namespace RCore.Data.JObject
 		{
 			data.days++;
 			data.daysStreak++;
-			data.sessionsDaily = 1; // Reset daily sessions count
+			data.SessionsDaily = 1; // Reset daily sessions count
 			DispatchEvent(new NewDayStartedEvent());
 		}
 	}

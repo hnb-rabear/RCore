@@ -11,5 +11,15 @@ namespace RCore.Example.Data.JObject
 		public DailyRewardModel dailyReward;
 		public InventoryModel inventory;
 		public InventoryRpgModel inventoryRPG;
+
+		public override void Load()
+		{
+			base.Load();
+			
+			CreateModel(achievement, "Achievement");
+			CreateModel(dailyReward, "DailyReward");
+			CreateModel(inventory, "Inventory");
+			CreateModel(inventoryRPG, "InventoryRPG");
+		}
 	}
 }

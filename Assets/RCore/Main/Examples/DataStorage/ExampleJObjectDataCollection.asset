@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 015db9476526bb44788cd59ab6e335ea, type: 3}
-  m_Name: ExampleJObjectsCollection
+  m_Name: ExampleJObjectDataCollection
   m_EditorClassIdentifier: 
   sessionData:
     sessions: 00000000000000000000000000000000
