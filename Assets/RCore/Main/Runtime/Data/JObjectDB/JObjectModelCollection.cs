@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using RCore.Editor;
+using RCore.Inspector;
 using UnityEditor;
 using UnityEngine;
 

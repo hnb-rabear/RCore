@@ -1,11 +1,14 @@
 using UnityEngine;
 
-public class AutoFillAttribute : PropertyAttribute
+namespace RCore.Inspector
 {
-	public string Path { get; private set; }
-
-	public AutoFillAttribute(string path = "")
+	public class AutoFillAttribute : PropertyAttribute
 	{
-		Path = path;
+		public string Path { get; private set; }
+
+		public AutoFillAttribute(string path = "")
+		{
+			Path = path;
+		}
 	}
 }

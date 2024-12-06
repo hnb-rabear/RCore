@@ -1,16 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using RCore.Data.JObject;
+using RCore.Inspector;
 using UnityEngine;
 
 namespace RCore.Example.Data.JObject
 {
 	public class ExampleJObjectDBManagerV2 : JObjectDBManagerV2<ExampleJObjectModelCollection>
 	{
-		[AutoFill("9-Sliced (6)")] public SpriteRenderer stest;
-		[AutoFill] public List<SpriteRenderer> tests;
-
 		private void Start()
 		{
 			Init();
