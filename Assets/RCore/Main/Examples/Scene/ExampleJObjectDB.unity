@@ -902,6 +902,7 @@ MonoBehaviour:
   m_saveOnPause: 1
   m_saveOnQuit: 1
   stest: {fileID: 12391737}
+  tests: []
 --- !u!4 &1956654656
 Transform:
   m_ObjectHideFlags: 0
