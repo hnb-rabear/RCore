@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using RCore.Inspector;
 using UnityEngine.Serialization;
 #if DOTWEEN
 using DG.Tweening;
@@ -24,7 +25,7 @@ namespace RCore.Audio
 
     public class BaseAudioManager : MonoBehaviour
     {
-        public AudioCollection audioCollection;
+        [AutoFill] public AudioCollection audioCollection;
         [SerializeField] protected bool m_enabledSfx = true;
         [SerializeField] protected bool m_enabledMusic = true;
         [SerializeField] protected List<AudioSource> m_sfxSources;
