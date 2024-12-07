@@ -1,8 +1,11 @@
 using Newtonsoft.Json;
 using System;
+using UnityEngine;
 
 namespace RCore.Data.JObject
 {
+	public class NewDayStartedEvent : BaseEvent { }
+
 	[Serializable]
 	public class SessionData : JObjectData
 	{
@@ -14,26 +17,10 @@ namespace RCore.Data.JObject
 		public int firstActive;
 		public string installVersion;
 		public string updateVersion;
-		[JsonIgnore] public int sessionsTotal
-		{
-			get => sessions[0];
-			set => sessions[0] = value;
-		}
-		[JsonIgnore] public int sessionsDaily
-		{
-			get => sessions[1];
-			set => sessions[1] = value;
-		}
-		[JsonIgnore] public int sessionsWeekly
-		{
-			get => sessions[2];
-			set => sessions[2] = value;
-		}
-		[JsonIgnore] public int sessionsMonthly
-		{
-			get => sessions[3];
-			set => sessions[3] = value;
-		}
+		[JsonIgnore] public int SessionsTotal { get => sessions[0]; set => sessions[0] = value; }
+		[JsonIgnore] public int SessionsDaily { get => sessions[1]; set => sessions[1] = value; }
+		[JsonIgnore] public int SessionsWeekly { get => sessions[2]; set => sessions[2] = value; }
+		[JsonIgnore] public int SessionsMonthly { get => sessions[3]; set => sessions[3] = value; }
 		public override bool Load()
 		{
 			var load = base.Load();

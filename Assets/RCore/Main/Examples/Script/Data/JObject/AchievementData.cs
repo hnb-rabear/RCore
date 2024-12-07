@@ -44,17 +44,14 @@ namespace RCore.Example.Data.JObject
 	{
 		public Action<TaskData> onTaskUpdated;
 		public List<TaskData> achievements;
-
 		public TaskData Get(int id)
 		{
 			return achievements.Find(x => x.id == id);
 		}
-
 		public int CountNotices()
 		{
 			return achievements.FindAll(x => x.Claimable()).Count;
 		}
-
 		public void AddProgress(int id, int value)
 		{
 			var data = achievements.Find(x => x.id == id);
@@ -63,7 +60,6 @@ namespace RCore.Example.Data.JObject
 			data.count += value;
 			onTaskUpdated?.Invoke(data);
 		}
-
 		public void SetProgress(int id, int value)
 		{
 			var data = achievements.Find(x => x.id == id);

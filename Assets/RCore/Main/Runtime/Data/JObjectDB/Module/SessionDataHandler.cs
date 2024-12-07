@@ -2,9 +2,7 @@ using UnityEngine.Device;
 
 namespace RCore.Data.JObject
 {
-	public class NewDayStartedEvent : BaseEvent { }
-
-	public class SessionDataHandler : JObjectHandler<JObjectsCollection>
+	public class SessionDataHandler : JObjectHandler<JObjectDataCollection>
 	{
 		public float secondsTillNextDay;
 
@@ -21,16 +19,16 @@ namespace RCore.Data.JObject
 			{
 				sessionData.days++;
 				sessionData.daysStreak++;
-				sessionData.sessionsDaily = 0; // Reset daily sessions count
+				sessionData.SessionsDaily = 0; // Reset daily sessions count
 			}
 			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
-				sessionData.sessionsWeekly = 0; // Reset weekly sessions count
+				sessionData.SessionsWeekly = 0; // Reset weekly sessions count
 			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
-				sessionData.sessionsMonthly = 0; // Reset monthly sessions count
-			sessionData.sessionsTotal++;
-			sessionData.sessionsDaily++;
-			sessionData.sessionsWeekly++;
-			sessionData.sessionsMonthly++;
+				sessionData.SessionsMonthly = 0; // Reset monthly sessions count
+			sessionData.SessionsTotal++;
+			sessionData.SessionsDaily++;
+			sessionData.SessionsWeekly++;
+			sessionData.SessionsMonthly++;
 			secondsTillNextDay = now.Date.AddDays(1).ToUnixTimestampInt() - utcNowTimestamp;
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
@@ -75,9 +73,9 @@ namespace RCore.Data.JObject
 			if ((now - lastActive).TotalDays > 1)
 				sessionData.daysStreak = 0; //Reset days streak
 			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
-				sessionData.sessionsWeekly = 1; // Reset weekly sessions count
+				sessionData.SessionsWeekly = 1; // Reset weekly sessions count
 			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
-				sessionData.sessionsMonthly = 1; // Reset monthly sessions count
+				sessionData.SessionsMonthly = 1; // Reset monthly sessions count
 			if (lastActive.Date != now.Date)
 				AddOneDay();
 			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
@@ -87,7 +85,7 @@ namespace RCore.Data.JObject
 			var sessionData = dataCollection.sessionData;
 			sessionData.days++;
 			sessionData.daysStreak++;
-			sessionData.sessionsDaily = 1; // Reset daily sessions count
+			sessionData.SessionsDaily = 1; // Reset daily sessions count
 			DispatchEvent(new NewDayStartedEvent());
 		}
 	}

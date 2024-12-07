@@ -1,21 +1,17 @@
 namespace RCore.Data.JObject
 {
-	public interface IJObjectHandler
-	{
-		public void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
-		public void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
-		public void OnUpdate(float deltaTime);
-		public void OnPreSave(int utcNowTimestamp);
-	}
-	
 	[System.Serializable]
-	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectsCollection
+	public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectDataCollection
 	{
 		public T dataCollection;
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnUpdate(float deltaTime);
 		public abstract void OnPreSave(int utcNowTimestamp);
+		public void Save()
+		{
+			throw new System.NotImplementedException("This method should not be called. Save functionality is not implemented.");
+		}
 		/// <summary>
 		/// Triggers an event when data changes.
 		/// </summary>

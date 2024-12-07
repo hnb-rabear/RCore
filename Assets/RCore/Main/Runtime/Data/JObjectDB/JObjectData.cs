@@ -4,8 +4,15 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
-	[Serializable]
-	public abstract class JObjectData
+	public interface IJObjectData
+	{
+		void Save(bool minimizeSize = false);
+		bool Load();
+		void Delete();
+		string ToJson(bool minimizeSize = false);
+	}
+	
+	public abstract class JObjectData : IJObjectData
 	{
 		[JsonIgnore] public string key { get; set; }
 

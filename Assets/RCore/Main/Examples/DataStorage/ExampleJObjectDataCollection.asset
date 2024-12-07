@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 015db9476526bb44788cd59ab6e335ea, type: 3}
+  m_Name: ExampleJObjectDataCollection
+  m_EditorClassIdentifier: 
+  sessionData:
+    sessions: 00000000000000000000000000000000
+    days: 0
+    daysStreak: 0
+    activeTime: 0
+    lastActive: 0
+    firstActive: 0
+    installVersion: 
+    updateVersion: 
+  inventoryModel: {fileID: 11400000, guid: bb937bea1da0e684592ef1aba80d8244, type: 2}
+  inventoryRpgModel: {fileID: 11400000, guid: c9ce00fc8970cd74f94ed835948bfe9b, type: 2}
+  achievementModel: {fileID: 11400000, guid: f6ef3d1f5b322534e85730b3114cbda2, type: 2}
+  dailyRewardModel: {fileID: 11400000, guid: aed130d3d7309ca43889015dbf3eabcf, type: 2}
+  inventoryRpg:
+    items: []
+    lastItemId: 0
+    freedIds: 
+    noticedItemIds: 
+  achievement:
+    achievements: []
