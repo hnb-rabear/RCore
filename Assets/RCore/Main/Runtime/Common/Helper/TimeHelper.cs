@@ -217,7 +217,7 @@ namespace RCore
                     if (split > 0 || t.Hours > 0)
                     {
                         split++;
-                        m_TimeBuilder.Append(t.Hours.ToString("D2")).Append("h");
+                        m_TimeBuilder.Append(t.Hours).Append("h");
                     }
 
                     if ((t.Minutes > 0 || t.Seconds > 0) && split < pMaxSplits)
@@ -228,7 +228,7 @@ namespace RCore
                         if (split > 0 || t.Minutes > 0)
                         {
                             split++;
-                            m_TimeBuilder.Append(t.Minutes.ToString("D2")).Append("m");
+                            m_TimeBuilder.Append(t.Minutes).Append("m");
                         }
 
                         if (t.Seconds > 0 && split < pMaxSplits)
@@ -236,7 +236,7 @@ namespace RCore
                             if (split > 0)
                                 m_TimeBuilder.Append(" ");
 
-                            m_TimeBuilder.Append(t.Seconds.ToString("D2")).Append("s");
+                            m_TimeBuilder.Append(t.Seconds).Append("s");
                         }
                     }
                 }

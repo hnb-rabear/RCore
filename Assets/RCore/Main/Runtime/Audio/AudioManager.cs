@@ -15,15 +15,15 @@
 
         private void Start()
         {
-            EventDispatcher.AddListener<SFXTriggeredEvent>(OnToggleChanged);
+            EventDispatcher.AddListener<UISfxTriggeredEvent>(OnToggleChanged);
         }
 
         private void OnDestroy()
         {
-            EventDispatcher.AddListener<SFXTriggeredEvent>(OnToggleChanged);
+            EventDispatcher.AddListener<UISfxTriggeredEvent>(OnToggleChanged);
         }
 
-        private void OnToggleChanged(SFXTriggeredEvent e)
+        private void OnToggleChanged(UISfxTriggeredEvent e)
         {
             PlaySFX(e.sfx, 0);
         }

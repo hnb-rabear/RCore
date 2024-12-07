@@ -125,7 +125,7 @@ namespace RCore.UI
 				base.OnPointerDown(eventData);
 				
 				if (!string.IsNullOrEmpty(clickSfx))
-					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(clickSfx));
+					EventDispatcher.Raise(new Audio.UISfxTriggeredEvent(clickSfx));
 			}
 
 			if (scaleBounceEffect)

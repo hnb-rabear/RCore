@@ -20,10 +20,15 @@ using Random = UnityEngine.Random;
 namespace RCore
 {
 	public delegate void VoidDelegate();
+
 	public delegate void IntDelegate(int value);
+
 	public delegate void BoolDelegate(bool value);
+
 	public delegate void FloatDelegate(float value);
+
 	public delegate bool ConditionalDelegate();
+
 	public delegate bool ConditionalDelegate<in T>(T pComponent) where T : Component;
 
 	public static class RUtil
@@ -71,7 +76,7 @@ namespace RCore
 
 		public static void Reverse(StringBuilder sb)
 		{
-            int end = sb.Length - 1;
+			int end = sb.Length - 1;
 			int start = 0;
 
 			while (end - start > 0)
@@ -99,7 +104,7 @@ namespace RCore
 		public static string LogMemoryUsages(bool printLog = true)
 		{
 			string str =
-                $"\nTotal Reserved memory by Unity [GetTotalReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576}mb\n - Allocated memory by Unity [GetTotalAllocatedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1048576}mb\n - Reserved but not allocated [GetTotalUnusedReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalUnusedReservedMemoryLong() / 1048576}mb\n - Mono Used Size [GetMonoUsedSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576}mb\n - Mono Heap Size [GetMonoHeapSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong() / 1048576}mb";
+				$"\nTotal Reserved memory by Unity [GetTotalReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576}mb\n - Allocated memory by Unity [GetTotalAllocatedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1048576}mb\n - Reserved but not allocated [GetTotalUnusedReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalUnusedReservedMemoryLong() / 1048576}mb\n - Mono Used Size [GetMonoUsedSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576}mb\n - Mono Heap Size [GetMonoHeapSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong() / 1048576}mb";
 			if (printLog)
 				UnityEngine.Debug.Log(str);
 			return str;
@@ -114,7 +119,7 @@ namespace RCore
 			var oWidthBot = -Screen.safeArea.x / 2f;
 			var oHeightBot = -Screen.safeArea.y / 2f;
 			Debug.Log(
-                $"Screen size: (width:{sWidth}, height:{sHeight})\nSafe area: {Screen.safeArea}\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
+				$"Screen size: (width:{sWidth}, height:{sHeight})\nSafe area: {Screen.safeArea}\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
 		}
 
 		public static string DictToString(IDictionary<string, object> d)
@@ -178,7 +183,7 @@ namespace RCore
 				p1 += int.Parse(version1s[i]) * (int)Mathf.Pow(maxSubVersion, maxIndex - i - 1);
 				p2 += int.Parse(version2s[i]) * (int)Mathf.Pow(maxSubVersion, maxIndex - i - 1);
 			}
-            
+
 			// 2.1.2 = 2*10^2 + 1*10^1 + 2*10^0 = 200+10+2 = 212
 			// 2.2.6 = 2*10^2 + 2*10^1 + 6*10^0 = 200+20+6 = 226
 			// -4 
@@ -342,14 +347,14 @@ namespace RCore
 			int index = text.IndexOfAny(sentenceEnders);
 			return index >= 0 ? text.Substring(0, index) : text;
 		}
-		
+
 		public static string GetFirstSentence(string text)
 		{
 			char[] sentenceEnders = { '.', '?', '!', '\n', '\r' };
 			int index = text.IndexOfAny(sentenceEnders);
 			return index >= 0 ? text.Substring(0, index + 1) : text;
 		}
-		
+
 		public static T Clone<T>(T source)
 		{
 			if (!typeof(T).IsSerializable)
@@ -372,7 +377,7 @@ namespace RCore
 				return (T)formatter.Deserialize(stream);
 			}
 		}
-		
+
 		public static int GetVersionCode()
 		{
 #if UNITY_ANDROID
@@ -391,7 +396,7 @@ namespace RCore
 				return 0;
 			}
 		}
-		
+
 		public static string LoadTextFile(string pPath, IEncryption pEncryption)
 		{
 			var textAsset = Resources.Load<TextAsset>(pPath);
@@ -408,12 +413,55 @@ namespace RCore
 			Debug.LogError($"File {pPath} not found");
 			return "";
 		}
-		
+
 		public static string LoadTextFile(string pPath, bool pEncrypt = false)
 		{
 			if (pEncrypt)
 				return LoadTextFile(pPath, Encryption.Singleton);
 			return LoadTextFile(pPath, null);
+		}
+
+		public static List<Vector2> GenerateRandomPositions(int count, float radius, float minDistance, int safeLoops = 100)
+		{
+			var positions = new List<Vector2>();
+			for (int i = 0; i < count; i++)
+			{
+				Vector2 newPos;
+				int attempts = 0;
+				bool validPosition;
+				do
+				{
+					newPos = Random.insideUnitCircle * radius;
+
+					validPosition = true;
+					foreach (var pos in positions)
+					{
+						if (Vector2.Distance(newPos, pos) < minDistance)
+						{
+							validPosition = false;
+							break;
+						}
+					}
+
+					attempts++;
+					if (attempts > safeLoops)
+					{
+#if UNITY_EDITOR
+						Debug.LogWarning("Max attempts reached, some points may not be placed.");
+#endif
+						break;
+					}
+				} while (!validPosition);
+
+				if (validPosition)
+					positions.Add(newPos);
+			}
+			while (positions.Count < count)
+			{
+				var pos = Random.insideUnitCircle * radius;
+				positions.Add(pos);
+			}
+			return positions;
 		}
 	}
 
@@ -486,7 +534,7 @@ namespace RCore
 					return true;
 			return false;
 		}
-		
+
 		public static T Find<T>(this T[] pArray, Predicate<T> match)
 		{
 			for (int i = 0; i < pArray.Length; i++)
@@ -554,7 +602,7 @@ namespace RCore
 			if (count == 0)
 				output = (T[])pArray.Clone();
 
-			T[] newArray = new T[pArray.Length - count];
+			var newArray = new T[pArray.Length - count];
 			int j = 0;
 
 			// Second pass: copy the elements that are not equal to pObj
@@ -576,7 +624,7 @@ namespace RCore
 			}
 
 			// Create a new array with the non-matching elements
-			T[] result = new T[count];
+			var result = new T[count];
 			int index = 0;
 			for (int i = 0; i < pArray.Length; i++)
 			{
@@ -601,7 +649,7 @@ namespace RCore
 				}
 			output = newArray;
 		}
-		
+
 		public static int IndexOf<T>(this T[] pArray, T pObj)
 		{
 			var comparer = EqualityComparer<T>.Default;
@@ -610,7 +658,7 @@ namespace RCore
 					return i;
 			return -1;
 		}
-		
+
 		public static int FindIndex<T>(this T[] pArray, Predicate<T> match)
 		{
 			for (int i = 0; i < pArray.Length; i++)
@@ -626,7 +674,7 @@ namespace RCore
 			pList.RemoveAll(item => item == null);
 			return pList;
 		}
-		
+
 		public static void RemoveDuplicated<T>(this List<T> list)
 		{
 			var seenItems = new HashSet<T>();
@@ -639,7 +687,7 @@ namespace RCore
 			foreach (var duplicate in duplicates)
 				list.Remove(duplicate);
 		}
-		
+
 		public static void RemoveDuplicatedKey<TKey, TValue>(this List<SerializableKeyValue<TKey, TValue>> list)
 		{
 			var seenKeys = new HashSet<TKey>();
@@ -815,7 +863,7 @@ namespace RCore
 				}
 			}
 		}
-		
+
 		public static void Swap<T>(this List<T> list, int index1, int index2)
 		{
 			if (list.Count <= 0)
@@ -838,7 +886,5 @@ namespace RCore
 				pItem = pItem.parent;
 			}
 		}
-
-		
 	}
 }

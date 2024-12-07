@@ -14,10 +14,10 @@ namespace RCore.Audio
 	/// <summary>
 	/// Used to trigger sfx on UI component
 	/// </summary>
-	public struct SFXTriggeredEvent : BaseEvent
+	public struct UISfxTriggeredEvent : BaseEvent
 	{
 		public string sfx;
-		public SFXTriggeredEvent(string val)
+		public UISfxTriggeredEvent(string val)
 		{
 			sfx = val;
 		}

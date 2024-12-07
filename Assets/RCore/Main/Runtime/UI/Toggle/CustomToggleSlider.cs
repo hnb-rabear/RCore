@@ -57,9 +57,9 @@ namespace RCore.UI
 			if (m_clicked)
 			{
 				if (isOn && !string.IsNullOrEmpty(sfxClip))
-					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
+					EventDispatcher.Raise(new Audio.UISfxTriggeredEvent(sfxClip));
 				else if (!isOn && !string.IsNullOrEmpty(sfxClipOff))
-					EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClipOff));
+					EventDispatcher.Raise(new Audio.UISfxTriggeredEvent(sfxClipOff));
 				m_clicked = false;
 			}
 			Refresh();
