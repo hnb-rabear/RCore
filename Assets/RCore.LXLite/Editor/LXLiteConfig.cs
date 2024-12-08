@@ -20,16 +20,16 @@ namespace RCore.LXLite.Editor
 		public const string LOCALIZATION_TEMPLATE = "LocalizationTemplateV2";
 		public const string LOCALIZATION_SHEET = "Localization";
 		public const string LOCALIZATION_TEXT_TEMPLATE = "LocalizationTextTemplate";
-		
+
 		static LXLiteConfig()
 		{
-			m_LocalizationOutputFolder = EditorPrefs.GetString("LocalizationOutputFolder");
-			m_scriptsOutputFolder = EditorPrefs.GetString("ScriptsOutputFolder");
-			m_googleSpreadsheetsId = EditorPrefs.GetString("GoogleSpreadsheetsId");
-			m_clientId = EditorPrefs.GetString("ClientId");
-			m_clientSecret = EditorPrefs.GetString("ClientSecret");
-			m_excelFilePath = EditorPrefs.GetString("ExcelFilePath");
-			m_langCharSets = EditorPrefs.GetString("LangCharSets");
+			m_LocalizationOutputFolder = EditorPrefs.GetString(nameof(LocalizationOutputFolder) + Application.identifier);
+			m_scriptsOutputFolder = EditorPrefs.GetString(nameof(ScriptsOutputFolder) + Application.identifier);
+			m_googleSpreadsheetsId = EditorPrefs.GetString(nameof(GoogleSpreadsheetsId) + Application.identifier);
+			m_clientId = EditorPrefs.GetString(nameof(ClientId) + Application.identifier);
+			m_clientSecret = EditorPrefs.GetString(nameof(ClientSecret) + Application.identifier);
+			m_excelFilePath = EditorPrefs.GetString(nameof(ExcelFilePath) + Application.identifier);
+			m_langCharSets = EditorPrefs.GetString(nameof(LangCharSets) + Application.identifier);
 		}
 		private static string m_LocalizationOutputFolder;
 		public static string LocalizationOutputFolder
@@ -40,7 +40,7 @@ namespace RCore.LXLite.Editor
 				if (m_LocalizationOutputFolder == value)
 					return;
 				m_LocalizationOutputFolder = value;
-				EditorPrefs.SetString("LocalizationOutputFolder", value);
+				EditorPrefs.SetString(nameof(LocalizationOutputFolder) + Application.identifier, value);
 			}
 		}
 		private static string m_scriptsOutputFolder;
@@ -52,7 +52,7 @@ namespace RCore.LXLite.Editor
 				if (m_scriptsOutputFolder == value)
 					return;
 				m_scriptsOutputFolder = value;
-				EditorPrefs.SetString("ScriptsOutputFolder", value);
+				EditorPrefs.SetString(nameof(ScriptsOutputFolder) + Application.identifier, value);
 			}
 		}
 		private static string m_googleSpreadsheetsId;
@@ -64,31 +64,31 @@ namespace RCore.LXLite.Editor
 				if (m_googleSpreadsheetsId == value)
 					return;
 				m_googleSpreadsheetsId = value;
-				EditorPrefs.SetString("GoogleSpreadsheetsId", value);
+				EditorPrefs.SetString(nameof(GoogleSpreadsheetsId) + Application.identifier, value);
 			}
 		}
 		private static string m_clientId;
 		public static string ClientId
 		{
-			get => EditorPrefs.GetString("ClientId");
+			get => m_clientId;
 			set
 			{
 				if (m_clientId == value)
 					return;
 				m_clientId = value;
-				EditorPrefs.SetString("ClientId", value);
+				EditorPrefs.SetString(nameof(ClientId) + Application.identifier, value);
 			}
 		}
 		private static string m_clientSecret;
 		public static string ClientSecret
 		{
-			get => EditorPrefs.GetString("ClientSecret");
+			get => m_clientSecret;
 			set
 			{
 				if (m_clientSecret == value)
 					return;
 				m_clientSecret = value;
-				EditorPrefs.SetString("ClientSecret", value);
+				EditorPrefs.SetString(nameof(ClientSecret) + Application.identifier, value);
 			}
 		}
 		private static string m_excelFilePath;
@@ -100,7 +100,7 @@ namespace RCore.LXLite.Editor
 				if (m_excelFilePath == value)
 					return;
 				m_excelFilePath = value;
-				EditorPrefs.SetString("ExcelFilePath", value);
+				EditorPrefs.SetString(nameof(ExcelFilePath) + Application.identifier, value);
 			}
 		}
 		private static string m_langCharSets;
@@ -112,7 +112,7 @@ namespace RCore.LXLite.Editor
 				if (m_langCharSets == value)
 					return;
 				m_langCharSets = value;
-				EditorPrefs.SetString("LangCharSets", value);
+				EditorPrefs.SetString(nameof(LangCharSets) + Application.identifier, value);
 			}
 		}
 	}
@@ -202,7 +202,7 @@ namespace RCore.LXLite.Editor
 		}
 		private static string GetSaveDirectory()
 		{
-			var path = Path.Combine(Application.dataPath, "Editor");
+			var path = Path.Combine(Application.dataPath, nameof(Editor));
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
 			return path;

@@ -78,13 +78,19 @@ namespace RCore.SheetX.Editor
 
 		public static SheetXSettings Load()
 		{
-			var collection = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(SheetXSettings)) as SheetXSettings;
-			if (collection == null)
+			var settings = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(SheetXSettings)) as SheetXSettings;
+			if (settings != null)
+				return settings;
+			string[] guids = AssetDatabase.FindAssets($"t:SheetXSettings");
+			var assets = guids.Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<ScriptableObject>).ToArray();
+			if (assets.Length > 0)
 			{
-				collection = EditorHelper.CreateScriptableAsset<SheetXSettings>(FILE_PATH);
-				collection.ResetToDefault();
+				settings = assets[0] as SheetXSettings;
+				return settings;
 			}
-			return collection;
+			settings = EditorHelper.CreateScriptableAsset<SheetXSettings>(FILE_PATH);
+			settings.ResetToDefault();
+			return settings;
 		}
 
 		public string GetLocalizationFolder(out bool isAddressableAsset)
