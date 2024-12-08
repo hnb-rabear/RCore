@@ -15,7 +15,7 @@ namespace RCore.UI
 		public void OnStart();
 		public void OnFinish();
 	}
-    
+
 	public class UICircleArranger : MonoBehaviour
 	{
 		public float radius = 500f;
@@ -123,7 +123,7 @@ namespace RCore.UI
 #if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
 #endif
-		public void ArrangeTweenFromEdge(bool leftToRight)
+		public void ArrangeFromEdgeWithTween(bool leftToRight)
 		{
 			CalculatePositions();
 
@@ -156,7 +156,7 @@ namespace RCore.UI
 				// moveSequence.Play();
 			}
 		}
-		
+
 		private IEnumerator MoveToPosition(RectTransform target, Vector3[] positions, Quaternion[] rotations, int endIndex)
 		{
 			float timePerStep = tweenDuration / positions.Length;
@@ -190,7 +190,7 @@ namespace RCore.UI
 #if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
 #endif
-		public void ArrangeTweenFromCenter(Action pCallback)
+		public void ArrangeFromCenterWithTween(Action pCallback)
 		{
 			CalculatePositions();
 
@@ -199,7 +199,7 @@ namespace RCore.UI
 				int index = i;
 				var target = m_targets[i];
 				if (m_newRotations[i] != Quaternion.identity)
-					target.DORotateQuaternion(m_newRotations[i], tweenDuration);
+					target.DORotateQuaternion(m_newRotations[i], tweenDuration).SetUpdate(true);
 
 				float lerp = 0;
 				target.localPosition = Vector3.zero;
@@ -229,12 +229,39 @@ namespace RCore.UI
 					{
 						if (index == m_targets.Count - 1)
 							pCallback?.Invoke();
-						
+
 						if (target.TryGetComponent(out ITweenItem item))
 							item.OnFinish();
 					})
 					.SetDelay(emitInterval * index)
 					.SetUpdate(true);
+			}
+		}
+
+#if ODIN_INSPECTOR
+		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
+#endif
+		public void RefreshTargetPositionsWithTween()
+		{
+			CalculatePositions();
+
+			for (var i = 0; i < m_targets.Count; i++)
+			{
+				int i1 = i;
+				var target = m_targets[i];
+				var targetPrePosition = target.anchoredPosition;
+				float lerp = 0;
+				DOTween.Kill(GetInstanceID());
+				DOTween.To(() => lerp, x => lerp = x, 1f, tweenDuration)
+					.OnUpdate(() =>
+					{
+						if (m_newRotations[i1] != Quaternion.identity)
+						{
+							var rotation = Quaternion.LerpUnclamped(Quaternion.identity, m_newRotations[i1], lerp);
+							target.rotation = rotation;
+						}
+						target.anchoredPosition = Vector3.LerpUnclamped(targetPrePosition, m_newPositions[i1], lerp);
+					}).SetUpdate(true).SetId(GetInstanceID());
 			}
 		}
 	}

@@ -152,6 +152,12 @@ namespace RCore.UI
 			m_lerp = 0;
 			m_tweener.Kill();
 			m_tweener = DOTween.To(val => m_lerp = val, 0f, 1f, m_tweenTime)
+				.OnStart(() =>
+				{
+					foreach (var t in m_children)
+						if(t.TryGetComponent(out ITweenItem item))
+							item.OnStart();
+				})
 				.OnUpdate(() =>
 				{
 					float t = m_lerp;
@@ -166,6 +172,10 @@ namespace RCore.UI
 				.OnComplete(() =>
 				{
 					waiting = false;
+					
+					foreach (var t in m_children)
+						if(t.TryGetComponent(out ITweenItem item))
+							item.OnFinish();
 				})
 				.SetUpdate(true);
 			if (m_animCurveTemp == null)
@@ -183,6 +193,10 @@ namespace RCore.UI
 
 		private IEnumerator IEArrangeChildren(Vector3[] pChildrenPrePosition, Vector3[] pChildrenNewPosition, float pDuration)
 		{
+			foreach (var t in m_children)
+				if(t.TryGetComponent(out ITweenItem item))
+					item.OnStart();
+			
 			float time = 0;
 			while (true)
 			{
@@ -202,6 +216,10 @@ namespace RCore.UI
 				yield return null;
 				time += Time.deltaTime;
 			}
+			
+			foreach (var t in m_children)
+				if(t.TryGetComponent(out ITweenItem item))
+					item.OnFinish();
 		}
 	}
 }

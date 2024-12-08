@@ -13,9 +13,11 @@
                 Destroy(gameObject);
         }
 
-        private void Start()
+        protected override void Start()
         {
-            EventDispatcher.AddListener<UISfxTriggeredEvent>(OnToggleChanged);
+	        base.Start();
+	        
+	        EventDispatcher.AddListener<UISfxTriggeredEvent>(OnToggleChanged);
         }
 
         private void OnDestroy()
