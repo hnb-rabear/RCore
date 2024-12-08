@@ -812,6 +812,7 @@ namespace RCore.SheetX.Editor
 			fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
 			fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
+			fileContent.TrimEnd();
 			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
 
@@ -819,6 +820,7 @@ namespace RCore.SheetX.Editor
 			fileContent = Resources.Load<TextAsset>(SheetXConstants.LOCALIZATION_TEXT_TEMPLATE).text;
 			fileContent = fileContent.Replace("LOCALIZATION_CLASS_NAME", pFileName);
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
+			fileContent.TrimEnd();
 			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}Text.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}Text.cs!");
 		}
@@ -904,6 +906,7 @@ namespace RCore.SheetX.Editor
 				fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
 				fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 				fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
+				fileContent.TrimEnd();
 				SheetXHelper.WriteFile(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent);
 				UnityEngine.Debug.Log($"Exported LocalizationsManager.cs!");
 			}

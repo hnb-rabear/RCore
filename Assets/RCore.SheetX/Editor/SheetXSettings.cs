@@ -156,6 +156,7 @@ namespace RCore.SheetX.Editor
 			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", pFileName);
 			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
 			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
+			fileContent.TrimEnd();
 
 			SheetXHelper.WriteFile(constantsOutputFolder, $"{pFileName}.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
