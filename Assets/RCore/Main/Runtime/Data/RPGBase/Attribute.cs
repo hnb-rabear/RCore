@@ -235,7 +235,7 @@ namespace RCore.RPGBase
 			if (pLevel < unlock || pLevel == 0)
 				return 0;
 
-			float inc = 0;
+			float inc;
 			if (unlock > 0)
 				inc = (pLevel - unlock) * increase;
 			else
@@ -250,12 +250,12 @@ namespace RCore.RPGBase
 		/// </summary>
 		public virtual float[] GetValues(int pLevel = 1)
 		{
-			float[] outputValues = new float[1] { 0 };
+			float[] outputValues = new float[] { 0 };
 
-			if (value != 0) values = new float[1] { value };
-			if (unlock != 0) unlocks = new float[1] { unlock };
-			if (increase != 0) increases = new float[1] { increase };
-			if (max != 0) maxes = new float[1] { max };
+			if (value != 0) values = new[] { value };
+			if (unlock != 0) unlocks = new float[] { unlock };
+			if (increase != 0) increases = new[] { increase };
+			if (max != 0) maxes = new[] { max };
 
 			if (values != null && values.Length > 0)
 			{
@@ -298,7 +298,7 @@ namespace RCore.RPGBase
 			float curValue = GetValue(pLevel, pValueIndex);
 			if (pNextLevel != pLevel)
 			{
-				string str = "";
+				string str;
 				float nextValue = GetValue(pNextLevel);
 				if (nextValue != curValue)
 					str = $"{MathHelper.Round(curValue, 2)} (<color=#299110>+{MathHelper.Round(nextValue - curValue, 2)}</color>)";

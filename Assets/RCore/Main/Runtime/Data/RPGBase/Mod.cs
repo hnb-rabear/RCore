@@ -26,7 +26,7 @@ namespace RCore.RPGBase
 		public Mod(int pId, float pValue)
 		{
 			id = pId;
-			values = new float[1] { pValue };
+			values = new[] { pValue };
 		}
 		public Mod(int pId, float[] pValues)
 		{
@@ -137,23 +137,23 @@ namespace RCore.RPGBase
 		//---- ADD
 		protected virtual void AddModAndValues(int id, params float[] values)
 		{
-			if (mods.ContainsKey(id))
+			if (mods.TryGetValue(id, out float[] mod))
 			{
 				for (int i = 0; i < values.Length; i++)
-					mods[id][i] += values[i];
+					mod[i] += values[i];
 			}
 			else
 				mods.Add(id, values);
 		}
 		public void AddMods(Dictionary<int, float[]> pMods)
 		{
-			var mods = new List<Mod>();
+			var list = new List<Mod>();
 			foreach (var mod in pMods)
 			{
 				AddMod(mod.Key, mod.Value, false);
-				mods.Add(new Mod(mod.Key, mod.Value));
+				list.Add(new Mod(mod.Key, mod.Value));
 			}
-			onModsChanged?.Invoke(mods);
+			onModsChanged?.Invoke(list);
 		}
 		public void AddMods(List<Mod> pMods)
 		{
@@ -205,7 +205,7 @@ namespace RCore.RPGBase
 		//---- CIRCLE MOD
 		public void AddTimedMod(int pSourceId, int pModId, float pValue, float pDuration, float pCooldown = 0)
 		{
-			AddTimedMod(pSourceId, pModId, new float[1] { pValue }, pDuration, pCooldown);
+			AddTimedMod(pSourceId, pModId, new[] { pValue }, pDuration, pCooldown);
 		}
 		public void AddTimedMod(int pSourceId, int pModId, float[] pValues, float pDuration, float pCooldown = 0)
 		{
@@ -276,7 +276,7 @@ namespace RCore.RPGBase
 		//---- LINKED MOD
 		public void AddLinkedMod(int pSourceId, int pModId, float pValue)
 		{
-			AddLinkedMod(pSourceId, pModId, new float[1] { pValue });
+			AddLinkedMod(pSourceId, pModId, new[] { pValue });
 		}
 		public void AddLinkedMod(int pSourceId, int pModId, float[] pValues)
 		{
