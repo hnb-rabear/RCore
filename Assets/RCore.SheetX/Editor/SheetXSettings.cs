@@ -32,7 +32,9 @@ namespace RCore.SheetX.Editor
 
 	public class SheetXSettings : ScriptableObject
 	{
-#if ASSETS_STORE
+#if ASSETS_STORE && SX_LOCALIZATION 
+		private const string FILE_PATH = "Assets/LocalizationX/Editor/SheetXSettings.asset";
+#elif ASSETS_STORE && !SX_LOCALIZATION
 		private const string FILE_PATH = "Assets/SheetX/Editor/SheetXSettings.asset";
 #else
 		private const string FILE_PATH = "Assets/RCore.SheetX/Editor/SheetXSettings.asset";
