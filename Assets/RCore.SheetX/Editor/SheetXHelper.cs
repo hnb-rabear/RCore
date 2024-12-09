@@ -51,7 +51,7 @@ namespace RCore.SheetX.Editor
 				using (File.Create(filePath)) { }
 
 			using var sw = new StreamWriter(filePath, false, Encoding.UTF8);
-			sw.WriteLine(pContent);
+			sw.Write(pContent);
 			sw.Close();
 		}
 

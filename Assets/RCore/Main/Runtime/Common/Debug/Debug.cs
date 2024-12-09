@@ -233,7 +233,7 @@ namespace RCore
 			{
 				var sr = new StreamReader(fileName);
 				var sw = new StreamWriter(fileName, true);
-				sw.WriteLine($"{Time.time:0.00} \t {Time.frameCount} \t {context}");
+				sw.Write($"{Time.time:0.00} \t {Time.frameCount} \t {context}");
 				sw.Close();
 			}
 		}
