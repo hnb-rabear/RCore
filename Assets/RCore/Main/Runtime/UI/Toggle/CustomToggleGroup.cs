@@ -11,6 +11,8 @@ namespace RCore.UI
     public class CustomToggleGroup : ToggleGroup
     {
         public RectTransform dynamicBackground;
+        public bool resizeY = true;
+        public bool resizeX = true;
 
         public void SetTarget(RectTransform pTarget, float pTweenDuration = 0)
         {
@@ -33,12 +35,22 @@ namespace RCore.UI
                     dynamicBackground.anchoredPosition = pos;
 
                     var size = Vector2.Lerp(oldSize, pTarget.sizeDelta, lerp);
-                    dynamicBackground.sizeDelta = size;
+                    if (resizeX && resizeY)
+                        dynamicBackground.sizeDelta = size;
+                    else if (resizeX)
+                        dynamicBackground.sizeDelta = new Vector2(size.x, dynamicBackground.sizeDelta.y);
+                    else if (resizeY)
+                        dynamicBackground.sizeDelta = new Vector2(dynamicBackground.sizeDelta.x, size.y);
                 })
                 .OnComplete(() =>
                 {
                     dynamicBackground.anchoredPosition = pTarget.anchoredPosition;
-                    dynamicBackground.sizeDelta = pTarget.sizeDelta;
+                    if (resizeX && resizeY)
+                        dynamicBackground.sizeDelta = pTarget.sizeDelta;
+                    else if (resizeX)
+                        dynamicBackground.sizeDelta = new Vector2(pTarget.sizeDelta.x, dynamicBackground.sizeDelta.y);
+                    else if (resizeY)
+                        dynamicBackground.sizeDelta = new Vector2(dynamicBackground.sizeDelta.x, pTarget.sizeDelta.y);
                 })
                 .SetEase(Ease.OutCubic)
                 .SetId(GetInstanceID());
@@ -53,7 +65,12 @@ namespace RCore.UI
             while (time > 0)
             {
                 dynamicBackground.anchoredPosition = pTarget.anchoredPosition;
-                dynamicBackground.sizeDelta = pTarget.sizeDelta;
+                if (resizeX && resizeY)
+                    dynamicBackground.sizeDelta = pTarget.sizeDelta;
+                else if (resizeX)
+                    dynamicBackground.sizeDelta = new Vector2(pTarget.sizeDelta.x, dynamicBackground.sizeDelta.y);
+                else if (resizeY)
+                    dynamicBackground.sizeDelta = new Vector2(dynamicBackground.sizeDelta.x, pTarget.sizeDelta.y);
                 time -= Time.deltaTime;
                 yield return null;
             }

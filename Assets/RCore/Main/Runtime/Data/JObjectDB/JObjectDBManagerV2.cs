@@ -7,7 +7,7 @@ namespace RCore.Data.JObject
 	public class JObjectDBManagerV2<T> : MonoBehaviour where T : JObjectModelCollection
 	{
 		public Action onInitialized;
-		[SerializeField, AutoFill] protected T m_dataCollection;
+		[SerializeField, CreateScriptableObject, AutoFill] protected T m_dataCollection;
 		[SerializeField, Range(1, 10)] protected int m_saveDelay = 3;
 		[SerializeField] protected bool m_enabledSave = true;
 		[SerializeField] protected bool m_saveOnPause = true;
