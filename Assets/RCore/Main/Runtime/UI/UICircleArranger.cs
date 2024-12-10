@@ -19,6 +19,7 @@ namespace RCore.UI
 	public class UICircleArranger : MonoBehaviour
 	{
 		public float radius = 500f;
+		public float radiusStep = 200f;
 		public bool enableRotation;
 		public float tweenDuration = 0.4f;
 		[Range(0, 90)] public float maxDegreeBetween = 30;
@@ -27,7 +28,8 @@ namespace RCore.UI
 		public bool centerOnTop = true;
 		public float emitInterval = 0.03f;
 		public AnimationCurve scaleOverLifeTime;
-		public AnimationCurve positionOverLifeTime;
+		public AnimationCurve positionXOverMoveTime;
+		public AnimationCurve positionYOverMoveTime;
 		public RectTransform[] exceptions;
 
 		private List<RectTransform> m_targets;
@@ -48,61 +50,79 @@ namespace RCore.UI
 		{
 			m_targets = new List<RectTransform>();
 			foreach (Transform t in transform)
+			{
 				if (t.gameObject.activeSelf && !exceptions.Contains(t))
+				{
 					m_targets.Add(t as RectTransform);
-
-			// Calculate the angle step based on maxDegree or evenly distributed if maxDegree is 0
-			float angleStep = maxDegree <= 0 || maxDegree > 360 ? 360f / m_targets.Count : maxDegree / (m_targets.Count - 1);
-			if (angleStep > maxDegreeBetween && maxDegreeBetween > 0)
-				angleStep = maxDegreeBetween;
-			float angle = startDegree;
+				}
+			}
 
 			m_newPositions = new Vector3[m_targets.Count];
 			m_newRotations = new Quaternion[m_targets.Count];
 
-			for (int i = 0; i < m_targets.Count; i++)
-			{
-				float xPos = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
-				float yPos = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
+			int totalTargets = m_targets.Count;
+			int outerCount, innerCount;
+			float currentRadius;
 
-				var newPos = new Vector2(xPos, yPos);
-				m_newPositions[i] = newPos;
+			// Determine the number of targets per circle
+			if (totalTargets <= 8)
+			{
+				outerCount = Mathf.Min(5, totalTargets);
+				innerCount = Mathf.Min(3, totalTargets - outerCount);
+				currentRadius = radius;
+			}
+			else if (totalTargets <= 10)
+			{
+				outerCount = 6;
+				innerCount = Mathf.Min(4, totalTargets - outerCount);
+				currentRadius = radius;
+			}
+			else
+			{
+				outerCount = totalTargets * 2 / 3;
+				innerCount = totalTargets - outerCount;
+				currentRadius = radius;
+			}
+
+			// Arrange outer circle
+			ArrangeTargetsOnCircle(0, outerCount, currentRadius);
+			// Arrange inner circle
+			ArrangeTargetsOnCircle(outerCount, innerCount, currentRadius - radiusStep);
+		}
+		
+		private void ArrangeTargetsOnCircle(int startIdx, int count, float radius)
+		{
+			if (count == 0)
+				return;
+
+			float angleStep = maxDegree <= 0 || maxDegree > 360 ? 360f / count : maxDegree / (count - 1);
+			if (angleStep > maxDegreeBetween && maxDegreeBetween > 0)
+				angleStep = maxDegreeBetween;
+
+			float startAngle = centerOnTop ? 90f - angleStep * (count - 1) / 2 : startDegree;
+
+			for (int i = 0; i < count; i++)
+			{
+				int idx = startIdx + i;
+				if (idx >= m_targets.Count)
+					break;
+
+				float xPos = Mathf.Cos(startAngle * Mathf.Deg2Rad) * radius;
+				float yPos = Mathf.Sin(startAngle * Mathf.Deg2Rad) * radius;
+
+				m_newPositions[idx] = new Vector2(xPos, yPos);
 
 				if (enableRotation)
 				{
-					// Calculate the rotation angle to match the angle on the circle
 					float rotationAngle = Mathf.Atan2(yPos, xPos) * Mathf.Rad2Deg;
-					m_newRotations[i] = Quaternion.Euler(0, 0, rotationAngle);
+					m_newRotations[idx] = Quaternion.Euler(0, 0, rotationAngle);
 				}
 				else
-					m_newRotations[i] = Quaternion.identity;
-
-				angle += angleStep;
-			}
-
-			if (centerOnTop)
-			{
-				// Arrange targets to extend to both sides, starting from the center top of the circle
-				float startAngle = 90f - angleStep * (m_targets.Count - 1) / 2;
-				for (int i = 0; i < m_targets.Count; i++)
 				{
-					float xPos = Mathf.Cos(startAngle * Mathf.Deg2Rad) * radius;
-					float yPos = Mathf.Sin(startAngle * Mathf.Deg2Rad) * radius;
-
-					var newPos = new Vector2(xPos, yPos);
-					m_newPositions[i] = newPos;
-
-					if (enableRotation)
-					{
-						// Calculate the rotation angle to match the angle on the circle
-						float rotationAngle = Mathf.Atan2(yPos, xPos) * Mathf.Rad2Deg;
-						m_newRotations[i] = Quaternion.Euler(0, 0, rotationAngle);
-					}
-					else
-						m_newRotations[i] = Quaternion.identity;
-
-					startAngle += angleStep;
+					m_newRotations[idx] = Quaternion.identity;
 				}
+
+				startAngle += angleStep;
 			}
 		}
 
@@ -212,12 +232,12 @@ namespace RCore.UI
 					})
 					.OnUpdate(() =>
 					{
-						Vector3 position;
-						if (positionOverLifeTime.keys.Length > 0)
-							position = Vector3.LerpUnclamped(Vector3.zero, m_newPositions[index], positionOverLifeTime.Evaluate(lerp));
-						else
-							position = Vector3.Lerp(Vector3.zero, m_newPositions[index], lerp);
-						target.anchoredPosition = position;
+						var pos = m_newPositions[index];
+						if (m_newPositions.Length > 0)
+							pos.x = Mathf.LerpUnclamped(0, m_newPositions[index].x, positionXOverMoveTime.Evaluate(lerp));
+						if (m_newPositions.Length > 0)
+							pos.y = Mathf.LerpUnclamped(0, m_newPositions[index].y, positionYOverMoveTime.Evaluate(lerp));
+						target.anchoredPosition = pos;
 
 						if (scaleOverLifeTime.keys.Length > 0)
 						{
