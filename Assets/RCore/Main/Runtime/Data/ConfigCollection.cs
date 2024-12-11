@@ -73,6 +73,7 @@ namespace RCore.Data
 				{
 					m_config.LoadData();
 					EditorUtility.SetDirty(m_config);
+					AssetDatabase.SaveAssetIfDirty(m_config);
 				}
 			}
 		}

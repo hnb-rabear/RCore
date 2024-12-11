@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.Data.JObject
 {
@@ -28,7 +29,7 @@ namespace RCore.Data.JObject
 			data.SessionsDaily++;
 			data.SessionsWeekly++;
 			data.SessionsMonthly++;
-			secondsTillNextDay = now.Date.AddDays(1).ToUnixTimestampInt() - utcNowTimestamp;
+			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{
@@ -41,7 +42,7 @@ namespace RCore.Data.JObject
 		public override void OnUpdate(float deltaTime)
 		{
 			data.activeTime += deltaTime;
-
+			
 			if (secondsTillNextDay > 0)
 			{
 				secondsTillNextDay -= deltaTime;
@@ -61,7 +62,6 @@ namespace RCore.Data.JObject
 				data.installVersion = curVersion;
 			data.updateVersion = curVersion;
 		}
-		public void Save() => data.Save();
 		private void CheckNewDay()
 		{
 			var lastActive = TimeHelper.UnixTimestampToDateTime(data.lastActive).ToLocalTime();
