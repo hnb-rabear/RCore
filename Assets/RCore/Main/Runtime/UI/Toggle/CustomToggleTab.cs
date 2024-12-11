@@ -22,36 +22,47 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/CustomToggleTab")]
 	public class CustomToggleTab : Toggle
 	{
+		[Serializable]
+		public class SizeTransition
+		{
+			public RectTransform target;
+			public LayoutElement layoutElement;
+			public Vector3 on;
+			public Vector3 off;
+		}
+
+		[Serializable]
+		public class PositionTransition
+		{
+			public RectTransform target;
+			public Vector3 on;
+			public Vector3 off;
+		}
+
+		[Serializable]
+		public class AlphaTransition
+		{
+			public MaskableGraphic target;
+			public float on;
+			public float off;
+		}
+
 		public Image imgBackground;
 		public TextMeshProUGUI txtLabel;
 		public List<RectTransform> contentsActive;
 		public List<RectTransform> contentsInactive;
-		public List<TextMeshProUGUI> additionalLabels;
 		public string sfxClip = "button";
 		public string sfxClipOff = "button";
 		public bool scaleBounceEffect = true;
-
-		public bool enableBgSpriteSwitch;
-		public Sprite sptActiveBackground;
-		public Sprite sptInactiveBackground;
-
-		public bool enableBgColorSwitch;
-		public Color colorActiveBackground;
-		public Color colorInactiveBackground;
-
-		public bool enableTextColorSwitch;
-		public Color colorActiveText;
-		public Color colorInactiveText;
 
 		public bool enableSizeSwitch;
 		public Vector2 sizeActive;
 		public Vector2 sizeInactive;
 
-		public bool enableFontSizeSwitch;
-		public float fontSizeActive;
-		public float fontSizeInactive;
-
 		public float tweenTime = 0.3f;
+		public SizeTransition[] sizeTransitions;
+		public PositionTransition[] positionTransitions;
+		public AlphaTransition[] alphaTransitions;
 
 		[ReadOnly] public bool isLocked;
 
@@ -111,39 +122,10 @@ namespace RCore.UI
 				imgBackground = images[0];
 			}
 
-			if (imgBackground != null)
-			{
-				if (enableBgColorSwitch)
-				{
-					if (colorActiveBackground == default)
-						colorActiveBackground = imgBackground.color;
-				}
-				else if (imgBackground.color == default && colorActiveBackground != default)
-				{
-					imgBackground.color = colorActiveBackground;
-				}
-				if (enableBgSpriteSwitch)
-				{
-					if (sptActiveBackground == null && imgBackground.sprite != null)
-						sptActiveBackground = imgBackground.sprite;
-				}
-				else if (imgBackground.sprite == null && sptActiveBackground != null)
-				{
-					imgBackground.sprite = sptActiveBackground;
-				}
-			}
-			if (txtLabel != null)
-			{
-				if (enableFontSizeSwitch && fontSizeActive == 0)
-					fontSizeActive = txtLabel.fontSize;
-				if (enableTextColorSwitch)
-				{
-					if (colorActiveText == default)
-						colorActiveText = txtLabel.color;
-				}
-				else if (txtLabel.color == default && colorActiveText != default)
-					txtLabel.color = colorActiveText;
-			}
+			for (var i = contentsInactive.Count - 1; i >= 0; i--)
+				if (contentsInactive[i] == null)
+					contentsInactive.RemoveAt(i);
+
 			if (enableSizeSwitch)
 			{
 				if (sizeActive == Vector2.zero)
@@ -176,6 +158,27 @@ namespace RCore.UI
 					}
 				}
 				_animator.enabled = true;
+			}
+
+			foreach (var transition1 in sizeTransitions)
+			{
+				if (transition1.target == null)
+					continue;
+				if (transition1.layoutElement == null)
+					transition1.target.TryGetComponent(out transition1.layoutElement);
+				if (transition1.on == default)
+					transition1.on = transition1.target.rect.size;
+				if (transition1.off == default)
+					transition1.off = transition1.target.rect.size;
+			}
+			foreach (var transition1 in positionTransitions)
+			{
+				if (transition1.target == null)
+					continue;
+				if (transition1.on == default)
+					transition1.on = transition1.target.anchoredPosition;
+				if (transition1.off == default)
+					transition1.off = transition1.target.anchoredPosition;
 			}
 		}
 #endif
@@ -260,9 +263,6 @@ namespace RCore.UI
 				foreach (var item in contentsInactive)
 					item.gameObject.SetActive(!isOn);
 
-			if (enableBgSpriteSwitch)
-				imgBackground.sprite = isOn ? sptActiveBackground : sptInactiveBackground;
-
 			if (enableSizeSwitch)
 			{
 				var size = isOn ? sizeActive : sizeInactive;
@@ -275,27 +275,26 @@ namespace RCore.UI
 					((RectTransform)transform).sizeDelta = size;
 			}
 
-			if (enableBgColorSwitch)
-				imgBackground.color = isOn ? colorActiveBackground : colorInactiveBackground;
-
-			if (enableTextColorSwitch)
+			foreach (var transition1 in sizeTransitions)
 			{
-				if (txtLabel != null)
-					txtLabel.color = isOn ? colorActiveText : colorInactiveText;
-
-				if (additionalLabels != null)
-					foreach (var label in additionalLabels)
-						label.color = isOn ? colorActiveText : colorInactiveText;
+				var size = isOn ? transition1.on : transition1.off;
+				if (transition1.layoutElement != null)
+				{
+					transition1.layoutElement.minWidth = size.x;
+					transition1.layoutElement.minHeight = size.y;
+				}
+				transition1.target.sizeDelta = size;
 			}
 
-			if (enableFontSizeSwitch)
-			{
-				if (txtLabel != null)
-					txtLabel.fontSize = isOn ? fontSizeActive : fontSizeInactive;
+			foreach (var transition1 in positionTransitions)
+				transition1.target.anchoredPosition =
+					isOn ? transition1.on : transition1.off;
 
-				if (additionalLabels != null)
-					foreach (var label in additionalLabels)
-						label.fontSize = isOn ? fontSizeActive : fontSizeInactive;
+			foreach (var transition1 in alphaTransitions)
+			{
+				var color = transition1.target.color;
+				color.a = isOn ? transition1.on : transition1.off;
+				transition1.target.color = color;
 			}
 
 			if (m_customToggleGroup != null && isOn)
@@ -320,33 +319,22 @@ namespace RCore.UI
 
 			if (Application.isPlaying)
 			{
-				if (enableBgSpriteSwitch)
-				{
-					imgBackground.DOKill();
-					imgBackground.sprite = isOn ? sptActiveBackground : sptInactiveBackground;
-				}
-				if (enableSizeSwitch || enableTextColorSwitch || enableBgColorSwitch || enableFontSizeSwitch)
+				if (enableSizeSwitch || sizeTransitions.Length > 0 || positionTransitions.Length > 0 || alphaTransitions.Length > 0)
 				{
 					if (m_customToggleGroup != null)
 						m_customToggleGroup.SetToggleInteractable(false);
 					var layoutElement = gameObject.GetComponent<LayoutElement>();
-					var txtFromColor = !isOn ? colorActiveText : colorInactiveText;
-					var txtToColor = isOn ? colorActiveText : colorInactiveText;
-					var bgFromColor = !isOn ? colorActiveBackground : colorInactiveBackground;
-					var bgToColor = isOn ? colorActiveBackground : colorInactiveBackground;
 					var sizeFrom = !isOn ? sizeActive : sizeInactive;
 					var sizeTo = isOn ? sizeActive : sizeInactive;
-					float fontSizeFrom = !isOn ? fontSizeActive : fontSizeInactive;
-					float fontSizeTo = isOn ? fontSizeActive : fontSizeInactive;
-					float val = 0;
+					float lerp = 0;
 					var rectTransform = transform as RectTransform;
 					DOTween.Kill(GetInstanceID() + 1);
-					DOTween.To(() => val, p_x => val = p_x, 1, tweenTime)
+					DOTween.To(() => lerp, p_x => lerp = p_x, 1, tweenTime)
 						.OnUpdate(() =>
 						{
 							if (enableSizeSwitch)
 							{
-								var size = Vector2.Lerp(sizeFrom, sizeTo, val);
+								var size = Vector2.Lerp(sizeFrom, sizeTo, lerp);
 								if (layoutElement == null)
 								{
 									rectTransform.sizeDelta = size;
@@ -357,29 +345,27 @@ namespace RCore.UI
 									layoutElement.minHeight = size.y;
 								}
 							}
-							if (enableTextColorSwitch)
-							{
-								var color = Color.Lerp(txtFromColor, txtToColor, val);
-								if (txtLabel != null)
-									txtLabel.color = color;
 
-								if (additionalLabels != null)
-									foreach (var label in additionalLabels)
-										label.color = color;
-							}
-							if (enableBgColorSwitch)
+							foreach (var transition1 in sizeTransitions)
 							{
-								var color = Color.Lerp(bgFromColor, bgToColor, val);
-								imgBackground.color = color;
+								var size = isOn ? Vector2.Lerp(transition1.off, transition1.on, lerp) : Vector2.Lerp(transition1.on, transition1.off, lerp);
+								if (transition1.layoutElement != null)
+								{
+									transition1.layoutElement.minWidth = size.x;
+									transition1.layoutElement.minHeight = size.y;
+								}
+								transition1.target.sizeDelta = size;
 							}
-							if (enableFontSizeSwitch)
-							{
-								if (txtLabel != null)
-									txtLabel.fontSize = Mathf.Lerp(fontSizeFrom, fontSizeTo, val);
 
-								if (additionalLabels != null)
-									foreach (var label in additionalLabels)
-										label.fontSize = Mathf.Lerp(fontSizeFrom, fontSizeTo, val);
+							foreach (var transition1 in positionTransitions)
+								transition1.target.anchoredPosition =
+									isOn ? Vector2.Lerp(transition1.off, transition1.on, lerp) : Vector2.Lerp(transition1.on, transition1.off, lerp);
+
+							foreach (var transition1 in alphaTransitions)
+							{
+								var color = transition1.target.color;
+								color.a = isOn ? Mathf.Lerp(transition1.off, transition1.on, lerp) : Mathf.Lerp(transition1.on, transition1.off, lerp);
+								transition1.target.color = color;
 							}
 						})
 						.OnComplete(() =>
@@ -398,25 +384,27 @@ namespace RCore.UI
 									layoutElement.minHeight = size.y;
 								}
 							}
-							if (enableTextColorSwitch)
-							{
-								if (txtLabel != null)
-									txtLabel.color = txtToColor;
 
-								if (additionalLabels != null)
-									foreach (var label in additionalLabels)
-										label.color = isOn ? colorActiveText : colorInactiveText;
+							foreach (var transition1 in sizeTransitions)
+							{
+								var size = isOn ? transition1.on : transition1.off;
+								if (transition1.layoutElement != null)
+								{
+									transition1.layoutElement.minWidth = size.x;
+									transition1.layoutElement.minHeight = size.y;
+								}
+								transition1.target.sizeDelta = size;
 							}
-							if (enableBgColorSwitch)
-								imgBackground.color = isOn ? colorActiveBackground : colorInactiveBackground;
-							if (enableFontSizeSwitch)
-							{
-								if (txtLabel != null)
-									txtLabel.fontSize = isOn ? fontSizeActive : fontSizeInactive;
 
-								if (additionalLabels != null)
-									foreach (var label in additionalLabels)
-										label.fontSize = isOn ? fontSizeActive : fontSizeInactive;
+							foreach (var transition1 in positionTransitions)
+								transition1.target.anchoredPosition =
+									isOn ? transition1.on : transition1.off;
+
+							foreach (var transition1 in alphaTransitions)
+							{
+								var color = transition1.target.color;
+								color.a = isOn ? transition1.on : transition1.off;
+								transition1.target.color = color;
 							}
 						})
 						.SetId(GetInstanceID() + 1)
@@ -463,80 +451,36 @@ namespace RCore.UI
 
 			public override void OnInspectorGUI()
 			{
-				EditorGUILayout.BeginVertical("box");
+				serializedObject.SerializeField(nameof(imgBackground));
+				serializedObject.SerializeField(nameof(txtLabel));
+				serializedObject.SerializeField(nameof(contentsActive));
+				serializedObject.SerializeField(nameof(contentsInactive));
+				serializedObject.SerializeField(nameof(sfxClip));
+				serializedObject.SerializeField(nameof(sfxClipOff));
+				serializedObject.SerializeField(nameof(scaleBounceEffect));
+
+				var enableSizeSwitch1 = serializedObject.SerializeField(nameof(enableSizeSwitch));
+				if (enableSizeSwitch1.boolValue)
 				{
-					serializedObject.SerializeField("imgBackground");
-					serializedObject.SerializeField("txtLabel");
-					serializedObject.SerializeField("contentsActive");
-					serializedObject.SerializeField("contentsInactive");
-					serializedObject.SerializeField("additionalLabels");
-					serializedObject.SerializeField("sfxClip");
-					serializedObject.SerializeField("sfxClipOff");
-					serializedObject.SerializeField("scaleBounceEffect");
-
-					var enableBgSpriteSwitch = serializedObject.SerializeField("enableBgSpriteSwitch");
-					if (enableBgSpriteSwitch.boolValue)
-					{
-						EditorGUI.indentLevel++;
-						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("sptActiveBackground");
-						serializedObject.SerializeField("sptInactiveBackground");
-						EditorGUILayout.EndVertical();
-						EditorGUI.indentLevel--;
-					}
-
-					var enableBgColorSwitch = serializedObject.SerializeField("enableBgColorSwitch");
-					if (enableBgColorSwitch.boolValue)
-					{
-						EditorGUI.indentLevel++;
-						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("colorActiveBackground");
-						serializedObject.SerializeField("colorInactiveBackground");
-						EditorGUILayout.EndVertical();
-						EditorGUI.indentLevel--;
-					}
-
-					var enableTextColorSwitch = serializedObject.SerializeField("enableTextColorSwitch");
-					if (enableTextColorSwitch.boolValue)
-					{
-						EditorGUI.indentLevel++;
-						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("colorActiveText");
-						serializedObject.SerializeField("colorInactiveText");
-						EditorGUILayout.EndVertical();
-						EditorGUI.indentLevel--;
-					}
-
-					var enableSizeSwitch = serializedObject.SerializeField("enableSizeSwitch");
-					if (enableSizeSwitch.boolValue)
-					{
-						EditorGUI.indentLevel++;
-						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("sizeActive");
-						serializedObject.SerializeField("sizeInactive");
-						EditorGUILayout.EndVertical();
-						EditorGUI.indentLevel--;
-					}
-
-					var enableFontSizeSwitch = serializedObject.SerializeField("enableFontSizeSwitch");
-					if (enableFontSizeSwitch.boolValue)
-					{
-						EditorGUI.indentLevel++;
-						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("fontSizeActive");
-						serializedObject.SerializeField("fontSizeInactive");
-						EditorGUILayout.EndVertical();
-						EditorGUI.indentLevel--;
-					}
-
-					serializedObject.SerializeField("tweenTime");
-
-					if (m_mToggle.txtLabel != null)
-						m_mToggle.txtLabel.text = EditorGUILayout.TextField("Label", m_mToggle.txtLabel.text);
-
-					serializedObject.ApplyModifiedProperties();
+					EditorGUI.indentLevel++;
+					EditorGUILayout.BeginVertical("box");
+					serializedObject.SerializeField(nameof(sizeActive));
+					serializedObject.SerializeField(nameof(sizeInactive));
+					EditorGUILayout.EndVertical();
+					EditorGUI.indentLevel--;
 				}
-				EditorGUILayout.EndVertical();
+
+				serializedObject.SerializeField(nameof(sizeTransitions));
+				serializedObject.SerializeField(nameof(positionTransitions));
+				serializedObject.SerializeField(nameof(alphaTransitions));
+				serializedObject.SerializeField(nameof(tweenTime));
+
+				if (m_mToggle.txtLabel != null)
+					m_mToggle.txtLabel.text = EditorGUILayout.TextField("Label", m_mToggle.txtLabel.text);
+
+				serializedObject.ApplyModifiedProperties();
+
+				EditorHelper.Separator();
 
 				base.OnInspectorGUI();
 			}
