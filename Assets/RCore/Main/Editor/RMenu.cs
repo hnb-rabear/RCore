@@ -161,13 +161,16 @@ namespace RCore.Editor
 		private static void GroupGameObjects()
 		{
 			var objs = Selection.gameObjects;
+			Transform parent = null;
 			if (objs.Length > 1)
 			{
-				var group = new GameObject();
 				for (int i = 0; i < objs.Length; i++)
-				{
+					parent = objs[i].transform.parent;
+
+				var group = new GameObject();
+				group.transform.SetParent(parent);
+				for (int i = 0; i < objs.Length; i++)
 					objs[i].transform.SetParent(group.transform);
-				}
 				Selection.activeObject = group;
 			}
 		}
@@ -182,7 +185,7 @@ namespace RCore.Editor
 					objs[i].transform.SetParent(null);
 			}
 		}
-		
+
 		[MenuItem(GAMEOBJECT_R + "Reorder SpriteRenderers")]
 		public static void ReorderSortingOfSpriteRenderers()
 		{
@@ -192,7 +195,7 @@ namespace RCore.Editor
 				EditorUtility.SetDirty(target);
 			}
 		}
-		
+
 		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
 		public static void PerfectRatioImagesByWidth()
 		{
@@ -221,7 +224,7 @@ namespace RCore.Editor
 		{
 			EditorHelper.ReplaceTextsByTextTMP(Selection.gameObjects);
 		}
-		
+
 		[MenuItem(GAMEOBJECT_R_CREATE + "AudioManager", priority = GROUP_2 + 1)]
 		public static void AddAudioManager()
 		{

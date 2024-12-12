@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEngine.UI;
@@ -17,7 +18,7 @@ namespace RCore.Editor.Tool
 		private void OnGUI()
 		{
 			m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition, false, false);
-			
+
 			DrawUtilities();
 			DrawRendererUtilities();
 			DrawUIUtilities();
@@ -275,7 +276,7 @@ namespace RCore.Editor.Tool
 				GUILayout.BeginVertical("box");
 				{
 					EditorGUILayout.HelpBox("Select GameObjects that have a Text or TextMeshProUGUI component either on them or within their children", MessageType.Info);
-					
+
 					if (m_TextCount > 0)
 						EditorGUILayout.LabelField("Text Count: ", m_TextCount.ToString());
 
@@ -410,10 +411,10 @@ namespace RCore.Editor.Tool
 
 						EditorHelper.LabelField($"{i + 1}", 30);
 						if (EditorHelper.Button($"{deepStr}" + graphic.name, new GUIStyle("button")
-							{
-								fixedWidth = 250,
-								alignment = TextAnchor.MiddleLeft
-							}))
+						    {
+							    fixedWidth = 250,
+							    alignment = TextAnchor.MiddleLeft
+						    }))
 						{
 							Selection.activeObject = graphic.gameObject;
 						}
@@ -468,7 +469,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!HasSelectedGameObject("Select GameObjects that have a Button component either on them or within their children"))
+				if (!HasSelectedGameObject("Select GameObjects that have a Button component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -550,7 +551,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!HasSelectedGameObject("Select GameObjects that have a Button component either on them or within their children"))
+				if (!HasSelectedGameObject("Select GameObjects that have a Button component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -610,7 +611,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!HasSelectedGameObject("Select GameObjects that have a Text component either on them or within their children"))
+				if (!HasSelectedGameObject("Select GameObjects that have a Text component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -661,7 +662,7 @@ namespace RCore.Editor.Tool
 			{
 				GUILayout.BeginVertical("box");
 
-                if (!HasSelectedGameObject("Select GameObjects that have a TextMeshProUGUI component either on them or within their children"))
+				if (!HasSelectedGameObject("Select GameObjects that have a TextMeshProUGUI component either on them or within their children"))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -714,28 +715,39 @@ namespace RCore.Editor.Tool
 				{
 					foreach (var g in Selection.gameObjects)
 					{
-						var children = g.GetComponentsInChildren<Component>(true);
-						for (int i = children.Length - 1; i >= 0; i--)
+						var allChildren = new List<Transform>();
+						GetAllChildren(g.gameObject.transform, allChildren);
+						for (int i = allChildren.Count - 1; i >= 0; i--)
 						{
-							var child = children[i];
-							//if (!child.TryGetComponent(out RectTransform rt))
-							//	child.AddComponent<RectTransform>();
-
-							//if (child.TryGetComponent(out RectTransform rt2))
+							var child = allChildren[i];
+							if (child.TryGetComponent(out SpriteRenderer spr))
 							{
-								if (child.TryGetComponent(out SpriteRenderer spr))
+								var img = spr.gameObject.GetOrAddComponent<Image>();
+								if (spr.sprite != null)
 								{
-									var img = child.gameObject.GetOrAddComponent<Image>();
 									img.sprite = spr.sprite;
+									img.color = spr.color;
 									img.rectTransform.sizeDelta = spr.sprite.NativeSize() / 100f;
-									DestroyImmediate(spr, true);
 								}
-
-								if (child != null && child.TryGetComponent(out SortingGroup sg))
-									DestroyImmediate(sg, true);
+								DestroyImmediate(spr, true);
 							}
+							else if (!child.TryGetComponent(out RectTransform _))
+								child.gameObject.AddComponent<RectTransform>();
+
+							if (child != null && child.TryGetComponent(out SortingGroup sg))
+								DestroyImmediate(sg, true);
 						}
 					}
+				}
+			}
+			return;
+
+			void GetAllChildren(Transform parent, List<Transform> childrenList)
+			{
+				foreach (Transform child in parent)
+				{
+					childrenList.Add(child);
+					GetAllChildren(child, childrenList);
 				}
 			}
 		}
@@ -767,7 +779,7 @@ namespace RCore.Editor.Tool
 			{
 				if (!HasSelectedGameObject("Select FBX files that have Animations"))
 					return;
-				
+
 				GUILayout.BeginVertical("box");
 
 				m_animationClipsPackScript = new REditorPrefString(nameof(m_animationClipsPackScript));
@@ -810,7 +822,7 @@ namespace RCore.Editor.Tool
 					{
 						if (string.IsNullOrEmpty(m_animationClipsPackScript.Value))
 							return;
-						
+
 						string fieldsName = "";
 						string enum_ = "\tpublic enum Clip \n\t{\n";
 						string indexes = "";
@@ -849,7 +861,7 @@ namespace RCore.Editor.Tool
 
 						m_animationClipsPackPath.Value = EditorHelper.SaveFilePanel(m_animationClipsPackPath.Value, m_animationClipsPackScript.Value, generatedContent, "cs");
 					}
-					
+
 					GUILayout.EndHorizontal();
 				}
 				GUILayout.EndVertical();
@@ -862,7 +874,7 @@ namespace RCore.Editor.Tool
 			{
 				if (!HasSelectedObject("Select Text Files"))
 					return;
-				
+
 				GUILayout.BeginVertical("box");
 
 				if (EditorHelper.Button("Generate"))
@@ -947,7 +959,7 @@ namespace RCore.Editor.Tool
 			var window = GetWindow<ToolsCollectionWindow>("Tools Collection", true);
 			window.Show();
 		}
-		
+
 		public static bool HasSelectedGameObject(string message = null)
 		{
 			if (string.IsNullOrEmpty(message))
