@@ -60,11 +60,9 @@ namespace RCore.UI
             get => mFill;
             set
             {
-                mFill = maxFillRatio * value;
-                if (mFill < minFillRatio && mFill > 0)
-                    mFill = minFillRatio;
-
-                FillBar(mFill);
+                mFill = Mathf.Clamp01(value);
+                float interpolatedFill = Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
+                FillBar(interpolatedFill);
             }
         }
         public virtual float Value
@@ -180,12 +178,9 @@ namespace RCore.UI
                 return;
 
             Validate();
-
-            float fill = maxFillRatio * mFill;
-            if (fill < minFillRatio)
-                fill = minFillRatio;
-
-            FillBar(fill);
+            
+            float interpolatedFill = Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
+            FillBar(interpolatedFill);
         }
 #endif
 
@@ -204,10 +199,6 @@ namespace RCore.UI
 
             if (txtValue == null)
                 txtValue = imgProgressValue.GetComponentInChildren<TextMeshProUGUI>();
-
-            //Max = mMax;
-            //= mValue;
-            //FillAmount = Value / Max;
         }
 
 #if UNITY_EDITOR

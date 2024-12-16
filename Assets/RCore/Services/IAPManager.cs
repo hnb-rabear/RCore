@@ -130,13 +130,19 @@ namespace RCore.Service
 			var isPurchaseValid = IsPurchaseValid(product);
 			if (isPurchaseValid)
 			{
-				m_onPurchaseSucceed?.Invoke(product);
-				OnIAPSucceed?.Invoke(product);
+				TimerEventsGlobal.Instance.Enqueue(() =>
+				{
+					m_onPurchaseSucceed?.Invoke(product);
+					OnIAPSucceed?.Invoke(product);
+				});
 			}
 			else
 			{
-				m_onPurchaseFailed?.Invoke(product);
-				OnIAPFailed?.Invoke(product);
+				TimerEventsGlobal.Instance.Enqueue(() =>
+				{
+					m_onPurchaseFailed?.Invoke(product);
+					OnIAPFailed?.Invoke(product);
+				});
 			}
 			return PurchaseProcessingResult.Complete;
 		}
