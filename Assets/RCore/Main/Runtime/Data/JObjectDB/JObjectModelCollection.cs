@@ -33,6 +33,7 @@ namespace RCore.Data.JObject
 				handler.OnPreSave(utcNowTimestamp);
 			foreach (var handler in m_models)
 				handler.Save();
+			PlayerPrefs.Save();
 		}
 
 		public virtual void Import(string jsonData)
