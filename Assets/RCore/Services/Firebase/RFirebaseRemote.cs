@@ -12,6 +12,8 @@ namespace RCore.Service
 {
 	public static class RFirebaseRemote
 	{
+		private const string BACK_UP_KEY = "RemoteConfig.BackUp";
+		
 		public static Dictionary<string, object> defaultData = new Dictionary<string, object>();
 		public static bool fetched;
 
@@ -110,7 +112,7 @@ namespace RCore.Service
 		{
 			defaultData = pDefaultData;
 
-			var backUpData = PlayerPrefs.GetString("RemoteConfig.BackUp");
+			var backUpData = PlayerPrefs.GetString(BACK_UP_KEY);
 			if (!string.IsNullOrEmpty(backUpData))
 			{
 				try
@@ -206,7 +208,7 @@ namespace RCore.Service
 			if (!m_BackUpValues.TryAdd(key, value))
 				m_BackUpValues[key] = value;
 			string content = JsonConvert.SerializeObject(m_BackUpValues);
-			PlayerPrefs.SetString("RemoteConfig.BackUp", content);
+			PlayerPrefs.SetString(BACK_UP_KEY, content);
 		}
 
 		public static void LogFetchedData()
