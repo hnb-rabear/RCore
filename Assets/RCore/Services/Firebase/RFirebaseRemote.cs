@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using UnityEngine;
 #if FIREBASE_REMOTE_CONFIG
 using Firebase;
@@ -9,184 +10,219 @@ using System;
 
 namespace RCore.Service
 {
-    public static class RFirebaseRemote
-    {
-        public static Dictionary<string, object> defaultData = new Dictionary<string, object>();
-        public static bool fetched;
+	public static class RFirebaseRemote
+	{
+		public static Dictionary<string, object> defaultData = new Dictionary<string, object>();
+		public static bool fetched;
 
-        public static void Initialize(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
-        {
+		private static Dictionary<string, double> m_CacheNumberValues = new();
+		private static Dictionary<string, string> m_CacheStringValues = new();
+		private static Dictionary<string, bool> m_CacheBoolValues = new();
+		private static Dictionary<string, object> m_BackUpValues = new();
+
+		public static void Init(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
+		{
 #if FIREBASE_REMOTE_CONFIG
-            if (!FirebaseManager.initialized)
-            {
-                FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
-                {
-                    bool success = !task.IsCanceled && !task.IsFaulted;
-                    if (success)
-                    {
-                        SetDefaultData(pDefaultData);
-                        FetchDataAsync(pOnFetched);
-                    }
-                });
-            }
-            else
-            {
-                SetDefaultData(pDefaultData);
-                FetchDataAsync(pOnFetched);
-            }
+			if (!FirebaseManager.initialized)
+			{
+				FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+				{
+					bool success = !task.IsCanceled && !task.IsFaulted;
+					if (success)
+					{
+						SetDefaultData(pDefaultData);
+						FetchDataAsync(pOnFetched);
+					}
+				});
+			}
+			else
+			{
+				SetDefaultData(pDefaultData);
+				FetchDataAsync(pOnFetched);
+			}
 #else
             SetDefaultData(pDefaultData);
             FetchDataAsync(pOnFetched);
 #endif
-        }
+		}
 
-        /// <summary>
-        /// Get the currently loaded data. If fetch has been called, this will be the data fetched from the server. Otherwise, it will be the defaults.
-        /// Note: Firebase will cache this between sessions, so even if you haven't called fetch yet, if it was called on a previous run of the program, you will still have data from the last time it was run.
-        /// </summary>
-        public static double GetNumberValue(object pKey)
-        {
+		/// <summary>
+		/// Get the currently loaded data. If fetch has been called, this will be the data fetched from the server. Otherwise, it will be the defaults.
+		/// Note: Firebase will cache this between sessions, so even if you haven't called fetch yet, if it was called on a previous run of the program, you will still have data from the last time it was run.
+		/// </summary>
+		public static double GetNumberValue(object pKey)
+		{
 #if FIREBASE_REMOTE_CONFIG
-            return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).DoubleValue;
+			string key = pKey.ToString();
+			if (m_CacheNumberValues.TryGetValue(key, out double numberValue))
+				return numberValue;
+			var value = FirebaseRemoteConfig.DefaultInstance.GetValue(key).DoubleValue;
+			m_CacheNumberValues[key] = value;
+			BackUp(key, value);
+			return value;
 #else
             return Convert.ToDouble(defaultData[pKey.ToString()].ToString());
 #endif
-        }
+		}
 
-        public static string GetStringValue(object pKey)
-        {
+		public static string GetStringValue(object pKey)
+		{
 #if FIREBASE_REMOTE_CONFIG
-            return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).StringValue;
+			string key = pKey.ToString();
+			if (m_CacheStringValues.TryGetValue(key, out string value))
+				return value;
+			value = FirebaseRemoteConfig.DefaultInstance.GetValue(key).StringValue;
+			m_CacheStringValues[key] = value;
+			BackUp(key, value);
+			return value;
 #else
             return defaultData[pKey.ToString()].ToString();
 #endif
-        }
+		}
 
-        public static bool GetBoolValue(object pKey)
-        {
+		public static bool GetBoolValue(object pKey)
+		{
 #if FIREBASE_REMOTE_CONFIG
-            return FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).BooleanValue;
+			string key = pKey.ToString();
+			if (m_CacheBoolValues.TryGetValue(key, out bool value))
+				return value;
+			value = FirebaseRemoteConfig.DefaultInstance.GetValue(key).BooleanValue;
+			m_CacheBoolValues[key] = value;
+			BackUp(key, value);
+			return value;
 #else
             return Convert.ToBoolean(defaultData[pKey.ToString()]);
 #endif
-        }
+		}
 
-        public static bool HasKey(object pKey)
-        {
-            return defaultData.ContainsKey(pKey.ToString());
-        }
-
-        public static T GetObjectValue<T>(object pKey)
-        {
-            var json = "";
+		public static T GetObjectValue<T>(object pKey)
+		{
+			var json = "";
 #if FIREBASE_REMOTE_CONFIG
-            try
-            {
-
-                json = FirebaseRemoteConfig.DefaultInstance.GetValue(pKey.ToString()).StringValue;
-            }
-            catch
-            {
-                json = defaultData[pKey.ToString()].ToString();
-            }
+			json = GetStringValue(pKey);
 #else
             json = defaultData[pKey.ToString()].ToString();
 #endif
-            return JsonUtility.FromJson<T>(json);
-        }
+			return JsonUtility.FromJson<T>(json);
+		}
 
-        private static void SetDefaultData(Dictionary<string, object> pDefaultData)
-        {
-            defaultData = pDefaultData;
+		private static void SetDefaultData(Dictionary<string, object> pDefaultData)
+		{
+			defaultData = pDefaultData;
+
+			var backUpData = PlayerPrefs.GetString("RemoteConfig.BackUp");
+			if (!string.IsNullOrEmpty(backUpData))
+			{
+				try
+				{
+					var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(backUpData);
+					foreach (var kvp in data)
+						defaultData[kvp.Key] = kvp.Value; // Override defaultData values with data values
+				}
+				catch (Exception ex)
+				{
+					Debug.LogError("Failed to deserialize or merge data: " + ex.Message);
+				}
+			}
+
 #if FIREBASE_REMOTE_CONFIG
-            FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaultData).ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCanceled)
-                    Debug.Log("SetDefaultsAsync canceled.");
-                else if (task.IsFaulted)
-                    Debug.Log("SetDefaultsAsync encountered an error.");
-                else if (task.IsCompleted)
-                    Debug.Log("SetDefaultsAsync completed successfully!");
-                else
-                    Debug.Log("RemoteConfig configured and ready!");
-            });
+			FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaultData).ContinueWithOnMainThread(task =>
+			{
+				if (task.IsCanceled)
+					Debug.Log("SetDefaultsAsync canceled.");
+				else if (task.IsFaulted)
+					Debug.Log("SetDefaultsAsync encountered an error.");
+				else if (task.IsCompleted)
+					Debug.Log("SetDefaultsAsync completed successfully!");
+				else
+					Debug.Log("RemoteConfig configured and ready!");
+			});
 #endif
-        }
+		}
 
-        /// <summary>
-        /// Fetch new data if the current data is older than the provided timespan. 
-        /// Otherwise it assumes the data is "recent enough", and does nothing.
-        /// By default the timespan is 12 hours, and for production apps, this is a good number. 
-        /// For this example though, it's set to a timespan of zero, so that
-        /// changes in the console will always show up immediately.
-        /// </summary>
-        public static void FetchDataAsync(Action<bool> pOnFetched)
-        {
+
+		/// <summary>
+		/// Fetch new data if the current data is older than the provided timespan. 
+		/// Otherwise it assumes the data is "recent enough", and does nothing.
+		/// By default the timespan is 12 hours, and for production apps, this is a good number. 
+		/// For this example though, it's set to a timespan of zero, so that
+		/// changes in the console will always show up immediately.
+		/// </summary>
+		private static void FetchDataAsync(Action<bool> pOnFetched)
+		{
 #if FIREBASE_REMOTE_CONFIG
-            FirebaseRemoteConfig.DefaultInstance.FetchAsync(TimeSpan.Zero).ContinueWithOnMainThread((task) =>
-            {
-                if (task.IsCanceled)
-                {
-                    Debug.Log("Fetch canceled.");
-                }
-                else if (task.IsFaulted)
-                {
-                    Debug.Log("Fetch encountered an error.");
-                }
-                else if (task.IsCompleted)
-                {
-                    Debug.Log("Fetch completed successfully!");
-                }
+			FirebaseRemoteConfig.DefaultInstance.FetchAsync(TimeSpan.Zero).ContinueWithOnMainThread((task) =>
+			{
+				if (task.IsCanceled)
+				{
+					Debug.Log("Fetch canceled.");
+				}
+				else if (task.IsFaulted)
+				{
+					Debug.Log("Fetch encountered an error.");
+				}
+				else if (task.IsCompleted)
+				{
+					Debug.Log("Fetch completed successfully!");
+				}
 
-                var info = FirebaseRemoteConfig.DefaultInstance.Info;
-                switch (info.LastFetchStatus)
-                {
-                    case LastFetchStatus.Success:
-                        FirebaseRemoteConfig.DefaultInstance.ActivateAsync().ContinueWithOnMainThread(task2 =>
-                        {
-                            fetched = true;
-                            Debug.Log(string.Format("Remote data loaded and ready (last fetch time {0}).", info.FetchTime));
-                        });
-                        break;
+				var info = FirebaseRemoteConfig.DefaultInstance.Info;
+				switch (info.LastFetchStatus)
+				{
+					case LastFetchStatus.Success:
+						FirebaseRemoteConfig.DefaultInstance.ActivateAsync().ContinueWithOnMainThread(task2 =>
+						{
+							fetched = true;
+							Debug.Log(string.Format("Remote data loaded and ready (last fetch time {0}).", info.FetchTime));
+						});
+						break;
 
-                    case LastFetchStatus.Failure:
-                        switch (info.LastFetchFailureReason)
-                        {
-                            case FetchFailureReason.Error:
-                                Debug.Log("Fetch failed for unknown reason");
-                                break;
-                            case FetchFailureReason.Throttled:
-                                Debug.Log("Fetch throttled until " + info.ThrottledEndTime);
-                                break;
-                        }
-                        break;
+					case LastFetchStatus.Failure:
+						switch (info.LastFetchFailureReason)
+						{
+							case FetchFailureReason.Error:
+								Debug.Log("Fetch failed for unknown reason");
+								break;
+							case FetchFailureReason.Throttled:
+								Debug.Log("Fetch throttled until " + info.ThrottledEndTime);
+								break;
+						}
+						break;
 
-                    case LastFetchStatus.Pending:
-                        Debug.Log("Latest Fetch call still pending.");
-                        break;
-                }
+					case LastFetchStatus.Pending:
+						Debug.Log("Latest Fetch call still pending.");
+						break;
+				}
 
-                pOnFetched?.Invoke(!task.IsCanceled && !task.IsFaulted);
-            });
+				pOnFetched?.Invoke(!task.IsCanceled && !task.IsFaulted);
+			});
 #else
             pOnFetched?.Invoke(false);
 #endif
-        }
+		}
 
-        public static void LogFetchedData()
-        {
+		private static void BackUp(string key, object value)
+		{
+			if (!m_BackUpValues.TryAdd(key, value))
+				m_BackUpValues[key] = value;
+			string content = JsonConvert.SerializeObject(m_BackUpValues);
+			PlayerPrefs.SetString("RemoteConfig.BackUp", content);
+		}
+
+		public static void LogFetchedData()
+		{
 #if FIREBASE_REMOTE_CONFIG
-            string log = "";
-            var result = new Dictionary<string, ConfigValue>();
-            var keys = FirebaseRemoteConfig.DefaultInstance.Keys;
-            foreach (string key in keys)
-            {
-                var value = FirebaseRemoteConfig.DefaultInstance.GetValue(key);
-                result.Add(key, value);
-                log += $"Key:{key}, StringValue:{value.StringValue}, Source:{value.Source}\n";
-            }
-            Debug.Log(log);
+			string log = "";
+			var result = new Dictionary<string, ConfigValue>();
+			var keys = FirebaseRemoteConfig.DefaultInstance.Keys;
+			foreach (string key in keys)
+			{
+				var value = FirebaseRemoteConfig.DefaultInstance.GetValue(key);
+				result.Add(key, value);
+				log += $"Key:{key}, StringValue:{value.StringValue}, Source:{value.Source}\n";
+			}
+			Debug.Log(log);
 #endif
-        }
-    }
+		}
+	}
 }
