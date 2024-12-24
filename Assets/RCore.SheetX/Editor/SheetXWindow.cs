@@ -10,7 +10,11 @@ namespace RCore.SheetX.Editor
 	{
 #if !SX_LOCALIZATION
 		private const string NAME = "SheetX: Sheets Exporter";
+#if !SX_LITE
 		private const string MENU = "SheetX";
+#else
+		private const string MENU = "SheetX Lite";
+#endif
 #else
 		private const string NAME = "LocalizationX: Localization Exporter";
 		private const string MENU = "LocalizationX";

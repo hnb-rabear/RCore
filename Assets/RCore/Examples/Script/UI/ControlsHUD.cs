@@ -24,32 +24,32 @@ namespace RCore.Example.UI
 
         private void OnBtnDataDemo_Pressed()
         {
-            MainPanel.instance.ShowDemoDataPanel();
+            MainPanel.Instance.ShowDemoDataPanel();
         }
 
         private void OnBtnPanel5_Pressed()
         {
-            MainPanel.instance.ShowPanel5();
+            MainPanel.Instance.ShowPanel5();
         }
 
         private void OnBtnPanel4_Pressed()
         {
-            MainPanel.instance.ShowPanel4();
+            MainPanel.Instance.ShowPanel4();
         }
 
         private void OnBtnPanel3_Pressed()
         {
-            MainPanel.instance.ShowPanel3();
+            MainPanel.Instance.ShowPanel3();
         }
 
         private void OnBtnPanel2_Pressed()
         {
-            MainPanel.instance.ShowPanel2();
+            MainPanel.Instance.ShowPanel2();
         }
 
         private void OnBtnPanel1_Pressed()
         {
-            MainPanel.instance.ShowPanel1();
+            MainPanel.Instance.ShowPanel1();
         }
     }
 }

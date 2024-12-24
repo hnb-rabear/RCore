@@ -9,7 +9,6 @@ namespace RCore.Example
         private void Start()
         {
             ExampleKeyValueDBManager.Instance.Init();
-            MainPanel.instance.Init();
             ExamplePoolsManager.Instance.Init();
         }
     }
