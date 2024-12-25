@@ -46,7 +46,7 @@ namespace RCore.SheetX.Editor
 			if (!Directory.Exists(pFolderPath))
 				Directory.CreateDirectory(pFolderPath);
 
-			string filePath = $"{pFolderPath}\\{pFileName}";
+			string filePath = Path.Combine(pFolderPath, pFileName);
 			if (!File.Exists(filePath))
 				using (File.Create(filePath)) { }
 

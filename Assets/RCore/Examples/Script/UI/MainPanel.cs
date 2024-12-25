@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using RCore.UI;
 using RCore.Inspector;
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
+#endif
 
 namespace RCore.Example.UI
 {
