@@ -94,12 +94,12 @@ namespace RCore.SheetX.Editor
 			var idsEnumBuilders = new List<StringBuilder>();
 			var idsEnumBuilderNames = new List<string>();
 			var idsEnumBuilderIndexes = new List<int>();
-			for (int row = 0; row <= sheet.LastRowNum; row++)
+			for (int row = 0; row < sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData != null)
 				{
-					for (int col = 0; col <= rowData.LastCellNum; col += 3)
+					for (int col = 0; col < rowData.LastCellNum; col += 3)
 					{
 						var cellKey = rowData.GetCell(col);
 						if (cellKey == null)
@@ -139,9 +139,9 @@ namespace RCore.SheetX.Editor
 							{
 								string cellCommentFormula = SheetXHelper.ConvertFormulaCell(cellComment);
 								if (cellCommentFormula != null)
-									sb.Append(" /*").Append(cellCommentFormula).Append("*/");
+									sb.Append(" /* ").Append(cellCommentFormula).Append(" */ ");
 								else
-									sb.Append(" /*").Append(cellComment).Append("*/");
+									sb.Append(" /* ").Append(cellComment).Append(" */ ");
 							}
 
 							if (m_allIds.TryGetValue(key, out int val))
@@ -157,7 +157,7 @@ namespace RCore.SheetX.Editor
 						//Header row
 						else
 						{
-							if (cellKey.ToString().Contains("[enum]"))
+							if (cellKey.ToString().EndsWith("[enum]"))
 							{
 								idsEnumBuilders.Add(sb);
 								idsEnumBuilderNames.Add(cellKey.ToString().Replace("[enum]", ""));
@@ -179,26 +179,29 @@ namespace RCore.SheetX.Editor
 			{
 				for (int i = 0; i < idsEnumBuilders.Count; i++)
 				{
-					var str = idsEnumBuilders[i].ToString()
+					string str = SheetXHelper.RemoveComments(idsEnumBuilders[i].ToString())
+						.Replace("  ", " ")
 						.Replace("\r\n\tpublic const int ", "")
 						.Replace("\r\n", "")
-						.Replace(";", ",").Trim();
-					str = str.Remove(str.Length - 1);
-					var enumIndex = str.IndexOf("[enum]", StringComparison.Ordinal);
-					str = str.Remove(0, enumIndex + 6).Replace(",", ", ");
+						.Replace(";", ", ")
+						.Trim();
+
+					int enumIndex = str.IndexOf("[enum]", StringComparison.Ordinal);
+					if (enumIndex >= 0)
+						str = str[(enumIndex + 6)..];
 
 					string enumName = idsEnumBuilderNames[i].Replace(" ", "_");
 
-					var enumBuilder = new StringBuilder();
-					enumBuilder.Append("\tpublic enum ")
+					var enumBuilder = new StringBuilder()
+						.Append("\tpublic enum ")
 						.Append(enumName)
 						.Append(" { ")
 						.Append(str)
 						.Append(" }\n");
 					if (m_settings.onlyEnumAsIDs)
 					{
-						var tempSb = new StringBuilder();
-						tempSb.Append("\t#region ")
+						var tempSb = new StringBuilder()
+							.Append("\t#region ")
 							.Append(enumName)
 							.Append(Environment.NewLine)
 							.Append(enumBuilder);
@@ -268,12 +271,12 @@ namespace RCore.SheetX.Editor
 				return;
 			}
 
-			for (int row = 0; row <= sheet.LastRowNum; row++)
+			for (int row = 0; row < sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData == null)
 					continue;
-				for (int col = 0; col <= rowData.LastCellNum; col += 3)
+				for (int col = 0; col < rowData.LastCellNum; col += 3)
 				{
 					var cellKey = rowData.GetCell(col);
 					if (cellKey == null)
@@ -358,7 +361,7 @@ namespace RCore.SheetX.Editor
 			}
 
 			var constants = new List<ConstantBuilder>();
-			for (int row = 0; row <= sheet.LastRowNum; row++)
+			for (int row = 0; row < sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData != null)
@@ -630,7 +633,7 @@ namespace RCore.SheetX.Editor
 			int maxCellNum = firstRow.LastCellNum;
 
 			string mergeCellValue = "";
-			for (int row = 0; row <= sheet.LastRowNum; row++)
+			for (int row = 0; row < sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData == null)
@@ -999,7 +1002,7 @@ namespace RCore.SheetX.Editor
 			bool[] validCols = null;
 			var rowContents = new List<RowContent>();
 
-			for (int row = 0; row <= sheet.LastRowNum; row++)
+			for (int row = 0; row < sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData == null)

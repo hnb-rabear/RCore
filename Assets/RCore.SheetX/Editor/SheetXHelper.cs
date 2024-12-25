@@ -609,6 +609,16 @@ namespace RCore.SheetX.Editor
 			UnityEngine.Debug.Log("Credential file saved to: " + GetSaveDirectory());
 			return credential;
 		}
+		
+		public static string RemoveComments(string input)
+		{
+			return Regex.Replace(input, @"/\*.*?\*/", string.Empty);
+		}
+
+		public static string RemoveComments2(string input)
+		{
+			return Regex.Replace(input, @"//.*$", string.Empty).TrimEnd();
+		}
 	}
 
 	public static class SheetXExtension

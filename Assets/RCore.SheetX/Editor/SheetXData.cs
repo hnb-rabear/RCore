@@ -44,10 +44,6 @@ namespace RCore.SheetX.Editor
 				var sheet = workbook.GetSheetAt(i);
 				if (sheets.Exists(x => x.name == sheet.SheetName))
 					continue;
-#if SX_LITE
-				if (sheets.Count > 12)
-					continue;
-#endif
 				sheets.Add(new SheetPath()
 				{
 					name = sheet.SheetName,
@@ -96,10 +92,6 @@ namespace RCore.SheetX.Editor
 		public List<SheetPath> sheets = new();
 		public void AddSheet(string name)
 		{
-#if SX_LITE
-			if (sheets.Count > 12)
-				return;
-#endif
 			for (int i = 0; i < sheets.Count; i++)
 				if (sheets[i].name == name)
 					return;

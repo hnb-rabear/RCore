@@ -168,7 +168,7 @@ namespace RCore.SheetX.Editor
 						{
 							var cellComment = rowData[col + 2];
 							if (cellComment != null && !string.IsNullOrEmpty(cellComment.ToString().Trim()))
-								sb.Append(" /*").Append(cellComment).Append("*/");
+								sb.Append(" /* ").Append(cellComment).Append(" */");
 						}
 
 						if (m_allIds.TryGetValue(key, out int val))
@@ -184,7 +184,7 @@ namespace RCore.SheetX.Editor
 					//Header row
 					else
 					{
-						if (cellKey.ToString().Contains("[enum]"))
+						if (cellKey.ToString().EndsWith("[enum]"))
 						{
 							idsEnumBuilders.Add(sb);
 							idsEnumBuilderNames.Add(cellKey.ToString().Replace("[enum]", ""));
@@ -205,26 +205,29 @@ namespace RCore.SheetX.Editor
 			{
 				for (int i = 0; i < idsEnumBuilders.Count; i++)
 				{
-					var str = idsEnumBuilders[i].ToString()
+					string str = SheetXHelper.RemoveComments(idsEnumBuilders[i].ToString())
+						.Replace("  ", " ")
 						.Replace("\r\n\tpublic const int ", "")
 						.Replace("\r\n", "")
-						.Replace(";", ",").Trim();
-					str = str.Remove(str.Length - 1);
-					var enumIndex = str.IndexOf("[enum]", StringComparison.Ordinal);
-					str = str.Remove(0, enumIndex + 6).Replace(",", ", ");
+						.Replace(";", ", ")
+						.Trim();
+
+					int enumIndex = str.IndexOf("[enum]", StringComparison.Ordinal);
+					if (enumIndex >= 0)
+						str = str[(enumIndex + 6)..];
 
 					string enumName = idsEnumBuilderNames[i].Replace(" ", "_");
 
-					var enumBuilder = new StringBuilder();
-					enumBuilder.Append("\tpublic enum ")
+					var enumBuilder = new StringBuilder()
+						.Append("\tpublic enum ")
 						.Append(enumName)
 						.Append(" { ")
 						.Append(str)
 						.Append(" }\n");
 					if (m_settings.onlyEnumAsIDs)
 					{
-						var tempSb = new StringBuilder();
-						tempSb.Append("\t#region ")
+						var tempSb = new StringBuilder()
+							.Append("\t#region ")
 							.Append(enumName)
 							.Append(Environment.NewLine)
 							.Append(enumBuilder);
