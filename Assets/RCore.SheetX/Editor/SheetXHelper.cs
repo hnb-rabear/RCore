@@ -57,10 +57,13 @@ namespace RCore.SheetX.Editor
 
 		public static string[] SplitValueToArray(string pValue, bool pIncludeColon = true)
 		{
-			string[] splits = { ":", "|", "\r\n", "\r", "\n" };
+			string[] splits = { ":", "|", Environment.NewLine, "\r", "\n" };
 			if (!pIncludeColon)
-				splits = new[] { "|", "\r\n", "\r", "\n" };
-			string[] result = pValue.Split(splits, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+				splits = new[] { "|", Environment.NewLine, "\r", "\n" };
+
+			string[] result = pValue.Split(splits, StringSplitOptions.RemoveEmptyEntries)
+				.Select(s => s.Trim())
+				.ToArray();
 			return result;
 		}
 

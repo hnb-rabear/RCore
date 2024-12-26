@@ -181,8 +181,8 @@ namespace RCore.SheetX.Editor
 				{
 					string str = SheetXHelper.RemoveComments(idsEnumBuilders[i].ToString())
 						.Replace("  ", " ")
-						.Replace("\r\n\tpublic const int ", "")
-						.Replace("\r\n", "")
+						.Replace(Environment.NewLine + "\tpublic const int ", "")
+						.Replace(Environment.NewLine, "")
 						.Replace(";", ", ")
 						.Trim();
 
