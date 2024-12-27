@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Reflection;
 using System;
+#if UNITY_IOS
+using System.Runtime.InteropServices;
+#endif
 
 public class UniClipboard
 {

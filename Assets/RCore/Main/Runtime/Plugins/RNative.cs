@@ -5,6 +5,9 @@
 
 using System;
 using UnityEngine;
+#if UNITY_IOS
+using System.Runtime.InteropServices;
+#endif
 
 namespace RCore
 {
@@ -97,7 +100,7 @@ namespace RCore
 		}
 #elif UNITY_IOS
 		[DllImport("__Internal")]
-        private static extern long getSecondsSinceBoot();
+		public static extern long getSecondsSinceBoot();
         public static long getMillisSinceBoot()
         {
             return getSecondsSinceBoot() * 1000;

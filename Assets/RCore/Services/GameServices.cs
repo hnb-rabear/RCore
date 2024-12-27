@@ -453,7 +453,7 @@ namespace RCore.Service
 						request.callback?.Invoke(request.leaderboardId, ldb.scores);
 
 						// Load next request
-                        isLoadingScore = false;
+						IsLoadingScore = false;
                         DoNextLoadScoreRequest();
                     });
 #endif
@@ -519,6 +519,13 @@ namespace RCore.Service
 				TimeScope.Today => LeaderboardTimeSpan.Daily,
 				_ => LeaderboardTimeSpan.AllTime
 			};
+		}
+#elif UNITY_IOS
+		private static void ProcessAuthentication(bool pSuccess)
+		{
+			Debug.Log($"Init GameServices {pSuccess}");
+
+			m_OnUserLoginSucceeded?.Invoke(pSuccess);
 		}
 #endif
 
