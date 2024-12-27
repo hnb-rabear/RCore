@@ -37,18 +37,18 @@ namespace RCore.Editor.UI
 
             EditorGUILayout.BeginVertical("box");
             {
-                var fontColorSwap = serializedObject.SerializeField("fontColorOnOffSwap");
+                var fontColorSwap = serializedObject.SerializeField(nameof(SimpleTMPButton.fontColorOnOffSwap));
                 if (fontColorSwap.boolValue)
                 {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.BeginVertical("box");
-                    serializedObject.SerializeField("fontColorOn");
-                    serializedObject.SerializeField("fontColorOff");
+                    serializedObject.SerializeField(nameof(SimpleTMPButton.fontColorOn));
+                    serializedObject.SerializeField(nameof(SimpleTMPButton.fontColorOff));
                     EditorGUILayout.EndVertical();
                     EditorGUI.indentLevel--;
                 }
 
-                var labelMatSwap = serializedObject.SerializeField("labelMatOnOffSwap");
+                var labelMatSwap = serializedObject.SerializeField(nameof(SimpleTMPButton.labelMatOnOffSwap));
                 if (labelMatSwap.boolValue)
                 {
                     EditorGUI.indentLevel++;
@@ -61,8 +61,8 @@ namespace RCore.Editor.UI
                     EditorGUI.indentLevel--;
                 }
 
-                var label = serializedObject.SerializeField("label");
-                var text = label.objectReferenceValue as TextMeshProUGUI;
+                var label1 = serializedObject.SerializeField(nameof(SimpleTMPButton.label));
+                var text = label1.objectReferenceValue as TextMeshProUGUI;
                 if (text != null)
                 {
                     var textObj = new SerializedObject(text);

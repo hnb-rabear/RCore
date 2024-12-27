@@ -40,11 +40,11 @@ namespace RCore.UI
 		}
 
 		[Serializable]
-		public class AlphaTransition
+		public class ColorTransition
 		{
 			public MaskableGraphic target;
-			public float on;
-			public float off;
+			public Color on;
+			public Color off;
 		}
 
 		public Image imgBackground;
@@ -62,7 +62,7 @@ namespace RCore.UI
 		public float tweenTime = 0.3f;
 		public SizeTransition[] sizeTransitions;
 		public PositionTransition[] positionTransitions;
-		public AlphaTransition[] alphaTransitions;
+		public ColorTransition[] alphaTransitions;
 
 		[ReadOnly] public bool isLocked;
 
@@ -291,11 +291,7 @@ namespace RCore.UI
 					isOn ? transition1.on : transition1.off;
 
 			foreach (var transition1 in alphaTransitions)
-			{
-				var color = transition1.target.color;
-				color.a = isOn ? transition1.on : transition1.off;
-				transition1.target.color = color;
-			}
+				transition1.target.color = isOn ? transition1.on : transition1.off;
 
 			if (m_customToggleGroup != null && isOn)
 				m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
@@ -362,11 +358,7 @@ namespace RCore.UI
 									isOn ? Vector2.Lerp(transition1.off, transition1.on, lerp) : Vector2.Lerp(transition1.on, transition1.off, lerp);
 
 							foreach (var transition1 in alphaTransitions)
-							{
-								var color = transition1.target.color;
-								color.a = isOn ? Mathf.Lerp(transition1.off, transition1.on, lerp) : Mathf.Lerp(transition1.on, transition1.off, lerp);
-								transition1.target.color = color;
-							}
+								transition1.target.color = isOn ? Color.Lerp(transition1.off, transition1.on, lerp) : Color.Lerp(transition1.on, transition1.off, lerp);
 						})
 						.OnComplete(() =>
 						{
@@ -401,11 +393,7 @@ namespace RCore.UI
 									isOn ? transition1.on : transition1.off;
 
 							foreach (var transition1 in alphaTransitions)
-							{
-								var color = transition1.target.color;
-								color.a = isOn ? transition1.on : transition1.off;
-								transition1.target.color = color;
-							}
+								transition1.target.color = isOn ? transition1.on : transition1.off;
 						})
 						.SetId(GetInstanceID() + 1)
 						.SetEase(Ease.OutCubic);

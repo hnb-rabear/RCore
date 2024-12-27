@@ -29,14 +29,14 @@ namespace RCore.Service
 		[SerializeField] private SerializableDictionary<string, ProductType> m_products;
 
 		public static Action<Product> OnIAPSucceed;
-		public static Action<Product> OnIAPFailed;
+		public static Action<Product, string> OnIAPFailed;
+		private Action<bool> m_onInitialized;
 		private Action<Product> m_onPurchaseDeferred;
 		private Action<Product> m_onPurchaseFailed;
 		private Action<Product> m_onPurchaseSucceed;
 		private IStoreController m_storeController;
 		private IAppleExtensions m_appleExtensions;
 		private IGooglePlayStoreExtensions m_googlePlayStoreExtensions;
-		private Action<bool> m_onInitialized;
 		private bool m_initialized;
 		private CrossPlatformValidator m_validator;
 		private RPlayerPrefDict<string, string> m_cacheLocalizedPrices;
@@ -73,6 +73,7 @@ namespace RCore.Service
 		{
 			OnInitializeFailed(error, null);
 		}
+
 		public void OnInitializeFailed(InitializationFailureReason error, string message)
 		{
 			m_onInitialized?.Invoke(false);
@@ -130,19 +131,13 @@ namespace RCore.Service
 			var isPurchaseValid = IsPurchaseValid(product);
 			if (isPurchaseValid)
 			{
-				TimerEventsGlobal.Instance.Enqueue(() =>
-				{
-					m_onPurchaseSucceed?.Invoke(product);
-					OnIAPSucceed?.Invoke(product);
-				});
+				m_onPurchaseSucceed?.Invoke(product);
+				OnIAPSucceed?.Invoke(product);
 			}
 			else
 			{
-				TimerEventsGlobal.Instance.Enqueue(() =>
-				{
-					m_onPurchaseFailed?.Invoke(product);
-					OnIAPFailed?.Invoke(product);
-				});
+				m_onPurchaseFailed?.Invoke(product);
+				OnIAPFailed?.Invoke(product, "invalid");
 			}
 			return PurchaseProcessingResult.Complete;
 		}
@@ -150,7 +145,7 @@ namespace RCore.Service
 		public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
 		{
 			m_onPurchaseFailed?.Invoke(product);
-			OnIAPFailed?.Invoke(product);
+			OnIAPFailed?.Invoke(product, failureReason.ToString());
 
 			Debug.Log($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
 		}
@@ -158,7 +153,7 @@ namespace RCore.Service
 		public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
 		{
 			m_onPurchaseFailed?.Invoke(product);
-			OnIAPFailed?.Invoke(product);
+			OnIAPFailed?.Invoke(product, failureDescription.reason.ToString());
 
 			Debug.Log($"Purchase failed - Product: '{product.definition.id}'," + $" Purchase failure reason: {failureDescription.reason}," + $" Purchase failure details: {failureDescription.message}");
 		}

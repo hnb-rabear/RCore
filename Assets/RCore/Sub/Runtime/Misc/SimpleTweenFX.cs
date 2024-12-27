@@ -17,9 +17,7 @@ using DG.Tweening;
 
 namespace RCore.Mics
 {
-    /// <summary>
-    /// Just and example of some simple fx
-    /// </summary>
+    [Obsolete]
     public class SimpleTweenFX : MonoBehaviour
     {
         private static SimpleTweenFX m_Instance;
@@ -45,7 +43,7 @@ namespace RCore.Mics
             return SimulateBubble(pTarget, defaultScale, 0, 1, Instance.mBubbleAnim, time, pOnFinished);
         }
 
-        public int SingleHightLight(Image pTarget, float time = 0.5f, Action pOnFinished = null)
+        public int SingleHighLight(Image pTarget, float time = 0.5f, Action pOnFinished = null)
         {
             var defaultAlpha = Color.white.a;
             int id = 0;
@@ -181,27 +179,27 @@ namespace RCore.Mics
         {
             mBubbleAnim = new AnimationCurve();
             mBubbleAnim.keys = new Keyframe[] {
-                new Keyframe(0, 1f),
-                new Keyframe(0.25f, 1.1f),
-                new Keyframe(0.5f, 1f),
-                new Keyframe(0.75f, 0.9f),
-                new Keyframe(1f, 1f),
+                new(0, 1f),
+                new(0.25f, 1.1f),
+                new(0.5f, 1f),
+                new(0.75f, 0.9f),
+                new(1f, 1f),
             };
 
             mFadeInAndOutAnim = new AnimationCurve();
             mFadeInAndOutAnim.keys = new Keyframe[] {
-                new Keyframe(0, 0f),
-                new Keyframe(0.5f, 1f),
-                new Keyframe(1, 0f)
+                new(0, 0f),
+                new(0.5f, 1f),
+                new(1, 0f)
             };
 
             mShakeAnim = new AnimationCurve();
             mShakeAnim.keys = new Keyframe[] {
-                new Keyframe(0, 1f),
-                new Keyframe(0.25f, 1.1f),
-                new Keyframe(0.5f, 1f),
-                new Keyframe(0.75f, 0.9f),
-                new Keyframe(1f, 1f),
+                new(0, 1f),
+                new(0.25f, 1.1f),
+                new(0.5f, 1f),
+                new(0.75f, 0.9f),
+                new(1f, 1f),
             };
         }
     }
@@ -226,7 +224,7 @@ namespace RCore.Mics
                 mObj.Bubble(mObj.transformTest.transform, Vector3.one);
 
             if (GUILayout.Button("SingleHightLight"))
-                mObj.SingleHightLight(mObj.imgTest);
+                mObj.SingleHighLight(mObj.imgTest);
 
             if (GUILayout.Button("Shake"))
                 mObj.Shake(mObj.transformTest.transform, 1f, 0.1f);

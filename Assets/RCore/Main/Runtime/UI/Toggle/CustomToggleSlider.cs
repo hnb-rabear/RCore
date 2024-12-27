@@ -2,6 +2,7 @@
  * Author HNB-RaBear - 2019
  **/
 
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -12,6 +13,7 @@ using RCore.Editor;
 
 namespace RCore.UI
 {
+	[Obsolete("Use CustomToggleTab instead")]
 	[AddComponentMenu("RCore/UI/CustomToggleSlider")]
 	public class CustomToggleSlider : Toggle
 	{
@@ -129,62 +131,62 @@ namespace RCore.UI
 			}
 		}
 #endif
-	}
 
 #if UNITY_EDITOR
-	[UnityEditor.CustomEditor(typeof(CustomToggleSlider), true)]
-	public class CustomToggleEditor : UnityEditor.UI.ToggleEditor
-	{
-		private CustomToggleSlider m_toggle;
-
-		protected override void OnEnable()
+		[UnityEditor.CustomEditor(typeof(CustomToggleSlider), true)]
+		public class CustomToggleEditor : UnityEditor.UI.ToggleEditor
 		{
-			base.OnEnable();
+			private CustomToggleSlider m_toggle;
 
-			m_toggle = (CustomToggleSlider)target;
-		}
-
-		public override void OnInspectorGUI()
-		{
-			UnityEditor.EditorGUILayout.BeginVertical("box");
+			protected override void OnEnable()
 			{
-				serializedObject.SerializeField("txtLabel");
-				serializedObject.SerializeField("toggleTransform");
-				serializedObject.SerializeField("onPosition");
-				serializedObject.SerializeField("offPosition");
-				serializedObject.SerializeField("sfxClip");
-				serializedObject.SerializeField("sfxClipOff");
+				base.OnEnable();
 
-				var property1 = serializedObject.SerializeField("enableOnOffContent");
-				if (property1.boolValue)
-				{
-					UnityEditor.EditorGUI.indentLevel++;
-					UnityEditor.EditorGUILayout.BeginVertical("box");
-					serializedObject.SerializeField("onObjects");
-					serializedObject.SerializeField("offObjects");
-					UnityEditor.EditorGUILayout.EndVertical();
-					UnityEditor.EditorGUI.indentLevel--;
-				}
-				var property2 = serializedObject.SerializeField("enableOnOffColor");
-				if (property2.boolValue)
-				{
-					UnityEditor.EditorGUI.indentLevel++;
-					UnityEditor.EditorGUILayout.BeginVertical("box");
-					serializedObject.SerializeField("onColor");
-					serializedObject.SerializeField("offColor");
-					UnityEditor.EditorGUILayout.EndVertical();
-					UnityEditor.EditorGUI.indentLevel--;
-				}
-
-				if (m_toggle.txtLabel != null)
-					m_toggle.txtLabel.text = UnityEditor.EditorGUILayout.TextField("Label", m_toggle.txtLabel.text);
-
-				serializedObject.ApplyModifiedProperties();
+				m_toggle = (CustomToggleSlider)target;
 			}
-			UnityEditor.EditorGUILayout.EndVertical();
 
-			base.OnInspectorGUI();
+			public override void OnInspectorGUI()
+			{
+				UnityEditor.EditorGUILayout.BeginVertical("box");
+				{
+					serializedObject.SerializeField(nameof(txtLabel));
+					serializedObject.SerializeField(nameof(toggleTransform));
+					serializedObject.SerializeField(nameof(onPosition));
+					serializedObject.SerializeField(nameof(offPosition));
+					serializedObject.SerializeField(nameof(sfxClip));
+					serializedObject.SerializeField(nameof(sfxClipOff));
+
+					var property1 = serializedObject.SerializeField(nameof(enableOnOffContent));
+					if (property1.boolValue)
+					{
+						UnityEditor.EditorGUI.indentLevel++;
+						UnityEditor.EditorGUILayout.BeginVertical("box");
+						serializedObject.SerializeField(nameof(onObjects));
+						serializedObject.SerializeField(nameof(offObjects));
+						UnityEditor.EditorGUILayout.EndVertical();
+						UnityEditor.EditorGUI.indentLevel--;
+					}
+					var property2 = serializedObject.SerializeField(nameof(enableOnOffColor));
+					if (property2.boolValue)
+					{
+						UnityEditor.EditorGUI.indentLevel++;
+						UnityEditor.EditorGUILayout.BeginVertical("box");
+						serializedObject.SerializeField(nameof(onColor));
+						serializedObject.SerializeField(nameof(offColor));
+						UnityEditor.EditorGUILayout.EndVertical();
+						UnityEditor.EditorGUI.indentLevel--;
+					}
+
+					if (m_toggle.txtLabel != null)
+						m_toggle.txtLabel.text = UnityEditor.EditorGUILayout.TextField("Label", m_toggle.txtLabel.text);
+
+					serializedObject.ApplyModifiedProperties();
+				}
+				UnityEditor.EditorGUILayout.EndVertical();
+
+				base.OnInspectorGUI();
+			}
 		}
-	}
 #endif
+	}
 }

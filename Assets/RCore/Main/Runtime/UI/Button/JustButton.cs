@@ -327,18 +327,18 @@ namespace RCore.UI
 				m_target.CheckPerfectRatio();
 				EditorGUILayout.BeginVertical("box");
 				{
-					serializedObject.SerializeField("m_img");
-					serializedObject.SerializeField("scaleBounceEffect");
-					serializedObject.SerializeField("greyscaleEffect");
-					serializedObject.SerializeField("clickSfx");
-					serializedObject.SerializeField("perfectRatio");
-					var imgSwapEnabled = serializedObject.SerializeField("imgOnOffSwap");
+					serializedObject.SerializeField(nameof(m_img));
+					serializedObject.SerializeField(nameof(scaleBounceEffect));
+					serializedObject.SerializeField(nameof(greyscaleEffect));
+					serializedObject.SerializeField(nameof(clickSfx));
+					serializedObject.SerializeField(nameof(perfectRatio));
+					var imgSwapEnabled = serializedObject.SerializeField(nameof(imgOnOffSwap));
 					if (imgSwapEnabled.boolValue)
 					{
 						EditorGUI.indentLevel++;
 						EditorGUILayout.BeginVertical("box");
-						serializedObject.SerializeField("imgOn");
-						serializedObject.SerializeField("imgOff");
+						serializedObject.SerializeField(nameof(imgOn));
+						serializedObject.SerializeField(nameof(imgOff));
 						EditorGUILayout.EndVertical();
 						EditorGUI.indentLevel--;
 					}

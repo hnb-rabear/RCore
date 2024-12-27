@@ -2,12 +2,14 @@
 using RCore.Editor;
 using UnityEditor;
 #endif
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace RCore.UI
 {
+	[Obsolete("Use SimpleTMPButton instead")]
 	[AddComponentMenu("RCore/UI/SimpleButton")]
 	public class SimpleButton : JustButton
 	{
@@ -48,8 +50,8 @@ namespace RCore.UI
 
 				EditorGUILayout.BeginVertical("box");
 				{
-					var label = serializedObject.SerializeField("m_label");
-					var text = label.objectReferenceValue as Text;
+					var label1 = serializedObject.SerializeField(nameof(label));
+					var text = label1.objectReferenceValue as Text;
 					if (text != null)
 					{
 						var textObj = new SerializedObject(text);
