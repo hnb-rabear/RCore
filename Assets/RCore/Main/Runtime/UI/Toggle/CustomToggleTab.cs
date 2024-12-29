@@ -3,6 +3,7 @@
  **/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -46,6 +47,14 @@ namespace RCore.UI
 			public Color on;
 			public Color off;
 		}
+		
+		[Serializable]
+		public class SpriteTransition
+		{
+			public Image target;
+			public Sprite on;
+			public Sprite off;
+		}
 
 		public Image imgBackground;
 		public TextMeshProUGUI txtLabel;
@@ -62,7 +71,8 @@ namespace RCore.UI
 		public float tweenTime = 0.3f;
 		public SizeTransition[] sizeTransitions;
 		public PositionTransition[] positionTransitions;
-		public ColorTransition[] alphaTransitions;
+		public ColorTransition[] colorTransitions;
+		public SpriteTransition[] spriteTransitions;
 
 		[ReadOnly] public bool isLocked;
 
@@ -290,8 +300,11 @@ namespace RCore.UI
 				transition1.target.anchoredPosition =
 					isOn ? transition1.on : transition1.off;
 
-			foreach (var transition1 in alphaTransitions)
+			foreach (var transition1 in colorTransitions)
 				transition1.target.color = isOn ? transition1.on : transition1.off;
+			
+			foreach (var transition1 in spriteTransitions)
+				transition1.target.sprite = isOn ? transition1.on : transition1.off;
 
 			if (m_customToggleGroup != null && isOn)
 				m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
@@ -315,7 +328,7 @@ namespace RCore.UI
 
 			if (Application.isPlaying)
 			{
-				if (enableSizeSwitch || sizeTransitions.Length > 0 || positionTransitions.Length > 0 || alphaTransitions.Length > 0)
+				if (enableSizeSwitch || sizeTransitions.Length > 0 || positionTransitions.Length > 0 || colorTransitions.Length > 0 || spriteTransitions.Length > 0)
 				{
 					if (m_customToggleGroup != null)
 						m_customToggleGroup.SetToggleInteractable(false);
@@ -357,8 +370,28 @@ namespace RCore.UI
 								transition1.target.anchoredPosition =
 									isOn ? Vector2.Lerp(transition1.off, transition1.on, lerp) : Vector2.Lerp(transition1.on, transition1.off, lerp);
 
-							foreach (var transition1 in alphaTransitions)
+							foreach (var transition1 in colorTransitions)
 								transition1.target.color = isOn ? Color.Lerp(transition1.off, transition1.on, lerp) : Color.Lerp(transition1.on, transition1.off, lerp);
+
+							foreach (var transition1 in spriteTransitions)
+							{
+								if (lerp < 0.5f)
+								{
+									// Lerp alpha of transition1.target to zero
+									var tempColor = transition1.target.color; 
+									tempColor.a = Mathf.Lerp(1, 0, lerp * 2); // Multiply by 2 because lerp is [0, 0.5]
+									transition1.target.color = tempColor;
+									transition1.target.sprite = isOn ? transition1.off : transition1.on;
+								}
+								else
+								{
+									// Lerp alpha of transition1.target to 1
+									var tempColor = transition1.target.color;
+									tempColor.a = Mathf.Lerp(0, 1, (lerp - 0.5f) * 2);
+									transition1.target.color = tempColor;
+									transition1.target.sprite = isOn ? transition1.on : transition1.off;
+								}
+							}
 						})
 						.OnComplete(() =>
 						{
@@ -392,8 +425,11 @@ namespace RCore.UI
 								transition1.target.anchoredPosition =
 									isOn ? transition1.on : transition1.off;
 
-							foreach (var transition1 in alphaTransitions)
+							foreach (var transition1 in colorTransitions)
 								transition1.target.color = isOn ? transition1.on : transition1.off;
+							
+							foreach (var transition1 in spriteTransitions)
+								transition1.target.sprite = isOn ? transition1.on : transition1.off;
 						})
 						.SetId(GetInstanceID() + 1)
 						.SetEase(Ease.OutCubic);
@@ -422,6 +458,19 @@ namespace RCore.UI
 			}
 #endif
 			Refresh();
+		}
+		
+		IEnumerator SpriteLerp(SpriteRenderer spriteRenderer, Sprite fromSprite, Sprite toSprite, float duration)
+		{
+			float elapsed = 0f;
+			while (elapsed < duration)
+			{
+				elapsed += Time.deltaTime;
+				float t = Mathf.Clamp01(elapsed / duration);
+				spriteRenderer.sprite = t < 0.5f ? fromSprite : toSprite; // Simplest form of "lerping"
+				yield return null;
+			}
+			spriteRenderer.sprite = toSprite;
 		}
 
 #if UNITY_EDITOR
@@ -460,7 +509,8 @@ namespace RCore.UI
 
 				serializedObject.SerializeField(nameof(sizeTransitions));
 				serializedObject.SerializeField(nameof(positionTransitions));
-				serializedObject.SerializeField(nameof(alphaTransitions));
+				serializedObject.SerializeField(nameof(colorTransitions));
+				serializedObject.SerializeField(nameof(spriteTransitions));
 				serializedObject.SerializeField(nameof(tweenTime));
 
 				if (m_mToggle.txtLabel != null)
