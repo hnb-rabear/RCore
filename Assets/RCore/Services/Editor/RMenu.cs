@@ -39,12 +39,5 @@ namespace RCore.Service
 			var gameObject = new GameObject("NotificationsManager");
 			gameObject.AddComponent<NotificationsManager>();
 		}
-		
-		[MenuItem(GAMEOBJECT_R_CREATE + "FirebaseManager", priority = GROUP_2 + 1)]
-		public static void CreateFirebaseManager()
-		{
-			var gameObject = new GameObject("FirebaseManager");
-			gameObject.AddComponent<FirebaseManager>();
-		}
 	}
 }

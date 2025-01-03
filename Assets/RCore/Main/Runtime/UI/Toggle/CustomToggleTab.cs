@@ -47,7 +47,7 @@ namespace RCore.UI
 			public Color on;
 			public Color off;
 		}
-		
+
 		[Serializable]
 		public class SpriteTransition
 		{
@@ -302,7 +302,7 @@ namespace RCore.UI
 
 			foreach (var transition1 in colorTransitions)
 				transition1.target.color = isOn ? transition1.on : transition1.off;
-			
+
 			foreach (var transition1 in spriteTransitions)
 				transition1.target.sprite = isOn ? transition1.on : transition1.off;
 
@@ -378,7 +378,7 @@ namespace RCore.UI
 								if (lerp < 0.5f)
 								{
 									// Lerp alpha of transition1.target to zero
-									var tempColor = transition1.target.color; 
+									var tempColor = transition1.target.color;
 									tempColor.a = Mathf.Lerp(1, 0, lerp * 2); // Multiply by 2 because lerp is [0, 0.5]
 									transition1.target.color = tempColor;
 									transition1.target.sprite = isOn ? transition1.off : transition1.on;
@@ -427,7 +427,7 @@ namespace RCore.UI
 
 							foreach (var transition1 in colorTransitions)
 								transition1.target.color = isOn ? transition1.on : transition1.off;
-							
+
 							foreach (var transition1 in spriteTransitions)
 								transition1.target.sprite = isOn ? transition1.on : transition1.off;
 						})
@@ -459,7 +459,7 @@ namespace RCore.UI
 #endif
 			Refresh();
 		}
-		
+
 		IEnumerator SpriteLerp(SpriteRenderer spriteRenderer, Sprite fromSprite, Sprite toSprite, float duration)
 		{
 			float elapsed = 0f;

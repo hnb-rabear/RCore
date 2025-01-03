@@ -11,10 +11,10 @@ namespace RCore.UI
 {
 	public abstract class PanelRoot : PanelStack
 	{
-		[SerializeField] private Button m_dimmerOverlay;
+		[SerializeField] protected Button m_dimmerOverlay;
 
 		private readonly List<PanelController> m_panelsInQueue = new List<PanelController>();
-
+		
 		protected virtual void OnEnable()
 		{
 			EventDispatcher.AddListener<PushPanelEvent>(PushPanelHandler);

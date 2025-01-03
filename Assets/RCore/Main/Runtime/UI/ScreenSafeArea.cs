@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 namespace RCore.UI
@@ -34,6 +35,12 @@ namespace RCore.UI
 				$"\nSafe area: {safeArea}" +
 				$"\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})" +
 				$"\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
+		}
+
+		private void OnValidate()
+		{
+			if (Application.isPlaying)
+				CheckSafeArea();
 		}
 
 		[InspectorButton]

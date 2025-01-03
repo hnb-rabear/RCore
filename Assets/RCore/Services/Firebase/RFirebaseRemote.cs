@@ -7,16 +7,18 @@ using Firebase.RemoteConfig;
 using Firebase.Extensions;
 #endif
 using System;
+using UnityEditor;
 
 namespace RCore.Service
 {
 	public static class RFirebaseRemote
 	{
 		private const string BACK_UP_KEY = "RemoteConfig.BackUp";
-		
-		public static Dictionary<string, object> defaultData = new Dictionary<string, object>();
-		public static bool fetched;
 
+		public static bool Fetched;
+		public static Action OnFetched;
+
+		private static Dictionary<string, object> m_DefaultData = new();
 		private static Dictionary<string, double> m_CacheNumberValues = new();
 		private static Dictionary<string, string> m_CacheStringValues = new();
 		private static Dictionary<string, bool> m_CacheBoolValues = new();
@@ -25,7 +27,7 @@ namespace RCore.Service
 		public static void Init(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
 		{
 #if FIREBASE_REMOTE_CONFIG
-			if (!FirebaseManager.initialized)
+			if (!RFirebase.Initialized)
 			{
 				FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
 				{
@@ -63,7 +65,7 @@ namespace RCore.Service
 			BackUp(key, value);
 			return value;
 #else
-            return Convert.ToDouble(defaultData[pKey.ToString()].ToString());
+            return Convert.ToDouble(m_DefaultData[pKey.ToString()].ToString());
 #endif
 		}
 
@@ -78,7 +80,7 @@ namespace RCore.Service
 			BackUp(key, value);
 			return value;
 #else
-            return defaultData[pKey.ToString()].ToString();
+            return m_DefaultData[pKey.ToString()].ToString();
 #endif
 		}
 
@@ -93,7 +95,7 @@ namespace RCore.Service
 			BackUp(key, value);
 			return value;
 #else
-            return Convert.ToBoolean(defaultData[pKey.ToString()]);
+            return Convert.ToBoolean(m_DefaultData[pKey.ToString()]);
 #endif
 		}
 
@@ -103,15 +105,13 @@ namespace RCore.Service
 #if FIREBASE_REMOTE_CONFIG
 			json = GetStringValue(pKey);
 #else
-            json = defaultData[pKey.ToString()].ToString();
+            json = m_DefaultData[pKey.ToString()].ToString();
 #endif
 			return JsonUtility.FromJson<T>(json);
 		}
 
 		private static void SetDefaultData(Dictionary<string, object> pDefaultData)
 		{
-			defaultData = pDefaultData;
-
 			var backUpData = PlayerPrefs.GetString(BACK_UP_KEY);
 			if (!string.IsNullOrEmpty(backUpData))
 			{
@@ -119,16 +119,17 @@ namespace RCore.Service
 				{
 					var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(backUpData);
 					foreach (var kvp in data)
-						defaultData[kvp.Key] = kvp.Value; // Override defaultData values with data values
+						pDefaultData[kvp.Key] = kvp.Value; // Override defaultData values with data values
 				}
 				catch (Exception ex)
 				{
 					Debug.LogError("Failed to deserialize or merge data: " + ex.Message);
 				}
 			}
+			m_DefaultData = pDefaultData;
 
 #if FIREBASE_REMOTE_CONFIG
-			FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaultData).ContinueWithOnMainThread(task =>
+			FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(pDefaultData).ContinueWithOnMainThread(task =>
 			{
 				if (task.IsCanceled)
 					Debug.Log("SetDefaultsAsync canceled.");
@@ -174,8 +175,9 @@ namespace RCore.Service
 					case LastFetchStatus.Success:
 						FirebaseRemoteConfig.DefaultInstance.ActivateAsync().ContinueWithOnMainThread(task2 =>
 						{
-							fetched = true;
-							Debug.Log(string.Format("Remote data loaded and ready (last fetch time {0}).", info.FetchTime));
+							Fetched = true;
+							OnFetched?.Invoke();
+							Debug.Log($"Remote data loaded and ready (last fetch time {info.FetchTime}).");
 						});
 						break;
 
@@ -207,8 +209,6 @@ namespace RCore.Service
 		{
 			if (!m_BackUpValues.TryAdd(key, value))
 				m_BackUpValues[key] = value;
-			string content = JsonConvert.SerializeObject(m_BackUpValues);
-			PlayerPrefs.SetString(BACK_UP_KEY, content);
 		}
 
 		public static void LogFetchedData()
@@ -225,6 +225,25 @@ namespace RCore.Service
 			}
 			Debug.Log(log);
 #endif
+		}
+
+		[RuntimeInitializeOnLoadMethod]
+		private static void Initialize()
+		{
+			Application.quitting += OnApplicationQuit;
+			Application.focusChanged += OnFocusChanged;
+		}
+
+		private static void OnFocusChanged(bool obj)
+		{
+			string content = JsonConvert.SerializeObject(m_BackUpValues);
+			PlayerPrefs.SetString(BACK_UP_KEY, content);
+		}
+
+		private static void OnApplicationQuit()
+		{
+			string content = JsonConvert.SerializeObject(m_BackUpValues);
+			PlayerPrefs.SetString(BACK_UP_KEY, content);
 		}
 	}
 }
