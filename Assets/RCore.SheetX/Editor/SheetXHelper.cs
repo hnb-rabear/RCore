@@ -472,9 +472,9 @@ namespace RCore.SheetX.Editor
 				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
 		}
 
-		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow)
+		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow, string name)
 		{
-			var table = new EditorTableView<SheetPath>(editorWindow, "Spreadsheets");
+			var table = new EditorTableView<SheetPath>(editorWindow, name);
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)

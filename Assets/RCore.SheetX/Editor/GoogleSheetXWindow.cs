@@ -91,7 +91,7 @@ namespace RCore.SheetX.Editor
 			EditorGUILayout.EndHorizontal();
 			//-----
 			EditorGUILayout.BeginHorizontal();
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.googleSheetsPath.name);
 			m_tableSheets.viewWidthFillRatio = 0.8f;
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.googleSheetsPath.sheets);

@@ -23,7 +23,7 @@ namespace RCore.SheetX.Editor
 
 		private void OnGUI()
 		{
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this, m_excelSheetsPath.name);
 			m_tableSheets.DrawOnGUI(m_excelSheetsPath.sheets);
 		}
 		

@@ -75,7 +75,7 @@ namespace RCore.SheetX.Editor
 		private void PageSingleFile()
 		{
 			GUILayout.BeginHorizontal("box");
-			m_settings.excelSheetsPath.path = EditorHelper.TextField(m_settings.excelSheetsPath.path, "Excel File", 100);
+			m_settings.excelSheetsPath.path = EditorHelper.TextField(m_settings.excelSheetsPath.path, "Excel File", 80);
 			if (!string.IsNullOrEmpty(m_settings.excelSheetsPath.path))
 			{
 				bool validExcelPath = ValidateExcelPath(m_settings.excelSheetsPath.path, out string status);
@@ -100,7 +100,7 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.excelSheetsPath.name);
 			m_tableSheets.viewWidthFillRatio = 0.8f;
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.excelSheetsPath.sheets);

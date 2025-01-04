@@ -37,14 +37,15 @@ namespace RCore.SheetX.Editor
 			m_settings = settings;
 		}
 
-		private Spreadsheet GetCacheMetadata(string googleSpreadsheetsId)
+		private Spreadsheet GetCacheMetadata(GoogleSheetsPath googleSheetsPath)
 		{
-			if (m_cachedSpreadsheet.TryGetValue(googleSpreadsheetsId, out var metadata))
+			if (m_cachedSpreadsheet.TryGetValue(googleSheetsPath.id, out var metadata))
 				return metadata;
 			var service = GetService();
-			var spreadsheet = service.Spreadsheets.Get(googleSpreadsheetsId).Execute();
-			m_cachedSpreadsheet[googleSpreadsheetsId] = spreadsheet;
-			return spreadsheet;
+			var sheetMetadata = service.Spreadsheets.Get(googleSheetsPath.id).Execute();
+			ValidateSheetPaths(sheetMetadata, googleSheetsPath);
+			m_cachedSpreadsheet[googleSheetsPath.id] = sheetMetadata;
+			return sheetMetadata;
 		}
 
 		//======================================
@@ -64,8 +65,8 @@ namespace RCore.SheetX.Editor
 				return;
 			}
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
-
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
+			
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
 
@@ -267,7 +268,7 @@ namespace RCore.SheetX.Editor
 		{
 			var ids = new Dictionary<string, IList<IList<object>>>();
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
 			foreach (var sheet in m_settings.googleSheetsPath.sheets)
 			{
 				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
@@ -386,7 +387,7 @@ namespace RCore.SheetX.Editor
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
 			foreach (var sheet in m_settings.googleSheetsPath.sheets)
 			{
 				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
@@ -610,7 +611,7 @@ namespace RCore.SheetX.Editor
 			m_langCharSetsAll = new StringBuilder();
 
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
 			foreach (var sheet in m_settings.googleSheetsPath.sheets)
 			{
 				if (!sheet.selected || !sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
@@ -975,7 +976,7 @@ namespace RCore.SheetX.Editor
 			bool writeJsonFileForSingleSheet = !m_settings.combineJson;
 			var allJsons = new Dictionary<string, string>();
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath.id);
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
 			foreach (var sheet in m_settings.googleSheetsPath.sheets)
 			{
 				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name))
@@ -1501,6 +1502,7 @@ namespace RCore.SheetX.Editor
 			{
 				// Get the sheet metadata to determine its dimensions
 				var sheetMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+				ValidateSheetPaths(sheetMetadata, googleSheets);
 				foreach (var sheet in googleSheets.sheets)
 				{
 					if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
@@ -1709,6 +1711,39 @@ namespace RCore.SheetX.Editor
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
 			return m_service;
+		}
+
+		private void ValidateSheetPaths(Spreadsheet sheetMetadata, GoogleSheetsPath pGoogleSheetsPath)
+		{
+			var sheetPaths = new List<SheetPath>();
+			foreach (var sheet in sheetMetadata.Sheets)
+			{
+				var sheetName = sheet.Properties.Title;
+				sheetPaths.Add(new SheetPath()
+				{
+					name = sheetName,
+					selected = true,
+				});
+			}
+			
+			// Sync with current save
+			for (int i = 0; i < pGoogleSheetsPath.sheets.Count; i++)
+			{
+				var sheetPath = pGoogleSheetsPath.sheets[i];
+				if (!sheetPaths.Exists(x => x.name == sheetPath.name))
+				{
+					pGoogleSheetsPath.sheets.RemoveAt(i);
+					i--;
+				}
+			}
+			foreach (var sheetPath in sheetPaths)
+			{
+				var existedSheet = pGoogleSheetsPath.sheets.Find(x => x.name == sheetPath.name);
+				if (existedSheet != null)
+					sheetPath.selected = existedSheet.selected;
+				else
+					pGoogleSheetsPath.AddSheet(sheetPath.name);
+			}
 		}
 	}
 }

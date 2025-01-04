@@ -49,7 +49,7 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginVertical("box");
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this);
+			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this, m_googleSheetsPath.name);
 			m_tableSheets.DrawOnGUI(m_googleSheetsPath.sheets);
 			GUILayout.EndVertical();
 		}
