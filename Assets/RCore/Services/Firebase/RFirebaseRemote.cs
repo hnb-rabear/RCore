@@ -7,7 +7,6 @@ using Firebase.RemoteConfig;
 using Firebase.Extensions;
 #endif
 using System;
-using UnityEditor;
 
 namespace RCore.Service
 {
@@ -23,6 +22,7 @@ namespace RCore.Service
 		private static Dictionary<string, string> m_CacheStringValues = new();
 		private static Dictionary<string, bool> m_CacheBoolValues = new();
 		private static Dictionary<string, object> m_BackUpValues = new();
+		private static bool m_Changed;
 
 		public static void Init(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
 		{
@@ -204,11 +204,12 @@ namespace RCore.Service
             pOnFetched?.Invoke(false);
 #endif
 		}
-
+		
 		private static void BackUp(string key, object value)
 		{
 			if (!m_BackUpValues.TryAdd(key, value))
 				m_BackUpValues[key] = value;
+			m_Changed = true;
 		}
 
 		public static void LogFetchedData()
@@ -234,16 +235,24 @@ namespace RCore.Service
 			Application.focusChanged += OnFocusChanged;
 		}
 
-		private static void OnFocusChanged(bool obj)
+		private static void OnFocusChanged(bool focus)
 		{
-			string content = JsonConvert.SerializeObject(m_BackUpValues);
-			PlayerPrefs.SetString(BACK_UP_KEY, content);
+			if (m_Changed)
+			{
+				string content = JsonConvert.SerializeObject(m_BackUpValues);
+				PlayerPrefs.SetString(BACK_UP_KEY, content);
+				m_Changed = false;
+			}
 		}
 
 		private static void OnApplicationQuit()
 		{
-			string content = JsonConvert.SerializeObject(m_BackUpValues);
-			PlayerPrefs.SetString(BACK_UP_KEY, content);
+			if (m_Changed)
+			{
+				string content = JsonConvert.SerializeObject(m_BackUpValues);
+				PlayerPrefs.SetString(BACK_UP_KEY, content);
+				m_Changed = false;
+			}
 		}
 	}
 }

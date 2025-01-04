@@ -8,11 +8,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using RCore.Inspector;
-using UnityEngine.Serialization;
-#if UNITY_EDITOR
-using RCore.Editor;
-using UnityEditor;
-#endif
 
 namespace RCore.UI
 {
@@ -53,11 +48,6 @@ namespace RCore.UI
                 if (m_Img.sprite != value)
                     SetSprite(value);
             }
-        }
-        public string text
-        {
-            get => label.text;
-            set => label.text = value;
         }
 
         public void SetSprite(Sprite pSprite)

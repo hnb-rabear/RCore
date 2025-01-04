@@ -580,6 +580,11 @@ namespace RCore.Service
 				UnityEngine.Debug.LogError(launchFlowOperation.Error.ToString());
 			}
 		}
+#elif  UNITY_IOS
+		public static async void ShowInAppReview()
+		{
+			UnityEngine.iOS.Device.RequestStoreReview();
+		}
 #else
 		public static void ShowInAppReview()
 		{

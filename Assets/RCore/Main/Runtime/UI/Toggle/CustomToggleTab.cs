@@ -379,7 +379,7 @@ namespace RCore.UI
 								{
 									// Lerp alpha of transition1.target to zero
 									var tempColor = transition1.target.color;
-									tempColor.a = Mathf.Lerp(1, 0, lerp * 2); // Multiply by 2 because lerp is [0, 0.5]
+									tempColor.a = Mathf.Lerp(1, 0.15f, lerp * 2); // Multiply by 2 because lerp is [0, 0.5]
 									transition1.target.color = tempColor;
 									transition1.target.sprite = isOn ? transition1.off : transition1.on;
 								}
@@ -387,7 +387,7 @@ namespace RCore.UI
 								{
 									// Lerp alpha of transition1.target to 1
 									var tempColor = transition1.target.color;
-									tempColor.a = Mathf.Lerp(0, 1, (lerp - 0.5f) * 2);
+									tempColor.a = Mathf.Lerp(0.15f, 1, (lerp - 0.5f) * 2);
 									transition1.target.color = tempColor;
 									transition1.target.sprite = isOn ? transition1.on : transition1.off;
 								}

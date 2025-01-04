@@ -128,7 +128,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_ANALYTICS()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseAnalyticsType = Type.GetType("Firebase.Analytics.FirebaseAnalytics, Firebase.Analytics");
 			if (firebaseAnalyticsType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_ANALYTICS", "FIREBASE" });
@@ -138,7 +138,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_CRASHLYTICS()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseCrashlyticsType = Type.GetType("Firebase.Crashlytics.Crashlytics, Firebase.Crashlytics");
 			if (firebaseCrashlyticsType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_CRASHLYTICS", "FIREBASE" });
@@ -149,7 +149,7 @@ namespace RCore.Editor.Service
 		private static void Validate_FIREBASE_REMOTE_CONFIG()
 		{
 
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseRemoteConfigType = Type.GetType("Firebase.RemoteConfig.FirebaseRemoteConfig, Firebase.RemoteConfig");
 			if (firebaseRemoteConfigType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_REMOTE_CONFIG", "FIREBASE" });
@@ -159,7 +159,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_AUTH()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseAuthType = Type.GetType("Firebase.Auth.FirebaseAuth, Firebase.Auth");
 			if (firebaseAuthType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_AUTH", "FIREBASE" });
@@ -169,7 +169,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_FIRESTORE()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseFirestoreType = Type.GetType("Firebase.Firestore.FirebaseFirestore, Firebase.Firestore");
 			if (firebaseFirestoreType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_FIRESTORE", "FIREBASE" });
@@ -179,7 +179,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_DATABASE()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseDatabaseType = Type.GetType("Firebase.Database.FirebaseDatabase, Firebase.Database");
 			if (firebaseDatabaseType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_DATABASE", "FIREBASE" });
@@ -189,7 +189,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_STORAGE()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseStorageType = Type.GetType("Firebase.Storage.FirebaseStorage, Firebase.Storage");
 			if (firebaseStorageType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_STORAGE", "FIREBASE" });
@@ -199,7 +199,7 @@ namespace RCore.Editor.Service
 
 		private static void Validate_FIREBASE_MESSAGING()
 		{
-			var rcore = IsClassAvailable("RCore.Service.FirebaseManager");
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
 			var firebaseMessagingType = Type.GetType("Firebase.Messaging.FirebaseMessaging, Firebase.Messaging");
 			if (firebaseMessagingType != null && rcore)
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_MESSAGING", "FIREBASE" });

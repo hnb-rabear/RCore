@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   excelSheetsPaths: []
   googleSheetsPaths: []
-  constantsOutputFolder: Assets/Editor
-  localizationOutputFolder: Assets/Editor
+  constantsOutputFolder: Assets/Import/Constants
+  localizationOutputFolder: Assets/Import/Localizations
   namespace: 
   separateLocalizations: 1
   langCharSets: 
@@ -50,7 +50,7 @@ MonoBehaviour:
     id: 
     name: 
     sheets: []
-  jsonOutputFolder: Assets/Editor
+  jsonOutputFolder: Assets/Import/Json
   separateConstants: 0
   separateIDs: 0
   combineJson: 0

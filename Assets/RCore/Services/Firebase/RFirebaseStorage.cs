@@ -99,15 +99,9 @@ namespace RCore.Service
 	{
 #if FIREBASE_STORAGE
 
-#region Constants
-
 		private static readonly string URI_FILE_SCHEME = Uri.UriSchemeFile + "://";
 
-#endregion
-
 		//=======================================================
-
-#region Members
 
 		private static string m_StorageBucket;
 		private static bool m_IsDownloading;
@@ -122,11 +116,7 @@ namespace RCore.Service
 		/// </summary>
 		private static CancellationTokenSource m_CancellationTokenSource = new CancellationTokenSource();
 
-#endregion
-
 		//=========================================================
-
-#region Public
 
 		public static void Initialize()
 		{
@@ -215,7 +205,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEDelete(pOnFinished, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEDelete(pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEDelete(Action<bool> pOnFinished, SavedFileDefinition pStoDef)
@@ -281,7 +271,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEUploadStream(pContent, pOnFinished, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEUploadStream(pContent, pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEUploadStream(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
@@ -358,7 +348,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEDownloadStream(pOnFinished, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEDownloadStream(pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEDownloadStream(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
@@ -439,7 +429,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEUploadFromFile(pOnFinished, pOriginalFilePath, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEUploadFromFile(pOnFinished, pOriginalFilePath, pStoDef));
 		}
 
 		private static IEnumerator IEUploadFromFile(Action<bool> pOnFinished, string pOriginalFilePath, SavedFileDefinition pStoDef)
@@ -512,7 +502,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEDownloadToFile(pOnFinished, pOutPutPath, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEDownloadToFile(pOnFinished, pOutPutPath, pStoDef));
 		}
 
 		private static IEnumerator IEDownloadToFile(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef)
@@ -581,7 +571,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEUploadBytes(pContent, pOnFinished, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEUploadBytes(pContent, pOnFinished, pStoDef));
 		}
 
 		/// <summary>
@@ -680,7 +670,7 @@ namespace RCore.Service
 				return;
 			}
 
-			FirebaseManager.Instance.StartCoroutine(IEDownLoadBytes(pOnFinished, pStoDef));
+			TimerEventsGlobal.Instance.StartCoroutine(IEDownLoadBytes(pOnFinished, pStoDef));
 		}
 
 		private static IEnumerator IEDownLoadBytes(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
@@ -873,8 +863,6 @@ namespace RCore.Service
 				Debug.LogError(exception.ToString());
 			}
 		}
-
-#endregion
 
 #else
         public static bool Initialized => false;

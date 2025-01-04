@@ -1,7 +1,7 @@
 ﻿using System;
 namespace RCore.Service
 {
-    public static class RCrashlytics
+    public static class RFirebaseCrashlytics
     {
 #if FIREBASE_CRASHLYTICS
         public static void Log(string message)
