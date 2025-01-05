@@ -124,18 +124,9 @@ namespace RCore.SheetX.Editor
 		public Color color;
 		public int width;
 		public int height;
+		public Texture2D icon;
 		public Action onPressed;
 		public bool IsPressed { get; private set; }
-
-		public EditorButton() { }
-
-		public EditorButton(string pLabel, Action pOnPressed, Color pColor = default)
-		{
-			label = pLabel;
-			onPressed = pOnPressed;
-			color = pColor;
-		}
-
 		public void Draw(GUIStyle style = null)
 		{
 			var defaultColor = GUI.backgroundColor;
@@ -146,7 +137,10 @@ namespace RCore.SheetX.Editor
 				style.fixedHeight = height;
 			if (color != default)
 				GUI.backgroundColor = color;
-			IsPressed = GUILayout.Button(label, style, GUILayout.MinHeight(21));
+			var content = new GUIContent(label);
+			if (icon != null)
+				content = new GUIContent(label, icon);
+			IsPressed = GUILayout.Button(content, style, GUILayout.MinHeight(icon != null ? 23 : 21));
 			if (IsPressed && onPressed != null)
 				onPressed();
 			GUI.backgroundColor = defaultColor;
@@ -351,5 +345,7 @@ namespace RCore.SheetX.Editor
 			if (padding > 0)
 				EditorGUILayout.Space(padding);
 		}
+
+
 	}
 }

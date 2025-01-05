@@ -59,18 +59,9 @@ namespace RCore.Editor
         public Color color;
         public int width;
         public int height;
+        public Texture2D icon;
         public Action onPressed;
         public bool IsPressed { get; private set; }
-
-        public EditorButton() { }
-
-        public EditorButton(string pLabel, Action pOnPressed, Color pColor = default)
-        {
-            label = pLabel;
-            onPressed = pOnPressed;
-            color = pColor;
-        }
-
         public void Draw(GUIStyle style = null)
         {
             var defaultColor = GUI.backgroundColor;
@@ -81,7 +72,10 @@ namespace RCore.Editor
 	            style.fixedHeight = height;
             if (color != default)
                 GUI.backgroundColor = color;
-            IsPressed = GUILayout.Button(label, style, GUILayout.MinHeight(21));
+            var content = new GUIContent(label);
+            if (icon != null)
+	            content = new GUIContent(label, icon);
+            IsPressed = GUILayout.Button(content, style, GUILayout.MinHeight(icon != null ? 23 : 21));
             if (IsPressed && onPressed != null)
                 onPressed();
             GUI.backgroundColor = defaultColor;
@@ -1092,66 +1086,45 @@ namespace RCore.Editor
 
 #region Tools
 
-        public static bool Button(string pLabel, int pWidth = 0, int pHeight = 0)
+        public static bool Button(string label, int width = 0, int height = 0)
         {
             var button = new EditorButton()
             {
-                label = pLabel,
-                width = pWidth,
-                height = pHeight
+                label = label,
+                width = width,
+                height = height
             };
             button.Draw();
             return button.IsPressed;
         }
 
-        public static void Button(string pLabel, Action pOnPressed, int pWidth = 0, int pHeight = 0)
+        public static bool ButtonColor(string label, Color color = default, int width = 0, int height = 0)
         {
             var button = new EditorButton()
             {
-                label = pLabel,
-                width = pWidth,
-                onPressed = pOnPressed,
-                height = pHeight,
-            };
-            button.Draw();
-        }
-
-        public static bool ButtonColor(string pLabel, Color pColor = default, int pWidth = 0, int pHeight = 0)
-        {
-            var button = new EditorButton()
-            {
-                label = pLabel,
-                width = pWidth,
-                color = pColor,
-                height = pHeight,
+                label = label,
+                width = width,
+                color = color,
+                height = height,
             };
             button.Draw();
             return button.IsPressed;
         }
 
-        public static void ButtonColor(string pLabel, Action pOnPressed, Color pColor = default, int pWidth = 0, int pHeight = 0)
+        public static bool Button(string label, Texture2D icon, Color color = default, int width = 0, int height = 0)
         {
-            var button = new EditorButton()
-            {
-                label = pLabel,
-                width = pWidth,
-                color = pColor,
-                onPressed = pOnPressed,
-                height = pHeight,
-            };
-            button.Draw();
+	        var button = new EditorButton()
+	        {
+		        label = label,
+		        icon = icon,
+		        color = color,
+		        width = width,
+		        height = height
+	        };
+	        button.Draw();
+	        return button.IsPressed;
         }
-
-        public static bool Button(string pLabel, GUIStyle pStyle)
-        {
-            var button = new EditorButton()
-            {
-                label = pLabel,
-            };
-            button.Draw(pStyle);
-            return button.IsPressed;
-        }
-
+        
         public static string FolderField(string defaultPath, string label, int labelWidth = 0, bool pFormatToUnityPath = true)
         {
 	        EditorGUILayout.BeginHorizontal();

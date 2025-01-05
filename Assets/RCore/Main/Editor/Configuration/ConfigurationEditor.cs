@@ -365,7 +365,7 @@ namespace RCore.Editor.Tool
 					return;
 				}
 
-				EditorHelper.Button("Use Live Config", () =>
+				if (EditorHelper.Button("Use Live Config"))
 				{
 					var theSourceFile = new FileInfo(livePath);
 					using var reader = theSourceFile.OpenText();
@@ -381,8 +381,8 @@ namespace RCore.Editor.Tool
 					AssetDatabase.Refresh();
 					EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
 					EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-				});
-				EditorHelper.Button("Use Dev Config", () =>
+				}
+				if (EditorHelper.Button("Use Dev Config"))
 				{
 					var theSourceFile = new FileInfo(testPath);
 					using var reader = theSourceFile.OpenText();
@@ -398,7 +398,7 @@ namespace RCore.Editor.Tool
 					AssetDatabase.Refresh();
 					EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
 					EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-				});
+				}
 				GUILayout.EndHorizontal();
 
 				string currentConfig = FirebaseConfig;

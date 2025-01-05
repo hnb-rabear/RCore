@@ -617,11 +617,6 @@ namespace RCore.SheetX.Editor
 		{
 			return Regex.Replace(input, @"/\*.*?\*/", string.Empty);
 		}
-
-		public static string RemoveComments2(string input)
-		{
-			return Regex.Replace(input, @"//.*$", string.Empty).TrimEnd();
-		}
 	}
 
 	public static class SheetXExtension

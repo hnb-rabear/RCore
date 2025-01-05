@@ -410,7 +410,7 @@ namespace RCore.Editor.Tool
 							deepStr += "__";
 
 						EditorHelper.LabelField($"{i + 1}", 30);
-						if (EditorHelper.Button($"{deepStr}" + graphic.name, new GUIStyle("button")
+						if (GUILayout.Button($"{deepStr}" + graphic.name, new GUIStyle("button")
 						    {
 							    fixedWidth = 250,
 							    alignment = TextAnchor.MiddleLeft

@@ -84,7 +84,7 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem(R_EXPLORER + "DataPath Folder", false, GROUP_5 + 81)]
+		[MenuItem(R_EXPLORER + "DataPath Folder", false, GROUP_5 + 1)]
 		private static void OpenDataPathFolder()
 		{
 			string path = Application.dataPath;
@@ -92,7 +92,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "StreamingAssets Folder", false, GROUP_5 + 82)]
+		[MenuItem(R_EXPLORER + "StreamingAssets Folder", false, GROUP_5 + 2)]
 		private static void OpenStreamingAssetsFolder()
 		{
 			string path = Application.streamingAssetsPath;
@@ -105,7 +105,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "PersistentData Folder", false, GROUP_5 + 83)]
+		[MenuItem(R_EXPLORER + "PersistentData Folder", false, GROUP_5 + 3)]
 		private static void OpenPersistentDataFolder()
 		{
 			string path = Application.persistentDataPath;
@@ -115,12 +115,18 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "UnityEditor Folder", false, GROUP_5 + 84)]
+		[MenuItem(R_EXPLORER + "UnityEditor Folder", false, GROUP_5 + 4)]
 		private static void OpenUnityEditorFolder()
 		{
 			string path = EditorApplication.applicationPath.Substring(0, EditorApplication.applicationPath.LastIndexOf("/"));
 			var psi = new ProcessStartInfo(path);
 			Process.Start(psi);
+		}
+
+		[MenuItem(R_EXPLORER + "Editor Icon Dictionary", false, GROUP_5 + 5)]
+		public static void OpenEditorIconsWindow()
+		{
+			EditorIconsWindow.ShowWindow();
 		}
 
 		//==========================================================
