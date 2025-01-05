@@ -41,7 +41,7 @@ namespace RCore.Editor
 		{
 			var window = CreateInstance<EditorIconsWindow>();
 			window.titleContent = new GUIContent("Editor Icons");
-			window.ShowUtility();
+			window.Show();
 		}
 	}
 }

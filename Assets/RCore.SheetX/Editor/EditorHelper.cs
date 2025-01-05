@@ -280,12 +280,12 @@ namespace RCore.SheetX.Editor
 			return path;
 		}
 
-		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt")
+		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt", string header = "Save File")
 		{
 			if (string.IsNullOrEmpty(mainDirectory))
 				mainDirectory = Application.dataPath;
 
-			string path = EditorUtility.SaveFilePanel("Save File", mainDirectory, defaultName, extension);
+			string path = EditorUtility.SaveFilePanel(header, mainDirectory, defaultName, extension);
 			if (!string.IsNullOrEmpty(path))
 				SaveFile(path, content);
 			return path;

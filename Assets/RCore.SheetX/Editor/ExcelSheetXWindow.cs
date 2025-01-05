@@ -81,7 +81,30 @@ namespace RCore.SheetX.Editor
 			{
 				bool validExcelPath = ValidateExcelPath(m_settings.excelSheetsPath.path, out string status);
 				if (validExcelPath)
-					EditorHelper.LabelField(status, 50, false, TextAnchor.MiddleCenter, Color.green);
+				{
+					var folderIcon = EditorIcon.GetIcon(EditorIcon.Icon.Folder);
+					var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
+					if (EditorHelper.Button(null, folderIcon, default, 30, 20))
+					{
+						var obj = AssetDatabase.LoadAssetAtPath<Object>(m_settings.excelSheetsPath.path);
+						if (obj != null)
+							Selection.activeObject = obj;
+						else
+						{
+							var psi = new ProcessStartInfo(Path.GetDirectoryName(m_settings.excelSheetsPath.path));
+							Process.Start(psi);
+						}
+					}
+					if (EditorHelper.Button(null, fileIcon, default, 30, 20))
+					{
+						string path = m_settings.excelSheetsPath.path;
+						var psi = new ProcessStartInfo(path)
+						{
+							UseShellExecute = true
+						};
+						Process.Start(psi);
+					}
+				}
 				else
 					EditorHelper.LabelField(status, 50, false, TextAnchor.MiddleCenter, Color.red);
 				m_settings.excelSheetsPath.name = Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path);
@@ -169,7 +192,7 @@ namespace RCore.SheetX.Editor
 
 		private EditorTableView<ExcelSheetsPath> CreateTableExcelSheetsPaths()
 		{
-			var table = new EditorTableView<ExcelSheetsPath>(editorWindow, "Excel files");
+			var table = new EditorTableView<ExcelSheetsPath>(editorWindow, "Excel paths");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
 				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
@@ -215,9 +238,13 @@ namespace RCore.SheetX.Editor
 				GUI.contentColor = defaultColor;
 			});
 
-			table.AddColumn("Ping", 50, 50, (rect, item) =>
+			table.AddColumn("Open", 60, 50, (rect, item) =>
 			{
-				if (GUI.Button(rect, "Ping"))
+				GUILayout.BeginHorizontal();
+				var folderIcon = EditorIcon.GetIcon(EditorIcon.Icon.Folder);
+				var r1 = rect;
+				r1.width /= 2f;
+				if (GUI.Button(r1, folderIcon))
 				{
 					var obj = AssetDatabase.LoadAssetAtPath<Object>(item.path);
 					if (obj != null)
@@ -228,18 +255,30 @@ namespace RCore.SheetX.Editor
 						Process.Start(psi);
 					}
 				}
+				var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
+				r1.x += r1.width;
+				if (GUI.Button(r1, fileIcon))
+				{
+					string path = item.path;
+					var psi = new ProcessStartInfo(path)
+					{
+						UseShellExecute = true
+					};
+					Process.Start(psi);
+				}
+				GUILayout.EndHorizontal();
 			});
 
-			table.AddColumn("Edit", 50, 50, (rect, item) =>
+			table.AddColumn("Select", 50, 50, (rect, item) =>
 			{
-				if (GUI.Button(rect, "Edit"))
+				if (GUI.Button(rect, $"{item.CountSelected()}/{item.sheets.Count}"))
 				{
 					item.Load();
 					EditExcelSheetsWindow.ShowWindow(item);
 				}
 			}).SetTooltip("Click to Edit");
 
-			table.AddColumn("Delete", 50, 50, (rect, item) =>
+			table.AddColumn("Remove", 55, 50, (rect, item) =>
 			{
 				var deleteIcon = EditorIcon.GetIcon(EditorIcon.Icon.DeletedLocal);
 				if (GUI.Button(rect, deleteIcon))

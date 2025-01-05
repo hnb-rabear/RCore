@@ -65,7 +65,8 @@ namespace RCore.SheetX.Editor
 						EditorHelper.TextField(m_settings.googleSheetsPath.name, "Google Spreadsheets Name", 160, readOnly: true);
 						if (!string.IsNullOrEmpty(m_settings.googleSheetsPath.name))
 						{
-							if (EditorHelper.Button("Ping", 50))
+							var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
+							if (EditorHelper.Button(null, fileIcon, default, 30, 20))
 							{
 								string url = $"https://docs.google.com/spreadsheets/d/{m_settings.googleSheetsPath.id}/edit";
 								Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
@@ -147,7 +148,6 @@ namespace RCore.SheetX.Editor
 				CompilationPipeline.RequestScriptCompilation();
 			}
 			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.Space(8);
 			
 			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
 			{
@@ -197,18 +197,19 @@ namespace RCore.SheetX.Editor
 				EditorGUI.LabelField(rect, item.id, style);
 			});
 
-			table.AddColumn("Ping", 50, 50, (rect, item) =>
+			table.AddColumn("Open", 50, 50, (rect, item) =>
 			{
-				if (GUI.Button(rect, "Ping"))
+				var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
+				if (GUI.Button(rect, fileIcon))
 				{
 					string url = $"https://docs.google.com/spreadsheets/d/{item.id}/edit";
 					Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
 				}
 			});
 
-			table.AddColumn("Edit", 50, 50, (rect, item) =>
+			table.AddColumn("Select", 50, 50, (rect, item) =>
 			{
-				if (GUI.Button(rect, "Edit"))
+				if (GUI.Button(rect, $"{item.CountSelected()}/{item.sheets.Count}"))
 				{
 					EditGoogleSheetsWindow.ShowWindow(item, m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, output =>
 					{
@@ -218,7 +219,7 @@ namespace RCore.SheetX.Editor
 				}
 			}).SetTooltip("Click to Edit");
 
-			table.AddColumn("Delete", 60, 60, (rect, item) =>
+			table.AddColumn("Remove", 55, 60, (rect, item) =>
 			{
 				var deleteIcon = EditorIcon.GetIcon(EditorIcon.Icon.DeletedLocal);
 				if (GUI.Button(rect, deleteIcon))

@@ -3,6 +3,8 @@
  * https://github.com/hnb-rabear
  */
 
+using System.IO;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -51,8 +53,28 @@ namespace RCore.SheetX.Editor
 				m_sheetXSettings.ResetToDefault();
 		}
 
-		public void Save() => m_sheetXSettings.Save();
+		public void Save()
+		{
+			string content = JsonUtility.ToJson(m_sheetXSettings);
+			string path = Application.dataPath;
+			EditorHelper.SaveFilePanel(path, "SheetXSave", content, "sx", "Save SheetX Settings");
+		}
 
-		public void Load() => m_sheetXSettings.Load();
+		public void Load()
+		{
+			var path = EditorHelper.OpenFilePanel("Load SheetX Settings", "sx");
+			if (!string.IsNullOrEmpty(path))
+			{
+				string content = File.ReadAllText(path);
+				try
+				{
+					JsonUtility.FromJsonOverwrite(content, m_sheetXSettings);
+				}
+				catch (JsonException)
+				{
+					Debug.LogError("The sx file is not valid.");
+				}
+			}
+		}
 	}
 }

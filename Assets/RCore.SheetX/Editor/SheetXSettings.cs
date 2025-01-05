@@ -73,30 +73,6 @@ namespace RCore.SheetX.Editor
 #endif
 		private Encryption m_encryption;
 
-		public void Save()
-		{
-			string content = JsonUtility.ToJson(this);
-			string path = Application.dataPath;
-			EditorHelper.SaveFilePanel(path, "SheetXSave", content, "sx");
-		}
-
-		public void Load()
-		{
-			var path = EditorHelper.OpenFilePanel("Select sx file ", "sx");
-			if (!string.IsNullOrEmpty(path))
-			{
-				string content = File.ReadAllText(path);
-				try
-				{
-					JsonUtility.FromJsonOverwrite(content, this);
-				}
-				catch (JsonException)
-				{
-					Debug.LogError("The sx file is not valid.");
-				}
-			}
-		}
-
 		private void OnValidate()
 		{
 #if !SX_LOCALIZATION

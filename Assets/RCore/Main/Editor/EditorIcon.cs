@@ -62,6 +62,9 @@ namespace RCore.Editor
 			ToolbarMinus,
 			SaveAs,
 			TestPassed,
+			Edit,
+			Selected,
+			DefaultAsset,
 		}
 
 		public static readonly Dictionary<Icon, string> IconDictionary = new Dictionary<Icon, string>
@@ -119,6 +122,9 @@ namespace RCore.Editor
 			{ Icon.ToolbarMinus, "Toolbar Minus@2x" },
 			{ Icon.SaveAs, "SaveAs@2x" },
 			{ Icon.TestPassed, "TestPassed" },
+			{ Icon.Edit, "editicon.sml" },
+			{ Icon.Selected, "FilterSelectedOnly@2x" },
+			{ Icon.DefaultAsset, "DefaultAsset Icon" },
 		};
 
 		private static Dictionary<Icon, Texture2D> m_Texture2Ds = new Dictionary<Icon, Texture2D>();

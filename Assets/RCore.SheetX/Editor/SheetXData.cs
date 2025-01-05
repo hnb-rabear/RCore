@@ -81,6 +81,16 @@ namespace RCore.SheetX.Editor
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 			return WorkbookFactory.Create(file);
 		}
+		public int CountSelected()
+		{
+			int count = 0;
+			foreach (var sheetPath in sheets)
+			{
+				if (sheetPath.selected)
+					count++;
+			}
+			return count;
+		}
 	}
 
 	[Serializable]
@@ -109,6 +119,16 @@ namespace RCore.SheetX.Editor
 		public int CompareTo(GoogleSheetsPath other)
 		{
 			return name.CompareTo(other.name);
+		}
+		public int CountSelected()
+		{
+			int count = 0;
+			foreach (var sheetPath in sheets)
+			{
+				if (sheetPath.selected)
+					count++;
+			}
+			return count;
 		}
 	}
 

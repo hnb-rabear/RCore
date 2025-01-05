@@ -43,7 +43,7 @@ namespace RCore.SheetX.Editor
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 			
-			GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(true));
+			GUILayout.BeginHorizontal();
 			var iconSave = EditorIcon.GetIcon(EditorIcon.Icon.SaveAs);
 			if (EditorHelper.Button(null, iconSave, default, 30, 30))
 				m_settingsWindow.Save();
@@ -51,7 +51,7 @@ namespace RCore.SheetX.Editor
 			if (EditorHelper.Button(null, iconLoad, default, 30, 30))
 				m_settingsWindow.Load();
 			GUILayout.EndHorizontal();
-			
+
 			var tab = EditorHelper.Tabs($"{nameof(SheetXWindow)}", "Excel Spreadsheets", "Google Spreadsheets", "Settings");
 			switch (tab)
 			{
