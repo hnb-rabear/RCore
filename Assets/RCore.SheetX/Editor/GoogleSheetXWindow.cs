@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using RCore.Editor;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
@@ -22,7 +23,7 @@ namespace RCore.SheetX.Editor
 
 		public void OnEnable()
 		{
-			m_settings = SheetXSettings.Load();
+			m_settings = SheetXSettings.Init();
 			m_googleSheetHandler = new GoogleSheetHandler(m_settings);
 		}
 
@@ -219,11 +220,9 @@ namespace RCore.SheetX.Editor
 
 			table.AddColumn("Delete", 60, 60, (rect, item) =>
 			{
-				var defaultColor = GUI.color;
-				GUI.backgroundColor = Color.red;
-				if (GUI.Button(rect, "Delete"))
+				var deleteIcon = EditorIcon.GetIcon(EditorIcon.Icon.DeletedLocal);
+				if (GUI.Button(rect, deleteIcon))
 					m_settings.googleSheetsPaths.Remove(item);
-				GUI.backgroundColor = defaultColor;
 			}).SetTooltip("Click to Delete");
 
 			return table;

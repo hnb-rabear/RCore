@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RCore.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -41,7 +42,16 @@ namespace RCore.SheetX.Editor
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-
+			
+			GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(true));
+			var iconSave = EditorIcon.GetIcon(EditorIcon.Icon.SaveAs);
+			if (EditorHelper.Button(null, iconSave, default, 30, 30))
+				m_settingsWindow.Save();
+			var iconLoad = EditorIcon.GetIcon(EditorIcon.Icon.FolderOpened);
+			if (EditorHelper.Button(null, iconLoad, default, 30, 30))
+				m_settingsWindow.Load();
+			GUILayout.EndHorizontal();
+			
 			var tab = EditorHelper.Tabs($"{nameof(SheetXWindow)}", "Excel Spreadsheets", "Google Spreadsheets", "Settings");
 			switch (tab)
 			{

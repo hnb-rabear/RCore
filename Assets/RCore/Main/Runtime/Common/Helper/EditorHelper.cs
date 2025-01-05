@@ -55,31 +55,37 @@ namespace RCore.Editor
 
     public class EditorButton : IDraw
     {
-        public string label;
-        public Color color;
-        public int width;
-        public int height;
-        public Texture2D icon;
-        public Action onPressed;
-        public bool IsPressed { get; private set; }
-        public void Draw(GUIStyle style = null)
-        {
-            var defaultColor = GUI.backgroundColor;
-            style ??= new GUIStyle("Button");
-            if (width > 0)
-                style.fixedWidth = width;
-            if (height > 0)
-	            style.fixedHeight = height;
-            if (color != default)
-                GUI.backgroundColor = color;
-            var content = new GUIContent(label);
-            if (icon != null)
-	            content = new GUIContent(label, icon);
-            IsPressed = GUILayout.Button(content, style, GUILayout.MinHeight(icon != null ? 23 : 21));
-            if (IsPressed && onPressed != null)
-                onPressed();
-            GUI.backgroundColor = defaultColor;
-        }
+	    public string label;
+	    public Color color;
+	    public int width;
+	    public int height;
+	    public Texture2D icon;
+	    public Action onPressed;
+	    public bool IsPressed { get; private set; }
+	    public void Draw(GUIStyle style = null)
+	    {
+		    var minHeight = GUILayout.MinHeight(21);
+		    var defaultColor = GUI.backgroundColor;
+		    style ??= new GUIStyle("Button");
+		    if (width > 0)
+		    {
+			    style.fixedWidth = width;
+		    }
+		    if (height > 0)
+		    {
+			    style.fixedHeight = height;
+			    minHeight = GUILayout.MinHeight(height);
+		    }
+		    if (color != default)
+			    GUI.backgroundColor = color;
+		    var content = new GUIContent(label);
+		    if (icon != null)
+			    content = new GUIContent(label, icon);
+		    IsPressed = GUILayout.Button(content, style, minHeight);
+		    if (IsPressed && onPressed != null)
+			    onPressed();
+		    GUI.backgroundColor = defaultColor;
+	    }
     }
 
     public class EditorText : IDraw

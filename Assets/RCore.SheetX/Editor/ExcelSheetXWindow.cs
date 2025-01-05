@@ -9,6 +9,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NPOI.SS.UserModel;
+using RCore.Editor;
 using Object = UnityEngine.Object;
 using UnityEditor.Compilation;
 
@@ -26,7 +27,7 @@ namespace RCore.SheetX.Editor
 
 		public void OnEnable()
 		{
-			m_settings = SheetXSettings.Load();
+			m_settings = SheetXSettings.Init();
 			m_excelSheetHandler = new ExcelSheetHandler(m_settings);
 		}
 
@@ -140,7 +141,7 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndHorizontal();
 		}
 #endif
-		
+
 #if !SX_LITE
 		private void PageMultiFiles()
 		{
@@ -162,10 +163,8 @@ namespace RCore.SheetX.Editor
 				CompilationPipeline.RequestScriptCompilation();
 			}
 			GUILayout.EndHorizontal();
-			GUILayout.Space(10);
 			m_tableExcelSheetsPaths ??= CreateTableExcelSheetsPaths();
 			m_tableExcelSheetsPaths.DrawOnGUI(m_settings.excelSheetsPaths);
-
 		}
 
 		private EditorTableView<ExcelSheetsPath> CreateTableExcelSheetsPaths()
@@ -240,15 +239,11 @@ namespace RCore.SheetX.Editor
 				}
 			}).SetTooltip("Click to Edit");
 
-			table.AddColumn("Delete", 60, 60, (rect, item) =>
+			table.AddColumn("Delete", 50, 50, (rect, item) =>
 			{
-				var defaultColor = GUI.color;
-				GUI.backgroundColor = Color.red;
-				if (GUI.Button(rect, "Delete"))
-				{
+				var deleteIcon = EditorIcon.GetIcon(EditorIcon.Icon.DeletedLocal);
+				if (GUI.Button(rect, deleteIcon))
 					m_settings.excelSheetsPaths.Remove(item);
-				}
-				GUI.backgroundColor = defaultColor;
 			}).SetTooltip("Click to Delete");
 
 			return table;

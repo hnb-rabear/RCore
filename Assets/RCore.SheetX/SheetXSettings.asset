@@ -81,7 +81,25 @@ MonoBehaviour:
     - name: FreeRewards
       selected: 1
     name: ShopItems
-  googleSheetsPaths: []
+  googleSheetsPaths:
+  - selected: 1
+    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    name: Example
+    sheets:
+    - name: ExampleIDs
+      selected: 1
+    - name: ExampleConstants
+      selected: 1
+    - name: LocalizationExample1
+      selected: 1
+    - name: LocalizationExample2
+      selected: 1
+    - name: ExampleData1
+      selected: 1
+    - name: ExampleData2
+      selected: 1
+    - name: ExampleData3
+      selected: 1
   constantsOutputFolder: Assets/Import/Constants
   localizationOutputFolder: Assets/Import/Localizations
   namespace: 

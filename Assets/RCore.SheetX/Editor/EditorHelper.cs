@@ -129,18 +129,24 @@ namespace RCore.SheetX.Editor
 		public bool IsPressed { get; private set; }
 		public void Draw(GUIStyle style = null)
 		{
+			var minHeight = GUILayout.MinHeight(21);
 			var defaultColor = GUI.backgroundColor;
 			style ??= new GUIStyle("Button");
 			if (width > 0)
+			{
 				style.fixedWidth = width;
+			}
 			if (height > 0)
+			{
 				style.fixedHeight = height;
+				minHeight = GUILayout.MinHeight(height);
+			}
 			if (color != default)
 				GUI.backgroundColor = color;
 			var content = new GUIContent(label);
 			if (icon != null)
 				content = new GUIContent(label, icon);
-			IsPressed = GUILayout.Button(content, style, GUILayout.MinHeight(icon != null ? 23 : 21));
+			IsPressed = GUILayout.Button(content, style, minHeight);
 			if (IsPressed && onPressed != null)
 				onPressed();
 			GUI.backgroundColor = defaultColor;
@@ -252,6 +258,20 @@ namespace RCore.SheetX.Editor
 			return button.IsPressed;
 		}
 
+		public static bool Button(string label, Texture2D icon, Color color = default, int width = 0, int height = 0)
+		{
+			var button = new EditorButton()
+			{
+				label = label,
+				icon = icon,
+				color = color,
+				width = width,
+				height = height
+			};
+			button.Draw();
+			return button.IsPressed;
+		}
+		
 		public static string OpenFilePanel(string title, string extension, string directory = null)
 		{
 			string path = EditorUtility.OpenFilePanel(title, directory ?? LastOpenedDirectory, extension);
@@ -260,6 +280,27 @@ namespace RCore.SheetX.Editor
 			return path;
 		}
 
+		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt")
+		{
+			if (string.IsNullOrEmpty(mainDirectory))
+				mainDirectory = Application.dataPath;
+
+			string path = EditorUtility.SaveFilePanel("Save File", mainDirectory, defaultName, extension);
+			if (!string.IsNullOrEmpty(path))
+				SaveFile(path, content);
+			return path;
+		}
+		
+		public static void SaveFile(string path, string content)
+		{
+			if (!string.IsNullOrEmpty(content) && content != "{}")
+			{
+				if (File.Exists(path))
+					File.Delete(path);
+				File.WriteAllText(path, content);
+			}
+		}
+		
 		public static string FormatPathToUnityPath(string path)
 		{
 			string[] paths = path.Split('/');
@@ -345,7 +386,5 @@ namespace RCore.SheetX.Editor
 			if (padding > 0)
 				EditorGUILayout.Space(padding);
 		}
-
-
 	}
 }

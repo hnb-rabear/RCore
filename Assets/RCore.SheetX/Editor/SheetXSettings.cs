@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace RCore.SheetX.Editor
 
 	public class SheetXSettings : ScriptableObject
 	{
-#if ASSETS_STORE && SX_LOCALIZATION 
+#if ASSETS_STORE && SX_LOCALIZATION
 		private const string FILE_PATH = "Assets/LocalizationX/Editor/SheetXSettings.asset";
 #elif ASSETS_STORE && !SX_LOCALIZATION
 		private const string FILE_PATH = "Assets/SheetX/Editor/SheetXSettings.asset";
@@ -72,6 +73,30 @@ namespace RCore.SheetX.Editor
 #endif
 		private Encryption m_encryption;
 
+		public void Save()
+		{
+			string content = JsonUtility.ToJson(this);
+			string path = Application.dataPath;
+			EditorHelper.SaveFilePanel(path, "SheetXSave", content, "sx");
+		}
+
+		public void Load()
+		{
+			var path = EditorHelper.OpenFilePanel("Select sx file ", "sx");
+			if (!string.IsNullOrEmpty(path))
+			{
+				string content = File.ReadAllText(path);
+				try
+				{
+					JsonUtility.FromJsonOverwrite(content, this);
+				}
+				catch (JsonException)
+				{
+					Debug.LogError("The sx file is not valid.");
+				}
+			}
+		}
+
 		private void OnValidate()
 		{
 #if !SX_LOCALIZATION
@@ -82,7 +107,7 @@ namespace RCore.SheetX.Editor
 #endif
 		}
 
-		public static SheetXSettings Load()
+		public static SheetXSettings Init()
 		{
 			var settings = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(SheetXSettings)) as SheetXSettings;
 			if (settings != null)

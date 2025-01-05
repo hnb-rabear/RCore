@@ -14,7 +14,7 @@ namespace RCore.SheetX.Editor
 
 		public void OnEnable()
 		{
-			m_sheetXSettings = SheetXSettings.Load();
+			m_sheetXSettings = SheetXSettings.Init();
 		}
 
 		public void OnGUI()
@@ -50,5 +50,9 @@ namespace RCore.SheetX.Editor
 			if (GUILayout.Button("Reset to default settings"))
 				m_sheetXSettings.ResetToDefault();
 		}
+
+		public void Save() => m_sheetXSettings.Save();
+
+		public void Load() => m_sheetXSettings.Load();
 	}
 }
