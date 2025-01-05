@@ -459,7 +459,7 @@ namespace RCore.SheetX.Editor
 				fileContent = fileContent.Replace(Environment.NewLine, "NEW_LINE");
 				fileContent = fileContent.Replace("\n", "NEW_LINE");
 				fileContent = fileContent.Replace("NEW_LINE", $"{Environment.NewLine}\t");
-				fileContent = $"namespace {@namespace}\n{"{"}\n\t{fileContent}\n{"}"}";
+				fileContent = $"namespace {@namespace}{Environment.NewLine}{"{"}{Environment.NewLine}\t{fileContent}{Environment.NewLine}{"}"}";
 			}
 			return fileContent;
 		}

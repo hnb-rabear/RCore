@@ -197,7 +197,7 @@ namespace RCore.SheetX.Editor
 						.Append(enumName)
 						.Append(" { ")
 						.Append(str)
-						.Append(" }\n");
+						.Append($" }}{Environment.NewLine}");
 					if (m_settings.onlyEnumAsIDs)
 					{
 						var tempSb = new StringBuilder()
@@ -722,11 +722,11 @@ namespace RCore.SheetX.Editor
 			if (pIdsString.Count > 0)
 			{
 				idBuilder.Append("\tpublic const int");
-				idBuilder.Append("\n\t\t");
+				idBuilder.Append($"{Environment.NewLine}\t\t");
 				for (int i = 0; i < pIdsString.Count; i++)
 				{
 					if (i > 0 && i % 100 == 0)
-						idBuilder.Append("\n\t\t");
+						idBuilder.Append($"{Environment.NewLine}\t\t");
 
 					var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
 					if (i < pIdsString.Count - 1)
@@ -738,14 +738,14 @@ namespace RCore.SheetX.Editor
 
 			//Build id enum array
 			var idBuilder2 = new StringBuilder();
-			idBuilder2.Append("\tpublic enum ID \n\t{\n\t\tNONE = -1,");
-			idBuilder2.Append("\n\t\t");
+			idBuilder2.Append($"\tpublic enum ID {Environment.NewLine}\t{{{Environment.NewLine}\t\tNONE = -1,");
+			idBuilder2.Append($"{Environment.NewLine}\t\t");
 			for (int i = 0; i < pIdsString.Count; i++)
 			{
 				var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
 				if (i > 0 && i % 100 == 0)
 				{
-					idBuilder2.Append("\n\t\t");
+					idBuilder2.Append($"{Environment.NewLine}\t\t");
 					idBuilder2.Append($"{idString},");
 				}
 				else
@@ -756,16 +756,16 @@ namespace RCore.SheetX.Editor
 						idBuilder2.Append($" {idString},");
 				}
 			}
-			idBuilder2.Append("\n\t}");
+			idBuilder2.Append($"{Environment.NewLine}\t}}");
 
 			//Build id string array
 			var idStringDictBuilder = new StringBuilder();
-			idStringDictBuilder.Append("\tpublic static readonly string[] idString = new string[]\n\t{\n\t\t");
+			idStringDictBuilder.Append($"\tpublic static readonly string[] idString = new string[]{Environment.NewLine}\t{{{Environment.NewLine}\t\t");
 			for (int i = 0; i < pIdsString.Count; i++)
 			{
 				if (i > 0 && i % 100 == 0)
 				{
-					idStringDictBuilder.Append("\n\t\t");
+					idStringDictBuilder.Append($"{Environment.NewLine}\t\t");
 					idStringDictBuilder.Append($"\"{pIdsString[i]}\",");
 				}
 				else if (i == 0)
@@ -773,7 +773,7 @@ namespace RCore.SheetX.Editor
 				else
 					idStringDictBuilder.Append($" \"{pIdsString[i]}\",");
 			}
-			idStringDictBuilder.Append("\n\t};");
+			idStringDictBuilder.Append($"{Environment.NewLine}\t}};");
 
 			//Build language json data
 			foreach (var listText in pLanguageTextDict)
@@ -802,7 +802,7 @@ namespace RCore.SheetX.Editor
 				if (!m_localizedLanguages.Contains(textsList.Key))
 					m_localizedLanguages.Add(textsList.Key);
 			}
-			languagesDictBuilder.Append(" };\n");
+			languagesDictBuilder.Append($" }};{Environment.NewLine}");
 			languagesDictBuilder.Append($"\tpublic static readonly string DefaultLanguage = \"{pLanguageTextDict.First().Key}\";");
 
 			//Write file localization constants
@@ -869,7 +869,7 @@ namespace RCore.SheetX.Editor
 						systemLanguages.Append($"\t\t\tSystemLanguage.Arabic => \"{lang}\",").AppendLine();
 				}
 				systemLanguages.Append($"\t\t\t_ => \"{m_localizedLanguages[0]}\",").AppendLine();
-				languagesDictBuilder.Append("};\n");
+				languagesDictBuilder.Append($"}};{Environment.NewLine}");
 				languagesDictBuilder.Append($"\tpublic static readonly string DefaultLanguage = \"{m_localizedLanguages.First()}\";");
 
 				//Build initialization code

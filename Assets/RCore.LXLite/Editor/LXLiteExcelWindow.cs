@@ -10,7 +10,6 @@ using UnityEngine;
 
 namespace RCore.LXLite.Editor
 {
-	
 	public class LXLiteExcelWindow
 	{
 		private Dictionary<string, LocalizationBuilder> m_localizationsDict = new();
@@ -105,7 +104,7 @@ namespace RCore.LXLite.Editor
 
 				LoadSheetLocalizationData(workBook, sheet.SheetName);
 			}
-			
+
 			var builder = new LocalizationBuilder();
 			foreach (var b in m_localizationsDict)
 			{
@@ -233,11 +232,11 @@ namespace RCore.LXLite.Editor
 			if (pIdsString.Count > 0)
 			{
 				idBuilder.Append("\tpublic const int");
-				idBuilder.Append("\n\t\t");
+				idBuilder.Append($"{Environment.NewLine}\t\t");
 				for (int i = 0; i < pIdsString.Count; i++)
 				{
 					if (i > 0 && i % 100 == 0)
-						idBuilder.Append("\n\t\t");
+						idBuilder.Append($"{Environment.NewLine}\t\t");
 
 					var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
 					if (i < pIdsString.Count - 1)
@@ -249,14 +248,14 @@ namespace RCore.LXLite.Editor
 
 			//Build id enum array
 			var idBuilder2 = new StringBuilder();
-			idBuilder2.Append("\tpublic enum ID \n\t{\n\t\tNONE = -1,");
-			idBuilder2.Append("\n\t\t");
+			idBuilder2.Append($"\tpublic enum ID {Environment.NewLine}\t{{{Environment.NewLine}\t\tNONE = -1,");
+			idBuilder2.Append($"{Environment.NewLine}\t\t");
 			for (int i = 0; i < pIdsString.Count; i++)
 			{
 				var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
 				if (i > 0 && i % 100 == 0)
 				{
-					idBuilder2.Append("\n\t\t");
+					idBuilder2.Append($"{Environment.NewLine}\t\t");
 					idBuilder2.Append($"{idString},");
 				}
 				else
@@ -267,16 +266,16 @@ namespace RCore.LXLite.Editor
 						idBuilder2.Append($" {idString},");
 				}
 			}
-			idBuilder2.Append("\n\t}");
+			idBuilder2.Append($"{Environment.NewLine}\t}}");
 
 			//Build id string array
 			var idStringDictBuilder = new StringBuilder();
-			idStringDictBuilder.Append("\tpublic static readonly string[] idString = new string[]\n\t{\n\t\t");
+			idStringDictBuilder.Append($"\tpublic static readonly string[] idString = new string[]{Environment.NewLine}\t{{{Environment.NewLine}\t\t");
 			for (int i = 0; i < pIdsString.Count; i++)
 			{
 				if (i > 0 && i % 100 == 0)
 				{
-					idStringDictBuilder.Append("\n\t\t");
+					idStringDictBuilder.Append($"{Environment.NewLine}\t\t");
 					idStringDictBuilder.Append($"\"{pIdsString[i]}\",");
 				}
 				else if (i == 0)
@@ -284,7 +283,7 @@ namespace RCore.LXLite.Editor
 				else
 					idStringDictBuilder.Append($" \"{pIdsString[i]}\",");
 			}
-			idStringDictBuilder.Append("\n\t};");
+			idStringDictBuilder.Append($"{Environment.NewLine}\t}};");
 
 			//Build language json data
 			foreach (var listText in pLanguageTextDict)
@@ -313,7 +312,7 @@ namespace RCore.LXLite.Editor
 				if (!m_localizedLanguages.Contains(textsList.Key))
 					m_localizedLanguages.Add(textsList.Key);
 			}
-			languagesDictBuilder.Append(" };\n");
+			languagesDictBuilder.Append($" }};{Environment.NewLine}");
 			languagesDictBuilder.Append($"\tpublic static readonly string DefaultLanguage = \"{pLanguageTextDict.First().Key}\";");
 
 			//Write file localization constants

@@ -1,9 +1,7 @@
 {
     "name": "RCore.SheetX.Editor",
     "rootNamespace": "",
-    "references": [
-        "GUID:3f3ff4cf6c4ce574aa5a90e220faf894"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

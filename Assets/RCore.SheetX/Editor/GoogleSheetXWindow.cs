@@ -5,7 +5,6 @@
 
 using System;
 using System.Diagnostics;
-using RCore.Editor;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;

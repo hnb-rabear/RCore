@@ -422,7 +422,7 @@ public static class LOCALIZATION_CLASS_NAME
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError(text + "\n" + ex);
+                    Debug.LogError(text + Environment.NewLine + ex);
                 }
 #endif
             }
@@ -522,29 +522,19 @@ public static class LOCALIZATION_CLASS_NAME
 	}
 	private static string GetTemplateClassContainsRefinedIds()
 	{
-		string @namespace = typeof(LOCALIZATION_CLASS_NAME).Namespace;
-		string content = "using Collections.Generic;\n"
-			+ "// This script refines the IDs of LOCALIZATION_CLASS_NAME used in any prefab within the project. It searches all prefabs containing the LOCALIZATION_CLASS_NAME component and retrieves the localized ids.\n"
-			+ "// The purpose of enumIds and intIds in the refined files is to indicate that these localized ids are in use somewhere within the project\n";
+		string @namespace = typeof(LOCALIZATION_CLASS_NAME).Namespace + "abc";
+		string className = "LOCALIZATION_CLASS_NAMERefinedIds";
+		string enumField = "public static readonly List<LOCALIZATION_CLASS_NAME.ID> enumIds = new List<LOCALIZATION_CLASS_NAME.ID> { ENUM_IDS };";
+		string intField = "public static readonly List<int> intIds = new List<int> { INT_IDS };";
+		string content = $"using System.Collections.Generic;{Environment.NewLine}"
+			+ "// This script refines the IDs of LOCALIZATION_CLASS_NAME used in any prefab within the project. It searches all prefabs containing the LOCALIZATION_CLASS_NAME component and retrieves the localized ids."
+			+ $"{Environment.NewLine}// The purpose of enumIds and intIds in the refined files is to indicate that these localized ids are in use somewhere within the project."
+			+ Environment.NewLine;
+		string classContent = $"{Environment.NewLine}public class {className}{Environment.NewLine}{{{Environment.NewLine}\t{enumField}{Environment.NewLine}\t{intField}{Environment.NewLine}}}";
 		if (!string.IsNullOrEmpty(@namespace))
-		{
-			content += $"namespace {@namespace}\n"
-				+ "{\n"
-				+ $"\tpublic class LOCALIZATION_CLASS_NAMERefinedIds\n"
-				+ "\t{\n"
-				+ "\t\tpublic static readonly List<LOCALIZATION_CLASS_NAME.ID> enumIds = new List<LOCALIZATION_CLASS_NAME.ID> { ENUM_IDS };\n"
-				+ "\t\tpublic static readonly List<int> intIds = new List<int> { INT_IDS };\n"
-				+ "\t}\n"
-				+ "}";
-		}
+			content += $"namespace {@namespace}{Environment.NewLine}{{{classContent}{Environment.NewLine}}}";
 		else
-		{
-			content += "public class LOCALIZATION_CLASS_NAMERefinedIds\n"
-				+ "{\n"
-				+ "\tpublic static readonly List<LOCALIZATION_CLASS_NAME.ID> enumIds = new List<LOCALIZATION_CLASS_NAME.ID> { ENUM_IDS };\n"
-				+ "\tpublic static readonly List<int> intIds = new List<int> { INT_IDS };\n"
-				+ "}";
-		}
+			content += classContent;
 		return content;
 	}
 	[MenuItem("Assets/Create/LocalizationX/Refine LOCALIZATION_CLASS_NAME Ids")]
