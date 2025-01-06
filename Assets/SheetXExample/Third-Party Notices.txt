@@ -1,0 +1,26 @@
+# Third-Party Notices
+
+## NotoSerif-ExtraBold.ttf
+- License: SIL Open Font License, Version 1.1
+- Copyright: Copyright (c) 2017 Google Inc.
+- License Text: https://scripts.sil.org/OFL
+
+## NotoSerifJP-Bold.otf
+- License: SIL Open Font License, Version 1.1
+- Copyright: Copyright (c) 2017 Google Inc.
+- License Text: https://scripts.sil.org/OFL
+
+## NotoSerifKR-Bold.otf
+- License: SIL Open Font License, Version 1.1
+- Copyright: Copyright (c) 2017 Google Inc.
+- License Text: https://scripts.sil.org/OFL
+
+## NotoSerifTC-Bold.otf
+- License: SIL Open Font License, Version 1.1
+- Copyright: Copyright (c) 2017 Google Inc.
+- License Text: https://scripts.sil.org/OFL
+
+## NotoSerifThai-ExtraBold.ttf
+- License: SIL Open Font License, Version 1.1
+- Copyright: Copyright (c) 2017 Google Inc.
+- License Text: https://scripts.sil.org/OFL

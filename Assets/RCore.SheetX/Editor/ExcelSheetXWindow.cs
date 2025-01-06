@@ -81,22 +81,24 @@ namespace RCore.SheetX.Editor
 				bool validExcelPath = ValidateExcelPath(m_settings.excelSheetsPath.path, out string status);
 				if (validExcelPath)
 				{
+					string path = m_settings.excelSheetsPath.path;
+					if (!Path.IsPathRooted(path))
+						path = Path.Combine(Application.dataPath.Replace("Assets",""), path);
 					var folderIcon = EditorIcon.GetIcon(EditorIcon.Icon.Folder);
 					var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
 					if (EditorHelper.Button(null, folderIcon, default, 30, 20))
 					{
-						var obj = AssetDatabase.LoadAssetAtPath<Object>(m_settings.excelSheetsPath.path);
+						var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
 						if (obj != null)
 							Selection.activeObject = obj;
 						else
 						{
-							var psi = new ProcessStartInfo(Path.GetDirectoryName(m_settings.excelSheetsPath.path));
+							var psi = new ProcessStartInfo(Path.GetDirectoryName(path));
 							Process.Start(psi);
 						}
 					}
 					if (EditorHelper.Button(null, fileIcon, default, 30, 20))
 					{
-						string path = m_settings.excelSheetsPath.path;
 						var psi = new ProcessStartInfo(path)
 						{
 							UseShellExecute = true
@@ -239,18 +241,21 @@ namespace RCore.SheetX.Editor
 
 			table.AddColumn("Open", 60, 50, (rect, item) =>
 			{
+				string path = item.path;
+				if (!Path.IsPathRooted(path))
+					path = Path.Combine(Application.dataPath.Replace("Assets",""), path);
 				GUILayout.BeginHorizontal();
 				var folderIcon = EditorIcon.GetIcon(EditorIcon.Icon.Folder);
 				var r1 = rect;
 				r1.width /= 2f;
 				if (GUI.Button(r1, folderIcon))
 				{
-					var obj = AssetDatabase.LoadAssetAtPath<Object>(item.path);
+					var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
 					if (obj != null)
 						Selection.activeObject = obj;
 					else
 					{
-						var psi = new ProcessStartInfo(Path.GetDirectoryName(item.path));
+						var psi = new ProcessStartInfo(Path.GetDirectoryName(path));
 						Process.Start(psi);
 					}
 				}
@@ -258,7 +263,6 @@ namespace RCore.SheetX.Editor
 				r1.x += r1.width;
 				if (GUI.Button(r1, fileIcon))
 				{
-					string path = item.path;
 					var psi = new ProcessStartInfo(path)
 					{
 						UseShellExecute = true

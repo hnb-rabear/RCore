@@ -1,0 +1,314 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f40899c583a07a4aaeddce65bbf4b81, type: 3}
+  m_Name: ExampleDataCollection
+  m_EditorClassIdentifier: 
+  exampleData1s:
+  - numberExample1: 1
+    numberExample2: 10
+    numberExample3: 1.2
+    boolExample: 1
+    stringExample: text
+  - numberExample1: 2
+    numberExample2: 20
+    numberExample3: 3.1
+    boolExample: 1
+    stringExample: text
+  - numberExample1: 3
+    numberExample2: 8
+    numberExample3: 5
+    boolExample: 0
+    stringExample: text
+  - numberExample1: 6
+    numberExample2: 3
+    numberExample3: 10.7
+    boolExample: 0
+    stringExample: text
+  - numberExample1: 9
+    numberExample2: 2
+    numberExample3: 16.4
+    boolExample: 0
+    stringExample: text
+  - numberExample1: 14
+    numberExample2: 7
+    numberExample3: 24
+    boolExample: 1
+    stringExample: text
+  - numberExample1: 14
+    numberExample2: 8
+    numberExample3: 24
+    boolExample: 1
+    stringExample: text
+  exampleData2s:
+  - array1:
+    - text1
+    array2: 01000000
+    array3: 01000000
+    array4: 01
+    array5: 7b0000009a020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 0
+      name: 
+  - array1:
+    - text2
+    array2: 020000000200000003000000
+    array3: 010000000200000003000000
+    array4: 010001
+    array5: 7b0000009f020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 1
+      name: John Doe 1
+  - array1:
+    - text1
+    - text2
+    array2: 0100000002000000
+    array3: 0100000002000000
+    array4: 0100
+    array5: 7b0000009b020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 2
+      name: John Doe 2
+  - array1:
+    - text1
+    - text2
+    - text3
+    array2: 010000000200000003000000
+    array3: 0100000002000000
+    array4: 010001
+    array5: 7b0000009c020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 2
+      name: JohnDoe 2
+  - array1:
+    - text3
+    array2: 0400000002000000
+    array3: 030000000100000002000000
+    array4: 0100
+    array5: 7b000000a4020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 0
+      name: 
+  - array1:
+    - text1
+    - text4
+    array2: 040000000200000003000000
+    array3: 010000000200000003000000
+    array4: 010001
+    array5: 7b000000a5020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 0
+      name: 
+  - array1:
+    - text1
+    - text2
+    - text7
+    array2: 05000000
+    array3: 01000000020000000400000005000000
+    array4: 01
+    array5: 7b000000a6020000
+    array6:
+    - aaa
+    - ccc
+    json1:
+      id: 0
+      name: 
+  exampleData3s:
+  - id: 1
+    name: example attribute 1
+    Attributes:
+    - id: 0
+      value: 30
+      unlock: 2
+      increase: 1.2
+      max: 8
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 2
+    name: example attribute 2
+    Attributes:
+    - id: 0
+      value: 25
+      unlock: 3
+      increase: 1.5
+      max: 8
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 0
+      value: 3
+      unlock: 0
+      increase: 0.5
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 3
+    name: example attribute 3
+    Attributes:
+    - id: 0
+      value: 30
+      unlock: 2
+      increase: 1
+      max: 5
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 0
+      value: 0
+      unlock: 0
+      increase: 0
+      max: 0
+      values:
+      - 3
+      - 2
+      increases:
+      - 0.5
+      - 1
+      unlocks:
+      - 0
+      - 11
+      maxes:
+      - 10
+      - 20
+    - id: 0
+      value: 10
+      unlock: 1
+      increase: 1.5
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 4
+    name: example attribute 4
+    Attributes:
+    - id: 0
+      value: 30
+      unlock: 2
+      increase: 1
+      max: 8
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 0
+      value: 0
+      unlock: 0
+      increase: 0
+      max: 0
+      values:
+      - 10
+      - 1
+      increases:
+      - 1.5
+      - 1
+      unlocks:
+      - 1
+      - 12
+      maxes:
+      - 10
+      - 20
+    - id: 0
+      value: 10
+      unlock: 1
+      increase: 1.5
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 0
+      value: 15
+      unlock: 0
+      increase: 0
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 5
+    name: example attribute 5
+    Attributes:
+    - id: 0
+      value: 20
+      unlock: 3
+      increase: 1
+      max: 10
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 0
+      value: 21
+      unlock: 0
+      increase: 0
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 6
+    name: example attribute 6
+    Attributes:
+    - id: 0
+      value: 15
+      unlock: 2
+      increase: 1
+      max: 5
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+    - id: 0
+      value: 23
+      unlock: 0
+      increase: 0.015
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
+  - id: 7
+    name: example attribute 7
+    Attributes:
+    - id: 0
+      value: 11
+      unlock: 0
+      increase: 0
+      max: 0
+      values: []
+      increases: []
+      unlocks: []
+      maxes: []
