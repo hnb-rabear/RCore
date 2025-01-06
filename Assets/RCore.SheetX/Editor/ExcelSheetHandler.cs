@@ -94,7 +94,7 @@ namespace RCore.SheetX.Editor
 			var idsEnumBuilders = new List<StringBuilder>();
 			var idsEnumBuilderNames = new List<string>();
 			var idsEnumBuilderIndexes = new List<int>();
-			for (int row = 0; row < sheet.LastRowNum; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData != null)
@@ -271,7 +271,7 @@ namespace RCore.SheetX.Editor
 				return;
 			}
 
-			for (int row = 0; row < sheet.LastRowNum; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData == null)
@@ -361,7 +361,7 @@ namespace RCore.SheetX.Editor
 			}
 
 			var constants = new List<ConstantBuilder>();
-			for (int row = 0; row < sheet.LastRowNum; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData != null)
@@ -633,7 +633,7 @@ namespace RCore.SheetX.Editor
 			int maxCellNum = firstRow.LastCellNum;
 
 			string mergeCellValue = "";
-			for (int row = 0; row < sheet.LastRowNum; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData == null)
@@ -1002,7 +1002,7 @@ namespace RCore.SheetX.Editor
 			bool[] validCols = null;
 			var rowContents = new List<RowContent>();
 
-			for (int row = 0; row < sheet.LastRowNum; row++)
+			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
 				if (rowData == null)
