@@ -154,9 +154,12 @@ namespace RCore.UI
 				return;
 
 			Validate();
-			m_FocusedItemIndex = 2;
-			m_PreviousItemIndex = 2;
-			MoveToFocusedItem();
+			if (m_Items.Length > 0)
+			{
+				m_FocusedItemIndex = m_Items.Length / 2;
+				m_PreviousItemIndex = m_Items.Length / 2;
+				MoveToFocusedItem();
+			}
 		}
 
 		public void OnBeginDrag(PointerEventData eventData)
