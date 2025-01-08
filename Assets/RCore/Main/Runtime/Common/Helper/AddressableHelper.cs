@@ -692,7 +692,7 @@ namespace RCore
 			if (asset != null)
 			{
 				instance = Object.Instantiate(asset, parent);
-				instance.SetActive(defaultActive);
+				instance.gameObject.SetActive(defaultActive);
 				instance.name = asset.name;
 			}
 			else
@@ -736,7 +736,7 @@ namespace RCore
 			if (asset != null)
 			{
 				instance = Object.Instantiate(asset, parent);
-				instance.SetActive(defaultActive);
+				instance.gameObject.SetActive(defaultActive);
 				instance.name = asset.name;
 			}
 			else
@@ -771,7 +771,7 @@ namespace RCore
 			if (instance == null && asset != null)
 			{
 				instance = Object.Instantiate(asset, parent);
-				instance.SetActive(active);
+				instance.gameObject.SetActive(active);
 				instance.name = asset.name;
 			}
 			if (instance == null)

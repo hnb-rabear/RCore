@@ -46,6 +46,7 @@ namespace RCore
 			img.color = color;
 		}
 
+		[Obsolete]
 		public static void SetActive(this Component target, bool value)
 		{
 			try
@@ -398,7 +399,7 @@ namespace RCore
 		public static void Free<T>(this List<T> pool) where T : Component
 		{
 			foreach (var t in pool)
-				t.SetActive(false);
+				t.gameObject.SetActive(false);
 		}
 
 		public static void Free<T>(this List<T> pool, Transform pParent) where T : Component
@@ -406,7 +407,7 @@ namespace RCore
 			for (int i = 0; i < pool.Count; i++)
 			{
 				pool[i].SetParent(pParent);
-				pool[i].SetActive(false);
+				pool[i].gameObject.SetActive(false);
 			}
 		}
 
@@ -448,7 +449,7 @@ namespace RCore
 			for (int i = 0; i < count; i++)
 			{
 				var temp = UnityEngine.Object.Instantiate(prefab, parent);
-				temp.SetActive(false);
+				temp.gameObject.SetActive(false);
 				if (!string.IsNullOrEmpty(name))
 					temp.name = name;
 				pool.Add(temp);

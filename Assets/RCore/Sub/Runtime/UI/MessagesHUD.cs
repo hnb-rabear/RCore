@@ -142,8 +142,8 @@ namespace RCore.UI
 		public void Init()
 		{
 			mNotifications.Free();
-			mIwtMessage.SetActive(false);
-			mIwtToastMessage.SetActive(false);
+			mIwtMessage.gameObject.SetActive(false);
+			mIwtToastMessage.gameObject.SetActive(false);
 
 			mInitialized = true;
 			mCamera = Camera.main;
@@ -154,7 +154,7 @@ namespace RCore.UI
 		public Transform ShowMessageBubble(RectTransform pTarget, Bubble pBubble)
 		{
 			if (!mInitialized) Init();
-			mIwtMessage.SetActive(true);
+			mIwtMessage.gameObject.SetActive(true);
 
 			mIwtMessage.rectTransform.sizeDelta = pBubble.size;
 			var anchoredPos = mIwtMessage.rectTransform.anchoredPosition;
@@ -231,14 +231,14 @@ namespace RCore.UI
 			board = GetActiveNotification(pNotification.id);
 			if (board == null)
 				board = mNotifications.Obtain(transform);
-			board.RectPointer.SetActive(pNotification.displayArrow);
-			board.RectMessage.SetActive(pNotification.displayMessage);
+			board.RectPointer.gameObject.SetActive(pNotification.displayArrow);
+			board.RectMessage.gameObject.SetActive(pNotification.displayMessage);
 			if (pNotification.displayArrow)
 				board.PointToTarget(pNotification.target, pNotification.alignment);
 			if (pNotification.displayMessage)
 				board.MessageToTarget(pNotification.target, pNotification.message, pNotification.alignment, pNotification.size);
 			board.id = pNotification.id;
-			board.SetActive(true);
+			board.gameObject.SetActive(true);
 			board.transform.SetParent(pNotification.target);
 
 			enabled = true;
@@ -249,7 +249,7 @@ namespace RCore.UI
 		{
 			var board = GetActiveNotification(pId);
 			if (board != null)
-				board.SetActive(false);
+				board.gameObject.SetActive(false);
 		}
 
 		//=== QUICK MESSAGE
@@ -258,7 +258,7 @@ namespace RCore.UI
 		{
 			mIwtToastMessage.label.text = pMessage;
 			mIwtToastMessage.label.color = m_DefaultTextColor;
-			mIwtToastMessage.SetActive(true);
+			mIwtToastMessage.gameObject.SetActive(true);
 			mIwtToastMessage.gameObject.TryGetComponent(out Animator anim);
 			if (anim != null)
 			{
@@ -318,7 +318,7 @@ namespace RCore.UI
 			}
 			if (!valid)
 				for (int i = 0; i < boards.Length; i++)
-					boards[i].SetActive(false);
+					boards[i].gameObject.SetActive(false);
 		}
 
 #if NEW_INPUT

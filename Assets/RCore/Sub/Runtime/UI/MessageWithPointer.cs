@@ -45,7 +45,7 @@ namespace RCore.UI
 
 		public void PointToTarget(RectTransform pTarget, PointerAlignment pAlignment, float pOffset = 0, bool pPostValidate = true)
 		{
-			m_rectPointer.SetActive(true);
+			m_rectPointer.gameObject.SetActive(true);
 
 			m_rectPointer.position = pTarget.position;
 			var targetPivot = pTarget.pivot;
@@ -108,7 +108,7 @@ namespace RCore.UI
 
 		public void MessageToTarget(RectTransform pTarget, string pMessage, PointerAlignment pAlignment, Vector2 pSize, float pOffset = 30, bool pPostValidate = true)
 		{
-			m_rectMessage.SetActive(true);
+			m_rectMessage.gameObject.SetActive(true);
 			m_txtMessage.text = pMessage;
 			m_rectMessage.sizeDelta = pSize;
 

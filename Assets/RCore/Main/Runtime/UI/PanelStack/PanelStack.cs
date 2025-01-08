@@ -91,7 +91,7 @@ namespace RCore.UI
 				{
 					string panelName = pPanel.name;
 					pPanel = Instantiate(pPanel, transform);
-					pPanel.SetActive(false);
+					pPanel.gameObject.SetActive(false);
 					pPanel.Init();
 					pPanel.name = panelName;
 				}
@@ -103,7 +103,7 @@ namespace RCore.UI
 			string name2 = pPanel.name;
 			var panel = Instantiate(pPanel, transform);
 			panel.useOnce = true;
-			panel.SetActive(false);
+			panel.gameObject.SetActive(false);
 			panel.Init();
 			panel.name = name2;
 

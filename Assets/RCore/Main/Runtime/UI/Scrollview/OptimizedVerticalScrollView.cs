@@ -136,7 +136,7 @@ namespace RCore.UI
                     rt.anchoredPosition3D.z);
                 m_itemsRect.Add(rt);
 
-                item.SetActive(true);
+                item.gameObject.SetActive(true);
                 item.UpdateContent(i, true);
             }
 

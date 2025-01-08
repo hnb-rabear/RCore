@@ -135,10 +135,10 @@ namespace RCore.UI
 
         public virtual void Active(bool pValue)
         {
-            imgBackground.SetActive(pValue);
-            imgProgressValue.SetActive(pValue);
+            imgBackground.gameObject.SetActive(pValue);
+            imgProgressValue.gameObject.SetActive(pValue);
             if (txtValue != null)
-                txtValue.SetActive(pValue);
+                txtValue.gameObject.SetActive(pValue);
             if (txtRank != null)
                 txtRank.gameObject.SetActive(pValue);
         }

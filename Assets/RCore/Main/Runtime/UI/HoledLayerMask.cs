@@ -107,11 +107,11 @@ namespace RCore.UI
             enabled = pValue;
             if (!pValue)
                 imgHole.rectTransform.sizeDelta = Vector2.zero;
-            imgHole.SetActive(pValue);
-            imgLeft.SetActive(pValue);
-            imgTop.SetActive(pValue);
-            imgRight.SetActive(pValue);
-            imgBot.SetActive(pValue);
+            imgHole.gameObject.SetActive(pValue);
+            imgLeft.gameObject.SetActive(pValue);
+            imgTop.gameObject.SetActive(pValue);
+            imgRight.gameObject.SetActive(pValue);
+            imgBot.gameObject.SetActive(pValue);
         }
 
         public void SetColor(Color pColor)

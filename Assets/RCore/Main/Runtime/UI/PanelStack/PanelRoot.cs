@@ -59,14 +59,14 @@ namespace RCore.UI
 			var highestPanel = GetHighestPanel();
 			if (highestPanel != this)
 			{
-				m_dimmerOverlay.SetActive(true);
+				m_dimmerOverlay.gameObject.SetActive(true);
 				m_dimmerOverlay.transform.SetParent(highestPanel.transform.parent);
 				m_dimmerOverlay.transform.SetAsLastSibling();
 				highestPanel.transform.SetAsLastSibling();
 			}
 			else
 			{
-				m_dimmerOverlay.SetActive(false);
+				m_dimmerOverlay.gameObject.SetActive(false);
 				m_dimmerOverlay.transform.SetParent(transform);
 			}
 		}

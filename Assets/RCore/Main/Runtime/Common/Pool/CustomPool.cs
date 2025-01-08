@@ -86,7 +86,7 @@ namespace RCore
                 m_InactiveList.Add(m_Prefab);
                 m_Prefab.SetParent(m_Parent);
                 m_Prefab.transform.SetAsLastSibling();
-                m_Prefab.SetActive(false);
+                m_Prefab.gameObject.SetActive(false);
             }
             m_Initialized = true;
         }
@@ -273,7 +273,7 @@ namespace RCore
             {
                 var item = m_ActiveList[i];
                 m_InactiveList.Add(item);
-                item.SetActive(false);
+                item.gameObject.SetActive(false);
             }
             m_ActiveList.Clear();
         }
@@ -391,7 +391,7 @@ namespace RCore
                 else
                     m_ActiveList.RemoveAt(index);
             }
-            pItem.SetActive(pValue);
+            pItem.gameObject.SetActive(pValue);
         }
 
 #if UNITY_EDITOR

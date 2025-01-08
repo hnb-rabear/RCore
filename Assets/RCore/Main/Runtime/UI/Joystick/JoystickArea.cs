@@ -12,13 +12,13 @@ namespace RCore.UI
         private void Start()
         {
             if (autoHideJoystick)
-                joystick.SetActive(false);
+                joystick.gameObject.SetActive(false);
         }
 
         private void OnDisable()
         {
             if (autoHideJoystick)
-                joystick.SetActive(false);
+                joystick.gameObject.SetActive(false);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -60,7 +60,7 @@ namespace RCore.UI
                 return;
 
             if (autoHideJoystick)
-                joystick.SetActive(true);
+                joystick.gameObject.SetActive(true);
 
             if (canvas.renderMode == RenderMode.ScreenSpaceOverlay)
                 joystick.transform.position = eventData.position;
@@ -80,7 +80,7 @@ namespace RCore.UI
                 joystick.transform.position = eventData.pointerPressRaycast.worldPosition;
 
             if (autoHideJoystick)
-                joystick.SetActive(false);
+                joystick.gameObject.SetActive(false);
         }
     }
 }

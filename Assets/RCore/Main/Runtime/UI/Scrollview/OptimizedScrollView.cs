@@ -94,7 +94,7 @@ namespace RCore.UI
 				rt.anchoredPosition3D = m_startPos + (m_offsetVec * i * m_prefabSize);
 				m_itemsRect.Add(rt);
 
-				item.SetActive(true);
+				item.gameObject.SetActive(true);
 				item.UpdateContent(i, true);
 			}
 

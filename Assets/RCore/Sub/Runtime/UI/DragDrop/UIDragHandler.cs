@@ -38,7 +38,7 @@ namespace RCore.UI
             preParent = item.transform.parent;
             item.transform.SetParent(dragController.dragContainer);
             item.BeginDrag(eventData);
-            item.SetActive(!dontShowItem);
+            item.gameObject.SetActive(!dontShowItem);
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -62,7 +62,7 @@ namespace RCore.UI
             item.transform.localPosition = preLocalPosition;
 
             if (!owner.dragOriginal)
-                item.SetActive(false);
+                item.gameObject.SetActive(false);
         }
 
         public UIDraggableItem GetDraggableItem()
