@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -6,6 +7,7 @@ namespace RCore.Data.JObject
 	public class SessionModel : JObjectModel<SessionData>
 	{
 		public float secondsTillNextDay;
+		public float secondsTillNextWeek;
 
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
@@ -49,6 +51,8 @@ namespace RCore.Data.JObject
 				if (secondsTillNextDay <= 0)
 					CheckNewDay();
 			}
+			if (secondsTillNextWeek > 0)
+				secondsTillNextWeek -= deltaTime;
 		}
 		public override void OnPreSave(int utcNowTimestamp)
 		{
@@ -75,6 +79,7 @@ namespace RCore.Data.JObject
 			if (lastActive.Date != now.Date)
 				AddOneDay();
 			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
+			secondsTillNextWeek = (float)TimeHelper.GetSecondsTillDayOfWeek(DayOfWeek.Monday, now);
 		}
 		public void AddOneDay()
 		{

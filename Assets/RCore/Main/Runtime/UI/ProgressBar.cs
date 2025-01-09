@@ -61,7 +61,7 @@ namespace RCore.UI
             set
             {
                 mFill = Mathf.Clamp01(value);
-                float interpolatedFill = Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
+                float interpolatedFill = mFill == 0 ? 0 : Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
                 FillBar(interpolatedFill);
             }
         }
@@ -178,8 +178,8 @@ namespace RCore.UI
                 return;
 
             Validate();
-            
-            float interpolatedFill = Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
+
+            float interpolatedFill = mFill == 0 ? 0 : Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
             FillBar(interpolatedFill);
         }
 #endif
