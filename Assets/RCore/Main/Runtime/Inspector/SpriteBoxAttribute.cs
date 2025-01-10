@@ -5,11 +5,11 @@ using UnityEditor;
 
 namespace RCore.Inspector
 {
-	public class SpritePreviewAttribute : PropertyAttribute
+	public class SpriteBoxAttribute : PropertyAttribute
 	{
 		public float width, height;
 
-		public SpritePreviewAttribute(float width = 36, float height = 36)
+		public SpriteBoxAttribute(float width = 36, float height = 36)
 		{
 			this.width = width;
 			this.height = height;
@@ -17,13 +17,13 @@ namespace RCore.Inspector
 	}
 
 #if UNITY_EDITOR
-	[CustomPropertyDrawer(typeof(SpritePreviewAttribute))]
-	public class SpritePreviewDrawer : PropertyDrawer
+	[CustomPropertyDrawer(typeof(SpriteBoxAttribute))]
+	public class SpriteBoxDrawer : PropertyDrawer
 	{
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			// Get the attribute
-			var spritePreview = (SpritePreviewAttribute)attribute;
+			var spritePreview = (SpriteBoxAttribute)attribute;
 
 			// Begin the property
 			EditorGUI.BeginProperty(position, label, property);
@@ -57,10 +57,10 @@ namespace RCore.Inspector
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			SpritePreviewAttribute spritePreview = (SpritePreviewAttribute)attribute;
+			SpriteBoxAttribute spriteBox = (SpriteBoxAttribute)attribute;
 			if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue is Sprite sprite && sprite != null)
 			{
-				return Mathf.Max(base.GetPropertyHeight(property, label), spritePreview.height);
+				return Mathf.Max(base.GetPropertyHeight(property, label), spriteBox.height);
 			}
 			return base.GetPropertyHeight(property, label);
 		}
