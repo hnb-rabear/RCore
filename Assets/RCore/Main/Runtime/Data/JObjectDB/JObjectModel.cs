@@ -10,6 +10,7 @@ namespace RCore.Data.JObject
 	public abstract class JObjectModel<T> : ScriptableObject, IJObjectModel where T : JObjectData
 	{
 		public T data;
+		public abstract void Init();
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnUpdate(float deltaTime);

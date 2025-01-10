@@ -46,7 +46,7 @@ namespace RCore.UI
 		private Action m_inactionStateAction;
 		private bool m_active = true;
 		private int m_perfectSpriteId;
-		private Vector2 m_initialScale;
+		private Vector3 m_initialScale;
 
 		protected override void Awake()
 		{

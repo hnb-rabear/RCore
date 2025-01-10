@@ -70,6 +70,7 @@ namespace RCore.Data.JObject
 			if (string.IsNullOrEmpty(key))
 				key = typeof(TData).Name;
 			@ref.data = JObjectDB.CreateCollection(key, defaultVal);
+			@ref.Init();
 			m_models.Add(@ref);
 		}
 	}

@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace RCore.Data.JObject
 {
@@ -9,6 +8,7 @@ namespace RCore.Data.JObject
 		public float secondsTillNextDay;
 		public float secondsTillNextWeek;
 
+		public override void Init() { }
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
 		{
 			if (data.firstActive == 0)
@@ -44,7 +44,7 @@ namespace RCore.Data.JObject
 		public override void OnUpdate(float deltaTime)
 		{
 			data.activeTime += deltaTime;
-			
+
 			if (secondsTillNextDay > 0)
 			{
 				secondsTillNextDay -= deltaTime;
