@@ -56,13 +56,14 @@ namespace RCore.SheetX.Editor
 		public void Save()
 		{
 			string content = JsonUtility.ToJson(m_sheetXSettings);
-			string path = Application.dataPath;
-			EditorHelper.SaveFilePanel(path, "SheetXSave", content, "sx", "Save SheetX Settings");
+			string directory = Application.dataPath.Replace("Assets", "");
+			EditorHelper.SaveFilePanel(directory, "SheetXSave", content, "sx", "Save SheetX Settings");
 		}
 
 		public void Load()
 		{
-			var path = EditorHelper.OpenFilePanel("Load SheetX Settings", "sx");
+			string directory = Application.dataPath.Replace("Assets", "");
+			var path = EditorHelper.OpenFilePanel("Load SheetX Settings", "sx", directory);
 			if (!string.IsNullOrEmpty(path))
 			{
 				string content = File.ReadAllText(path);

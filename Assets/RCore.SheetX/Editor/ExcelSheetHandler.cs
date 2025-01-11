@@ -987,7 +987,7 @@ namespace RCore.SheetX.Editor
 		private string ConvertSheetToJson(IWorkbook pWorkBook, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
 #if !SX_LOCALIZATION
-			var unminifiedFields = m_settings.GetPersistentFields();
+			var persistentFields = m_settings.GetPersistentFields();
 
 			var sheet = pWorkBook.GetSheet(pSheetName);
 			if (sheet == null || sheet.LastRowNum == 0)
@@ -1202,10 +1202,10 @@ namespace RCore.SheetX.Editor
 					}
 					else
 					{
-						bool importantField = unminifiedFields.Contains(fieldName.Replace("[]", "").ToLower());
+						bool importantField = persistentFields.Contains(fieldName.Replace("[]", "").ToLower());
 
 						//Ignore empty field or field have value which equal 0
-						if (string.IsNullOrEmpty(fieldValue) || fieldValue == "0" && !importantField)
+						if (string.IsNullOrEmpty(fieldValue) && !importantField)
 							continue;
 
 						bool nestedFiled = fieldName.Contains(".");

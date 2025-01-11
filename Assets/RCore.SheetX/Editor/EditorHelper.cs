@@ -344,7 +344,8 @@ namespace RCore.SheetX.Editor
 		{
 			EditorGUILayout.BeginHorizontal();
 			var newPath = TextField(defaultPath, label, labelWidth > 0 ? labelWidth : label.Length * 7);
-			if (Button("...", 25))
+			var icon = EditorIcon.GetIcon(EditorIcon.Icon.AddFolder);
+			if (Button(null, icon, default, 25, 21))
 			{
 				newPath = EditorUtility.OpenFolderPanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, "");
 				if (!string.IsNullOrEmpty(newPath))

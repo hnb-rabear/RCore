@@ -472,12 +472,12 @@ namespace RCore.SheetX.Editor
 				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
 		}
 
-		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow, string name)
+		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow, string name, Action<bool> pOnTogSelected)
 		{
 			var table = new EditorTableView<SheetPath>(editorWindow, name);
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
-				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
+				padding = new RectOffset(4, 4, 0, 0)
 			};
 			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
 			{
@@ -486,11 +486,13 @@ namespace RCore.SheetX.Editor
 					textColor = Color.gray
 				}
 			};
-			table.AddColumn("Selected", 60, 60, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.selected = EditorGUI.Toggle(rect, item.selected);
-			});
+			table.AddColumn(null, 25, 25, (rect, item) =>
+				{
+					rect.xMin += 4;
+					item.Selected = EditorGUI.Toggle(rect, item.selected);
+				})
+				.ShowToggle(true)
+				.OnToggleChanged(pOnTogSelected);
 			table.AddColumn("Sheet name", 200, 0, (rect, item) =>
 			{
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
@@ -612,7 +614,7 @@ namespace RCore.SheetX.Editor
 			UnityEngine.Debug.Log("Credential file saved to: " + GetSaveDirectory());
 			return credential;
 		}
-		
+
 		public static string RemoveComments(string input)
 		{
 			return Regex.Replace(input, @"/\*.*?\*/", string.Empty);
