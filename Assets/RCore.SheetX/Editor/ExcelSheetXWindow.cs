@@ -152,6 +152,8 @@ namespace RCore.SheetX.Editor
 			{
 				if (ValidateExcelPath(m_settings.excelSheetsPath.path, out _))
 					m_settings.excelSheetsPath.Load();
+				else
+					m_settings.excelSheetsPath.sheets.Clear();
 			}
 			if (EditorHelper.Button("Export All", pHeight: 40))
 			{
