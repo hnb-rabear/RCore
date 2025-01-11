@@ -1008,24 +1008,26 @@ namespace RCore.SheetX.Editor
 				if (rowData == null)
 					continue;
 
-				if (row == 0)
+				if (row == 0) // Set column header
 				{
 					lastCellNum = rowData.LastCellNum;
 					fields = new string[lastCellNum];
 					mergeValues = new string[lastCellNum];
 					validCols = new bool[lastCellNum];
-
+					string mergedCell = "";
 					//Find valid columns
 					for (int col = 0; col < lastCellNum; col++)
 					{
 						var cell = rowData.GetCell(col);
-						if (cell != null
-						    && cell.CellType == CellType.String
-						    && !string.IsNullOrEmpty(cell.StringCellValue)
-						    && !cell.StringCellValue.Contains("[x]"))
+						var cellValue = cell.ToString().Trim();
+						if (cell.IsMergedCell && !string.IsNullOrEmpty(cellValue))
+							mergedCell = cellValue;
+						else if (cell.IsMergedCell && string.IsNullOrEmpty(cellValue))
+							cellValue = mergedCell;
+						if ((!string.IsNullOrEmpty(cellValue) || cell.IsMergedCell) && !cellValue.EndsWith("[x]"))
 						{
 							validCols[col] = true;
-							fields[col] = cell.ToString().Trim();
+							fields[col] = cellValue;
 						}
 						else
 						{
@@ -1035,7 +1037,7 @@ namespace RCore.SheetX.Editor
 						mergeValues[col] = "";
 					}
 				}
-				else
+				else // Set column value
 				{
 					var rowContent = new RowContent();
 					for (int col = 0; col < lastCellNum; col++)
@@ -1060,8 +1062,22 @@ namespace RCore.SheetX.Editor
 				}
 			}
 
+			// Initialize array columns from columns with identical names. All columns sharing the same name will be combined into a single array column.
+			var combinedCols = new Dictionary<string, string>();
+			var sameNameCols = new Dictionary<string, int>();
+			foreach (var fieldValueType in pFieldValueTypes)
+			{
+				string fieldName = fieldValueType.name.Replace("[]", "").Replace("{}", "");
+				sameNameCols.TryAdd(fieldName, 0);
+				sameNameCols[fieldName] += 1;
+				// Initialize the list in the dictionary if count exceeds 1
+				if (sameNameCols[fieldName] == 2) // Only initialize when count reaches 2
+					combinedCols.Add(fieldName, $"\"{fieldName}\":[");
+			}
+
+
 			string content = "[";
-			for (int i = 0; i < rowContents.Count; i++)
+			for (int i = 0; i < rowContents.Count; i++) // Rows
 			{
 				var rowContent = rowContents[i];
 
@@ -1069,16 +1085,16 @@ namespace RCore.SheetX.Editor
 				string fieldContentStr = "";
 				bool rowIsEmpty = true; //Because Loading sheet sometime includes the empty rows, I don't know why it happen
 				var nestedObjects = new List<JObject>();
-
-				for (int j = 0; j < rowContent.fieldNames.Count; j++)
+				for (int j = 0; j < rowContent.fieldNames.Count; j++) // Columns
 				{
 					bool valid = validCols[j];
 					if (!valid)
 						continue;
 					string fieldName = rowContent.fieldNames[j];
+					var fieldType = pFieldValueTypes.Find(x => x.name == fieldName).type;
 					string fieldValue = rowContent.fieldValues[j];
+					string fieldNameTrim = fieldName.Replace("[]", "").Replace("{}", "");
 					bool isAttribute = fieldName.ToLower().Contains("attribute") && fieldName.Length <= 11;
-
 					// Encountered a situation where the data contains an attribute field like "value". This causes confusion for the Exporter, 
 					// which mistakes it for an attribute from the Attribute System.
 					// Solution: Add a condition to ensure the next field is a value.
@@ -1203,185 +1219,269 @@ namespace RCore.SheetX.Editor
 					}
 					else
 					{
-						bool importantField = persistentFields.Contains(fieldName.Replace("[]", "").ToLower());
+						bool importantField = persistentFields.Contains(fieldNameTrim.ToLower());
 
 						// Exclude empty cell
 						if (string.IsNullOrEmpty(fieldValue) && !importantField)
 							continue;
 
-						bool nestedFiled = fieldName.Contains(".");
-						foreach (var field in pFieldValueTypes)
+						bool nestedField = fieldName.Contains(".");
+						bool referencedId = false;
+						if (fieldType == ValueType.Text) //Find and replace string value with referenced ID
 						{
-							//Find referenced Id in string and convert it to number
-							if (field.name == fieldName)
+							if (CheckExistedId(fieldValue))
 							{
-								var fieldType = field.type;
-								bool referencedId = false;
-								if (fieldType == ValueType.Text) //Find and replace string value with referenced ID
+								fieldType = ValueType.Number;
+								referencedId = true;
+							}
+							else if (int.TryParse(fieldValue, out int _))
+							{
+								fieldType = ValueType.Number;
+								referencedId = true;
+							}
+						}
+						if (fieldType == ValueType.ArrayText) //Find and replace string value with referenced ID
+						{
+							string[] arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
+							foreach (string val in arrayValue)
+							{
+								if (CheckExistedId(val.Trim()))
 								{
-									if (CheckExistedId(fieldValue))
-									{
-										fieldType = ValueType.Number;
-										referencedId = true;
-									}
-									else if (int.TryParse(fieldValue, out int _))
-									{
-										fieldType = ValueType.Number;
-										referencedId = true;
-									}
+									fieldType = ValueType.ArrayNumber;
+									referencedId = true;
+									break;
 								}
-								if (fieldType == ValueType.ArrayText) //Find and replace string value with referenced ID
-								{
-									string[] arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
-									foreach (string val in arrayValue)
-									{
-										if (CheckExistedId(val.Trim()))
-										{
-											fieldType = ValueType.ArrayNumber;
-											referencedId = true;
-											break;
-										}
-									}
-								}
+							}
+						}
 
-								var jsonObject = new JObject();
-								switch (fieldType)
+						void AppendCombinedCols(string value, ValueType type)
+						{
+							var splits = SheetXHelper.SplitValueToArray(value);
+							if (splits.Length > 1)
+							{
+								var arrayStr = "[";
+								switch (type)
 								{
 									case ValueType.Number:
-										if (referencedId)
+										for (int k = 0; k < splits.Length; k++)
 										{
-											int intValue = GetReferenceId(fieldValue, out bool _);
-											if (!nestedFiled)
-												fieldContentStr += $"\"{fieldName}\":{intValue},";
-											jsonObject[fieldName] = intValue;
-										}
-										else
-										{
-											if (!nestedFiled)
-												fieldContentStr += $"\"{fieldName}\":{fieldValue},";
-											jsonObject[fieldName] = fieldValue;
-										}
-										break;
-
-									case ValueType.Text:
-										fieldValue = fieldValue.Replace("\n", "\\n");
-										fieldValue = fieldValue.Replace("\"", "\\\"");
-										if (!nestedFiled)
-											fieldContentStr += $"\"{fieldName}\":\"{fieldValue}\",";
-										else
-											jsonObject[fieldName] = fieldValue;
-										break;
-
-									case ValueType.Bool:
-										if (!nestedFiled)
-											fieldContentStr += $"\"{fieldName}\":{fieldValue.ToLower()},";
-										else
-											jsonObject[fieldName] = fieldValue;
-										break;
-
-									case ValueType.ArrayNumber:
-									{
-										fieldName = fieldName.Replace("[]", "");
-										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
-										var arrayStr = "[";
-										for (int k = 0; k < arrayValue.Length; k++)
-										{
-											string val = arrayValue[k].Trim();
+											string val = splits[k].Trim();
 											if (referencedId)
 												val = GetReferenceId(val, out bool _).ToString();
 											if (k == 0) arrayStr += val;
 											else arrayStr += "," + val;
 										}
 										arrayStr += "]";
-										if (!nestedFiled)
-											fieldContentStr += $"\"{fieldName}\":{arrayStr},";
-										else
-										{
-											int[] array = JsonConvert.DeserializeObject<int[]>(arrayStr);
-											jsonObject[fieldName] = JArray.FromObject(array);
-										}
-									}
 										break;
-
-									case ValueType.ArrayText:
-									{
-										fieldName = fieldName.Replace("[]", "");
-										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
-										var arrayStr = "[";
-										for (int k = 0; k < arrayValue.Length; k++)
+									case ValueType.Text:
+										for (int k = 0; k < splits.Length; k++)
 										{
-											if (k == 0) arrayStr += $"\"{arrayValue[k].Trim()}\"";
-											else arrayStr += $",\"{arrayValue[k].Trim()}\"";
+											if (k == 0) arrayStr += $"\"{splits[k]}\"";
+											else arrayStr += $",\"{splits[k]}\"";
 										}
 										arrayStr += "]";
-										if (!nestedFiled)
-											fieldContentStr += $"\"{fieldName}\":{arrayStr},";
-										else
-										{
-											string[] array = JsonConvert.DeserializeObject<string[]>(arrayStr);
-											jsonObject[fieldName] = JArray.FromObject(array);
-										}
 										break;
-									}
-
-									case ValueType.ArrayBool:
-									{
-										fieldName = fieldName.Replace("[]", "");
-										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
-										var arrayStr = "[";
-										for (int k = 0; k < arrayValue.Length; k++)
+									case ValueType.Bool:
+										for (int k = 0; k < splits.Length; k++)
 										{
-											if (k == 0) arrayStr += arrayValue[k].Trim().ToLower();
-											else arrayStr += "," + arrayValue[k].Trim().ToLower();
+											if (k == 0) arrayStr += splits[k].ToLower();
+											else arrayStr += "," + splits[k].ToLower();
 										}
 										arrayStr += "]";
-										if (!nestedFiled)
-											fieldContentStr += $"\"{fieldName}\":{arrayStr},";
-										else
-										{
-											bool[] array = JsonConvert.DeserializeObject<bool[]>(arrayStr);
-											jsonObject[fieldName] = JArray.FromObject(array);
-										}
 										break;
-									}
-
-									case ValueType.Json:
-									{
-										fieldName = fieldName.Replace("{}", "");
-
-										//Search Id in field value
-										if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
-										{
-											m_allIDsSorted = SheetXHelper.SortIDsByLength(m_allIds);
-										}
-										foreach (var id in m_allIDsSorted)
-										{
-											if (fieldValue.Contains(id.Key))
-												fieldValue = fieldValue.Replace(id.Key, id.Value.ToString());
-										}
-										if (!SheetXHelper.IsValidJson(fieldValue))
-										{
-											EditorUtility.DisplayDialog("Error", $@"Invalid Json string at Sheet: {pSheetName} Field: {fieldName} Row: {i + 1}", "Ok");
-											UnityEngine.Debug.LogError($"Invalid data, Sheet: {pSheetName}, Field: {fieldName}, Row: {i + 1}");
-										}
-										var tempObj = JsonConvert.DeserializeObject(fieldValue);
-										var tempJsonStr = JsonConvert.SerializeObject(tempObj);
-										if (!nestedFiled)
-											fieldContentStr += $"\"{fieldName}\":{tempJsonStr},";
-										else
-										{
-											jsonObject[fieldName] = JObject.Parse(tempJsonStr);
-										}
-										break;
-									}
 								}
-
-								// Nested Object
-								if (nestedFiled)
-									nestedObjects.Add(jsonObject);
+								combinedCols[fieldNameTrim] += $"{arrayStr},";
+							}
+							else
+							{
+								if (type == ValueType.Text)
+									value = $"\"{value}\"";
+								combinedCols[fieldNameTrim] += $"{value},";
 							}
 						}
+
+						var jsonObject = new JObject();
+						switch (fieldType)
+						{
+							case ValueType.Number:
+								if (referencedId)
+								{
+									int intValue = GetReferenceId(fieldValue, out bool _);
+									if (!combinedCols.ContainsKey(fieldNameTrim))
+									{
+										if (!nestedField)
+											fieldContentStr += $"\"{fieldNameTrim}\":{intValue},";
+									}
+									else
+										AppendCombinedCols(fieldValue, fieldType);
+									if (nestedField)
+										jsonObject[fieldNameTrim] = intValue;
+								}
+								else
+								{
+									if (!combinedCols.ContainsKey(fieldNameTrim))
+									{
+										if (!nestedField)
+											fieldContentStr += $"\"{fieldNameTrim}\":{fieldValue},";
+									}
+									else
+										AppendCombinedCols(fieldValue, fieldType);
+									if (nestedField)
+										jsonObject[fieldNameTrim] = fieldValue;
+								}
+								break;
+
+							case ValueType.Text:
+								fieldValue = fieldValue.Replace("\n", "\\n").Replace("\"", "\\\"");
+								if (!combinedCols.ContainsKey(fieldNameTrim))
+								{
+									if (!nestedField)
+										fieldContentStr += $"\"{fieldNameTrim}\":\"{fieldValue}\",";
+								}
+								else
+									AppendCombinedCols(fieldValue, fieldType);
+								if (nestedField)
+									jsonObject[fieldNameTrim] = fieldValue;
+								break;
+
+							case ValueType.Bool:
+								fieldValue = fieldValue.ToLower();
+								if (!combinedCols.ContainsKey(fieldNameTrim))
+								{
+									if (!nestedField)
+										fieldContentStr += $"\"{fieldNameTrim}\":{fieldValue},";
+								}
+								else
+									AppendCombinedCols(fieldValue, fieldType);
+								if (nestedField)
+									jsonObject[fieldNameTrim] = fieldValue;
+								break;
+
+							case ValueType.ArrayNumber:
+							{
+								var splits = SheetXHelper.SplitValueToArray(fieldValue, false);
+								var arrayStr = "[";
+								for (int k = 0; k < splits.Length; k++)
+								{
+									string val = splits[k].Trim();
+									if (referencedId)
+										val = GetReferenceId(val, out bool _).ToString();
+									if (k == 0) arrayStr += val;
+									else arrayStr += "," + val;
+								}
+								arrayStr += "]";
+								if (!combinedCols.ContainsKey(fieldNameTrim))
+								{
+									if (!nestedField)
+										fieldContentStr += $"\"{fieldNameTrim}\":{arrayStr},";
+									if (nestedField)
+									{
+										int[] array = JsonConvert.DeserializeObject<int[]>(arrayStr);
+										jsonObject[fieldNameTrim] = JArray.FromObject(array);
+									}
+								}
+								else
+								{
+									combinedCols[fieldNameTrim] += $"{arrayStr},";
+								}
+								break;
+							}
+
+							case ValueType.ArrayText:
+							{
+								var splits = SheetXHelper.SplitValueToArray(fieldValue, false);
+								var arrayStr = "[";
+								for (int k = 0; k < splits.Length; k++)
+								{
+									if (k == 0) arrayStr += $"\"{splits[k]}\"";
+									else arrayStr += $",\"{splits[k]}\"";
+								}
+								arrayStr += "]";
+								if (!combinedCols.ContainsKey(fieldNameTrim))
+								{
+									if (!nestedField)
+										fieldContentStr += $"\"{fieldNameTrim}\":{arrayStr},";
+									if (nestedField)
+									{
+										string[] array = JsonConvert.DeserializeObject<string[]>(arrayStr);
+										jsonObject[fieldNameTrim] = JArray.FromObject(array);
+									}
+								}
+								else
+								{
+									combinedCols[fieldNameTrim] += $"{arrayStr},";
+								}
+								break;
+							}
+
+							case ValueType.ArrayBool:
+							{
+								var splits = SheetXHelper.SplitValueToArray(fieldValue, false);
+								var arrayStr = "[";
+								for (int k = 0; k < splits.Length; k++)
+								{
+									if (k == 0) arrayStr += splits[k].ToLower();
+									else arrayStr += "," + splits[k].ToLower();
+								}
+								arrayStr += "]";
+								if (!combinedCols.ContainsKey(fieldNameTrim))
+								{
+									if (!nestedField)
+										fieldContentStr += $"\"{fieldNameTrim}\":{arrayStr},";
+									if (nestedField)
+									{
+										bool[] array = JsonConvert.DeserializeObject<bool[]>(arrayStr);
+										jsonObject[fieldNameTrim] = JArray.FromObject(array);
+									}
+								}
+								else
+								{
+									combinedCols[fieldNameTrim] += $"{arrayStr},";
+								}
+								break;
+							}
+
+							case ValueType.Json:
+							{
+								//Search Id in field value
+								if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
+								{
+									m_allIDsSorted = SheetXHelper.SortIDsByLength(m_allIds);
+								}
+								foreach (var id in m_allIDsSorted)
+								{
+									if (fieldValue.Contains(id.Key))
+										fieldValue = fieldValue.Replace(id.Key, id.Value.ToString());
+								}
+								if (!SheetXHelper.IsValidJson(fieldValue))
+								{
+									EditorUtility.DisplayDialog("Error", $@"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}", "Ok");
+									UnityEngine.Debug.LogError($"Invalid data, Sheet: {pSheetName}, Field: {fieldNameTrim}, Row: {i + 1}");
+								}
+								var tempObj = JsonConvert.DeserializeObject(fieldValue);
+								var tempJsonStr = JsonConvert.SerializeObject(tempObj);
+								if (!combinedCols.ContainsKey(fieldNameTrim))
+								{
+									if (!nestedField)
+										fieldContentStr += $"\"{fieldNameTrim}\":{tempJsonStr},";
+								}
+								else
+									combinedCols[fieldNameTrim] += $"{tempJsonStr},";
+								if (nestedField)
+									jsonObject[fieldNameTrim] = JObject.Parse(tempJsonStr);
+								break;
+							}
+						}
+
+						// Nested Object
+						if (nestedField)
+							nestedObjects.Add(jsonObject);
 					}
+				}
+				foreach (var combinedCol in combinedCols)
+				{
+					string combinedValue = combinedCol.Value.Substring(0, combinedCol.Value.Length - 1);
+					fieldContentStr += $"{combinedValue}],";
 				}
 				if (nestedObjects.Count > 0)
 				{
@@ -1402,13 +1502,11 @@ namespace RCore.SheetX.Editor
 				if (nestedObjects.Count == 0)
 					fieldContentStr = SheetXHelper.RemoveLast(fieldContentStr, ",");
 
-
 				if (!rowIsEmpty)
 					content += $"{{{fieldContentStr}}},";
 			}
 			content = SheetXHelper.RemoveLast(content, ",");
 			content += "]";
-
 			if (content == "[]")
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");

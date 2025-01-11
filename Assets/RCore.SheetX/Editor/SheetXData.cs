@@ -202,11 +202,6 @@ namespace RCore.SheetX.Editor
 		{
 			this.name = name;
 		}
-		public FieldValueType(string name, ValueType type)
-		{
-			this.name = name;
-			this.type = type;
-		}
 	}
 
 	public class ID

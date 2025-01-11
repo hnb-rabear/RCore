@@ -76,9 +76,10 @@ namespace RCore.SheetX.Editor
 			var fieldsValue = new string[rowValues.Count];
 			for (int col = 0; col < rowValues.Count; col++)
 			{
-				var cell = rowValues[col].ToString().Trim();
-				if (!string.IsNullOrEmpty(cell))
-					fieldsName[col] = cell.Replace(" ", "_");
+				var cell = rowValues[col];
+				var value = cell.ToString().Trim();
+				if (!string.IsNullOrEmpty(value))
+					fieldsName[col] = value.Replace(" ", "_");
 				else
 					fieldsName[col] = "";
 				fieldsValue[col] = "";
@@ -110,7 +111,7 @@ namespace RCore.SheetX.Editor
 			{
 				string fieldName = fieldsName[i];
 				string filedValue = fieldsValue[i].Trim();
-				bool isArray = fieldName.Contains("[]");
+				bool isArray = fieldName.EndsWith("[]");
 				var fieldValueType = new FieldValueType(fieldName);
 				if (!isArray)
 				{
@@ -122,7 +123,7 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.Number;
 						else if (bool.TryParse(filedValue.ToLower(), out bool _))
 							fieldValueType.type = ValueType.Bool;
-						else if (fieldName.Contains("{}"))
+						else if (fieldName.EndsWith("{}"))
 							fieldValueType.type = ValueType.Json;
 						else
 							fieldValueType.type = ValueType.Text;
@@ -178,25 +179,34 @@ namespace RCore.SheetX.Editor
 			int lastCellNum = firstRowData.LastCellNum;
 			var fieldsName = new string[lastCellNum];
 			var fieldsValue = new string[lastCellNum];
+			var mergedCellValue = "";
 			for (int col = 0; col < firstRowData.LastCellNum; col++)
 			{
 				var cell = firstRowData.GetCell(col);
-				if (cell == null || cell.CellType != CellType.String)
+				if (cell == null || !cell.IsMergedCell && cell.CellType != CellType.String)
 					continue;
 
 				if (!string.IsNullOrEmpty(cell.StringCellValue))
 					fieldsName[col] = cell.ToString().Replace(" ", "_");
 				else
 					fieldsName[col] = "";
+
+				// Check merged cells
+				if (cell.IsMergedCell && !string.IsNullOrEmpty(fieldsName[col]))
+					mergedCellValue = fieldsName[col];
+				else if (cell.IsMergedCell && string.IsNullOrEmpty(fieldsName[col]))
+					fieldsName[col] = mergedCellValue;
+
 				fieldsValue[col] = "";
 			}
 
+			// Get the standard value of the column to verify its data type.
 			for (int row = 1; row <= sheet.LastRowNum; row++)
 			{
 				firstRowData = sheet.GetRow(row);
 				if (firstRowData != null)
 				{
-					//Find longest value, and use it to check value type
+					// Find the longest value, and use it to check value type
 					for (int col = 0; col < fieldsName.Length; col++)
 					{
 						if (string.IsNullOrEmpty(fieldsName[col]))
@@ -217,20 +227,20 @@ namespace RCore.SheetX.Editor
 				string fieldName = fieldsName[i];
 				if (string.IsNullOrEmpty(fieldName))
 					continue;
-				string filedValue = fieldsValue[i].Trim();
-				bool isArray = fieldName.Contains("[]");
+				string fieldValue = fieldsValue[i].Trim();
+				bool isArray = fieldName.EndsWith("[]");
 				var fieldValueType = new FieldValueType(fieldName);
 				if (!isArray)
 				{
-					if (string.IsNullOrEmpty(filedValue))
+					if (string.IsNullOrEmpty(fieldValue))
 						fieldValueType.type = ValueType.Text;
 					else
 					{
-						if (!filedValue.Contains(',') && decimal.TryParse(filedValue, out decimal _))
+						if (decimal.TryParse(fieldValue, out decimal _))
 							fieldValueType.type = ValueType.Number;
-						else if (bool.TryParse(filedValue.ToLower(), out bool _))
+						else if (bool.TryParse(fieldValue.ToLower(), out bool _))
 							fieldValueType.type = ValueType.Bool;
-						else if (fieldName.Contains("{}"))
+						else if (fieldName.EndsWith("{}"))
 							fieldValueType.type = ValueType.Json;
 						else
 							fieldValueType.type = ValueType.Text;
@@ -239,7 +249,7 @@ namespace RCore.SheetX.Editor
 				}
 				else
 				{
-					string[] values = SplitValueToArray(filedValue, false);
+					string[] values = SplitValueToArray(fieldValue, false);
 					int lenVal = 0;
 					string longestValue = "";
 					foreach (string val in values)
@@ -256,7 +266,7 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.ArrayText;
 						else
 						{
-							if (!longestValue.Contains(',') && decimal.TryParse(longestValue, out decimal _))
+							if (decimal.TryParse(longestValue, out decimal _))
 								fieldValueType.type = ValueType.ArrayNumber;
 							else if (bool.TryParse(longestValue.ToLower(), out bool _))
 								fieldValueType.type = ValueType.ArrayBool;
@@ -324,7 +334,7 @@ namespace RCore.SheetX.Editor
 			var converted = new List<JObject>();
 
 			// Iterate over all JObjects in the original JArray
-			foreach (JObject obj in original)
+			foreach (var obj in original)
 			{
 				// Create a new JObject for the converted JSON
 				var newObj = new JObject();
@@ -450,7 +460,7 @@ namespace RCore.SheetX.Editor
 		{
 			return !pName.EndsWith(SheetXConstants.IDS_SHEET)
 				&& !pName.EndsWith(SheetXConstants.CONSTANTS_SHEET)
-				&& !pName.Contains(SheetXConstants.SETTINGS_SHEET)
+				&& !pName.EndsWith(SheetXConstants.SETTINGS_SHEET)
 				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
 		}
 
