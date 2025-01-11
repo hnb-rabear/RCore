@@ -1254,29 +1254,29 @@ namespace RCore.SheetX.Editor
 							//Find referenced Id in string and convert it to number
 							if (field.name == fieldName)
 							{
-								string fieldType = field.type;
+								var fieldType = field.type;
 								bool referencedId = false;
-								if (fieldType == "string") //Find and replace string value with referenced ID
+								if (fieldType == ValueType.Text) //Find and replace string value with referenced ID
 								{
 									if (CheckExistedId(fieldValue))
 									{
-										fieldType = "number";
+										fieldType = ValueType.Number;
 										referencedId = true;
 									}
 									else if (int.TryParse(fieldValue, out int _))
 									{
-										fieldType = "number";
+										fieldType = ValueType.Number;
 										referencedId = true;
 									}
 								}
-								if (fieldType == "array-string") //Find and replace string value with referenced ID
+								if (fieldType == ValueType.ArrayText) //Find and replace string value with referenced ID
 								{
 									string[] arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
 									foreach (string val in arrayValue)
 									{
 										if (CheckExistedId(val.Trim()))
 										{
-											fieldType = "array-number";
+											fieldType = ValueType.ArrayNumber;
 											referencedId = true;
 											break;
 										}
@@ -1286,7 +1286,7 @@ namespace RCore.SheetX.Editor
 								var jsonObject = new JObject();
 								switch (fieldType)
 								{
-									case "number":
+									case ValueType.Number:
 										if (referencedId)
 										{
 											int intValue = GetReferenceId(fieldValue, out bool _);
@@ -1302,7 +1302,7 @@ namespace RCore.SheetX.Editor
 										}
 										break;
 
-									case "string":
+									case ValueType.Text:
 										fieldValue = fieldValue.Replace("\n", "\\n");
 										fieldValue = fieldValue.Replace("\"", "\\\"");
 										if (!nestedFiled)
@@ -1311,14 +1311,14 @@ namespace RCore.SheetX.Editor
 											jsonObject[fieldName] = fieldValue;
 										break;
 
-									case "bool":
+									case ValueType.Bool:
 										if (!nestedFiled)
 											fieldContentStr += $"\"{fieldName}\":{fieldValue.ToLower()},";
 										else
 											jsonObject[fieldName] = fieldValue;
 										break;
 
-									case "array-number":
+									case ValueType.ArrayNumber:
 									{
 										fieldName = fieldName.Replace("[]", "");
 										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
@@ -1339,10 +1339,10 @@ namespace RCore.SheetX.Editor
 											int[] array = JsonConvert.DeserializeObject<int[]>(arrayStr);
 											jsonObject[fieldName] = JArray.FromObject(array);
 										}
-									}
 										break;
+									}
 
-									case "array-string":
+									case ValueType.ArrayText:
 									{
 										fieldName = fieldName.Replace("[]", "");
 										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
@@ -1360,10 +1360,10 @@ namespace RCore.SheetX.Editor
 											string[] array = JsonConvert.DeserializeObject<string[]>(arrayStr);
 											jsonObject[fieldName] = JArray.FromObject(array);
 										}
-									}
 										break;
+									}
 
-									case "array-bool":
+									case ValueType.ArrayBool:
 									{
 										fieldName = fieldName.Replace("[]", "");
 										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
@@ -1381,10 +1381,10 @@ namespace RCore.SheetX.Editor
 											bool[] array = JsonConvert.DeserializeObject<bool[]>(arrayStr);
 											jsonObject[fieldName] = JArray.FromObject(array);
 										}
-									}
 										break;
+									}
 
-									case "json":
+									case ValueType.Json:
 									{
 										fieldName = fieldName.Replace("{}", "");
 
@@ -1411,8 +1411,8 @@ namespace RCore.SheetX.Editor
 										{
 											jsonObject[fieldName] = JObject.Parse(tempJsonStr);
 										}
-									}
 										break;
+									}
 								}
 
 								// Nested Object

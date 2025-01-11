@@ -197,12 +197,12 @@ namespace RCore.SheetX.Editor
 	public class FieldValueType
 	{
 		public string name;
-		public string type;
+		public ValueType type;
 		public FieldValueType(string name)
 		{
 			this.name = name;
 		}
-		public FieldValueType(string name, string type)
+		public FieldValueType(string name, ValueType type)
 		{
 			this.name = name;
 			this.type = type;

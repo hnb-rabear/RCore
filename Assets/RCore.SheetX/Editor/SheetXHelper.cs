@@ -115,17 +115,17 @@ namespace RCore.SheetX.Editor
 				if (!isArray)
 				{
 					if (string.IsNullOrEmpty(filedValue))
-						fieldValueType.type = "string";
+						fieldValueType.type = ValueType.Text;
 					else
 					{
 						if (!filedValue.Contains(',') && decimal.TryParse(filedValue, out decimal _))
-							fieldValueType.type = "number";
+							fieldValueType.type = ValueType.Number;
 						else if (bool.TryParse(filedValue.ToLower(), out bool _))
-							fieldValueType.type = "bool";
+							fieldValueType.type = ValueType.Bool;
 						else if (fieldName.Contains("{}"))
-							fieldValueType.type = "json";
+							fieldValueType.type = ValueType.Json;
 						else
-							fieldValueType.type = "string";
+							fieldValueType.type = ValueType.Text;
 					}
 					fieldValueTypes.Add(fieldValueType);
 				}
@@ -145,21 +145,21 @@ namespace RCore.SheetX.Editor
 					if (values.Length > 0)
 					{
 						if (string.IsNullOrEmpty(longestValue))
-							fieldValueType.type = "array-string";
+							fieldValueType.type = ValueType.ArrayText;
 						else
 						{
 							if (!longestValue.Contains(',') && decimal.TryParse(longestValue, out decimal _))
-								fieldValueType.type = "array-number";
+								fieldValueType.type = ValueType.ArrayNumber;
 							else if (bool.TryParse(longestValue.ToLower(), out bool _))
-								fieldValueType.type = "array-bool";
+								fieldValueType.type = ValueType.ArrayBool;
 							else
-								fieldValueType.type = "array-string";
+								fieldValueType.type = ValueType.ArrayText;
 						}
 						fieldValueTypes.Add(fieldValueType);
 					}
 					else
 					{
-						fieldValueType.type = "array-string";
+						fieldValueType.type = ValueType.ArrayText;
 						fieldValueTypes.Add(fieldValueType);
 					}
 				}
@@ -223,27 +223,17 @@ namespace RCore.SheetX.Editor
 				if (!isArray)
 				{
 					if (string.IsNullOrEmpty(filedValue))
-					{
-						fieldValueType.type = "string";
-					}
+						fieldValueType.type = ValueType.Text;
 					else
 					{
 						if (!filedValue.Contains(',') && decimal.TryParse(filedValue, out decimal _))
-						{
-							fieldValueType.type = "number";
-						}
+							fieldValueType.type = ValueType.Number;
 						else if (bool.TryParse(filedValue.ToLower(), out bool _))
-						{
-							fieldValueType.type = "bool";
-						}
+							fieldValueType.type = ValueType.Bool;
 						else if (fieldName.Contains("{}"))
-						{
-							fieldValueType.type = "json";
-						}
+							fieldValueType.type = ValueType.Json;
 						else
-						{
-							fieldValueType.type = "string";
-						}
+							fieldValueType.type = ValueType.Text;
 					}
 					fieldValueTypes.Add(fieldValueType);
 				}
@@ -263,29 +253,21 @@ namespace RCore.SheetX.Editor
 					if (values.Length > 0)
 					{
 						if (string.IsNullOrEmpty(longestValue))
-						{
-							fieldValueType.type = "array-string";
-						}
+							fieldValueType.type = ValueType.ArrayText;
 						else
 						{
 							if (!longestValue.Contains(',') && decimal.TryParse(longestValue, out decimal _))
-							{
-								fieldValueType.type = "array-number";
-							}
+								fieldValueType.type = ValueType.ArrayNumber;
 							else if (bool.TryParse(longestValue.ToLower(), out bool _))
-							{
-								fieldValueType.type = "array-bool";
-							}
+								fieldValueType.type = ValueType.ArrayBool;
 							else
-							{
-								fieldValueType.type = "array-string";
-							}
+								fieldValueType.type = ValueType.ArrayText;
 						}
 						fieldValueTypes.Add(fieldValueType);
 					}
 					else
 					{
-						fieldValueType.type = "array-string";
+						fieldValueType.type = ValueType.ArrayText;
 						fieldValueTypes.Add(fieldValueType);
 					}
 				}

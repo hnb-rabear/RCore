@@ -1079,8 +1079,9 @@ namespace RCore.SheetX.Editor
 					string fieldValue = rowContent.fieldValues[j];
 					bool isAttribute = fieldName.ToLower().Contains("attribute") && fieldName.Length <= 11;
 
-					//some weird situation, data has attribute field, therefore Converter will confuse it with attrbiute from Attribute System
-					//To fix this problem I have to add one more condition, the next field must be value
+					// Encountered a situation where the data contains an attribute field like "value". This causes confusion for the Exporter, 
+					// which mistakes it for an attribute from the Attribute System.
+					// Solution: Add a condition to ensure the next field is a value.
 					if (isAttribute)
 					{
 						if (j + 1 >= rowContent.fieldNames.Count)
@@ -1093,8 +1094,8 @@ namespace RCore.SheetX.Editor
 					if (!string.IsNullOrEmpty(fieldValue))
 						rowIsEmpty = false;
 
-					//Attributes System includes fields: attribute, value/value[], increase/increase[], max/max[], unlock/unlock[]
-					//All these fields must lie on last of data sheet
+					// The Attributes System contains the following fields: attribute, value/value[], increase/increase[], max/max[], unlock/unlock[].
+					// To ensure proper functionality, all these fields must be positioned at the end of the data sheet.
 					if (isAttribute)
 					{
 						var att = new Att();
@@ -1204,7 +1205,7 @@ namespace RCore.SheetX.Editor
 					{
 						bool importantField = persistentFields.Contains(fieldName.Replace("[]", "").ToLower());
 
-						//Ignore empty field or field have value which equal 0
+						// Exclude empty cell
 						if (string.IsNullOrEmpty(fieldValue) && !importantField)
 							continue;
 
@@ -1214,29 +1215,29 @@ namespace RCore.SheetX.Editor
 							//Find referenced Id in string and convert it to number
 							if (field.name == fieldName)
 							{
-								string fieldType = field.type;
+								var fieldType = field.type;
 								bool referencedId = false;
-								if (fieldType == "string") //Find and replace string value with referenced ID
+								if (fieldType == ValueType.Text) //Find and replace string value with referenced ID
 								{
 									if (CheckExistedId(fieldValue))
 									{
-										fieldType = "number";
+										fieldType = ValueType.Number;
 										referencedId = true;
 									}
 									else if (int.TryParse(fieldValue, out int _))
 									{
-										fieldType = "number";
+										fieldType = ValueType.Number;
 										referencedId = true;
 									}
 								}
-								if (fieldType == "array-string") //Find and replace string value with referenced ID
+								if (fieldType == ValueType.ArrayText) //Find and replace string value with referenced ID
 								{
 									string[] arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
 									foreach (string val in arrayValue)
 									{
 										if (CheckExistedId(val.Trim()))
 										{
-											fieldType = "array-number";
+											fieldType = ValueType.ArrayNumber;
 											referencedId = true;
 											break;
 										}
@@ -1246,7 +1247,7 @@ namespace RCore.SheetX.Editor
 								var jsonObject = new JObject();
 								switch (fieldType)
 								{
-									case "number":
+									case ValueType.Number:
 										if (referencedId)
 										{
 											int intValue = GetReferenceId(fieldValue, out bool _);
@@ -1262,7 +1263,7 @@ namespace RCore.SheetX.Editor
 										}
 										break;
 
-									case "string":
+									case ValueType.Text:
 										fieldValue = fieldValue.Replace("\n", "\\n");
 										fieldValue = fieldValue.Replace("\"", "\\\"");
 										if (!nestedFiled)
@@ -1271,14 +1272,14 @@ namespace RCore.SheetX.Editor
 											jsonObject[fieldName] = fieldValue;
 										break;
 
-									case "bool":
+									case ValueType.Bool:
 										if (!nestedFiled)
 											fieldContentStr += $"\"{fieldName}\":{fieldValue.ToLower()},";
 										else
 											jsonObject[fieldName] = fieldValue;
 										break;
 
-									case "array-number":
+									case ValueType.ArrayNumber:
 									{
 										fieldName = fieldName.Replace("[]", "");
 										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
@@ -1302,7 +1303,7 @@ namespace RCore.SheetX.Editor
 									}
 										break;
 
-									case "array-string":
+									case ValueType.ArrayText:
 									{
 										fieldName = fieldName.Replace("[]", "");
 										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
@@ -1320,10 +1321,10 @@ namespace RCore.SheetX.Editor
 											string[] array = JsonConvert.DeserializeObject<string[]>(arrayStr);
 											jsonObject[fieldName] = JArray.FromObject(array);
 										}
-									}
 										break;
+									}
 
-									case "array-bool":
+									case ValueType.ArrayBool:
 									{
 										fieldName = fieldName.Replace("[]", "");
 										var arrayValue = SheetXHelper.SplitValueToArray(fieldValue, false);
@@ -1341,10 +1342,10 @@ namespace RCore.SheetX.Editor
 											bool[] array = JsonConvert.DeserializeObject<bool[]>(arrayStr);
 											jsonObject[fieldName] = JArray.FromObject(array);
 										}
-									}
 										break;
+									}
 
-									case "json":
+									case ValueType.Json:
 									{
 										fieldName = fieldName.Replace("{}", "");
 
@@ -1371,8 +1372,8 @@ namespace RCore.SheetX.Editor
 										{
 											jsonObject[fieldName] = JObject.Parse(tempJsonStr);
 										}
-									}
 										break;
+									}
 								}
 
 								// Nested Object
@@ -1403,7 +1404,7 @@ namespace RCore.SheetX.Editor
 
 
 				if (!rowIsEmpty)
-					content += $"{"{"}{fieldContentStr}{"},"}";
+					content += $"{{{fieldContentStr}}},";
 			}
 			content = SheetXHelper.RemoveLast(content, ",");
 			content += "]";
@@ -1439,7 +1440,7 @@ namespace RCore.SheetX.Editor
 			ExportJson();
 			ExportLocalizations();
 		}
-		
+
 		public void ExportAllFiles()
 		{
 #if !SX_LITE

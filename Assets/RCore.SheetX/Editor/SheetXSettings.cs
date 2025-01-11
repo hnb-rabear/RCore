@@ -31,6 +31,17 @@ namespace RCore.SheetX.Editor
 		public const string LOCALIZATION_SHEET = "Localization";
 	}
 
+	public enum ValueType
+	{
+		Text,
+		Number,
+		Bool,
+		Json,
+		ArrayText,
+		ArrayNumber,
+		ArrayBool,
+	}
+
 	public class SheetXSettings : ScriptableObject
 	{
 #if ASSETS_STORE && SX_LOCALIZATION

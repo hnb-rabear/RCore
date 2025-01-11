@@ -251,6 +251,7 @@ namespace RCore.SheetX.Editor
 
 			return table;
 		}
+#endif
 		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
 		{
 			bool selectAll = sheets.Count > 0;
@@ -262,6 +263,5 @@ namespace RCore.SheetX.Editor
 				}
 			tableSheets.GetColumnByIndex(0).column.allowToggleVisibility = selectAll;
 		}
-#endif
 	}
 }
