@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -49,7 +50,17 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginVertical("box");
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this, m_googleSheetsPath.name);
+			if (m_tableSheets == null)
+			{
+				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(this, m_googleSheetsPath.name, isOn =>
+				{
+					foreach (var sheetPath in m_googleSheetsPath.sheets)
+						sheetPath.selected = isOn;
+				});
+				foreach (var sheet in m_googleSheetsPath.sheets)
+					sheet.onSelected = _ => ValidateTopToggle(m_googleSheetsPath.sheets, m_tableSheets);
+				ValidateTopToggle(m_googleSheetsPath.sheets, m_tableSheets);
+			}
 			m_tableSheets.DrawOnGUI(m_googleSheetsPath.sheets);
 			GUILayout.EndVertical();
 		}
@@ -64,6 +75,18 @@ namespace RCore.SheetX.Editor
 		{
 			if (m_googleSheetsPath.sheets.Count > 0)
 				m_onQuit?.Invoke(m_googleSheetsPath);
+		}
+		
+		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
+		{
+			bool selectAll = sheets.Count > 0;
+			foreach (var sheet in sheets)
+				if (!sheet.selected)
+				{
+					selectAll = false;
+					break;
+				}
+			tableSheets.GetColumnByIndex(0).column.allowToggleVisibility = selectAll;
 		}
 	}
 }

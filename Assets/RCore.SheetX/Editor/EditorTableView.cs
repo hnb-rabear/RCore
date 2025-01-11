@@ -13,23 +13,6 @@ namespace RCore.SheetX.Editor
 {
 	public class EditorTableView<TData>
 	{
-		private MultiColumnHeaderState m_multiColumnHeaderState;
-		private MultiColumnHeader m_multiColumnHeader;
-		private MultiColumnHeaderState.Column[] m_columns;
-		private readonly Color m_lighterColor = Color.white * 0.3f;
-		private readonly Color m_darkerColor = Color.white * 0.1f;
-
-		private Vector2 m_scrollPosition;
-		private bool m_columnResized;
-		private bool m_sortingDirty;
-		private EditorWindow m_editorWindow;
-		private string m_header;
-
-		public float viewWidth;
-		public float viewHeight;
-		public float viewWidthFillRatio;
-		public float viewHeightFillRatio;
-
 		public delegate void DrawItem(Rect rect, TData item);
 
 		public class ColumnDef
@@ -37,47 +20,99 @@ namespace RCore.SheetX.Editor
 			internal MultiColumnHeaderState.Column column;
 			internal DrawItem onDraw;
 			internal Comparison<TData> onSort;
-
+			public bool showToggle;
+			public Action<bool> onToggleChanged;
 			public ColumnDef SetMaxWidth(float maxWidth)
 			{
 				column.maxWidth = maxWidth;
 				return this;
 			}
-
 			public ColumnDef SetTooltip(string tooltip)
 			{
 				column.headerContent.tooltip = tooltip;
 				return this;
 			}
-
 			public ColumnDef SetAutoResize(bool autoResize)
 			{
 				column.autoResize = autoResize;
 				return this;
 			}
-
-			public ColumnDef SetAllowToggleVisibility(bool allow)
-			{
-				column.allowToggleVisibility = allow;
-				return this;
-			}
-
 			public ColumnDef SetSorting(Comparison<TData> onSort)
 			{
 				this.onSort = onSort;
 				column.canSort = true;
 				return this;
 			}
+			public ColumnDef ShowToggle(bool show)
+			{
+				this.showToggle = show;
+				return this;
+			}
+			public ColumnDef OnToggleChanged(Action<bool> callback)
+			{
+				this.onToggleChanged = callback;
+				return this;
+			}
 		}
 
-		private readonly List<ColumnDef> m_columnDefs = new List<ColumnDef>();
+		public class CustomMultiColumnHeader : MultiColumnHeader
+		{
+			private readonly List<ColumnDef> m_columnDefs;
+			public CustomMultiColumnHeader(MultiColumnHeaderState state, List<ColumnDef> columnDefs) : base(state)
+			{
+				m_columnDefs = columnDefs;
+			}
+			protected override void ColumnHeaderGUI(MultiColumnHeaderState.Column column, Rect headerRect, int columnIndex)
+			{
+				if (m_columnDefs[columnIndex].showToggle)
+				{
+					// Display the toggle before the header name
+					var toggleRect = new Rect(headerRect.x + 4, headerRect.y, 16, 16);
+					bool newToggleValue = GUI.Toggle(toggleRect, column.allowToggleVisibility, GUIContent.none);
 
+					if (newToggleValue != column.allowToggleVisibility)
+					{
+						column.allowToggleVisibility = newToggleValue;
+						m_columnDefs[columnIndex].onToggleChanged?.Invoke(newToggleValue);
+					}
+					headerRect.x += 20;
+					headerRect.width -= 20;
+				}
+				base.ColumnHeaderGUI(column, headerRect, columnIndex);
+			}
+			public ColumnDef GetColumnByName(string name)
+			{
+				return m_columnDefs.FirstOrDefault(def => def.column.headerContent.text == name);
+			}
+			public ColumnDef GetColumnByIndex(int index)
+			{
+				if (index < 0 || index >= m_columnDefs.Count)
+					return null;
+				return m_columnDefs[index];
+			}
+		}
+
+		private MultiColumnHeaderState m_multiColumnHeaderState;
+		private MultiColumnHeader m_multiColumnHeader;
+		private MultiColumnHeaderState.Column[] m_columns;
+		private readonly Color m_lighterColor = Color.white * 0.3f;
+		private readonly Color m_darkerColor = Color.white * 0.1f;
+		private Vector2 m_scrollPosition;
+		private bool m_columnResized;
+		private bool m_sortingDirty;
+		private EditorWindow m_editorWindow;
+		private string m_header;
+		private GUIStyle m_headerStyle;
+		public float viewWidth;
+		public float viewHeight;
+		public float viewWidthFillRatio;
+		public float viewHeightFillRatio;
+		private readonly List<ColumnDef> m_columnDefs = new();
 		public EditorTableView(EditorWindow pWindow, string header = null)
 		{
 			m_editorWindow = pWindow;
 			m_header = header;
 		}
-
 		public ColumnDef AddColumn(string title, int minWidth, int maxWidth, DrawItem onDrawItem)
 		{
 			var columnDef = new ColumnDef()
@@ -101,19 +136,17 @@ namespace RCore.SheetX.Editor
 			m_columnResized = true;
 			return columnDef;
 		}
-
 		private void ReBuild()
 		{
 			m_columns = m_columnDefs.Select(def => def.column).ToArray();
 			m_multiColumnHeaderState = new MultiColumnHeaderState(m_columns);
-			m_multiColumnHeader = new MultiColumnHeader(m_multiColumnHeaderState);
+			m_multiColumnHeader = new CustomMultiColumnHeader(m_multiColumnHeaderState, m_columnDefs); // Truyền m_columnDefs vào đây
 			m_multiColumnHeader.visibleColumnsChanged += multiColumnHeader => multiColumnHeader.ResizeToFit();
 			m_multiColumnHeader.sortingChanged += multiColumnHeader => m_sortingDirty = true;
 			AdjustColumnWidths();
 			m_multiColumnHeader.ResizeToFit();
 			m_columnResized = false;
 		}
-
 		private void AdjustColumnWidths()
 		{
 			// Calculate total minimum width required
@@ -146,8 +179,6 @@ namespace RCore.SheetX.Editor
 				}
 			}
 		}
-
-		private GUIStyle m_headerStyle;
 		public void DrawOnGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
 		{
 			if (m_multiColumnHeader == null || m_columnResized)
@@ -205,6 +236,7 @@ namespace RCore.SheetX.Editor
 			var headerRect = GUILayoutUtility.GetRect(rowWidth, rowHeight);
 			m_multiColumnHeader!.OnGUI(headerRect, xScroll: 0.0f);
 
+			rowHeight += 4;
 			float sumWidth = rowWidth;
 			float sumHeight = rowHeight * (data?.Count ?? 1) + GUI.skin.horizontalScrollbar.fixedHeight;
 
@@ -244,7 +276,6 @@ namespace RCore.SheetX.Editor
 			if (_viewWidth > 0 || _viewHeight > 0)
 				EditorGUILayout.EndVertical();
 		}
-
 		private void UpdateSorting(List<TData> data)
 		{
 			if (m_sortingDirty && data != null)
@@ -264,6 +295,13 @@ namespace RCore.SheetX.Editor
 
 				m_sortingDirty = false;
 			}
+		}
+		public ColumnDef GetColumnByName(string name) => m_columnDefs.FirstOrDefault(def => def.column.headerContent.text == name);
+		public ColumnDef GetColumnByIndex(int index)
+		{
+			if (index < 0 || index >= m_columnDefs.Count)
+				return null;
+			return m_columnDefs[index];
 		}
 	}
 }

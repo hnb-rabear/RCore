@@ -183,14 +183,14 @@ namespace RCore.SheetX.Editor
 #endif
 		}
 #if !SX_LITE
-		public void AddExcelFileFile(string path)
+		public ExcelSheetsPath AddExcelFileFile(string path)
 		{
 			if (!File.Exists(path))
-				return;
+				return null;
 			foreach (var _excelSheetsPath in excelSheetsPaths)
 			{
 				if (_excelSheetsPath.path == path)
-					return;
+					return null;
 			}
 			var newPath = new ExcelSheetsPath()
 			{
@@ -199,6 +199,7 @@ namespace RCore.SheetX.Editor
 			};
 			newPath.Load();
 			excelSheetsPaths.Add(newPath);
+			return newPath;
 		}
 #endif
 		private string m_obfGoogleClientId;

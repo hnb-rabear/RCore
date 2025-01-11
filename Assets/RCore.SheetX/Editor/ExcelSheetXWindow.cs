@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using UnityEditor;
@@ -83,7 +84,7 @@ namespace RCore.SheetX.Editor
 				{
 					string path = m_settings.excelSheetsPath.path;
 					if (!Path.IsPathRooted(path))
-						path = Path.Combine(Application.dataPath.Replace("Assets",""), path);
+						path = Path.Combine(Application.dataPath.Replace("Assets", ""), path);
 					var folderIcon = EditorIcon.GetIcon(EditorIcon.Icon.Folder);
 					var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
 					if (EditorHelper.Button(null, folderIcon, default, 30, 20))
@@ -120,12 +121,25 @@ namespace RCore.SheetX.Editor
 						path = EditorHelper.FormatPathToUnityPath(path);
 					m_settings.excelSheetsPath.path = path;
 					m_settings.excelSheetsPath.Load();
+					// validate the top toggle
+					foreach (var sheetsPath in m_settings.excelSheetsPath.sheets)
+						sheetsPath.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPath.sheets, m_tableSheets);
 				}
 			}
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.excelSheetsPath.name);
+			if (m_tableSheets == null)
+			{
+				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.excelSheetsPath.name, isOn =>
+				{
+					foreach (var sheet in m_settings.excelSheetsPath.sheets)
+						sheet.selected = isOn;
+				});
+				foreach (var sheetPath in m_settings.excelSheetsPath.sheets)
+					sheetPath.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPath.sheets, m_tableSheets);
+				ValidateTopToggle(m_settings.excelSheetsPath.sheets, m_tableSheets);
+			}
 			m_tableSheets.viewWidthFillRatio = 0.8f;
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.excelSheetsPath.sheets);
@@ -177,7 +191,9 @@ namespace RCore.SheetX.Editor
 				{
 					if (path.StartsWith(Application.dataPath))
 						path = EditorHelper.FormatPathToUnityPath(path);
-					m_settings.AddExcelFileFile(path);
+					var excel = m_settings.AddExcelFileFile(path);
+					if (excel != null)
+						excel.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
 				}
 			}
 			GUILayout.FlexibleSpace();
@@ -187,16 +203,26 @@ namespace RCore.SheetX.Editor
 				CompilationPipeline.RequestScriptCompilation();
 			}
 			GUILayout.EndHorizontal();
-			m_tableExcelSheetsPaths ??= CreateTableExcelSheetsPaths();
+			if (m_tableExcelSheetsPaths == null)
+			{
+				m_tableExcelSheetsPaths = CreateTableExcelSheetsPaths(isOn =>
+				{
+					foreach (var excelSheetsPath in m_settings.excelSheetsPaths)
+						excelSheetsPath.selected = isOn;
+				});
+				foreach (var sheetsPath in m_settings.excelSheetsPaths)
+					sheetsPath.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
+				ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
+			}
 			m_tableExcelSheetsPaths.DrawOnGUI(m_settings.excelSheetsPaths);
 		}
 
-		private EditorTableView<ExcelSheetsPath> CreateTableExcelSheetsPaths()
+		private EditorTableView<ExcelSheetsPath> CreateTableExcelSheetsPaths(Action<bool> pOnTogSelected)
 		{
 			var table = new EditorTableView<ExcelSheetsPath>(editorWindow, "Excel paths");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
-				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
+				padding = new RectOffset(4, 4, 0, 0)
 			};
 			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
 			{
@@ -206,11 +232,13 @@ namespace RCore.SheetX.Editor
 				}
 			};
 
-			table.AddColumn("Selected", 60, 60, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.selected = EditorGUI.Toggle(rect, item.selected);
-			});
+			table.AddColumn(null, 25, 25, (rect, item) =>
+				{
+					rect.xMin += 4;
+					item.Selected = EditorGUI.Toggle(rect, item.selected);
+				})
+				.ShowToggle(true)
+				.OnToggleChanged(pOnTogSelected);
 
 			table.AddColumn("Name", 100, 120, (rect, item) =>
 			{
@@ -243,7 +271,7 @@ namespace RCore.SheetX.Editor
 			{
 				string path = item.path;
 				if (!Path.IsPathRooted(path))
-					path = Path.Combine(Application.dataPath.Replace("Assets",""), path);
+					path = Path.Combine(Application.dataPath.Replace("Assets", ""), path);
 				GUILayout.BeginHorizontal();
 				var folderIcon = EditorIcon.GetIcon(EditorIcon.Icon.Folder);
 				var r1 = rect;
@@ -259,7 +287,7 @@ namespace RCore.SheetX.Editor
 						Process.Start(psi);
 					}
 				}
-				var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
+				var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.Edit);
 				r1.x += r1.width;
 				if (GUI.Button(r1, fileIcon))
 				{
@@ -289,6 +317,17 @@ namespace RCore.SheetX.Editor
 			}).SetTooltip("Click to Delete");
 
 			return table;
+		}
+		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
+		{
+			bool selectAll = sheets.Count > 0;
+			foreach (var sheet in sheets)
+				if (!sheet.selected)
+				{
+					selectAll = false;
+					break;
+				}
+			tableSheets.GetColumnByIndex(0).column.allowToggleVisibility = selectAll;
 		}
 #endif
 	}

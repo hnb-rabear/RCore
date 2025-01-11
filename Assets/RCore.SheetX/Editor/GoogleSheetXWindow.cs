@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEditor;
 using UnityEditor.Compilation;
@@ -14,7 +15,7 @@ namespace RCore.SheetX.Editor
 	public class GoogleSheetXWindow
 	{
 		public EditorWindow editorWindow;
-		
+
 		private SheetXSettings m_settings;
 		private GoogleSheetHandler m_googleSheetHandler;
 		private EditorTableView<SheetPath> m_tableSheets;
@@ -66,17 +67,19 @@ namespace RCore.SheetX.Editor
 						{
 							var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
 							if (EditorHelper.Button(null, fileIcon, default, 30, 20))
-							{
-								string url = $"https://docs.google.com/spreadsheets/d/{m_settings.googleSheetsPath.id}/edit";
-								Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-							}
+								m_settings.googleSheetsPath.OpenFile();
 						}
 					}
 					EditorGUILayout.EndHorizontal();
 				}
 				EditorGUILayout.EndVertical();
 				if (EditorHelper.Button("Download", pHeight: 41))
+				{
 					SheetXHelper.DownloadGoogleSheet(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, m_settings.googleSheetsPath);
+					// validate the top toggle
+					foreach (var sheetsPath in m_settings.googleSheetsPath.sheets)
+						sheetsPath.onSelected = _ => ValidateTopToggle(m_settings.googleSheetsPath.sheets, m_tableSheets);
+				}
 			}
 			EditorGUILayout.EndVertical();
 			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
@@ -92,7 +95,17 @@ namespace RCore.SheetX.Editor
 			EditorGUILayout.EndHorizontal();
 			//-----
 			EditorGUILayout.BeginHorizontal();
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.googleSheetsPath.name);
+			if (m_tableSheets == null)
+			{
+				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.googleSheetsPath.name, isOn =>
+				{
+					foreach (var sheetPath in m_settings.googleSheetsPath.sheets)
+						sheetPath.selected = isOn;
+				});
+				foreach (var sheetPath in m_settings.googleSheetsPath.sheets)
+					sheetPath.onSelected = _ => ValidateTopToggle(m_settings.googleSheetsPath.sheets, m_tableSheets);
+				ValidateTopToggle(m_settings.googleSheetsPath.sheets, m_tableSheets);
+			}
 			m_tableSheets.viewWidthFillRatio = 0.8f;
 			m_tableSheets.viewHeight = 250f;
 			m_tableSheets.DrawOnGUI(m_settings.googleSheetsPath.sheets);
@@ -137,7 +150,10 @@ namespace RCore.SheetX.Editor
 				EditGoogleSheetsWindow.ShowWindow(new GoogleSheetsPath(), m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret, output =>
 				{
 					if (!m_settings.googleSheetsPaths.Exists(x => x.id == output.id))
+					{
 						m_settings.googleSheetsPaths.Add(output);
+						output.onSelected = _ => ValidateTopToggle(m_settings.googleSheetsPaths, m_tableGoogleSheetsPaths);
+					}
 				});
 			}
 			GUILayout.FlexibleSpace();
@@ -147,7 +163,7 @@ namespace RCore.SheetX.Editor
 				CompilationPipeline.RequestScriptCompilation();
 			}
 			EditorGUILayout.EndHorizontal();
-			
+
 			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
 			{
 				// Custom error message without border and default HelpBox style
@@ -158,17 +174,26 @@ namespace RCore.SheetX.Editor
 				customStyle.alignment = TextAnchor.MiddleCenter;
 				GUILayout.Label("Google Client ID or Client Secret is missing.", customStyle);
 			}
-			
-			m_tableGoogleSheetsPaths ??= CreateTableGoogleSheetsPath();
+			if (m_tableGoogleSheetsPaths == null)
+			{
+				m_tableGoogleSheetsPaths = CreateTableGoogleSheetsPath(isOn =>
+				{
+					foreach (var googleSheetsPath in m_settings.googleSheetsPaths)
+						googleSheetsPath.selected = isOn;
+				});
+				foreach (var sheetsPath in m_settings.googleSheetsPaths)
+					sheetsPath.onSelected = _ => ValidateTopToggle(m_settings.googleSheetsPaths, m_tableGoogleSheetsPaths);
+				ValidateTopToggle(m_settings.googleSheetsPaths, m_tableGoogleSheetsPaths);
+			}
 			m_tableGoogleSheetsPaths.DrawOnGUI(m_settings.googleSheetsPaths);
 		}
 
-		private EditorTableView<GoogleSheetsPath> CreateTableGoogleSheetsPath()
+		private EditorTableView<GoogleSheetsPath> CreateTableGoogleSheetsPath(Action<bool> pOnTogSelected)
 		{
 			var table = new EditorTableView<GoogleSheetsPath>(editorWindow, "Google Spreadsheets paths");
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
 			{
-				padding = new RectOffset(left: 10, right: 10, top: 2, bottom: 2)
+				padding = new RectOffset(4, 4, 0, 0)
 			};
 			var disabledLabelGUIStyle = new GUIStyle(labelGUIStyle)
 			{
@@ -178,11 +203,13 @@ namespace RCore.SheetX.Editor
 				}
 			};
 
-			table.AddColumn("Selected", 60, 60, (rect, item) =>
-			{
-				rect.xMin += 10;
-				item.selected = EditorGUI.Toggle(rect, item.selected);
-			});
+			table.AddColumn(null, 25, 25, (rect, item) =>
+				{
+					rect.xMin += 4;
+					item.Selected = EditorGUI.Toggle(rect, item.selected);
+				})
+				.ShowToggle(true)
+				.OnToggleChanged(pOnTogSelected);
 
 			table.AddColumn("Name", 100, 150, (rect, item) =>
 			{
@@ -198,12 +225,9 @@ namespace RCore.SheetX.Editor
 
 			table.AddColumn("Open", 50, 50, (rect, item) =>
 			{
-				var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.DefaultAsset);
+				var fileIcon = EditorIcon.GetIcon(EditorIcon.Icon.Edit);
 				if (GUI.Button(rect, fileIcon))
-				{
-					string url = $"https://docs.google.com/spreadsheets/d/{item.id}/edit";
-					Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-				}
+					item.OpenFile();
 			});
 
 			table.AddColumn("Select", 50, 50, (rect, item) =>
@@ -226,6 +250,17 @@ namespace RCore.SheetX.Editor
 			}).SetTooltip("Click to Delete");
 
 			return table;
+		}
+		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
+		{
+			bool selectAll = sheets.Count > 0;
+			foreach (var sheet in sheets)
+				if (!sheet.selected)
+				{
+					selectAll = false;
+					break;
+				}
+			tableSheets.GetColumnByIndex(0).column.allowToggleVisibility = selectAll;
 		}
 #endif
 	}

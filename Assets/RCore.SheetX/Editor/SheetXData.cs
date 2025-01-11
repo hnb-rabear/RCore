@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using NPOI.SS.UserModel;
@@ -13,16 +14,30 @@ using NPOI.XSSF.UserModel;
 namespace RCore.SheetX.Editor
 {
 	[Serializable]
-	public class SheetPath
-	{
-		public string name;
-		public bool selected;
-	}
-
-	[Serializable]
-	public class ExcelSheetsPath
+	public class Selectable
 	{
 		public bool selected = true;
+	}
+	[Serializable]
+	public class SheetPath : Selectable
+	{
+		public string name;
+		[JsonIgnore] public Action<bool> onSelected;
+		[JsonIgnore] public bool Selected
+		{
+			get => selected;
+			set
+			{
+				if (selected == value)
+					return;
+				selected = value;
+				onSelected?.Invoke(value);
+			}
+		}
+	}
+	[Serializable]
+	public class ExcelSheetsPath : Selectable
+	{
 		public string path;
 		public List<SheetPath> sheets = new();
 		public string name;
@@ -91,12 +106,23 @@ namespace RCore.SheetX.Editor
 			}
 			return count;
 		}
+		[JsonIgnore] public Action<bool> onSelected;
+		[JsonIgnore] public bool Selected
+		{
+			get => selected;
+			set
+			{
+				if (selected == value)
+					return;
+				selected = value;
+				onSelected?.Invoke(value);
+			}
+		}
 	}
 
 	[Serializable]
-	public class GoogleSheetsPath : IComparable<GoogleSheetsPath>
+	public class GoogleSheetsPath : Selectable, IComparable<GoogleSheetsPath>
 	{
-		public bool selected = true;
 		public string id;
 		public string name;
 		public List<SheetPath> sheets = new();
@@ -129,6 +155,23 @@ namespace RCore.SheetX.Editor
 					count++;
 			}
 			return count;
+		}
+		[JsonIgnore] public Action<bool> onSelected;
+		[JsonIgnore] public bool Selected
+		{
+			get => selected;
+			set
+			{
+				if (selected == value)
+					return;
+				selected = value;
+				onSelected?.Invoke(value);
+			}
+		}
+		public void OpenFile()
+		{
+			string url = $"https://docs.google.com/spreadsheets/d/{id}/edit";
+			Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
 		}
 	}
 

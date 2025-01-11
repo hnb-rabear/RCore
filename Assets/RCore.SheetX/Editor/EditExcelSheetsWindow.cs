@@ -3,6 +3,7 @@
  * https://github.com/hnb-rabear
  */
 
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,7 +24,17 @@ namespace RCore.SheetX.Editor
 
 		private void OnGUI()
 		{
-			m_tableSheets ??= SheetXHelper.CreateSpreadsheetTable(this, m_excelSheetsPath.name);
+			if (m_tableSheets == null)
+			{
+				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(this, m_excelSheetsPath.name, isOn =>
+				{
+					foreach (var sheetPath in m_excelSheetsPath.sheets)
+						sheetPath.selected = isOn;
+				});
+				foreach (var sheet in m_excelSheetsPath.sheets)
+					sheet.onSelected = _ => ValidateTopToggle(m_excelSheetsPath.sheets, m_tableSheets);
+				ValidateTopToggle(m_excelSheetsPath.sheets, m_tableSheets);
+			}
 			m_tableSheets.DrawOnGUI(m_excelSheetsPath.sheets);
 		}
 		
@@ -31,6 +42,18 @@ namespace RCore.SheetX.Editor
 		{
 			// Force window to regain focus to prevent clicking on other editor windows
 			Focus();
+		}
+		
+		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
+		{
+			bool selectAll = sheets.Count > 0;
+			foreach (var sheet in sheets)
+				if (!sheet.selected)
+				{
+					selectAll = false;
+					break;
+				}
+			tableSheets.GetColumnByIndex(0).column.allowToggleVisibility = selectAll;
 		}
 	}
 }
