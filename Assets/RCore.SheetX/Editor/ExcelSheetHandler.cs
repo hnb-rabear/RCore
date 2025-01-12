@@ -641,8 +641,8 @@ namespace RCore.SheetX.Editor
 				for (int col = 0; col < maxCellNum; col++)
 				{
 					var cell = rowData.GetCell(col);
-					var fieldValue = cell.ToCellString();
 					var fieldName = sheet.GetRow(0).GetCell(col).ToString();
+					var fieldValue = cell.ToCellString();
 					if (cell != null && cell.IsMergedCell && !string.IsNullOrEmpty(fieldValue))
 						mergeCellValue = fieldValue;
 					if (cell != null && cell.IsMergedCell && string.IsNullOrEmpty(fieldValue))
@@ -1084,7 +1084,8 @@ namespace RCore.SheetX.Editor
 				string fieldContentStr = "";
 				bool rowIsEmpty = true; //Because Loading sheet sometime includes the empty rows, I don't know why it happen
 				var nestedObjects = new List<JObject>();
-
+				foreach (var key in combinedCols.Keys.ToList())
+					combinedCols[key] = $"\"{key}\":[";
 				for (int j = 0; j < rowContent.fieldNames.Count; j++) // Columns
 				{
 					bool valid = validCols[j];

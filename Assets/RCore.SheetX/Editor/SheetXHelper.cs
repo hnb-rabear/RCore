@@ -67,21 +67,37 @@ namespace RCore.SheetX.Editor
 			return result;
 		}
 
-		public static List<FieldValueType> GetFieldValueTypes(IList<IList<object>> pValues)
+		public static List<FieldValueType> GetFieldValueTypes(Sheet sheet, IList<IList<object>> pValues)
 		{
 			if (pValues == null || pValues.Count == 0)
 				return null;
 			var firstRowValues = pValues[0];
+			if (pValues.Count > 1)
+			{
+				var secondRowValues = pValues[1];
+				if (secondRowValues.Count > firstRowValues.Count) // Probably has merged cells
+					for (var i = firstRowValues.Count; i < secondRowValues.Count; i++)
+						firstRowValues.Add("");
+			}
 			var fieldsName = new string[firstRowValues.Count];
 			var fieldsValue = new string[firstRowValues.Count];
+			var mergedCellValue = "";
 			for (int col = 0; col < firstRowValues.Count; col++)
 			{
 				var cell = firstRowValues[col];
 				var value = cell.ToString().Trim();
+				
 				if (!string.IsNullOrEmpty(value))
 					fieldsName[col] = value.Replace(" ", "_");
 				else
 					fieldsName[col] = "";
+				
+				// Check merged cells
+				bool isMergedCell = IsMergedCell(sheet, 0, col);
+				if (isMergedCell && !string.IsNullOrEmpty(fieldsName[col]))
+					mergedCellValue = fieldsName[col];
+				else if (isMergedCell && string.IsNullOrEmpty(fieldsName[col]))
+					fieldsName[col] = mergedCellValue;
 
 				fieldsValue[col] = "";
 			}
@@ -613,6 +629,17 @@ namespace RCore.SheetX.Editor
 		public static string RemoveComments(string input)
 		{
 			return Regex.Replace(input, @"/\*.*?\*/", string.Empty);
+		}
+		
+		public static bool IsMergedCell(Sheet sheet, int row, int col)
+		{
+			var mergedCells = sheet.Merges;
+			if (mergedCells == null)
+				return false;
+			bool isMerged = mergedCells.Any(m =>
+				row >= m.StartRowIndex && row < m.EndRowIndex
+				&& col >= m.StartColumnIndex && col < m.EndColumnIndex);
+			return isMerged;
 		}
 	}
 

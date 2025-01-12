@@ -66,7 +66,7 @@ namespace RCore.SheetX.Editor
 			}
 			var service = GetService();
 			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
-			
+
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
 
@@ -631,7 +631,7 @@ namespace RCore.SheetX.Editor
 				var response = request.Execute();
 				var values = response.Values;
 
-				LoadSheetLocalizationData(values, sheet.name);
+				LoadSheetLocalizationData(sheetInfo, values, sheet.name);
 
 				if (m_localizationsDict.ContainsKey(sheet.name) && m_settings.separateLocalizations)
 				{
@@ -663,7 +663,7 @@ namespace RCore.SheetX.Editor
 			CreateLocalizationsManagerFile();
 		}
 
-		private void LoadSheetLocalizationData(IList<IList<object>> rowsData, string pSheetName)
+		private void LoadSheetLocalizationData(Sheet sheet, IList<IList<object>> rowsData, string pSheetName)
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
@@ -676,6 +676,7 @@ namespace RCore.SheetX.Editor
 			var firstRow = rowsData[0];
 			int maxCellNum = firstRow.Count;
 
+			string mergeCellValue = "";
 			for (int row = 0; row < rowsData.Count; row++)
 			{
 				var rowData = rowsData[row];
@@ -683,8 +684,12 @@ namespace RCore.SheetX.Editor
 					continue;
 				for (int col = 0; col < maxCellNum; col++)
 				{
-					string fieldValue = rowData[col].ToString();
 					var fieldName = rowsData[0][col].ToString();
+					string fieldValue = rowData[col].ToString();
+					if (IsMergedCell(sheet, row, col) && !string.IsNullOrEmpty(fieldValue))
+						mergeCellValue = fieldValue;
+					if (IsMergedCell(sheet, row, col) && string.IsNullOrEmpty(fieldValue))
+						fieldValue = mergeCellValue;
 					if (!string.IsNullOrEmpty(fieldName))
 					{
 						//idString
@@ -997,7 +1002,7 @@ namespace RCore.SheetX.Editor
 				var values = response.Values;
 
 				string fileName = sheet.name.Trim().Replace(" ", "_");
-				string json = ConvertSheetToJson(values, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
+				string json = ConvertSheetToJson(sheetInfo, values, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
 
 				//Merge all json into a single file
 				if (m_settings.combineJson)
@@ -1025,18 +1030,18 @@ namespace RCore.SheetX.Editor
 #endif
 		}
 
-		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
+		private string ConvertSheetToJson(Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
 		{
 #if !SX_LOCALIZATION
-			var fieldValueTypes = SheetXHelper.GetFieldValueTypes(pValues);
+			var fieldValueTypes = SheetXHelper.GetFieldValueTypes(sheet, pValues);
 			if (fieldValueTypes == null)
 				return "{}";
-			return ConvertSheetToJson(pValues, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
+			return ConvertSheetToJson(sheet, pValues, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
 #endif
 			return "{}";
 		}
 
-		private string ConvertSheetToJson(IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
+		private string ConvertSheetToJson(Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
 #if !SX_LOCALIZATION
 			var persistentFields = m_settings.GetPersistentFields();
@@ -1049,6 +1054,7 @@ namespace RCore.SheetX.Editor
 
 			int lastCellNum = 0;
 			string[] fields = null;
+			string[] mergeValues = null;
 			bool[] validCols = null;
 			var rowContents = new List<RowContent>();
 
@@ -1058,16 +1064,25 @@ namespace RCore.SheetX.Editor
 				if (rowValues == null || rowValues.Count == 0)
 					continue;
 
-				if (row == 0)
+				if (row == 0) // Set column header
 				{
 					lastCellNum = rowValues.Count;
 					fields = new string[lastCellNum];
+					mergeValues = new string[lastCellNum];
 					validCols = new bool[lastCellNum];
-
+					string mergedCell = "";
+					//Find valid columns
 					for (int col = 0; col < lastCellNum; col++)
 					{
 						var cell = rowValues[col];
 						var cellValue = cell.ToString().Trim();
+						
+						bool isMergedCell = IsMergedCell(sheet, row, col);
+						if (isMergedCell && !string.IsNullOrEmpty(cellValue))
+							mergedCell = cellValue;
+						else if (isMergedCell && string.IsNullOrEmpty(cellValue))
+							cellValue = mergedCell;
+						
 						if (!string.IsNullOrEmpty(cellValue) && !cellValue.Contains("[x]"))
 						{
 							validCols[col] = true;
@@ -1078,9 +1093,10 @@ namespace RCore.SheetX.Editor
 							validCols[col] = false;
 							fields[col] = "";
 						}
+						mergeValues[col] = "";
 					}
 				}
-				else
+				else // Set column value
 				{
 					var rowContent = new RowContent();
 					for (int col = 0; col < lastCellNum; col++)
@@ -1092,6 +1108,13 @@ namespace RCore.SheetX.Editor
 						{
 							string fieldName = fields[col];
 							string fieldValue = cellValue;
+
+							bool isMergedCell = IsMergedCell(sheet, row, col);
+							if (isMergedCell && !string.IsNullOrEmpty(fieldValue))
+								mergeValues[col] = fieldValue;
+							if (isMergedCell && string.IsNullOrEmpty(fieldValue))
+								fieldValue = mergeValues[col];
+
 							fieldName = fieldName.Replace(" ", "_");
 							rowContent.fieldNames.Add(fieldName);
 							rowContent.fieldValues.Add(fieldValue);
@@ -1100,7 +1123,7 @@ namespace RCore.SheetX.Editor
 					rowContents.Add(rowContent);
 				}
 			}
-			
+
 			// Initialize array columns from columns with identical names. All columns sharing the same name will be combined into a single array column.
 			var combinedCols = new Dictionary<string, string>();
 			var sameNameCols = new Dictionary<string, int>();
@@ -1123,7 +1146,8 @@ namespace RCore.SheetX.Editor
 				string fieldContentStr = "";
 				bool rowIsEmpty = true; //Because Loading sheet sometime includes the empty rows, I don't know why it happen
 				var nestedObjects = new List<JObject>();
-
+				foreach (var key in combinedCols.Keys.ToList())
+					combinedCols[key] = $"\"{key}\":[";
 				for (int j = 0; j < rowContent.fieldNames.Count; j++)
 				{
 					bool valid = validCols[j];
@@ -1296,7 +1320,7 @@ namespace RCore.SheetX.Editor
 								}
 							}
 						}
-						
+
 						void AppendCombinedCols(string value, ValueType type)
 						{
 							var splits = SheetXHelper.SplitValueToArray(value);
@@ -1544,7 +1568,7 @@ namespace RCore.SheetX.Editor
 				}
 				if (nestedObjects.Count == 0)
 					fieldContentStr = SheetXHelper.RemoveLast(fieldContentStr, ",");
-				
+
 				if (!rowIsEmpty)
 					content += $"{{{fieldContentStr}}},";
 			}
@@ -1582,7 +1606,7 @@ namespace RCore.SheetX.Editor
 			ExportJson();
 			ExportLocalizations();
 		}
-		
+
 		public void ExportAllFiles()
 		{
 #if !SX_LITE
@@ -1666,7 +1690,7 @@ namespace RCore.SheetX.Editor
 					if (SheetXHelper.IsJsonSheet(sheet.name))
 					{
 						string fileName = sheet.name.Trim().Replace(" ", "_");
-						string json = ConvertSheetToJson(values, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
+						string json = ConvertSheetToJson(sheetInfo, values, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
 						if (m_settings.combineJson)
 						{
 							if (allJsons.ContainsKey(fileName))
@@ -1703,7 +1727,7 @@ namespace RCore.SheetX.Editor
 					//Load and write localizations
 					if (sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
 					{
-						LoadSheetLocalizationData(values, sheet.name);
+						LoadSheetLocalizationData(sheetInfo, values, sheet.name);
 
 						if (m_localizationsDict.ContainsKey(sheet.name) && m_settings.separateLocalizations)
 						{
@@ -1790,7 +1814,7 @@ namespace RCore.SheetX.Editor
 			Debug.Log("Done!");
 #endif
 		}
-		
+
 		public static string GetColumnLetter(int columnNumber)
 		{
 			int dividend = columnNumber;
@@ -1828,7 +1852,7 @@ namespace RCore.SheetX.Editor
 					selected = true,
 				});
 			}
-			
+
 			// Sync with current save
 			for (int i = 0; i < pGoogleSheetsPath.sheets.Count; i++)
 			{
@@ -1847,6 +1871,17 @@ namespace RCore.SheetX.Editor
 				else
 					pGoogleSheetsPath.AddSheet(sheetPath.name);
 			}
+		}
+
+		public bool IsMergedCell(Sheet sheet, int row, int col)
+		{
+			var mergedCells = sheet.Merges;
+			if (mergedCells == null)
+				return false;
+			bool isMerged = mergedCells.Any(m =>
+				row >= m.StartRowIndex && row < m.EndRowIndex
+				&& col >= m.StartColumnIndex && col < m.EndColumnIndex);
+			return isMerged;
 		}
 	}
 }

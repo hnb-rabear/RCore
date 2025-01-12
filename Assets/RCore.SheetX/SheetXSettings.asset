@@ -98,7 +98,7 @@ MonoBehaviour:
       name: ExampleData3
   constantsOutputFolder: Assets/SheetXExample/Scripts/Generated
   localizationOutputFolder: Assets/SheetXExample/Resources/Localizations
-  namespace: 
+  namespace: SheetXExample
   separateLocalizations: 1
   langCharSets: 
   encryptJson: 0
@@ -107,20 +107,12 @@ MonoBehaviour:
   encryptionKey: 
   excelSheetsPath:
     selected: 1
-    path: D:/Downloads/test.xlsx
+    path: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
     sheets:
-    - selected: 1
-      name: Sheet1
-    name: test
-  googleSheetsPath:
-    selected: 1
-    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
-    name: Example
-    sheets:
-    - selected: 1
-      name: ExampleIDs
     - selected: 1
       name: ExampleConstants
+    - selected: 1
+      name: ExampleIDs
     - selected: 1
       name: LocalizationExample1
     - selected: 1
@@ -130,7 +122,33 @@ MonoBehaviour:
     - selected: 1
       name: ExampleData2
     - selected: 1
-      name: ExampleData3
+      name: ExampleArrayData
+    - selected: 1
+      name: ExampleData4
+    - selected: 1
+      name: ExampleAttributeData
+    name: Example
+  googleSheetsPath:
+    selected: 1
+    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    name: Example
+    sheets:
+    - selected: 0
+      name: ExampleIDs
+    - selected: 0
+      name: ExampleConstants
+    - selected: 0
+      name: LocalizationExample1
+    - selected: 0
+      name: LocalizationExample2
+    - selected: 0
+      name: ExampleData1
+    - selected: 0
+      name: ExampleData2
+    - selected: 1
+      name: ExampleArrayData
+    - selected: 0
+      name: ExampleAttributeData
   jsonOutputFolder: Assets/SheetXExample/DataConfig
   separateConstants: 0
   separateIDs: 0
