@@ -1004,13 +1004,13 @@ namespace RCore.SheetX.Editor
 
 			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
-				var rowData = sheet.GetRow(row);
-				if (rowData == null)
+				var rowValues = sheet.GetRow(row);
+				if (rowValues == null)
 					continue;
 
 				if (row == 0) // Set column header
 				{
-					lastCellNum = rowData.LastCellNum;
+					lastCellNum = rowValues.LastCellNum;
 					fields = new string[lastCellNum];
 					mergeValues = new string[lastCellNum];
 					validCols = new bool[lastCellNum];
@@ -1018,7 +1018,7 @@ namespace RCore.SheetX.Editor
 					//Find valid columns
 					for (int col = 0; col < lastCellNum; col++)
 					{
-						var cell = rowData.GetCell(col);
+						var cell = rowValues.GetCell(col);
 						var cellValue = cell.ToString().Trim();
 						if (cell.IsMergedCell && !string.IsNullOrEmpty(cellValue))
 							mergedCell = cellValue;
@@ -1042,7 +1042,7 @@ namespace RCore.SheetX.Editor
 					var rowContent = new RowContent();
 					for (int col = 0; col < lastCellNum; col++)
 					{
-						var cell = rowData.GetCell(col);
+						var cell = rowValues.GetCell(col);
 						if (fields != null)
 						{
 							string fieldName = fields[col];
@@ -1075,7 +1075,6 @@ namespace RCore.SheetX.Editor
 					combinedCols.Add(fieldName, $"\"{fieldName}\":[");
 			}
 
-
 			string content = "[";
 			for (int i = 0; i < rowContents.Count; i++) // Rows
 			{
@@ -1085,16 +1084,21 @@ namespace RCore.SheetX.Editor
 				string fieldContentStr = "";
 				bool rowIsEmpty = true; //Because Loading sheet sometime includes the empty rows, I don't know why it happen
 				var nestedObjects = new List<JObject>();
+
 				for (int j = 0; j < rowContent.fieldNames.Count; j++) // Columns
 				{
 					bool valid = validCols[j];
 					if (!valid)
 						continue;
 					string fieldName = rowContent.fieldNames[j];
-					var fieldType = pFieldValueTypes.Find(x => x.name == fieldName).type;
+					var filedValueType = pFieldValueTypes.Find(x => x.name == fieldName);
+					if (filedValueType == null)
+						continue;
+					var fieldType = filedValueType.type;
 					string fieldValue = rowContent.fieldValues[j];
 					string fieldNameTrim = fieldName.Replace("[]", "").Replace("{}", "");
-					bool isAttribute = fieldName.ToLower().Contains("attribute") && fieldName.Length <= 11;
+					bool isAttribute = fieldNameTrim.ToLower().Contains("attribute") && fieldNameTrim.Length <= 11;
+					
 					// Encountered a situation where the data contains an attribute field like "value". This causes confusion for the Exporter, 
 					// which mistakes it for an attribute from the Attribute System.
 					// Solution: Add a condition to ensure the next field is a value.
@@ -1123,7 +1127,7 @@ namespace RCore.SheetX.Editor
 							fieldName = rowContent.fieldNames[j + 1].Trim();
 							if (fieldName.ToLower().Contains("unlock"))
 							{
-								bool isArray = fieldName.Contains("[]");
+								bool isArray = fieldName.EndsWith("[]");
 								j++;
 								if (!isArray)
 								{
@@ -1144,7 +1148,7 @@ namespace RCore.SheetX.Editor
 							}
 							else if (fieldName.ToLower().Contains("increase"))
 							{
-								bool isArray = fieldName.Contains("[]");
+								bool isArray = fieldName.EndsWith("[]");
 								j++;
 								if (!isArray)
 								{
@@ -1165,7 +1169,7 @@ namespace RCore.SheetX.Editor
 							}
 							else if (fieldName.ToLower().Contains("value"))
 							{
-								bool isArray = fieldName.Contains("[]"); //If attribute value is array
+								bool isArray = fieldName.EndsWith("[]"); //If attribute value is array
 								j++;
 								if (!isArray)
 								{
@@ -1190,7 +1194,7 @@ namespace RCore.SheetX.Editor
 							}
 							else if (fieldName.ToLower().Contains("max"))
 							{
-								bool isArray = fieldName.Contains("[]");
+								bool isArray = fieldName.EndsWith("[]");
 								j++;
 								if (!isArray)
 								{
@@ -1219,13 +1223,13 @@ namespace RCore.SheetX.Editor
 					}
 					else
 					{
-						bool importantField = persistentFields.Contains(fieldNameTrim.ToLower());
+						bool importantField = persistentFields.Contains(fieldNameTrim);
 
 						// Exclude empty cell
 						if (string.IsNullOrEmpty(fieldValue) && !importantField)
 							continue;
 
-						bool nestedField = fieldName.Contains(".");
+						bool nestedField = fieldNameTrim.Contains(".");
 						bool referencedId = false;
 						if (fieldType == ValueType.Text) //Find and replace string value with referenced ID
 						{

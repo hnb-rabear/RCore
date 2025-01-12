@@ -71,31 +71,32 @@ namespace RCore.SheetX.Editor
 		{
 			if (pValues == null || pValues.Count == 0)
 				return null;
-			var rowValues = pValues[0];
-			var fieldsName = new string[rowValues.Count];
-			var fieldsValue = new string[rowValues.Count];
-			for (int col = 0; col < rowValues.Count; col++)
+			var firstRowValues = pValues[0];
+			var fieldsName = new string[firstRowValues.Count];
+			var fieldsValue = new string[firstRowValues.Count];
+			for (int col = 0; col < firstRowValues.Count; col++)
 			{
-				var cell = rowValues[col];
+				var cell = firstRowValues[col];
 				var value = cell.ToString().Trim();
 				if (!string.IsNullOrEmpty(value))
 					fieldsName[col] = value.Replace(" ", "_");
 				else
 					fieldsName[col] = "";
+
 				fieldsValue[col] = "";
 			}
 
 			for (int row = 1; row < pValues.Count; row++)
 			{
-				rowValues = pValues[row];
-				if (rowValues != null)
+				firstRowValues = pValues[row];
+				if (firstRowValues != null)
 				{
 					//Find longest value, and use it to check value type
 					for (int col = 0; col < fieldsName.Length; col++)
 					{
 						var cellStr = "";
-						if (col < rowValues.Count)
-							cellStr = rowValues[col].ToString();
+						if (col < firstRowValues.Count)
+							cellStr = firstRowValues[col].ToString();
 						if (!string.IsNullOrEmpty(cellStr))
 						{
 							cellStr = cellStr.Trim();
@@ -119,7 +120,7 @@ namespace RCore.SheetX.Editor
 						fieldValueType.type = ValueType.Text;
 					else
 					{
-						if (!filedValue.Contains(',') && decimal.TryParse(filedValue, out decimal _))
+						if (decimal.TryParse(filedValue, out decimal _))
 							fieldValueType.type = ValueType.Number;
 						else if (bool.TryParse(filedValue.ToLower(), out bool _))
 							fieldValueType.type = ValueType.Bool;
@@ -127,8 +128,8 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.Json;
 						else
 							fieldValueType.type = ValueType.Text;
+						fieldValueTypes.Add(fieldValueType);
 					}
-					fieldValueTypes.Add(fieldValueType);
 				}
 				else
 				{
@@ -149,19 +150,20 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.ArrayText;
 						else
 						{
-							if (!longestValue.Contains(',') && decimal.TryParse(longestValue, out decimal _))
+							if (decimal.TryParse(longestValue, out decimal _))
 								fieldValueType.type = ValueType.ArrayNumber;
 							else if (bool.TryParse(longestValue.ToLower(), out bool _))
 								fieldValueType.type = ValueType.ArrayBool;
 							else
 								fieldValueType.type = ValueType.ArrayText;
+							fieldValueTypes.Add(fieldValueType);
 						}
-						fieldValueTypes.Add(fieldValueType);
 					}
 					else
 					{
 						fieldValueType.type = ValueType.ArrayText;
-						fieldValueTypes.Add(fieldValueType);
+						if (!string.IsNullOrEmpty(longestValue))
+							fieldValueTypes.Add(fieldValueType);
 					}
 				}
 			}
@@ -244,8 +246,8 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.Json;
 						else
 							fieldValueType.type = ValueType.Text;
+						fieldValueTypes.Add(fieldValueType);
 					}
-					fieldValueTypes.Add(fieldValueType);
 				}
 				else
 				{
@@ -272,13 +274,14 @@ namespace RCore.SheetX.Editor
 								fieldValueType.type = ValueType.ArrayBool;
 							else
 								fieldValueType.type = ValueType.ArrayText;
+							fieldValueTypes.Add(fieldValueType);
 						}
-						fieldValueTypes.Add(fieldValueType);
 					}
 					else
 					{
 						fieldValueType.type = ValueType.ArrayText;
-						fieldValueTypes.Add(fieldValueType);
+						if (!string.IsNullOrEmpty(longestValue))
+							fieldValueTypes.Add(fieldValueType);
 					}
 				}
 			}

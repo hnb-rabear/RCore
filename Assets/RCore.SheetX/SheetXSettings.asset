@@ -14,94 +14,90 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   excelSheetsPaths:
   - selected: 1
-    path: E:/Projects/_/SheetXExample/Assets/SheetXExample/Examples/Exporting Multiple
-      Excel Files/Challenges.xlsx
+    path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Challenges.xlsx
     sheets:
-    - name: IDs
-      selected: 1
-    - name: Achievements
-      selected: 1
-    - name: DailyQuests
-      selected: 1
+    - selected: 1
+      name: IDs
+    - selected: 1
+      name: Achievements
+    - selected: 1
+      name: DailyQuests
     name: Challenges
   - selected: 1
-    path: E:/Projects/_/SheetXExample/Assets/SheetXExample/Examples/Exporting Multiple
-      Excel Files/GameData.xlsx
+    path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
     sheets:
-    - name: Constants
-      selected: 1
-    - name: TrackingConstants
-      selected: 1
-    - name: IDs
-      selected: 1
-    - name: Characters
-      selected: 1
-    - name: Enemies
-      selected: 1
-    - name: EnemyAttacks
-      selected: 1
-    - name: Mods
-      selected: 1
-    - name: Equipments
-      selected: 1
-    - name: RescueRewards
-      selected: 1
-    - name: PlayerLevels
-      selected: 1
+    - selected: 1
+      name: Constants
+    - selected: 1
+      name: TrackingConstants
+    - selected: 1
+      name: IDs
+    - selected: 1
+      name: Characters
+    - selected: 1
+      name: Enemies
+    - selected: 1
+      name: EnemyAttacks
+    - selected: 1
+      name: Mods
+    - selected: 1
+      name: Equipments
+    - selected: 1
+      name: RescueRewards
+    - selected: 1
+      name: PlayerLevels
     name: GameData
   - selected: 1
-    path: E:/Projects/_/SheetXExample/Assets/SheetXExample/Examples/Exporting Multiple
-      Excel Files/Localization.xlsx
+    path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Localization.xlsx
     sheets:
-    - name: LocalizationCommon
-      selected: 1
-    - name: LocalizationMod
-      selected: 1
-    - name: LocalizationTask
-      selected: 1
+    - selected: 1
+      name: LocalizationCommon
+    - selected: 1
+      name: LocalizationMod
+    - selected: 1
+      name: LocalizationTask
     name: Localization
   - selected: 1
-    path: E:/Projects/_/SheetXExample/Assets/SheetXExample/Examples/Exporting Multiple
-      Excel Files/ShopItems.xlsx
+    path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
     sheets:
-    - name: IDs
-      selected: 1
-    - name: Constants
-      selected: 1
-    - name: Shop
-      selected: 1
-    - name: Chests
-      selected: 1
-    - name: ChestRewards
-      selected: 1
-    - name: CheckinRewards
-      selected: 1
-    - name: ProgressRewards
-      selected: 1
-    - name: FreeRewards
-      selected: 1
+    - selected: 1
+      name: IDs
+    - selected: 1
+      name: Constants
+    - selected: 1
+      name: Shop
+    - selected: 1
+      name: Chests
+    - selected: 1
+      name: ChestRewards
+    - selected: 1
+      name: CheckinRewards
+    - selected: 1
+      name: ProgressRewards
+    - selected: 1
+      name: FreeRewards
     name: ShopItems
   googleSheetsPaths:
   - selected: 1
     id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
     name: Example
     sheets:
-    - name: ExampleIDs
-      selected: 1
-    - name: ExampleConstants
-      selected: 1
-    - name: LocalizationExample1
-      selected: 1
-    - name: LocalizationExample2
-      selected: 1
-    - name: ExampleData1
-      selected: 1
-    - name: ExampleData2
-      selected: 1
-    - name: ExampleData3
-      selected: 1
-  constantsOutputFolder: Assets/Import/Constants
-  localizationOutputFolder: Assets/Import/Localizations
+    - selected: 1
+      name: ExampleIDs
+    - selected: 1
+      name: ExampleConstants
+    - selected: 1
+      name: LocalizationExample1
+    - selected: 1
+      name: LocalizationExample2
+    - selected: 1
+      name: ExampleData1
+    - selected: 1
+      name: ExampleData2
+    - selected: 1
+      name: ExampleData3
+  constantsOutputFolder: Assets/SheetXExample/Scripts/Generated
+  localizationOutputFolder: Assets/SheetXExample/Resources/Localizations
   namespace: 
   separateLocalizations: 1
   langCharSets: 
@@ -109,3 +105,35 @@ MonoBehaviour:
   googleClientId: nemLtHanO8yTvVCfcmm1olScbLHtgY0GJca44nzXxmm+JshTsX16Ez/egFrn7TyzyaG135y3q0bvEBeUXPKpLH90fSKzeOuk
   googleClientSecret: 75P71h7NJajJuBH/E2OdrGSlUouv9IUberqj0EngjWqYGew=
   encryptionKey: 
+  excelSheetsPath:
+    selected: 1
+    path: D:/Downloads/test.xlsx
+    sheets:
+    - selected: 1
+      name: Sheet1
+    name: test
+  googleSheetsPath:
+    selected: 1
+    id: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    name: Example
+    sheets:
+    - selected: 1
+      name: ExampleIDs
+    - selected: 1
+      name: ExampleConstants
+    - selected: 1
+      name: LocalizationExample1
+    - selected: 1
+      name: LocalizationExample2
+    - selected: 1
+      name: ExampleData1
+    - selected: 1
+      name: ExampleData2
+    - selected: 1
+      name: ExampleData3
+  jsonOutputFolder: Assets/SheetXExample/DataConfig
+  separateConstants: 0
+  separateIDs: 0
+  combineJson: 0
+  onlyEnumAsIDs: 0
+  persistentFields: 
