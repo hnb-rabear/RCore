@@ -12,6 +12,7 @@
 		public const float EXAMPLE_FLOAT = 1.021f; /*Float example*/
 		public static readonly float[] EXAMPLE_FLOAT_ARRAY_1 = new float[1] { 5f }; /*FLoat array example*/
 		public const int EXAMPLE_FORMULA_1 = 720; /*Excel formula example*/
+		public const float EXAMPLE_FORMULA_2 = 45f; /*Excel formula example*/
 		public const int EXAMPLE_INT = 83; /*Integer Example*/
 		public static readonly int[] EXAMPLE_INT_ARRAY_1 = new int[1] { 4 }; /*Integer array example*/
 		public static readonly int[] EXAMPLE_INT_ARRAY_2 = new int[4] { 0, 3, 4, 5 }; /*Integer array example*/

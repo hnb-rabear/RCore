@@ -50,37 +50,38 @@
 		public const int RACE_ORC = 3;
 		#endregion
 		#region Attribute[enum]
-		public const int MOD_MAXIMUM_HP = 1;
-		public const int MOD_MAXIMUM_HP_INC = 2;
-		public const int MOD_ATK = 3;
-		public const int MOD_ATK_INC = 4;
-		public const int MOD_KNOCKBACK = 5;
-		public const int MOD_KNOCKBACK_INC = 6;
-		public const int MOD_KNOCKBACK_RESISTANCE = 7;
-		public const int MOD_KNOCKBACK_RESISTANCE_INC = 8;
-		public const int MOD_ATTACK_RANGE = 9;
-		public const int MOD_ATTACK_RANGE_INC = 10;
-		public const int MOD_CRIT_CHANCE = 11;
-		public const int MOD_CRIT_CHANCE_INC = 12;
-		public const int MOD_MOVE_SPEED = 13;
-		public const int MOD_MOVE_SPEED_INC = 14;
-		public const int MOD_PROJECTILE_SPEED = 15;
-		public const int MOD_PROJECTILE_SPEED_INC = 16;
-		public const int MOD_RELOAD_TIME = 17;
-		public const int MOD_RELOAD_TIME_INC = 18;
-		public const int MOD_MAGAZINE = 19;
-		public const int MOD_MAGAZINE_INC = 20;
-		public const int MOD_MAXIMUM_AMMO = 21;
-		public const int MOD_MAXIMUM_AMMO_INC = 22;
-		public const int MOD_FIRE_RATE = 23;
-		public const int MOD_FIRE_RATE_INC = 24;
-		public const int MOD_PIERCING = 25;
-		public const int MOD_CRIT_MULTIPLIER = 26;
-		public const int MOD_CRIT_MULTIPLIER_INC = 27;
-		public const int MOD_GUARD = 28;
-		public const int MOD_DODGE_CHANCE = 29;
-		public const int MOD_ACCURACY = 30;
-		public enum Attribute { MOD_MAXIMUM_HP = 1, MOD_MAXIMUM_HP_INC = 2, MOD_ATK = 3, MOD_ATK_INC = 4, MOD_KNOCKBACK = 5, MOD_KNOCKBACK_INC = 6, MOD_KNOCKBACK_RESISTANCE = 7, MOD_KNOCKBACK_RESISTANCE_INC = 8, MOD_ATTACK_RANGE = 9, MOD_ATTACK_RANGE_INC = 10, MOD_CRIT_CHANCE = 11, MOD_CRIT_CHANCE_INC = 12, MOD_MOVE_SPEED = 13, MOD_MOVE_SPEED_INC = 14, MOD_PROJECTILE_SPEED = 15, MOD_PROJECTILE_SPEED_INC = 16, MOD_RELOAD_TIME = 17, MOD_RELOAD_TIME_INC = 18, MOD_MAGAZINE = 19, MOD_MAGAZINE_INC = 20, MOD_MAXIMUM_AMMO = 21, MOD_MAXIMUM_AMMO_INC = 22, MOD_FIRE_RATE = 23, MOD_FIRE_RATE_INC = 24, MOD_PIERCING = 25, MOD_CRIT_MULTIPLIER = 26, MOD_CRIT_MULTIPLIER_INC = 27, MOD_GUARD = 28, MOD_DODGE_CHANCE = 29, MOD_ACCURACY = 30, }
+		public const int ATT_MAXIMUM_HP = 1;
+		public const int ATT_MAXIMUM_HP_INC = 2;
+		public const int ATT_ATK = 3;
+		public const int ATT_ATK_INC = 4;
+		public const int ATT_KNOCKBACK = 5;
+		public const int ATT_KNOCKBACK_INC = 6;
+		public const int ATT_KNOCKBACK_RESISTANCE = 7;
+		public const int ATT_KNOCKBACK_RESISTANCE_INC = 8;
+		public const int ATT_ATTACK_RANGE = 9;
+		public const int ATT_ATTACK_RANGE_INC = 10;
+		public const int ATT_CRIT_CHANCE = 11;
+		public const int ATT_CRIT_CHANCE_INC = 12;
+		public const int ATT_MOVE_SPEED = 13;
+		public const int ATT_MOVE_SPEED_INC = 14;
+		public const int ATT_PROJECTILE_SPEED = 15;
+		public const int ATT_PROJECTILE_SPEED_INC = 16;
+		public const int ATT_RELOAD_TIME = 17;
+		public const int ATT_RELOAD_TIME_INC = 18;
+		public const int ATT_MAGAZINE = 19;
+		public const int ATT_MAGAZINE_INC = 20;
+		public const int ATT_MAXIMUM_AMMO = 21;
+		public const int ATT_MAXIMUM_AMMO_INC = 22;
+		public const int ATT_FIRE_RATE = 23;
+		public const int ATT_FIRE_RATE_INC = 24;
+		public const int ATT_PIERCING = 25;
+		public const int ATT_CRIT_MULTIPLIER = 26;
+		public const int ATT_CRIT_MULTIPLIER_INC = 27;
+		public const int ATT_GUARD = 28;
+		public const int ATT_DODGE_CHANCE = 29;
+		public const int ATT_ACCURACY = 30;
+		public const int ATT_ACCURACY_INC = 31;
+		public enum Attribute { ATT_MAXIMUM_HP = 1, ATT_MAXIMUM_HP_INC = 2, ATT_ATK = 3, ATT_ATK_INC = 4, ATT_KNOCKBACK = 5, ATT_KNOCKBACK_INC = 6, ATT_KNOCKBACK_RESISTANCE = 7, ATT_KNOCKBACK_RESISTANCE_INC = 8, ATT_ATTACK_RANGE = 9, ATT_ATTACK_RANGE_INC = 10, ATT_CRIT_CHANCE = 11, ATT_CRIT_CHANCE_INC = 12, ATT_MOVE_SPEED = 13, ATT_MOVE_SPEED_INC = 14, ATT_PROJECTILE_SPEED = 15, ATT_PROJECTILE_SPEED_INC = 16, ATT_RELOAD_TIME = 17, ATT_RELOAD_TIME_INC = 18, ATT_MAGAZINE = 19, ATT_MAGAZINE_INC = 20, ATT_MAXIMUM_AMMO = 21, ATT_MAXIMUM_AMMO_INC = 22, ATT_FIRE_RATE = 23, ATT_FIRE_RATE_INC = 24, ATT_PIERCING = 25, ATT_CRIT_MULTIPLIER = 26, ATT_CRIT_MULTIPLIER_INC = 27, ATT_GUARD = 28, ATT_DODGE_CHANCE = 29, ATT_ACCURACY = 30, ATT_ACCURACY_INC = 31, }
 		#endregion
 		#region Gender[enum]
 		public const int GENDER_NONE = 1;
