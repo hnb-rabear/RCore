@@ -81,7 +81,7 @@ namespace RCore.LXLite.Editor
 				var response = request.Execute();
 				var values = response.Values;
 
-				LoadSheetLocalizationData(values, sheet.Properties.Title);
+				LoadSheetLocalizationData(sheet, values, sheet.Properties.Title);
 			}
 
 			var builder = new LocalizationBuilder();
@@ -125,7 +125,7 @@ namespace RCore.LXLite.Editor
 			return columnLetter;
 		}
 		
-		private void LoadSheetLocalizationData(IList<IList<object>> rowsData, string pSheetName)
+		private void LoadSheetLocalizationData(Sheet sheet, IList<IList<object>> rowsData, string pSheetName)
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
@@ -138,6 +138,7 @@ namespace RCore.LXLite.Editor
 			var firstRow = rowsData[0];
 			int maxCellNum = firstRow.Count;
 
+			string mergeCellValue = "";
 			for (int row = 0; row < rowsData.Count; row++)
 			{
 				var rowData = rowsData[row];
@@ -145,8 +146,12 @@ namespace RCore.LXLite.Editor
 					continue;
 				for (int col = 0; col < maxCellNum; col++)
 				{
-					string fieldValue = rowData[col].ToString();
 					var fieldName = rowsData[0][col].ToString();
+					string fieldValue = rowData[col].ToString();
+					if (IsMergedCell(sheet, row, col) && !string.IsNullOrEmpty(fieldValue))
+						mergeCellValue = fieldValue;
+					if (IsMergedCell(sheet, row, col) && string.IsNullOrEmpty(fieldValue))
+						fieldValue = mergeCellValue;
 					if (!string.IsNullOrEmpty(fieldName))
 					{
 						//idString
@@ -349,6 +354,17 @@ namespace RCore.LXLite.Editor
 				ApplicationName = LXLiteConfig.APPLICATION_NAME,
 			});
 			return m_service;
+		}
+		
+		public bool IsMergedCell(Sheet sheet, int row, int col)
+		{
+			var mergedCells = sheet.Merges;
+			if (mergedCells == null)
+				return false;
+			bool isMerged = mergedCells.Any(m =>
+				row >= m.StartRowIndex && row < m.EndRowIndex
+				&& col >= m.StartColumnIndex && col < m.EndColumnIndex);
+			return isMerged;
 		}
 	}
 }
