@@ -686,9 +686,9 @@ namespace RCore.SheetX.Editor
 				{
 					var fieldName = rowsData[0][col].ToString();
 					string fieldValue = rowData[col].ToString();
-					if (IsMergedCell(sheet, row, col) && !string.IsNullOrEmpty(fieldValue))
+					if (SheetXHelper.IsMergedCell(sheet, row, col) && !string.IsNullOrEmpty(fieldValue))
 						mergeCellValue = fieldValue;
-					if (IsMergedCell(sheet, row, col) && string.IsNullOrEmpty(fieldValue))
+					if (SheetXHelper.IsMergedCell(sheet, row, col) && string.IsNullOrEmpty(fieldValue))
 						fieldValue = mergeCellValue;
 					if (!string.IsNullOrEmpty(fieldName))
 					{
@@ -1077,7 +1077,7 @@ namespace RCore.SheetX.Editor
 						var cell = rowValues[col];
 						var cellValue = cell.ToString().Trim();
 						
-						bool isMergedCell = IsMergedCell(sheet, row, col);
+						bool isMergedCell = SheetXHelper.IsMergedCell(sheet, row, col);
 						if (isMergedCell && !string.IsNullOrEmpty(cellValue))
 							mergedCell = cellValue;
 						else if (isMergedCell && string.IsNullOrEmpty(cellValue))
@@ -1109,7 +1109,7 @@ namespace RCore.SheetX.Editor
 							string fieldName = fields[col];
 							string fieldValue = cellValue;
 
-							bool isMergedCell = IsMergedCell(sheet, row, col);
+							bool isMergedCell = SheetXHelper.IsMergedCell(sheet, row, col);
 							if (isMergedCell && !string.IsNullOrEmpty(fieldValue))
 								mergeValues[col] = fieldValue;
 							if (isMergedCell && string.IsNullOrEmpty(fieldValue))
@@ -1871,17 +1871,6 @@ namespace RCore.SheetX.Editor
 				else
 					pGoogleSheetsPath.AddSheet(sheetPath.name);
 			}
-		}
-
-		public bool IsMergedCell(Sheet sheet, int row, int col)
-		{
-			var mergedCells = sheet.Merges;
-			if (mergedCells == null)
-				return false;
-			bool isMerged = mergedCells.Any(m =>
-				row >= m.StartRowIndex && row < m.EndRowIndex
-				&& col >= m.StartColumnIndex && col < m.EndColumnIndex);
-			return isMerged;
 		}
 	}
 }

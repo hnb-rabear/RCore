@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Unity.Services.Core;
+using Unity.Services.Core.Environments;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Extension;
@@ -43,10 +45,16 @@ namespace RCore.Service
 
 #region Init
 
-		public void Init(Dictionary<string, ProductType> pProducts, Action<bool> pCallback)
+		public async void Init(Dictionary<string, ProductType> pProducts, Action<bool> pCallback)
 		{
 			if (m_initialized)
 				return;
+
+			try
+			{
+				await UnityServices.InitializeAsync(new InitializationOptions().SetEnvironmentName("production"));
+			}
+			catch { }
 
 			m_cacheLocalizedPrices = new RPlayerPrefDict<string, string>("m_cacheLocalizedPrices");
 			m_onInitialized = pCallback;

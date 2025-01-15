@@ -97,78 +97,77 @@ namespace RCore.SheetX.Editor
 			for (int row = 0; row <= sheet.LastRowNum; row++)
 			{
 				var rowData = sheet.GetRow(row);
-				if (rowData != null)
+				if (rowData == null)
+					continue;
+				for (int col = 0; col < rowData.LastCellNum; col += 3)
 				{
-					for (int col = 0; col < rowData.LastCellNum; col += 3)
+					var cellKey = rowData.GetCell(col);
+					if (cellKey == null)
+						continue;
+					int index = col / 3;
+					var sb = index < idsBuilders.Count ? idsBuilders[index] : new StringBuilder();
+					if (!idsBuilders.Contains(sb))
 					{
-						var cellKey = rowData.GetCell(col);
-						if (cellKey == null)
+						idsBuilders.Add(sb);
+					}
+					//Values row
+					if (row > 0)
+					{
+						string key = cellKey.ToString().Trim();
+						if (string.IsNullOrEmpty(key))
 							continue;
-						int index = col / 3;
-						var sb = index < idsBuilders.Count ? idsBuilders[index] : new StringBuilder();
-						if (!idsBuilders.Contains(sb))
+
+						//Value
+						var cellValue = rowData.GetCell(col + 1);
+						if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						{
-							idsBuilders.Add(sb);
+							EditorUtility.DisplayDialog("Warning", $"Sheet {sheet.SheetName}: Key {key} doesn't have value!", "OK");
+							continue;
 						}
-						//Values row
-						if (row > 0)
+
+						string valueStr = cellValue.ToString().Trim();
+						int.TryParse(valueStr, out int value);
+						sb.Append("\tpublic const int ");
+						sb.Append(key);
+						sb.Append(" = ");
+						sb.Append(value);
+						sb.Append(";");
+
+						//Comment
+						var cellComment = rowData.GetCell(col + 2);
+						if (cellComment != null && !string.IsNullOrEmpty(cellComment.ToString().Trim()))
 						{
-							string key = cellKey.ToString().Trim();
-							if (string.IsNullOrEmpty(key))
-								continue;
-
-							//Value
-							var cellValue = rowData.GetCell(col + 1);
-							if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
-							{
-								EditorUtility.DisplayDialog("Warning", $"Sheet {sheet.SheetName}: Key {key} doesn't have value!", "OK");
-								continue;
-							}
-
-							string valueStr = cellValue.ToString().Trim();
-							int.TryParse(valueStr, out int value);
-							sb.Append("\tpublic const int ");
-							sb.Append(key);
-							sb.Append(" = ");
-							sb.Append(value);
-							sb.Append(";");
-
-							//Comment
-							var cellComment = rowData.GetCell(col + 2);
-							if (cellComment != null && !string.IsNullOrEmpty(cellComment.ToString().Trim()))
-							{
-								string cellCommentFormula = SheetXHelper.ConvertFormulaCell(cellComment);
-								if (cellCommentFormula != null)
-									sb.Append(" /* ").Append(cellCommentFormula).Append(" */ ");
-								else
-									sb.Append(" /* ").Append(cellComment).Append(" */ ");
-							}
-
-							if (m_allIds.TryGetValue(key, out int val))
-							{
-								if (val != value)
-									EditorUtility.DisplayDialog("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}", "OK");
-							}
+							string cellCommentFormula = SheetXHelper.ConvertFormulaCell(cellComment);
+							if (cellCommentFormula != null)
+								sb.Append(" /* ").Append(cellCommentFormula).Append(" */ ");
 							else
-							{
-								m_allIds[key] = value;
-							}
+								sb.Append(" /* ").Append(cellComment).Append(" */ ");
 						}
-						//Header row
+
+						if (m_allIds.TryGetValue(key, out int val))
+						{
+							if (val != value)
+								EditorUtility.DisplayDialog("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}", "OK");
+						}
 						else
 						{
-							if (cellKey.ToString().EndsWith("[enum]"))
-							{
-								idsEnumBuilders.Add(sb);
-								idsEnumBuilderNames.Add(cellKey.ToString().Replace("[enum]", ""));
-								idsEnumBuilderIndexes.Add(index);
-							}
-
-							sb.Append("\t#region ")
-								.Append(cellKey);
+							m_allIds[key] = value;
 						}
-						sb.Append(Environment.NewLine);
 					}
+					//Header row
+					else
+					{
+						if (cellKey.ToString().EndsWith("[enum]"))
+						{
+							idsEnumBuilders.Add(sb);
+							idsEnumBuilderNames.Add(cellKey.ToString().Replace("[enum]", ""));
+							idsEnumBuilderIndexes.Add(index);
+						}
+
+						sb.Append("\t#region ")
+							.Append(cellKey);
+					}
+					sb.Append(Environment.NewLine);
 				}
 			}
 
