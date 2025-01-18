@@ -127,6 +127,8 @@ namespace RCore.SheetX.Editor
 			for (int i = 0; i < fieldsName.Length; i++)
 			{
 				string fieldName = fieldsName[i];
+				if (string.IsNullOrEmpty(fieldName) || fieldName.EndsWith("[x]"))
+					continue;
 				string filedValue = fieldsValue[i].Trim();
 				bool isArray = fieldName.EndsWith("[]");
 				var fieldValueType = new FieldValueType(fieldName);
@@ -243,7 +245,7 @@ namespace RCore.SheetX.Editor
 			for (int i = 0; i < fieldsName.Length; i++)
 			{
 				string fieldName = fieldsName[i];
-				if (string.IsNullOrEmpty(fieldName))
+				if (string.IsNullOrEmpty(fieldName) || fieldName.EndsWith("[x]"))
 					continue;
 				string fieldValue = fieldsValue[i].Trim();
 				bool isArray = fieldName.EndsWith("[]");
@@ -542,7 +544,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (string.IsNullOrEmpty(pGoogleSheetsPath.id))
 			{
-				UnityEngine.Debug.LogError("Key can not be empty");
+				Debug.LogError("Key can not be empty");
 				return;
 			}
 
@@ -553,7 +555,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (string.IsNullOrEmpty(googleClientId) || string.IsNullOrEmpty(googleClientSecret))
 			{
-				UnityEngine.Debug.LogError("Invalid Google Client ID and Client Secret");
+				Debug.LogError("Invalid Google Client ID and Client Secret");
 				return;
 			}
 
@@ -571,7 +573,7 @@ namespace RCore.SheetX.Editor
 			}
 			catch (Exception ex)
 			{
-				UnityEngine.Debug.LogError(ex);
+				Debug.LogError(ex);
 				return;
 			}
 
@@ -622,7 +624,7 @@ namespace RCore.SheetX.Editor
 				CancellationToken.None,
 				new FileDataStore(GetSaveDirectory(), true)).Result;
 
-			UnityEngine.Debug.Log("Credential file saved to: " + GetSaveDirectory());
+			Debug.Log("Credential file saved to: " + GetSaveDirectory());
 			return credential;
 		}
 

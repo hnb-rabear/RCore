@@ -663,7 +663,7 @@ namespace RCore.SheetX.Editor
 			CreateLocalizationsManagerFile();
 		}
 
-		private void LoadSheetLocalizationData(Sheet sheet, IList<IList<object>> rowsData, string pSheetName)
+		private void LoadSheetLocalizationData(Google.Apis.Sheets.v4.Data.Sheet sheet, IList<IList<object>> rowsData, string pSheetName)
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
@@ -686,9 +686,10 @@ namespace RCore.SheetX.Editor
 				{
 					var fieldName = rowsData[0][col].ToString();
 					string fieldValue = rowData[col].ToString();
-					if (IsMergedCell(sheet, row, col) && !string.IsNullOrEmpty(fieldValue))
+					bool isMergedCell = SheetXHelper.IsMergedCell(sheet, row, col);
+					if (isMergedCell && !string.IsNullOrEmpty(fieldValue))
 						mergeCellValue = fieldValue;
-					if (IsMergedCell(sheet, row, col) && string.IsNullOrEmpty(fieldValue))
+					if (isMergedCell && string.IsNullOrEmpty(fieldValue))
 						fieldValue = mergeCellValue;
 					if (!string.IsNullOrEmpty(fieldName))
 					{
@@ -1041,7 +1042,7 @@ namespace RCore.SheetX.Editor
 			return "{}";
 		}
 
-		private string ConvertSheetToJson(Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
+		private string ConvertSheetToJson(Google.Apis.Sheets.v4.Data.Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
 #if !SX_LOCALIZATION
 			var persistentFields = m_settings.GetPersistentFields();
@@ -1055,7 +1056,6 @@ namespace RCore.SheetX.Editor
 			int lastCellNum = 0;
 			string[] fields = null;
 			string[] mergeValues = null;
-			bool[] validCols = null;
 			var rowContents = new List<RowContent>();
 
 			for (int row = 0; row < pValues.Count; row++)
@@ -1069,7 +1069,6 @@ namespace RCore.SheetX.Editor
 					lastCellNum = rowValues.Count;
 					fields = new string[lastCellNum];
 					mergeValues = new string[lastCellNum];
-					validCols = new bool[lastCellNum];
 					string mergedCell = "";
 					//Find valid columns
 					for (int col = 0; col < lastCellNum; col++)
@@ -1077,7 +1076,7 @@ namespace RCore.SheetX.Editor
 						var cell = rowValues[col];
 						var cellValue = cell.ToString().Trim();
 						
-						bool isMergedCell = IsMergedCell(sheet, row, col);
+						bool isMergedCell = SheetXHelper.IsMergedCell(sheet, row, col);
 						if (isMergedCell && !string.IsNullOrEmpty(cellValue))
 							mergedCell = cellValue;
 						else if (isMergedCell && string.IsNullOrEmpty(cellValue))
@@ -1085,12 +1084,10 @@ namespace RCore.SheetX.Editor
 						
 						if (!string.IsNullOrEmpty(cellValue) && !cellValue.Contains("[x]"))
 						{
-							validCols[col] = true;
 							fields[col] = cellValue;
 						}
 						else
 						{
-							validCols[col] = false;
 							fields[col] = "";
 						}
 						mergeValues[col] = "";
@@ -1107,9 +1104,11 @@ namespace RCore.SheetX.Editor
 						if (fields != null)
 						{
 							string fieldName = fields[col];
+							if (string.IsNullOrEmpty(fieldName))
+								continue;
 							string fieldValue = cellValue;
 
-							bool isMergedCell = IsMergedCell(sheet, row, col);
+							bool isMergedCell = SheetXHelper.IsMergedCell(sheet, row, col);
 							if (isMergedCell && !string.IsNullOrEmpty(fieldValue))
 								mergeValues[col] = fieldValue;
 							if (isMergedCell && string.IsNullOrEmpty(fieldValue))
@@ -1150,9 +1149,6 @@ namespace RCore.SheetX.Editor
 					combinedCols[key] = $"\"{key}\":[";
 				for (int j = 0; j < rowContent.fieldNames.Count; j++)
 				{
-					bool valid = validCols[j];
-					if (!valid)
-						continue;
 					string fieldName = rowContent.fieldNames[j];
 					var filedValueType = pFieldValueTypes.Find(x => x.name == fieldName);
 					if (filedValueType == null)
@@ -1871,17 +1867,6 @@ namespace RCore.SheetX.Editor
 				else
 					pGoogleSheetsPath.AddSheet(sheetPath.name);
 			}
-		}
-
-		public bool IsMergedCell(Sheet sheet, int row, int col)
-		{
-			var mergedCells = sheet.Merges;
-			if (mergedCells == null)
-				return false;
-			bool isMerged = mergedCells.Any(m =>
-				row >= m.StartRowIndex && row < m.EndRowIndex
-				&& col >= m.StartColumnIndex && col < m.EndColumnIndex);
-			return isMerged;
 		}
 	}
 }
