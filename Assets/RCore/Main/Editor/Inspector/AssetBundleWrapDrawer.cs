@@ -5,7 +5,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace RCore.Editor
+namespace RCore.Editor.Inspector
 {
 #if ADDRESSABLES
 	[CustomPropertyDrawer(typeof(AssetBundleWrap<>))]

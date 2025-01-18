@@ -57,9 +57,9 @@ namespace RCore.SheetX.Editor
 
 		public static string[] SplitValueToArray(string pValue, bool pIncludeColon = true)
 		{
-			string[] splits = { ":", "|", Environment.NewLine, "\r", "\n" };
+			string[] splits = { ":", "|", Environment.NewLine, "\n" };
 			if (!pIncludeColon)
-				splits = new[] { "|", Environment.NewLine, "\r", "\n" };
+				splits = new[] { "|", Environment.NewLine, "\n" };
 
 			string[] result = pValue.Split(splits, StringSplitOptions.RemoveEmptyEntries)
 				.Select(s => s.Trim())
