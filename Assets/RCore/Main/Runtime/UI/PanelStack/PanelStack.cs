@@ -74,6 +74,7 @@ namespace RCore.UI
 
 #region Create
 
+		private Dictionary<int, PanelController> m_createdPanels = new();
 		/// <summary>
 		/// Create and init panel
 		/// </summary>
@@ -89,11 +90,18 @@ namespace RCore.UI
 			{
 				if (pPanel.gameObject.IsPrefab())
 				{
-					string panelName = pPanel.name;
-					pPanel = Instantiate(pPanel, transform);
-					pPanel.gameObject.SetActive(false);
-					pPanel.Init();
-					pPanel.name = panelName;
+					int prefabId = pPanel.gameObject.GetInstanceID();
+					if (!m_createdPanels.ContainsKey(prefabId) || m_createdPanels[prefabId] == null)
+					{
+						string panelName = pPanel.name;
+						pPanel = Instantiate(pPanel, transform);
+						pPanel.gameObject.SetActive(false);
+						pPanel.Init();
+						pPanel.name = panelName;
+						m_createdPanels.TryAdd(prefabId, pPanel);
+					}
+					else
+						pPanel = m_createdPanels[prefabId] as T;
 				}
 				return pPanel;
 			}
