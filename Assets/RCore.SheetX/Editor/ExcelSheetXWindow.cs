@@ -172,11 +172,13 @@ namespace RCore.SheetX.Editor
 			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_excelSheetHandler.ExportJson();
+#if !SX_NO_LOCALIZATION
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 			{
 				m_excelSheetHandler.ExportLocalizations();
 				CompilationPipeline.RequestScriptCompilation();
 			}
+#endif
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}

@@ -52,47 +52,26 @@ namespace RCore.SheetX.Editor
 		private const string FILE_PATH = "Assets/RCore.SheetX/Editor/SheetXSettings.asset";
 #endif
 
+		public ExcelSheetsPath excelSheetsPath;
 		public List<ExcelSheetsPath> excelSheetsPaths = new List<ExcelSheetsPath>();
+		public GoogleSheetsPath googleSheetsPath;
 		public List<GoogleSheetsPath> googleSheetsPaths = new List<GoogleSheetsPath>();
 		public string constantsOutputFolder;
+		public string jsonOutputFolder;
 		public string localizationOutputFolder;
 		public string @namespace;
-		public bool separateLocalizations;
-		public string langCharSets;
-		[HideInInspector] public bool encryptJson;
-		public string googleClientId;
-		public string googleClientSecret;
-		[HideInInspector] public string encryptionKey;
-#if !SX_LOCALIZATION
-		public ExcelSheetsPath excelSheetsPath;
-		public GoogleSheetsPath googleSheetsPath;
-		public string jsonOutputFolder;
 		public bool separateConstants;
 		public bool separateIDs;
+		public bool separateLocalizations;
 		public bool combineJson;
 		public bool onlyEnumAsIDs;
 		public string persistentFields;
-#else
-		public ExcelSheetsPath excelSheetsPath => null;
-		public GoogleSheetsPath googleSheetsPath => null;
-		public string jsonOutputFolder => null;
-		public bool separateConstants => false;
-		public bool separateIDs => false;
-		public bool combineJson => false;
-		public bool onlyEnumAsIDs => false;
-		public string persistentFields => null;
-#endif
+		public string langCharSets;
+		public string googleClientId;
+		public string googleClientSecret;
+		[HideInInspector] public bool encryptJson;
+		[HideInInspector] public string encryptionKey;
 		private Encryption m_encryption;
-
-		private void OnValidate()
-		{
-#if !SX_LOCALIZATION
-			if (string.IsNullOrEmpty(excelSheetsPath.path))
-				excelSheetsPath.sheets.Clear();
-			if (string.IsNullOrEmpty(googleSheetsPath.id))
-				googleSheetsPath.sheets.Clear();
-#endif
-		}
 
 		public static SheetXSettings Init()
 		{
@@ -133,22 +112,20 @@ namespace RCore.SheetX.Editor
 
 		public void ResetToDefault()
 		{
-#if !SX_LOCALIZATION
+			constantsOutputFolder = "";
 			jsonOutputFolder = "";
+			localizationOutputFolder = "";
+			@namespace = "";
 			separateConstants = false;
 			separateIDs = false;
+			separateLocalizations = true;
 			combineJson = false;
 			onlyEnumAsIDs = false;
 			persistentFields = "id, key";
-#endif
-			constantsOutputFolder = "";
-			localizationOutputFolder = "";
-			@namespace = "";
-			separateLocalizations = true;
-			encryptJson = false;
 			langCharSets = "jp, ko, cn";
 			googleClientId = "";
 			googleClientSecret = "";
+			encryptJson = false;
 			encryptionKey =
 				"168, 220, 184, 133, 78, 149, 8, 249, 171, 138, 98, 170, 95, 15, 211, 200, 51, 242, 4, 193, 219, 181, 232, 99, 16, 240, 142, 128, 29, 163, 245, 24, 204, 73, 173, 32, 214, 76, 31, 99, 91, 239, 232, 53, 138, 195, 93, 195, 185, 210, 155, 184, 243, 216, 204, 42, 138, 101, 100, 241, 46, 145, 198, 66, 11, 17, 19, 86, 157, 27, 132, 201, 246, 112, 121, 7, 195, 148, 143, 125, 158, 29, 184, 67, 187, 100, 31, 129, 64, 130, 26, 67, 240, 128, 233, 129, 63, 169, 5, 211, 248, 200, 199, 96, 54, 128, 111, 147, 100, 6, 185, 0, 188, 143, 25, 103, 211, 18, 17, 249, 106, 54, 162, 188, 25, 34, 147, 3, 222, 61, 218, 49, 164, 165, 133, 12, 65, 92, 48, 40, 129, 76, 194, 229, 109, 76, 150, 203, 251, 62, 54, 251, 70, 224, 162, 167, 183, 78, 103, 28, 67, 183, 23, 80, 156, 97, 83, 164, 24, 183, 81, 56, 103, 77, 112, 248, 4, 168, 5, 72, 109, 18, 75, 219, 99, 181, 160, 76, 65, 16, 41, 175, 87, 195, 181, 19, 165, 172, 138, 172, 84, 40, 167, 97, 214, 90, 26, 124, 0, 166, 217, 97, 246, 117, 237, 99, 46, 15, 141, 69, 4, 245, 98, 73, 3, 8, 161, 98, 79, 161, 127, 19, 55, 158, 139, 247, 39, 59, 72, 161, 82, 158, 25, 65, 107, 173, 5, 255, 53, 28, 179, 182, 65, 162, 17";
 		}
@@ -181,7 +158,6 @@ namespace RCore.SheetX.Editor
 
 		public void CreateFileConstants(string pContent, string pFileName)
 		{
-#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(pContent))
 				return;
 			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
@@ -191,9 +167,8 @@ namespace RCore.SheetX.Editor
 
 			SheetXHelper.WriteFile(constantsOutputFolder, pFileName + ".cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
-#endif
 		}
-#if !SX_LITE
+
 		public ExcelSheetsPath AddExcelFileFile(string path)
 		{
 			if (!File.Exists(path))
@@ -212,7 +187,7 @@ namespace RCore.SheetX.Editor
 			excelSheetsPaths.Add(newPath);
 			return newPath;
 		}
-#endif
+
 		private string m_obfGoogleClientId;
 		public string ObfGoogleClientId
 		{

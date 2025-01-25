@@ -532,6 +532,7 @@ namespace RCore.SheetX.Editor
 
 		public void ExportLocalizations()
 		{
+#if !SX_NO_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -597,24 +598,9 @@ namespace RCore.SheetX.Editor
 				m_localizedSheetsExported.Add("Localization");
 			}
 
-			//Create language character sets
-			if (m_langCharSets != null && m_langCharSets.Count > 0)
-			{
-				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
-				foreach (var map in maps)
-				{
-					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
-					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
-				}
-			}
-			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
-			{
-				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
-				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
-				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
-			}
-
+			//Create localization manager file
 			CreateLocalizationsManagerFile();
+#endif
 		}
 
 		private void LoadSheetLocalizationData(IWorkbook pWorkBook, string pSheetName)
@@ -713,6 +699,7 @@ namespace RCore.SheetX.Editor
 
 		private void CreateLocalizationFile(List<string> pIdsString, Dictionary<string, List<string>> pLanguageTextDict, string pFileName)
 		{
+#if !SX_NO_LOCALIZATION
 			if (pLanguageTextDict.Count == 0 || pLanguageTextDict.Count == 0)
 				return;
 
@@ -823,10 +810,29 @@ namespace RCore.SheetX.Editor
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}Text.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}Text.cs!");
+#endif
 		}
 
 		private void CreateLocalizationsManagerFile()
 		{
+#if !SX_NO_LOCALIZATION
+			//Create language character sets
+			if (m_langCharSets != null && m_langCharSets.Count > 0)
+			{
+				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
+				foreach (var map in maps)
+				{
+					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
+					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
+				}
+			}
+			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
+			{
+				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
+				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
+				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
+			}
+
 			if (m_localizedSheetsExported.Count > 0)
 			{
 				//Build language dictionary
@@ -909,6 +915,7 @@ namespace RCore.SheetX.Editor
 				SheetXHelper.WriteFile(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent);
 				UnityEngine.Debug.Log($"Exported LocalizationsManager.cs!");
 			}
+#endif
 		}
 
 #endregion
@@ -1097,7 +1104,7 @@ namespace RCore.SheetX.Editor
 					string fieldValue = rowContent.fieldValues[j];
 					string fieldNameTrim = fieldName.Replace("[]", "").Replace("{}", "");
 					bool isAttribute = fieldNameTrim.ToLower().Contains("attribute") && fieldNameTrim.Length <= 11;
-					
+
 					// Encountered a situation where the data contains an attribute field like "value". This causes confusion for the Exporter, 
 					// which mistakes it for an attribute from the Attribute System.
 					// Solution: Add a condition to ensure the next field is a value.
@@ -1635,7 +1642,7 @@ namespace RCore.SheetX.Editor
 					if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
 						m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
 				}
-
+#if !SX_NO_LOCALIZATION
 				//Load and write localizations
 				foreach (var sheet in file.sheets)
 				{
@@ -1651,6 +1658,7 @@ namespace RCore.SheetX.Editor
 						m_localizedSheetsExported.Add(sheet.name);
 					}
 				}
+#endif
 			}
 
 			//Create file contain all IDs
@@ -1685,6 +1693,7 @@ namespace RCore.SheetX.Editor
 				m_settings.CreateFileConstants(builder.ToString(), "Constants");
 			}
 
+#if !SX_NO_LOCALIZATION
 			//Create file contain all Localizations
 			if (!m_settings.separateLocalizations)
 			{
@@ -1704,23 +1713,7 @@ namespace RCore.SheetX.Editor
 				CreateLocalizationFile(localizationBuilder.idsString, localizationBuilder.languageTextDict, "Localization");
 				m_localizedSheetsExported.Add("Localization");
 			}
-
-			//Create language character sets
-			if (m_langCharSets != null && m_langCharSets.Count > 0)
-			{
-				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
-				foreach (var map in maps)
-				{
-					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
-					UnityEngine.Debug.Log($"Exported characters_set_{map.Key}.txt!");
-				}
-			}
-			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
-			{
-				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
-				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
-				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
-			}
+#endif
 
 			//Create localization manager file
 			CreateLocalizationsManagerFile();
