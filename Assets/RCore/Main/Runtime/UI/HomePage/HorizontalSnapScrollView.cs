@@ -237,7 +237,7 @@ namespace RCore.UI
 			MoveToFocusedItem(pImmediately, m_SpringThreshold);
 		}
 
-		private void Validate()
+		public void Validate()
 		{
 			m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
 #if UNITY_EDITOR

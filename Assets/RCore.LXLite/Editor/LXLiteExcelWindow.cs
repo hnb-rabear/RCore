@@ -238,7 +238,7 @@ namespace RCore.LXLite.Editor
 					if (i > 0 && i % 100 == 0)
 						idBuilder.Append($"{Environment.NewLine}\t\t");
 
-					var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
+					var idString = pIdsString[i].RemoveSpecialCharacters();
 					if (i < pIdsString.Count - 1)
 						idBuilder.Append($"{idString} = {i}, ");
 					else
@@ -252,7 +252,7 @@ namespace RCore.LXLite.Editor
 			idBuilder2.Append($"{Environment.NewLine}\t\t");
 			for (int i = 0; i < pIdsString.Count; i++)
 			{
-				var idString = pIdsString[i].Replace(" ", "_").RemoveSpecialCharacters();
+				var idString = pIdsString[i].RemoveSpecialCharacters();
 				if (i > 0 && i % 100 == 0)
 				{
 					idBuilder2.Append($"{Environment.NewLine}\t\t");

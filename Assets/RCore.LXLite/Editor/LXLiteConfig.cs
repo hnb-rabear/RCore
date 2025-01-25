@@ -178,9 +178,17 @@ namespace RCore.LXLite.Editor
 				cellStr = cell.ToString();
 			return cellStr;
 		}
-		public static string RemoveSpecialCharacters(this string str, string replace = "")
+		public static string RemoveSpecialCharacters(this string str)
 		{
-			return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);
+			var sb = new StringBuilder();
+			foreach (char c in str)
+			{
+				if (c == ' ')
+					sb.Append('_');
+				else if (c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '.' || c == '_')
+					sb.Append(c);
+			}
+			return sb.ToString();
 		}
 		public static UserCredential AuthenticateGoogleUser(string googleClientId, string googleClientSecret)
 		{

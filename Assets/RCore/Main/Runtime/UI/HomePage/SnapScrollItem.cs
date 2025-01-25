@@ -1,16 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.UI
 {
     public abstract class SnapScrollItem : MonoBehaviour
     {
         [SerializeField] protected RectTransform m_Main;
+        [SerializeField] protected bool m_keepVisible;
+        [SerializeField] protected bool m_keepActive;
 
         protected RectTransform m_rectTransform;
         protected bool m_refreshed;
 
         public bool Showing => m_Main.gameObject.activeSelf;
-        public virtual bool AlwaysEnabled => false;
         public RectTransform RectTransform
         {
             get
@@ -27,13 +29,13 @@ namespace RCore.UI
             {
                 Refresh();
                 m_refreshed = false;
-                enabled = AlwaysEnabled;
+                enabled = m_keepActive;
             }
         }
 
         public virtual void Hide()
         {
-            m_Main.gameObject.SetActive(false);
+            m_Main.gameObject.SetActive(m_keepVisible);
         }
 
         public virtual void Show()
