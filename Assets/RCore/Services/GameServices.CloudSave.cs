@@ -7,7 +7,6 @@ using GooglePlayGames;
 using GooglePlayGames.BasicApi;
 using GooglePlayGames.BasicApi.SavedGame;
 #endif
-using UnityEngine.SocialPlatforms;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,30 +14,7 @@ using UnityEngine;
 
 namespace RCore.Service
 {
-#if !GPGS
-	public interface ISavedGameMetadata
-	{
-		bool IsOpen { get; set; }
-		string Filename { get; set; }
-		string Description { get; set; }
-		string CoverImageURL { get; set; }
-		TimeSpan TotalTimePlayed { get; set; }
-		DateTime LastModifiedTimestamp { get; set; }
-	}
-	public enum SelectUIStatus
-	{
-		SavedGameSelected = 1,
-		UserClosedUI = 2,
-		InternalError = -1,
-		TimeoutError = -2,
-		AuthenticationError = -3,
-		BadInputError = -4,
-		UiBusy = -5
-	}
-#endif
-
-
-	public static class AndroidSaveGameServices
+	public static partial class GameServices
 	{
 #if UNITY_ANDROID && GPGS
         private const string SAVE_NAME = "default_save";
@@ -98,7 +74,7 @@ namespace RCore.Service
 				});
 		}
 
-		public static void ReadSaveGameData(ISavedGameMetadata savedGame, Action<ISavedGameMetadata, byte[], SavedGameRequestStatus> callback)
+		public static void ReadSavedGameData(ISavedGameMetadata savedGame, Action<ISavedGameMetadata, byte[], SavedGameRequestStatus> callback)
 		{
 			PlayGamesPlatform.Instance.SavedGame.ReadBinaryData(
 				savedGame,
@@ -110,7 +86,7 @@ namespace RCore.Service
 			);
 		}
 
-		public static void WriteSaveGameData(ISavedGameMetadata savedGame, byte[] data, TimeSpan totalPlaytime, Action<ISavedGameMetadata, SavedGameRequestStatus> callback)
+		public static void WriteSavedGameData(ISavedGameMetadata savedGame, byte[] data, TimeSpan totalPlaytime, Action<ISavedGameMetadata, SavedGameRequestStatus> callback)
 		{
 			var builder = new SavedGameMetadataUpdate.Builder();
 			builder = builder
@@ -151,17 +127,17 @@ namespace RCore.Service
 			);
 		}
 
-		public static void DeleteSaveGame(ISavedGameMetadata savedGame)
+		public static void DeleteSavedGame(ISavedGameMetadata savedGame)
 		{
 			PlayGamesPlatform.Instance.SavedGame.Delete(savedGame);
 		}
 
-		public static void DeleteSelectedSaveGame()
+		public static void DeleteSelectedSavedGame()
 		{
 			PlayGamesPlatform.Instance.SavedGame.Delete(m_SavedGame);
 		}
 
-		public static void ShowSelectSaveGameUI(string uiTitle, Action<ISavedGameMetadata, SelectUIStatus> callback)
+		public static void ShowSelectSavedGameUI(string uiTitle, Action<ISavedGameMetadata, SelectUIStatus> callback)
 		{
 			uint maxNumToDisplay = 3;
 			bool allowCreateNew = true;
@@ -178,7 +154,7 @@ namespace RCore.Service
 						|| status == SelectUIStatus.InternalError
 						|| status == SelectUIStatus.TimeoutError)
 						{
-							ShowSelectSaveGameUI(uiTitle, callback);
+							ShowSelectSavedGameUI(uiTitle, callback);
 							return;
 						}
 
@@ -208,12 +184,12 @@ namespace RCore.Service
 			return screenShot;
 		}
 
-		public static void DownloadSaveGame(Action<bool, string> pCallback = null)
+		public static void DownloadSavedGame(Action<bool, string> pCallback = null)
 		{
-			DownloadSaveGame(SAVE_NAME, pCallback);
+			DownloadSavedGame(SAVE_NAME, pCallback);
 		}
 
-		public static void DownloadSaveGame(string pFileName, Action<bool, string> pCallback = null)
+		public static void DownloadSavedGame(string pFileName, Action<bool, string> pCallback = null)
 		{
 			if (!Authenticated)
 			{
@@ -234,12 +210,12 @@ namespace RCore.Service
 				OnSavedGameOpened);
 		}
 
-		public static void UploadSaveGame(string pContent, float pTotalPlayTime, Action<bool> pCallback = null)
+		public static void UploadSavedGame(string pContent, float pTotalPlayTime, Action<bool> pCallback = null)
 		{
-			UploadSaveGame(SAVE_NAME, pContent, pTotalPlayTime, pCallback);
+			UploadSavedGame(SAVE_NAME, pContent, pTotalPlayTime, pCallback);
 		}
 
-		public static void UploadSaveGame(string pFileName, string pContent, float pTotalPlayTime, Action<bool> pCallback = null)
+		public static void UploadSavedGame(string pFileName, string pContent, float pTotalPlayTime, Action<bool> pCallback = null)
 		{
 			if (!Authenticated)
 			{
@@ -292,7 +268,6 @@ namespace RCore.Service
 							string cloudData = "";
 							if (status2 == SavedGameRequestStatus.Success)
 							{
-								Debug.Log("SaveGameLoaded, success=" + status2);
 								if (byteData == null)
 								{
 									Debug.Log("No data saved to the cloud yet...");
@@ -311,14 +286,34 @@ namespace RCore.Service
 			else
 				Debug.LogWarning("Error opening game: " + status);
 		}
+
 #else
-		public static void ShowSelectSaveGameUI(string uiTitle, Action<ISavedGameMetadata, SelectUIStatus> p) => p?.Invoke(null, SelectUIStatus.AuthenticationError);
-		public static void UploadSaveGame(string jsonData, float totalPlayTime, Action<bool> p) => p?.Invoke(false);
-		public static void UploadSaveGame(string pFileName, string pContent, float pTotalPlayTime, Action<bool> pCallback = null) => pCallback?.Invoke(false);
-		public static void DownloadSaveGame(string pFileName, Action<bool, string> pCallback = null) => pCallback?.Invoke(false, null);
-		public static void DownloadSaveGame(Action<bool, string> p) => p?.Invoke(false, null);
-		public static void DeleteSaveGame(ISavedGameMetadata data) { }
-		public static void DeleteSelectedSaveGame() { }
+		public static void ShowSelectSavedGameUI(string uiTitle, Action<ISavedGameMetadata, SelectUIStatus> p) => p?.Invoke(null, SelectUIStatus.AuthenticationError);
+		public static void UploadSavedGame(string jsonData, float totalPlayTime, Action<bool> p) => p?.Invoke(false);
+		public static void UploadSavedGame(string pFileName, string pContent, float pTotalPlayTime, Action<bool> pCallback = null) => pCallback?.Invoke(false);
+		public static void DownloadSavedGame(string pFileName, Action<bool, string> pCallback = null) => pCallback?.Invoke(false, null);
+		public static void DownloadSavedGame(Action<bool, string> p) => p?.Invoke(false, null);
+		public static void DeleteSavedGame(ISavedGameMetadata data) { }
+		public static void DeleteSelectedSavedGame() { }
+		public interface ISavedGameMetadata
+		{
+			bool IsOpen { get; set; }
+			string Filename { get; set; }
+			string Description { get; set; }
+			string CoverImageURL { get; set; }
+			TimeSpan TotalTimePlayed { get; set; }
+			DateTime LastModifiedTimestamp { get; set; }
+		}
+		public enum SelectUIStatus
+		{
+			SavedGameSelected = 1,
+			UserClosedUI = 2,
+			InternalError = -1,
+			TimeoutError = -2,
+			AuthenticationError = -3,
+			BadInputError = -4,
+			UiBusy = -5
+		}
 #endif
 	}
 }

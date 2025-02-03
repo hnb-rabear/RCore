@@ -37,7 +37,7 @@ namespace RCore.Service
 		NotInitialized = -30,
 	}
 
-	public static class GameServices
+	public static partial class GameServices
 	{
 		private static Action<bool> m_OnUserLoginSucceeded;
 		public static ILocalUser LocalUser => IsInitialized() ? Social.localUser : null;
