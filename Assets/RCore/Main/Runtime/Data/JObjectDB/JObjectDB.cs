@@ -113,6 +113,12 @@ namespace RCore.Data.JObject
 			return dict;
 		}
 
+		public static string ToJson()
+		{
+			var dict = GetAllData();
+			return JsonConvert.SerializeObject(dict);
+		}
+
 		public static void DeleteAll()
 		{
 			var saverKeys = GetSavedCollectionKeys();
@@ -212,22 +218,6 @@ namespace RCore.Data.JObject
 			return Path.Combine(directoryPath, fileName + ".json");
 #endif
 			return Path.Combine(Application.persistentDataPath, fileName + ".json");
-		}
-	}
-
-	public static class JObjectDBHelper
-	{
-		public static Dictionary<string, string> ToDictionary(this List<JObjectData> collections)
-		{
-			var list = new Dictionary<string, string>();
-			foreach (var pair in collections)
-				list.Add(pair.key, pair.ToJson());
-			return list;
-		}
-		public static string ToJson(this List<JObjectData> collections)
-		{
-			var list = collections.ToDictionary();
-			return JsonConvert.SerializeObject(list);
 		}
 	}
 }

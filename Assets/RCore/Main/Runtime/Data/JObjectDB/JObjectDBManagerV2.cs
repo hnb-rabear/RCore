@@ -1,10 +1,11 @@
 using System;
 using RCore.Inspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.Data.JObject
 {
-	public class JObjectDBManagerV2<T> : MonoBehaviour where T : JObjectModelCollection
+	public abstract class JObjectDBManagerV2<T> : MonoBehaviour where T : JObjectModelCollection
 	{
 		public Action onInitialized;
 		[SerializeField, CreateScriptableObject, AutoFill] protected T m_dataCollection;
@@ -12,22 +13,22 @@ namespace RCore.Data.JObject
 		[SerializeField] protected bool m_enabledSave = true;
 		[SerializeField] protected bool m_saveOnPause = true;
 		[SerializeField] protected bool m_saveOnQuit = true;
-		
+
 		protected bool m_initialized;
 		protected float m_saveCountdown;
 		protected float m_saveDelayCustom;
 		protected float m_lastSave;
 		protected int m_pauseState = -1;
 		protected bool m_enableAutoSave = true;
-		
+
 		public bool Initialzied => m_initialized;
-		
+
 		public T DataCollection => m_dataCollection;
-		
+
 		//============================================================================
 		// MonoBehaviour
 		//============================================================================
-		
+
 		protected virtual void Update()
 		{
 			if (!m_initialized)
@@ -43,7 +44,7 @@ namespace RCore.Data.JObject
 					Save(true);
 			}
 		}
-		
+
 		protected virtual void OnApplicationPause(bool pause)
 		{
 			if (!m_initialized || m_pauseState == (pause ? 0 : 1))
@@ -71,11 +72,11 @@ namespace RCore.Data.JObject
 			if (m_initialized && m_saveOnQuit && m_enableAutoSave)
 				Save(true);
 		}
-		
+
 		//============================================================================
 		// Public / Internal
 		//============================================================================
-		
+
 		public virtual void Init()
 		{
 			if (m_initialized)
@@ -86,21 +87,21 @@ namespace RCore.Data.JObject
 			m_initialized = true;
 			onInitialized?.Invoke();
 		}
-		
-		public virtual void Save(bool now = false, float saveDelayCustom = 0)
+
+		public virtual bool Save(bool now = false, float saveDelayCustom = 0)
 		{
 			if (!m_enabledSave || !m_initialized)
-				return;
+				return false;
 
 			if (now)
 			{
 				// Do not allow multiple Save calls within a short period of time.
 				if (Time.unscaledTime - m_lastSave < 0.2f)
-					return;
+					return false;
 				m_dataCollection.Save();
 				m_saveDelayCustom = 0; // Reset save delay custom
 				m_lastSave = Time.unscaledTime;
-				return;
+				return true;
 			}
 
 			m_saveCountdown = m_saveDelay;
@@ -113,8 +114,9 @@ namespace RCore.Data.JObject
 				if (m_saveCountdown > m_saveDelayCustom)
 					m_saveCountdown = m_saveDelayCustom;
 			}
+			return false;
 		}
-		
+
 		public virtual void Import(string data)
 		{
 			if (!m_enabledSave)
@@ -122,17 +124,38 @@ namespace RCore.Data.JObject
 			m_dataCollection.Import(data);
 			PostLoad();
 		}
-		
+
+		public virtual bool ImportCloudSave(string pCloudData)
+		{
+			var cloudData = JsonUtility.FromJson<CloudSave>(pCloudData);
+			if (cloudData == null)
+				return false;
+
+			bool imported = false;
+			if (cloudData.gpgsId != DataCollection.identity.data.gpgsId)
+			{
+				Import(cloudData.data);
+				imported = true;
+			}
+			else if (cloudData.level > DataCollection.identity.data.level
+			         || cloudData.playTime > DataCollection.session.data.activeTime)
+			{
+				Import(cloudData.data);
+				imported = true;
+			}
+			return imported;
+		}
+
 		public virtual void EnableSave(bool value)
 		{
 			m_enabledSave = value;
 		}
-		
+
 		protected void EnableAutoSave(bool pValue)
 		{
 			m_enableAutoSave = pValue;
 		}
-		
+
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
@@ -143,11 +166,11 @@ namespace RCore.Data.JObject
 			}
 			return offlineSeconds;
 		}
-		
+
 		//============================================================================
 		// Private / Protected
 		//============================================================================
-		
+
 		protected virtual void PostLoad()
 		{
 			int offlineSeconds = GetOfflineSeconds();
