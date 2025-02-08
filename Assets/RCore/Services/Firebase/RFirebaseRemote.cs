@@ -99,7 +99,52 @@ namespace RCore.Service
 #endif
 		}
 
-		public static T GetObjectValue<T>(object pKey)
+        public static T GetGenericValue<T>(object pKey)
+        {
+#if FIREBASE_REMOTE_CONFIG
+            string key = pKey.ToString();
+            if (m_CacheStringValues.TryGetValue(key, out string serializedValue))
+			{
+                return GetReturnValue<T>(serializedValue);
+            }
+            var value = FirebaseRemoteConfig.DefaultInstance.GetValue(key).StringValue;
+			UnityEngine.Debug.Log($"GetGenericValue: {key} - {value}");
+            m_CacheStringValues[key] = value;
+            BackUp(key, value);
+            return GetReturnValue<T>(value);
+#else
+            return (T)Convert.ChangeType(m_DefaultData[pKey.ToString()], typeof(T));
+#endif
+        }
+
+		public static T GetReturnValue<T>(string serializedValue)
+		{
+            try
+            {
+                switch (Type.GetTypeCode(typeof(T)))
+                {
+                    case TypeCode.String:
+                        return (T)Convert.ChangeType(serializedValue, typeof(T));
+                    case TypeCode.Int32:
+                        return (T)Convert.ChangeType(Convert.ToInt32(serializedValue), typeof(T));
+                    case TypeCode.Single:
+                        return (T)Convert.ChangeType(Convert.ToSingle(serializedValue), typeof(T));
+                    case TypeCode.Double:
+                        return (T)Convert.ChangeType(Convert.ToDouble(serializedValue), typeof(T));
+                    case TypeCode.Boolean:
+                        return (T)Convert.ChangeType(Convert.ToBoolean(serializedValue), typeof(T));
+                    default:
+                        return JsonUtility.FromJson<T>(serializedValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                return default;
+            }
+        }
+
+        public static T GetObjectValue<T>(object pKey)
 		{
 			var json = "";
 #if FIREBASE_REMOTE_CONFIG

@@ -463,6 +463,81 @@ namespace RCore
 			}
 			return positions;
 		}
+
+		private static readonly string[] m_Consonants = { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z" };
+		private static readonly string[] m_Vowels = { "a", "e", "i", "o", "u" };
+		private static readonly string[] m_MeaningfulNames = new[]
+		{
+			"Aria", "Kai", "Luna", "Leo", "Nina", "Zara",
+			"Aurora", "Caleb", "Dahlia", "Elara", "Felix", "Giselle",
+			"Hugo", "Isla", "Jasper", "Kiera", "Liam", "Mila",
+			"Nico", "Orion", "Piper", "Quinn", "Rhea", "Silas",
+			"Theo", "Una", "Vera", "Willow", "Xander", "Yara", "Zane",
+			"Adrian", "Beatrix", "Cassian", "Delilah", "Ezra", "Freya",
+			"Gideon", "Hazel", "Iris", "Jonah", "Kian", "Lyra",
+			"Magnus", "Noelle", "Octavia", "Phoenix", "Rowan", "Sienna",
+			"Tobias", "Uma", "Valeria", "Wren", "Xavier", "Yasmine", "Zayden",
+			"Aspen", "Bodhi", "Celeste", "Dante", "Elio", "Fiona",
+			"Griffin", "Harlow", "Indigo", "Juno", "Kairos", "Liora",
+			"Maverick", "Nova", "Oberon", "Persephone", "Quentin", "Ronan",
+			"Selene", "Talia", "Uriah", "Vesper", "Wesley", "Xyla",
+			"Yvette", "Zephyr", "Alaric", "Briar", "Caspian", "Daphne",
+			"Ember", "Finnian", "Gaia", "Halcyon", "Isolde", "Jace",
+			"Kaida", "Leander", "Mirabel", "Nyx", "Orla", "Phaedra",
+			"Quorra", "Rex", "Seraphina", "Thalia"
+		};
+		private static readonly string[] m_NonLatinNames = new[]
+		{
+			"Лев", "Айхан", "Ясин", "सिया", "明辉", "다온", "Ταξιάρχης", "محمد", "俊豪", "Татьяна",
+			"נאור", "सूरज", "신우", "آیلا", "Θεοδώρα", "กานต์", "จารุวรรณ", "अर्जुन", "רפאל", "阳阳",
+			"Антон", "Алина", "Николай", "Оксана", "Дмитрий", "Екатерина", "Василий", "Мария", "Александр", "Ирина",
+			"عباس", "فاطمة", "ياسر", "زهراء", "حسن", "نور", "عبدالله", "سارة", "علي", "مريم",
+			"मनीष", "प्रिया", "अमित", "नेहा", "रवि", "पूनम", "कृष्ण", "स्नेहा", "संदीप", "अनिता",
+			"王伟", "李娜", "张敏", "陈杰", "刘洋", "杨芳", "赵磊", "孙梅", "周涛", "吴霞",
+			"정우", "지민", "하준", "서연", "도윤", "윤아", "민준", "수진", "태현", "지원",
+			"Αναστάσιος", "Ελένη", "Δημήτριος", "Αικατερίνη", "Χριστόφορος", "Αγγελική", "Θεόδωρος", "Σοφία", "Γεώργιος", "Μαρία",
+		};
+		private static string GenerateStupidUserName(int syllables)
+		{
+			string userName = "";
+			bool useConsonant = Random.value > 0.5f;
+			for (int i = 0; i < syllables; i++)
+			{
+				if (useConsonant)
+				{
+					userName += m_Consonants[Random.Range(0, m_Consonants.Length)];
+					useConsonant = false;
+				}
+				else
+				{
+					userName += m_Vowels[Random.Range(0, m_Vowels.Length)];
+					useConsonant = true;
+				}
+			}
+			return char.ToUpper(userName[0]) + userName.Substring(1);
+		}
+		public static string GenerateUserName()
+		{
+			string userName = "";
+			if (Random.value < 0.22f) // Choose meaningful name
+			{
+				if (Random.value < 0.66) // Choose latin name
+				{
+					userName = m_MeaningfulNames[Random.Range(0, m_MeaningfulNames.Length)];
+					if (Random.value < 0.22f)
+						userName += Random.Range(80, 100);
+				}
+				else
+					userName = m_NonLatinNames[Random.Range(0, m_NonLatinNames.Length)];
+			}
+			else
+			{
+				userName = GenerateStupidUserName(Random.Range(3, 7));
+				if (Random.value < 0.22f)
+					userName += Random.Range(80, 100);
+			}
+			return userName;
+		}
 	}
 
 	public static class RUtilExtension
