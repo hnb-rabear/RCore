@@ -3,9 +3,11 @@
  **/
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace RCore
 {
@@ -26,180 +28,10 @@ namespace RCore
 		private static bool m_HasInternet;
 
 		/// <summary>
-		/// 00:00:00
-		/// </summary>
-		public static string FormatHHMMss(double seconds, bool showFull)
-		{
-			if (seconds > 0)
-			{
-				var t = TimeSpan.FromSeconds(seconds);
-				var hours = t.Hours + t.Days * 24;
-				if (showFull || hours > 0)
-				{
-					//00:00:00
-					return m_TimeBuilder.Clear()
-						.Append(hours.ToString("D2")).Append(":")
-						.Append(t.Minutes.ToString("D2")).Append(":")
-						.Append(t.Seconds.ToString("D2"))
-						.ToString();
-				}
-				else if (hours == 0)
-				{
-					if (t.Minutes > 0)
-					{
-						//00:00
-						return m_TimeBuilder.Clear()
-							.Append(t.Minutes.ToString("D2")).Append(":")
-							.Append(t.Seconds.ToString("D2"))
-							.ToString();
-					}
-					else
-					{
-						//00
-						return m_TimeBuilder.Clear()
-							.Append(t.Seconds.ToString("D2"))
-							.ToString();
-					}
-				}
-			}
-			else if (showFull)
-			{
-				return "00:00:00";
-			}
-
-			return "";
-		}
-
-		/// <summary>
-		/// 00:00:00
-		/// </summary>
-		public static string FormatMMss(double seconds, bool showFull)
-		{
-			if (seconds > 0)
-			{
-				var t = TimeSpan.FromSeconds(seconds);
-
-				if (showFull || t.Hours > 0)
-				{
-					// 00:00:00
-					return m_TimeBuilder.Clear()
-						.Append(t.Hours.ToString("D2")).Append(":")
-						.Append(t.Minutes.ToString("D2")).Append(":")
-						.Append(t.Seconds.ToString("D2"))
-						.ToString();
-				}
-				else if (t.Hours == 0)
-				{
-					if (t.Minutes > 0)
-					{
-						//00:00
-						return m_TimeBuilder.Clear()
-							.Append(t.Minutes.ToString("D2")).Append(":")
-							.Append(t.Seconds.ToString("D2"))
-							.ToString();
-					}
-					else
-					{
-						//00
-						return m_TimeBuilder.Clear()
-							.Append(t.Seconds.ToString("D2"))
-							.ToString();
-					}
-				}
-			}
-			else if (showFull)
-			{
-				return "00:00";
-			}
-
-			return "";
-		}
-
-		/// <summary>
-		/// Format to 00:00:00:000
-		/// </summary>
-		/// <returns></returns>
-		public static string FormatHHMMssMs(double seconds, bool showFull)
-		{
-			if (seconds > 0)
-			{
-				var t = TimeSpan.FromSeconds(seconds);
-
-				//I keep below code as a result to provide that StringBuilder is much faster than string.format
-				//StringBuilder create gabrage lesser than string.Format about 65%
-
-				//if (showFull || t.Hours > 0)
-				//{
-				//    return string.Format("{0:D2}:{1:D2}:{2:D2}:{3:D3}",
-				//        t.Hours,
-				//        t.Minutes,
-				//        t.Seconds,
-				//        t.Milliseconds);
-				//}
-				//else if (t.Hours == 0)
-				//{
-				//    if (t.Minutes > 0)
-				//    {
-				//        return string.Format("{0:D2}:{1:D2}:{2:D3}",
-				//        t.Minutes,
-				//        t.Seconds,
-				//        t.Milliseconds);
-				//    }
-				//    else
-				//    {
-				//        return string.Format("{0:D2}:{1:D3}",
-				//            t.Seconds,
-				//            t.Milliseconds);
-				//    }
-				//}
-
-				if (showFull || t.Hours > 0)
-				{
-					//00:00:00:000
-					return m_TimeBuilder.Clear()
-						.Append(t.Hours.ToString("D2")).Append(":")
-						.Append(t.Minutes.ToString("D2")).Append(":")
-						.Append(t.Seconds.ToString("D2")).Append(":")
-						.Append(t.Milliseconds.ToString("D3"))
-						.ToString();
-				}
-				else if (t.Hours == 0)
-				{
-					if (t.Minutes > 0)
-					{
-						//00:00:000
-						return m_TimeBuilder.Clear()
-							.Append(t.Minutes.ToString("D2")).Append(":")
-							.Append(t.Seconds.ToString("D2")).Append(":")
-							.Append(t.Milliseconds.ToString("D3"))
-							.ToString();
-					}
-					else
-					{
-						//00:000
-						return m_TimeBuilder.Clear()
-							.Append(t.Seconds.ToString("D2")).Append(":")
-							.Append(t.Milliseconds.ToString("D3"))
-							.ToString();
-					}
-				}
-			}
-			else if (showFull)
-			{
-				return "00:00:00:000";
-			}
-
-			return "";
-		}
-
-		/// <summary>
 		/// d h m s
 		/// </summary>
-		public static string FormatDayHMs(double seconds, int pMaxSplits = 2, bool roundUp = false)
+		public static string FormatDHMs(double seconds, int pMaxSplits = 2)
 		{
-			if (roundUp && seconds % 60 >= 30)
-				seconds = Mathf.Ceil((float)seconds / 60) * 60;
-
 			int split = 0;
 			if (seconds > 0)
 			{
@@ -250,178 +82,49 @@ namespace RCore
 		}
 
 		/// <summary>
-		/// d 00:00:00
+		/// 00:00:00
 		/// </summary>
-		public static string FormatDHMs(double seconds, int pMaxSplits)
+		public static string FormatHhMmSs(double seconds, int pMaxSplits = 3)
 		{
-			int split = 0;
-			if (seconds > 0)
+			int totalSeconds = (int)seconds;
+			int totalHours = totalSeconds / 3600;
+			int minutes = totalSeconds % 3600 / 60;
+			int secs = totalSeconds % 60;
+
+			m_TimeBuilder.Clear();
+
+			// Format the time based on pMaxSplits
+			if (pMaxSplits >= 4)
 			{
-				m_TimeBuilder.Clear();
-				var t = TimeSpan.FromSeconds(seconds);
-
-				if (t.Days > 0)
-				{
-					split++;
-					m_TimeBuilder.Append(t.Days).Append("d");
-				}
-
-				if (split < pMaxSplits)
-				{
-					if (split > 0)
-						m_TimeBuilder.Append(" ");
-
-					split++;
-					m_TimeBuilder.Append(t.Hours.ToString("D2"));
-
-					if (split < pMaxSplits)
-					{
-						split++;
-						m_TimeBuilder.Append(":").Append(t.Minutes.ToString("D2"));
-
-						if (split < pMaxSplits)
-							m_TimeBuilder.Append(":").Append(t.Seconds.ToString("D2"));
-					}
-				}
-				return m_TimeBuilder.ToString();
+				// Include days if pMaxSplits >= 4
+				int days = totalHours / 24;
+				int hours = totalHours % 24;
+				m_TimeBuilder.Append(days.ToString("D2")).Append('d').Append(hours.ToString("D2")).Append(':').Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
 			}
-
-			return "";
-		}
-
-		/// <summary>
-		/// day:00:00:00
-		/// </summary>
-		public static string FormatDayHHMMss(double seconds, bool showFull)
-		{
-			if (seconds > 0)
+			else if (pMaxSplits == 3)
 			{
-				var t = TimeSpan.FromSeconds(seconds);
-				if (showFull || t.Days > 0)
+				// Format as total hours:MM:SS
+				m_TimeBuilder.Append(totalHours.ToString("D2")).Append(':').Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
+			}
+			else if (pMaxSplits == 2)
+			{
+				// Format as HH:MM or MM:SS based on whether totalHours is non-zero
+				if (totalHours > 0)
 				{
-					//00:00:00:000
-					string day = t.Days > 0 ? t.Days > 1 ? " days" : " day" : "";
-					return m_TimeBuilder.Clear()
-						.Append(t.Days > 0 ? t.Days + day : "").Append(t.Days > 0 ? " " : "")
-						.Append(t.Hours.ToString("D2")).Append(":")
-						.Append(t.Minutes.ToString("D2")).Append(":")
-						.Append(t.Seconds.ToString("D2"))
-						.ToString();
+					// Include total hours if totalHours > 0
+					m_TimeBuilder.Append(totalHours.ToString("D2")).Append(':').Append(minutes.ToString("D2"));
 				}
-				else if (t.Days == 0)
+				else
 				{
-					if (t.Hours > 0)
-					{
-						//00:00:000
-						return m_TimeBuilder.Clear()
-							.Append(t.Hours.ToString("D2")).Append(":")
-							.Append(t.Minutes.ToString("D2")).Append(":")
-							.Append(t.Seconds.ToString("D2"))
-							.ToString();
-					}
-					else
-					{
-						//00:000
-						return m_TimeBuilder.Clear()
-							.Append(t.Minutes.ToString("D2")).Append(":")
-							.Append(t.Seconds.ToString("D2"))
-							.ToString();
-					}
+					// Only minutes and seconds if total hours are 0
+					m_TimeBuilder.Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
 				}
 			}
+			else
+				m_TimeBuilder.Append(seconds);
 
-			return "";
+			return m_TimeBuilder.ToString();
 		}
-
-		/// <summary>
-		/// 6h 15m 7s
-		/// </summary>
-		public static string FormatHMs(double seconds, bool showFull)
-		{
-			if (seconds > 0)
-			{
-				var t = TimeSpan.FromSeconds(seconds);
-
-				if (showFull || t.Hours > 0)
-				{
-					//00h00m00s
-					return m_TimeBuilder.Clear()
-						.Append(t.Hours).Append("h ")
-						.Append(t.Minutes).Append("m ")
-						.Append(t.Seconds).Append("s")
-						.ToString();
-				}
-				else if (t.Hours == 0)
-				{
-					if (t.Minutes > 0)
-					{
-						//00m00s
-						return m_TimeBuilder.Clear()
-							.Append(t.Minutes).Append("m ")
-							.Append(t.Seconds).Append("s")
-							.ToString();
-					}
-					else
-					{
-						//00s
-						return m_TimeBuilder.Clear()
-							.Append(t.Seconds).Append("s")
-							.ToString();
-					}
-				}
-			}
-
-			return "";
-		}
-
-		/// <summary>
-		/// 12 hours 1 minute 23 seconds
-		/// </summary>
-		public static string FormatHMsFull(double seconds, bool showFull)
-		{
-			if (seconds > 0)
-			{
-				var t = TimeSpan.FromSeconds(seconds);
-
-				if (showFull || t.Hours > 0)
-				{
-					if (t.Seconds > 0)
-					{
-						//Hour Minute Second
-						return m_TimeBuilder.Clear()
-							.Append(t.Hours).Append(t.Hours <= 1 ? " Hour " : " Hours ")
-							.Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes > 0 ? t.Minutes == 1 ? " Minute " : " Minutes " : "")
-							.Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
-							.ToString();
-					}
-				}
-				else if (t.Hours == 0)
-				{
-					if (t.Minutes > 0)
-					{
-						//Minute Second
-						return m_TimeBuilder.Clear()
-							.Append(t.Minutes > 0 ? t.Minutes.ToString() : "").Append(t.Minutes == 1 ? " Minute " : " Minutes ")
-							.Append(t.Seconds > 0 ? t.Seconds.ToString() : "").Append(t.Seconds > 0 ? t.Seconds == 1 ? " Second" : " Seconds" : "")
-							.ToString();
-					}
-					else
-					{
-						//Second
-						if (t.Seconds > 0)
-						{
-							return m_TimeBuilder.Clear()
-								.Append(t.Seconds).Append(t.Seconds <= 1 ? " Second" : " Seconds")
-								.ToString();
-						}
-						return "";
-					}
-				}
-			}
-
-			return "";
-		}
-
 		public static double GetSecondsTillMidNightUtc()
 		{
 			var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
@@ -619,6 +322,82 @@ namespace RCore
 			int weekNumber = calendar.GetWeekOfYear(date, weekRule, firstDayOfWeek);
 
 			return weekNumber;
+		}
+
+		public static int CalcSecondsPassed(DateTime fromDate, DateTime toDate, List<DayOfWeek> includeDays, List<int> includeHours)
+		{
+			double validSeconds = 0;
+			while (fromDate < toDate)
+			{
+				// Check if the current day is an active day and the current hour is an active hour
+				if (includeDays.Contains(fromDate.DayOfWeek) && includeHours.Contains(fromDate.Hour))
+				{
+					// Calculate the end of the current hour
+					var endOfHour = fromDate.AddHours(1).AddMinutes(-fromDate.Minute).AddSeconds(-fromDate.Second).AddMilliseconds(-fromDate.Millisecond);
+					var nextTime = endOfHour < toDate ? endOfHour : toDate;
+
+					// Add valid seconds
+					validSeconds += (nextTime - fromDate).TotalSeconds;
+
+					// Move to the next period
+					fromDate = nextTime;
+				}
+				else
+				{
+					// Move to the next hour directly
+					fromDate = fromDate.AddHours(1).AddMinutes(-fromDate.Minute).AddSeconds(-fromDate.Second).AddMilliseconds(-fromDate.Millisecond);
+				}
+			}
+			return (int)validSeconds;
+		}
+
+		public static List<DayOfWeek> GetRandomDayOfWeeks()
+		{
+			int range = Random.Range(1, 8);
+			var daysOfWeeks = new List<DayOfWeek>
+			{
+				DayOfWeek.Monday,
+				DayOfWeek.Tuesday,
+				DayOfWeek.Wednesday,
+				DayOfWeek.Thursday,
+				DayOfWeek.Friday,
+				DayOfWeek.Saturday,
+				DayOfWeek.Sunday,
+			};
+			// Fisher-Yates shuffle using UnityEngine.Random
+			int n = daysOfWeeks.Count;
+			for (int i = n - 1; i > 0; i--)
+			{
+				int j = Random.Range(0, i + 1);
+				var temp = daysOfWeeks[i];
+				daysOfWeeks[i] = daysOfWeeks[j];
+				daysOfWeeks[j] = temp;
+			}
+			// Take the first 'range' elements
+			return daysOfWeeks.GetRange(0, range);
+		}
+
+		public static int[] GetRandomHours(int pCount)
+		{
+			int[] allHours = new int[24];
+			for (int i = 0; i < 24; i++)
+				allHours[i] = i;
+
+			// Shuffle the array of hours using Fisher-Yates shuffle algorithm
+			for (int i = allHours.Length - 1; i > 0; i--)
+			{
+				int j = Random.Range(0, i + 1); // Get a random index
+				// Swap elements at indices i and j
+				int temp = allHours[i];
+				allHours[i] = allHours[j];
+				allHours[j] = temp;
+			}
+
+			// Create a list to store the selected random hours
+			var hours = new int[pCount];
+			for (int i = 0; i < pCount; i++)
+				hours[i] = allHours[i];
+			return hours;
 		}
 	}
 

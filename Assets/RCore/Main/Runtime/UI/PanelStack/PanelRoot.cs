@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 #if UNITY_EDITOR
@@ -14,7 +15,9 @@ namespace RCore.UI
 		[SerializeField] protected Button m_dimmerOverlay;
 
 		private readonly List<PanelController> m_panelsInQueue = new List<PanelController>();
-		
+
+		protected bool m_blockQueue;
+
 		protected virtual void OnEnable()
 		{
 			EventDispatcher.AddListener<PushPanelEvent>(PushPanelHandler);
@@ -41,7 +44,9 @@ namespace RCore.UI
 		{
 			base.OnAnyChildHide(pPanel);
 
-			if (!PushPanelInQueue())
+			if (m_panelsInQueue.Count > 0 && !IsBusy() && !m_blockQueue)
+				PushPanelInQueue();
+			else
 				ToggleDimmerOverlay();
 		}
 
@@ -86,14 +91,13 @@ namespace RCore.UI
 			return popupInQueue;
 		}
 
-		public virtual bool PushPanelInQueue()
+		public virtual void PushPanelInQueue()
 		{
-			if (m_panelsInQueue.Count <= 0 || IsBusy())
-				return false;
+			if (m_panelsInQueue.Count <= 0 || IsBusy() || m_blockQueue)
+				return;
 			var panel = m_panelsInQueue[0];
 			m_panelsInQueue.RemoveAt(0);
 			PushPanelToTop(ref panel);
-			return true;
 		}
 
 		public void RemovePanelInQueue(PanelController pPanel)
@@ -186,7 +190,7 @@ namespace RCore.UI
 					Debug.LogError($"Property or field of type {e.panelType} not found in {GetType().Name}.");
 			}
 		}
-		
+
 		private void RequestPanelHandler(RequestPanelEvent e)
 		{
 			if (e.rootType != GetType().FullName)
@@ -197,14 +201,14 @@ namespace RCore.UI
 		protected abstract PanelController OnReceivedPanelRequest(string panelTypeFullName, object value);
 
 		//======================================================
-		
+
 		public static T PushOuterPanel<T>(Type root, T pPanel, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true) where T : PanelController
 		{
 			var @event = new PushPanelEvent(root, pPanel, pPushMode, pKeepCurrentAndReplace);
 			EventDispatcher.Raise(@event);
 			return @event.panel as T;
 		}
-		
+
 		public static T PushInternalPanel<T>(Type root, Type pPanel, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true) where T : PanelController
 		{
 			var @event = new PushPanelEvent(root, pPanel, pPushMode, pKeepCurrentAndReplace);
@@ -218,7 +222,7 @@ namespace RCore.UI
 			EventDispatcher.Raise(@event);
 			return @event.panel as T;
 		}
-		
+
 		//======================================================
 
 #if UNITY_EDITOR
@@ -226,9 +230,9 @@ namespace RCore.UI
 		public class PanelRootEditor : PanelStackEditor { }
 #endif
 	}
-	
+
 	//======================================================
-	
+
 	internal class PushPanelEvent : BaseEvent
 	{
 		public string rootType;
@@ -251,7 +255,7 @@ namespace RCore.UI
 			keepCurrentAndReplace = pKeepCurrentAndReplace;
 		}
 	}
-	
+
 	internal class RequestPanelEvent : BaseEvent
 	{
 		public string rootType;

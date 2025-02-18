@@ -74,7 +74,8 @@ namespace RCore.UI
 				}
 				else
 				{
-					transform.localScale = m_initialScale;
+					if (m_initialScale != Vector3.zero)
+						transform.localScale = m_initialScale;
 
 					//Use grey material here
 					if (greyscaleEffect)

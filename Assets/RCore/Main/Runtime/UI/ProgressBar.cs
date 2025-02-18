@@ -156,7 +156,7 @@ namespace RCore.UI
             else if (isTimeCountdown)
             {
                 if (mMax > 0 && txtValue != null)
-                    txtValue.text = TimeHelper.FormatHHMMss(mMax - mValue, false);
+                    txtValue.text = TimeHelper.FormatHhMmSs(mMax - mValue);
             }
             else
             {

@@ -103,64 +103,67 @@ namespace RCore
 			return "itms-apps://itunes.apple.com/app/id" + pAppId;
 		}
 		[DllImport("__Internal")]
-		private static extern void saveStringToiCloud(string key, string value, IntPtr callback);
+		private static extern void saveStringToiCloud(string key, string value, Action<IntPtr> callback);
 		[DllImport("__Internal")]
-		private static extern void retrieveStringFromiCloud(string key, IntPtr callback);
+		private static extern void retrieveStringFromiCloud(string key, Action<IntPtr> callback);
 		[DllImport("__Internal")]
-		private static extern void checkiCloudAuthentication(IntPtr callback);
+		private static extern void checkiCloudAuthentication(Action<IntPtr> callback);
 		private delegate void SaveStringCallback(IntPtr error);
 		private delegate void RetrieveStringCallback(string value, string error);
 		private delegate void CheckiCloudAuthenticationCallback(bool authenticated, string error);
-		public static void SaveStringToiCloud(string key, string value, Action<string> callback)
+		public static void SaveStringToiCloud(string key, string value, Action<bool> onSucceed)
 		{
 			try
 			{
-				SaveStringCallback internalCallback = (error) =>
+				saveStringToiCloud(key, value, errorPtr =>
 				{
-					string errorMsg = Marshal.PtrToStringAuto(error);
-					callback(errorMsg);
-				};
-				IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(internalCallback);
-				saveStringToiCloud(key, value, callbackPtr);
+					if (errorPtr == IntPtr.Zero)
+						onSucceed?.Invoke(true);
+					else
+						onSucceed.Invoke(false);
+				});
 			}
-			catch (Exception e)
+			catch
 			{
-				UnityEngine.Debug.LogError(e);
-				callback?.Invoke(null);
+				onSucceed?.Invoke(false);
 			}
 		}
-		public static void RetrieveStringFromiCloud(string key, Action<string, string> callback)
+		public static void RetrieveStringFromiCloud(string key, Action<bool, string> callback)
 		{
 			try
 			{
-				RetrieveStringCallback internalCallback = (value, error) =>
+				retrieveStringFromiCloud(key, (IntPtr resultPtr) =>
 				{
-					callback(value, error);
-				};
-				IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(internalCallback);
-				retrieveStringFromiCloud(key, callbackPtr);
+					// Handle the completion callback
+					if (resultPtr == IntPtr.Zero)
+					{
+						callback.Invoke(false, null);
+					}
+					else
+					{
+						string value = Marshal.PtrToStringAuto(resultPtr);
+						callback.Invoke(true, value);
+					}
+				});
 			}
-			catch (Exception e)
+			catch
 			{
-				UnityEngine.Debug.LogError(e);
-				callback?.Invoke(null, e.ToString());
+				callback?.Invoke(false, null);
 			}
 		}
-		public static void CheckiCloudAuthentication(Action<bool, string> callback)
+		public static void CheckiCloudAuthentication(Action<bool> callback)
 		{
 			try
 			{
-				CheckiCloudAuthenticationCallback internalCallback = (authenticated, error) =>
+				checkiCloudAuthentication((IntPtr resultPtr) =>
 				{
-					callback(authenticated, error);
-				};
-				IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(internalCallback);
-				checkiCloudAuthentication(callbackPtr);
+					// Handle the completion callback
+					callback.Invoke(resultPtr != IntPtr.Zero);
+				});
 			}
-			catch (Exception e)
+			catch
 			{
-				UnityEngine.Debug.LogError(e);
-				callback?.Invoke(false, e.ToString());
+				callback?.Invoke(false);
 			}
 		}
 #else

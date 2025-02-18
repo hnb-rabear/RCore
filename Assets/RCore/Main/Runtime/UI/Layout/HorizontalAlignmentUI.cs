@@ -7,6 +7,9 @@
 using DG.Tweening;
 #endif
 using RCore.Inspector;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -187,7 +190,11 @@ namespace RCore.UI
 			}
 		}
 
-		[InspectorButton]
+#if ODIN_INSPECTOR
+		[Button]
+#else
+        [InspectorButton]
+#endif
 		public void Align()
 		{
 			Init();
@@ -198,7 +205,11 @@ namespace RCore.UI
 				m_children[i].anchoredPosition = m_childrenNewPosition[i];
 		}
 
-		[InspectorButton]
+#if ODIN_INSPECTOR
+		[Button]
+#else
+        [InspectorButton]
+#endif
 		private void AlignByTweener()
 		{
 			AlignByTweener(null);

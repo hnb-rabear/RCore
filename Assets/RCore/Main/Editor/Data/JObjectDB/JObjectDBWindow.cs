@@ -109,6 +109,8 @@ namespace RCore.Editor.Data.JObject
 				result = JsonConvert.SerializeObject(parsedJson);
 				
 				PlayerPrefs.SetString(key, result);
+				if (!Application.isPlaying)
+					JObjectDB.collections.Clear();
 				m_data = JObjectDB.GetAllData();
 			});
 		}

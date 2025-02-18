@@ -295,33 +295,29 @@ namespace RCore.Service
 		}
 #elif UNITY_IOS && !UNITY_EDITOR
 		public static bool Authenticated => true;
-		public static void UploadSavedGame(string pFileName, string jsonData, Action<string> pCallback = null)
+		public static void UploadSavedGame(string pFileName, string jsonData, Action<bool> pCallback = null)
 		{
 			if (string.IsNullOrEmpty(pFileName))
 				pFileName = Application.productName;
 			RNative.SaveStringToiCloud(pFileName, jsonData, pCallback);
 		}
-		public static void UploadSavedGame(string jsonData, Action<string> pCallback = null)
+		public static void UploadSavedGame(string jsonData, Action<bool> pCallback = null)
 		{
 			UploadSavedGame(Application.productName, jsonData, pCallback);
 		}
-		public static void UploadSavedGame(string jsonData, float _ = 0, Action<string> pCallback = null)
+		public static void UploadSavedGame(string jsonData, float _ = 0, Action<bool> pCallback = null)
 		{
 			UploadSavedGame(Application.productName, jsonData, pCallback);
 		}
-		public static void DownloadSavedGame(string pFileName, Action<string, string> pCallback = null)
+		public static void DownloadSavedGame(string pFileName, Action<bool, string> pCallback = null)
 		{
 			if (string.IsNullOrEmpty(pFileName))
 				pFileName = Application.productName;
 			RNative.RetrieveStringFromiCloud(pFileName, pCallback);
 		}
-		public static void DownloadSavedGame(Action<string, string> pCallback = null)
-		{
-			DownloadSavedGame(Application.productName, pCallback);
-		}
 		public static void DownloadSavedGame(Action<bool, string> pCallback = null)
 		{
-			DownloadSavedGame(Application.productName, (value, error) => pCallback?.Invoke(!string.IsNullOrEmpty(error), value));
+			DownloadSavedGame(Application.productName, pCallback);
 		}
 #else
 		public static bool Authenticated => false;

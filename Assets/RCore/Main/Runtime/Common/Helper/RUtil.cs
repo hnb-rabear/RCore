@@ -463,6 +463,63 @@ namespace RCore
 			}
 			return positions;
 		}
+
+		private static readonly string[] m_MeaningfulNames = new[]
+		{
+			"Aria", "Kai", "Luna", "Leo", "Nina", "Zara",
+			"Aurora", "Caleb", "Dahlia", "Elara", "Felix", "Giselle",
+			"Hugo", "Isla", "Jasper", "Kiera", "Liam", "Mila",
+			"Nico", "Orion", "Piper", "Quinn", "Rhea", "Silas",
+			"Theo", "Una", "Vera", "Willow", "Xander", "Yara", "Zane",
+			"Adrian", "Beatrix", "Cassian", "Delilah", "Ezra", "Freya",
+			"Gideon", "Hazel", "Iris", "Jonah", "Kian", "Lyra",
+			"Magnus", "Noelle", "Octavia", "Phoenix", "Rowan", "Sienna",
+			"Tobias", "Uma", "Valeria", "Wren", "Xavier", "Yasmine", "Zayden",
+			"Aspen", "Bodhi", "Celeste", "Dante", "Elio", "Fiona",
+			"Griffin", "Harlow", "Indigo", "Juno", "Kairos", "Liora",
+			"Maverick", "Nova", "Oberon", "Persephone", "Quentin", "Ronan",
+			"Selene", "Talia", "Uriah", "Vesper", "Wesley", "Xyla",
+			"Yvette", "Zephyr", "Alaric", "Briar", "Caspian", "Daphne",
+			"Ember", "Finnian", "Gaia", "Halcyon", "Isolde", "Jace",
+			"Kaida", "Leander", "Mirabel", "Nyx", "Orla", "Phaedra",
+			"Quorra", "Rex", "Seraphina", "Thalia"
+		};
+
+		private static List<string> ExtractSyllables(string name)
+		{
+			var syllables = new List<string>();
+			var matches = Regex.Matches(name, @"[bcdfghjklmnpqrstvwxyz]*[aeiouy]+", RegexOptions.IgnoreCase);
+
+			foreach (Match match in matches)
+			{
+				syllables.Add(match.Value);
+			}
+
+			return syllables;
+		}
+
+		public static string GenerateUserName()
+		{
+			var allSyllables = new List<string>();
+
+			foreach (var name in m_MeaningfulNames)
+				allSyllables.AddRange(ExtractSyllables(name));
+
+			var sb = new StringBuilder();
+			int maxCharacters = 8;
+
+			while (sb.Length < maxCharacters)
+			{
+				int index = Random.Range(0, allSyllables.Count);
+				string syllable = allSyllables[index];
+
+				if (sb.Length + syllable.Length > maxCharacters)
+					break;
+
+				sb.Append(syllable);
+			}
+			return sb.ToString().ToCapitalizeEachWord();
+		}
 	}
 
 	public static class RUtilExtension
