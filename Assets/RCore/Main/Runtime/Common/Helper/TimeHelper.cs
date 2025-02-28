@@ -324,16 +324,32 @@ namespace RCore
 			return weekNumber;
 		}
 
-		public static int CalcSecondsPassed(DateTime fromDate, DateTime toDate, List<DayOfWeek> includeDays, List<int> includeHours)
+		public static int CalcSecondsPassed(DateTime fromDate, DateTime toDate, DayOfWeek[] includeDays, int[] includeHours)
 		{
+			bool ContainHour(int hour)
+			{
+				for (var i = 0; i < includeHours.Length; i++)
+					if (includeHours[i] == hour)
+						return true;
+				return false;
+			}
+			bool ContainDay(DayOfWeek day)
+			{
+				for (var i = 0; i < includeDays.Length; i++)
+					if (includeDays[i] == day)
+						return true;
+				return false;
+			}
+			
 			double validSeconds = 0;
 			while (fromDate < toDate)
 			{
 				// Check if the current day is an active day and the current hour is an active hour
-				if (includeDays.Contains(fromDate.DayOfWeek) && includeHours.Contains(fromDate.Hour))
+				var date = fromDate;
+				if (ContainDay(date.DayOfWeek) && ContainHour(date.Hour))
 				{
 					// Calculate the end of the current hour
-					var endOfHour = fromDate.AddHours(1).AddMinutes(-fromDate.Minute).AddSeconds(-fromDate.Second).AddMilliseconds(-fromDate.Millisecond);
+					var endOfHour = fromDate.AddHours(1).AddMinutes(-fromDate.Minute).AddSeconds(-fromDate.Second);
 					var nextTime = endOfHour < toDate ? endOfHour : toDate;
 
 					// Add valid seconds
@@ -345,16 +361,16 @@ namespace RCore
 				else
 				{
 					// Move to the next hour directly
-					fromDate = fromDate.AddHours(1).AddMinutes(-fromDate.Minute).AddSeconds(-fromDate.Second).AddMilliseconds(-fromDate.Millisecond);
+					fromDate = fromDate.AddHours(1).AddMinutes(-fromDate.Minute).AddSeconds(-fromDate.Second);
 				}
 			}
 			return (int)validSeconds;
 		}
 
-		public static List<DayOfWeek> GetRandomDayOfWeeks()
+		public static DayOfWeek[] GetRandomDayOfWeeks()
 		{
 			int range = Random.Range(1, 8);
-			var daysOfWeeks = new List<DayOfWeek>
+			var daysOfWeeks = new[]
 			{
 				DayOfWeek.Monday,
 				DayOfWeek.Tuesday,
@@ -365,7 +381,7 @@ namespace RCore
 				DayOfWeek.Sunday,
 			};
 			// Fisher-Yates shuffle using UnityEngine.Random
-			int n = daysOfWeeks.Count;
+			int n = daysOfWeeks.Length;
 			for (int i = n - 1; i > 0; i--)
 			{
 				int j = Random.Range(0, i + 1);
@@ -374,7 +390,9 @@ namespace RCore
 				daysOfWeeks[j] = temp;
 			}
 			// Take the first 'range' elements
-			return daysOfWeeks.GetRange(0, range);
+			var result = new DayOfWeek[range];
+			Array.Copy(daysOfWeeks, result, range);
+			return result;
 		}
 
 		public static int[] GetRandomHours(int pCount)
@@ -384,7 +402,7 @@ namespace RCore
 				allHours[i] = i;
 
 			// Shuffle the array of hours using Fisher-Yates shuffle algorithm
-			for (int i = allHours.Length - 1; i > 0; i--)
+			for (int i = 23; i > 0; i--)
 			{
 				int j = Random.Range(0, i + 1); // Get a random index
 				// Swap elements at indices i and j

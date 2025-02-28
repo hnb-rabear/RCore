@@ -14,7 +14,7 @@ namespace RCore.UI
 	{
 		[SerializeField] protected Button m_dimmerOverlay;
 
-		private readonly List<PanelController> m_panelsInQueue = new List<PanelController>();
+		protected readonly List<PanelController> m_panelsInQueue = new List<PanelController>();
 
 		protected bool m_blockQueue;
 
@@ -30,7 +30,7 @@ namespace RCore.UI
 			EventDispatcher.RemoveListener<RequestPanelEvent>(RequestPanelHandler);
 		}
 
-		private void OnValidate()
+		protected virtual void OnValidate()
 		{
 			var canvas = gameObject.GetComponent<Canvas>();
 			if (canvas == null)
@@ -57,7 +57,7 @@ namespace RCore.UI
 			ToggleDimmerOverlay();
 		}
 
-		private void ToggleDimmerOverlay()
+		protected void ToggleDimmerOverlay()
 		{
 			if (m_dimmerOverlay == null)
 				m_dimmerOverlay = CreatDimmerOverlay();
@@ -89,6 +89,17 @@ namespace RCore.UI
 			if (!m_panelsInQueue.Contains(pPanel))
 				m_panelsInQueue.Add(pPanel);
 			return popupInQueue;
+		}
+
+		protected void AddPanelToQueue<T>(T pPanel) where T : PanelController
+		{
+			if (StackCount == 0)
+			{
+				PushPanelToTop(ref pPanel);
+				return;
+			}
+			if (!m_panelsInQueue.Contains(pPanel))
+				m_panelsInQueue.Add(pPanel);
 		}
 
 		public virtual void PushPanelInQueue()

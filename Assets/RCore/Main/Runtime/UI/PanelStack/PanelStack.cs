@@ -20,8 +20,8 @@ namespace RCore.UI
 			Queued,
 		}
 
-		internal Stack<PanelController> panelStack = new Stack<PanelController>();
-		internal PanelStack parentPanel;
+		protected Stack<PanelController> panelStack = new();
+		public PanelStack ParentPanel { get; private set; }
 
 		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
 
@@ -33,16 +33,16 @@ namespace RCore.UI
 		{
 			get
 			{
-				if (parentPanel == null)
+				if (ParentPanel == null)
 					return 0;
 				int i = 0;
-				foreach (var p in parentPanel.panelStack)
+				foreach (var p in ParentPanel.panelStack)
 				{
 					if (p == this)
 						return i;
 					i++;
 				}
-				return parentPanel.panelStack.Count;
+				return ParentPanel.panelStack.Count;
 			}
 		}
 		/// <summary>
@@ -52,9 +52,9 @@ namespace RCore.UI
 		{
 			get
 			{
-				if (parentPanel == null)
+				if (ParentPanel == null)
 					return 1;
-				return parentPanel.panelStack.Count - Index;
+				return ParentPanel.panelStack.Count - Index;
 			}
 		}
 		/// <summary>
@@ -64,10 +64,10 @@ namespace RCore.UI
 
 		protected virtual void Awake()
 		{
-			if (parentPanel == null)
-				parentPanel = GetComponentInParent<PanelStack>();
-			if (parentPanel == this)
-				parentPanel = null;
+			if (ParentPanel == null)
+				ParentPanel = GetComponentInParent<PanelStack>();
+			if (ParentPanel == this)
+				ParentPanel = null;
 		}
 
 		//=============================================================
@@ -143,7 +143,7 @@ namespace RCore.UI
 
 		public PanelStack GetRootPanel()
 		{
-			return parentPanel != null ? parentPanel.GetRootPanel() : this;
+			return ParentPanel != null ? ParentPanel.GetRootPanel() : this;
 		}
 
 		public PanelStack GetHighestPanel()
@@ -207,7 +207,7 @@ namespace RCore.UI
 				return;
 			}
 
-			panel.parentPanel = this;
+			panel.ParentPanel = this;
 			if (TopPanel != null)
 			{
 				var currentTopPanel = TopPanel;
@@ -313,13 +313,13 @@ namespace RCore.UI
 		/// </summary>
 		public virtual T PushPanelToTop<T>(ref T pPanel, bool hidePusher = false) where T : PanelController
 		{
-			if (!hidePusher || parentPanel == null)
+			if (!hidePusher || ParentPanel == null)
 			{
 				var panel = CreatePanel(ref pPanel);
 				PushPanelToTop(panel);
 				return panel;
 			}
-			return parentPanel.PushPanel(ref pPanel, true);
+			return ParentPanel.PushPanel(ref pPanel, true);
 		}
 
 		/// <summary>
@@ -331,7 +331,7 @@ namespace RCore.UI
 				return;
 
 			panelStack.Push(panel);
-			panel.parentPanel = this;
+			panel.ParentPanel = this;
 			panel.Show();
 			OnAnyChildShow(panel);
 		}
@@ -519,13 +519,13 @@ namespace RCore.UI
 		protected virtual void OnAnyChildHide(PanelController pPanel)
 		{
 			//Parent notifies to grandparent of hidden panel
-			if (parentPanel != null)
-				parentPanel.OnAnyChildHide(pPanel);
+			if (ParentPanel != null)
+				ParentPanel.OnAnyChildHide(pPanel);
 		}
 		protected virtual void OnAnyChildShow(PanelController pPanel)
 		{
-			if (parentPanel != null)
-				parentPanel.OnAnyChildShow(pPanel);
+			if (ParentPanel != null)
+				ParentPanel.OnAnyChildShow(pPanel);
 		}
 
 		[System.Diagnostics.Conditional("UNITY_EDITOR")]

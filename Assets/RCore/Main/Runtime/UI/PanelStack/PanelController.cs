@@ -167,8 +167,8 @@ namespace RCore.UI
 			if (m_showed || m_isShowing)
 				return;
 
-			if (transform.parent != parentPanel.transform)
-				transform.SetParent(parentPanel.transform);
+			if (transform.parent != ParentPanel.transform)
+				transform.SetParent(ParentPanel.transform);
 
 			TimerEventsInScene.Instance.StartCoroutine(IE_Show(pOnDidShow));
 		}
@@ -241,13 +241,13 @@ namespace RCore.UI
 
 		public virtual void Back()
 		{
-			if (parentPanel == null)
+			if (ParentPanel == null)
 			{
 				if (TopPanel != null)
 					TopPanel.Back();
 			}
 			else
-				parentPanel.PopChildrenThenParent();
+				ParentPanel.PopChildrenThenParent();
 		}
 
 		protected virtual void BtnBack_Pressed()
@@ -296,7 +296,7 @@ namespace RCore.UI
 			return false;
 		}
 
-		public bool IsChildPanel() => parentPanel.parentPanel != null;
+		public bool IsChildPanel() => ParentPanel.ParentPanel != null;
 
 		public bool Contains<T>(T popupConvertCoin) where T : PanelController
 		{

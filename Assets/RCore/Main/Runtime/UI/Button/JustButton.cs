@@ -111,22 +111,18 @@ namespace RCore.UI
 
 		public override void OnPointerDown(PointerEventData eventData)
 		{
-			if (!m_active)
-			{
-				if (m_inactionStateAction != null)
-				{
-					m_inactionStateAction();
-					if (TryGetComponent(out Animator component) && component.enabled)
-						component.SetTrigger("Pressed");
-				}
-			}
-
 			if (m_active)
 			{
 				base.OnPointerDown(eventData);
-				
+
 				if (!string.IsNullOrEmpty(clickSfx))
 					EventDispatcher.Raise(new Audio.UISfxTriggeredEvent(clickSfx));
+			}
+			else if (m_inactionStateAction != null)
+			{
+				m_inactionStateAction();
+				if (TryGetComponent(out Animator component) && component.enabled)
+						component.SetTrigger("Pressed");
 			}
 
 			if (scaleBounceEffect)
@@ -264,7 +260,7 @@ namespace RCore.UI
 		{
 			if (Application.isPlaying)
 				return;
-			
+
 			base.OnValidate();
 
 			if (targetGraphic == null)

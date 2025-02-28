@@ -21,7 +21,7 @@ using DG.Tweening;
 namespace RCore.UI
 {
 	[AddComponentMenu("RCore/UI/CustomToggleTab")]
-	public class JustToggle : Toggle
+	public class CustomToggleTab : Toggle
 	{
 		[Serializable]
 		public class SizeTransition
@@ -474,16 +474,16 @@ namespace RCore.UI
 		}
 
 #if UNITY_EDITOR
-		[CustomEditor(typeof(JustToggle), true)]
+		[CustomEditor(typeof(CustomToggleTab), true)]
 		public class CustomToggleTabEditor : UnityEditor.UI.ToggleEditor
 		{
-			private JustToggle m_mToggle;
+			private CustomToggleTab m_mToggle;
 
 			protected override void OnEnable()
 			{
 				base.OnEnable();
 
-				m_mToggle = (JustToggle)target;
+				m_mToggle = (CustomToggleTab)target;
 			}
 
 			public override void OnInspectorGUI()

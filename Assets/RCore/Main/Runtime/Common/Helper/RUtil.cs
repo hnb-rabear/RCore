@@ -464,61 +464,52 @@ namespace RCore
 			return positions;
 		}
 
-		private static readonly string[] m_MeaningfulNames = new[]
+		private static readonly string[] upperCaseFirstLetter = new[]
 		{
-			"Aria", "Kai", "Luna", "Leo", "Nina", "Zara",
-			"Aurora", "Caleb", "Dahlia", "Elara", "Felix", "Giselle",
-			"Hugo", "Isla", "Jasper", "Kiera", "Liam", "Mila",
-			"Nico", "Orion", "Piper", "Quinn", "Rhea", "Silas",
-			"Theo", "Una", "Vera", "Willow", "Xander", "Yara", "Zane",
-			"Adrian", "Beatrix", "Cassian", "Delilah", "Ezra", "Freya",
-			"Gideon", "Hazel", "Iris", "Jonah", "Kian", "Lyra",
-			"Magnus", "Noelle", "Octavia", "Phoenix", "Rowan", "Sienna",
-			"Tobias", "Uma", "Valeria", "Wren", "Xavier", "Yasmine", "Zayden",
-			"Aspen", "Bodhi", "Celeste", "Dante", "Elio", "Fiona",
-			"Griffin", "Harlow", "Indigo", "Juno", "Kairos", "Liora",
-			"Maverick", "Nova", "Oberon", "Persephone", "Quentin", "Ronan",
-			"Selene", "Talia", "Uriah", "Vesper", "Wesley", "Xyla",
-			"Yvette", "Zephyr", "Alaric", "Briar", "Caspian", "Daphne",
-			"Ember", "Finnian", "Gaia", "Halcyon", "Isolde", "Jace",
-			"Kaida", "Leander", "Mirabel", "Nyx", "Orla", "Phaedra",
-			"Quorra", "Rex", "Seraphina", "Thalia"
+			"Al", "Kai", "Lu", "Le", "Ni", "Za",
+			"Au", "Ca", "Dah", "El", "Fe", "Gi",
+			"Hu", "Is", "Jas", "Kie", "Li", "Mi",
+			"Om", "Pi", "Quinn", "Rhe", "Si",
+			"The", "Un", "Ve", "Wil", "Xan", "Ya", "Zane",
+			"Be", "Cas", "De", "Ez", "Frey", "Gid",
+			"Ha", "Ir", "Jo", "Ki", "Ly", "Mag", "No",
+			"Oc", "Phoe", "Ro", "Sien", "To", "Va", "Wren",
+			"Xa", "Yas", "Zay", "As", "Bo", "Ce", "Dan",
+			"Fi", "Grif", "Har", "Ino", "Ju",
+			"Mav", "Per", "Quen", "Se", "Ta", "Ves", "Wes", "Xylo", "Yvette",
+			"Zeph", "Bri", "Daph", "Emi", "Fin",
+			"Ga", "Hal", "Isol", "Jace",
+			"Nyx", "Orl", "Phae", "Quor", "Rex",
+			"Ser", "Thal"
 		};
 
-		private static List<string> ExtractSyllables(string name)
+		private static readonly string[] lowerCaseFirstLetter = new[]
 		{
-			var syllables = new List<string>();
-			var matches = Regex.Matches(name, @"[bcdfghjklmnpqrstvwxyz]*[aeiouy]+", RegexOptions.IgnoreCase);
-
-			foreach (Match match in matches)
-			{
-				syllables.Add(match.Value);
-			}
-
-			return syllables;
-		}
+			"ria", "na", "on", "ra", "ro",
+			"leb", "lia", "la", "lix", "selle",
+			"go", "per", "am", "co",
+			"ri", "on", "as", "las",
+			"low", "der", "an", "trix", "si",
+			"li", "lah", "el", "zel",
+			"ris", "nah", "nus", "elle",
+			"ta", "via", "nix", "wan", "bi",
+			"as", "ma", "le", "vier", "mine",
+			"den", "pen", "dhi", "leste", "te", "lio",
+			"fin", "ros", "va", "ron", "se", "pho", "tin",
+			"nan", "lene", "ah", "per",
+			"ley", "lar", "ic", "ar", "pi",
+			"ne", "ber", "ni", "ia", "cy",
+			"de", "da", "der", "bel",
+			"dra", "phi"
+		};
 
 		public static string GenerateUserName()
 		{
-			var allSyllables = new List<string>();
-
-			foreach (var name in m_MeaningfulNames)
-				allSyllables.AddRange(ExtractSyllables(name));
-
-			var sb = new StringBuilder();
-			int maxCharacters = 8;
-
-			while (sb.Length < maxCharacters)
-			{
-				int index = Random.Range(0, allSyllables.Count);
-				string syllable = allSyllables[index];
-
-				if (sb.Length + syllable.Length > maxCharacters)
-					break;
-
-				sb.Append(syllable);
-			}
-			return sb.ToString().ToCapitalizeEachWord();
+			string firstPart = upperCaseFirstLetter[Random.Range(0, upperCaseFirstLetter.Length)];
+			string secondPart = lowerCaseFirstLetter[Random.Range(0, lowerCaseFirstLetter.Length)];
+			if (Random.value <= 0.1f)
+				return firstPart + secondPart + Random.Range(80, 100);
+			return firstPart + secondPart;
 		}
 	}
 

@@ -32,6 +32,7 @@ namespace RCore
 	{
 		public TComponent instance;
 		public TComponent asset;
+		public bool loading;
 		private AsyncOperationHandle<GameObject> m_operation;
 		public ComponentRef(string guid) : base(guid) { }
 		
@@ -50,31 +51,37 @@ namespace RCore
             return false;
 #endif
 		}
-		public async UniTask<TComponent> InternalInstantiateAsync(bool pDefaultActive = false)
+		public async UniTask<TComponent> InstantiateAsync(bool pDefaultActive = false)
 		{
 			m_operation = Addressables.InstantiateAsync(this);
+			loading = true;
 			var go = await m_operation;
 			go.SetActive(pDefaultActive);
 			go.TryGetComponent(out instance);
+			loading = false;
 			Debug.Log($"Instantiate Asset Bundle {instance.name}");
 			return instance;
 		}
-		public async UniTask<TComponent> InternalLoadAssetAsync()
+		public async UniTask<TComponent> LoadAssetAsync()
 		{
 			if (asset != null)
 				return asset;
 			var operation = IsValid() ? OperationHandle.Convert<GameObject>() : LoadAssetAsync<GameObject>();
+			loading = true;
 			await operation;
+			loading = false;
 			asset = operation.Result.GetComponent<TComponent>();
 			Debug.Log($"Load Asset Bundle {asset.name}");
 			return asset;
 		}
-		public IEnumerator IEInternalLoadAssetAsync()
+		public IEnumerator IELoadAsset()
 		{
 			if (asset != null)
 				yield break;
 			var operation = IsValid() ? OperationHandle.Convert<GameObject>() : LoadAssetAsync<GameObject>();
+			loading = true;
 			yield return operation;
+			loading = false;
 			asset = operation.Result.GetComponent<TComponent>();
 			Debug.Log($"Load Asset Bundle {asset.name}");
 		}
@@ -841,7 +848,7 @@ namespace RCore
 	[Serializable]
 	public class AssetBundleWithEnumKey<T, M> : AssetBundleRef<M> where T : Enum where M : Object
 	{
-		[FormerlySerializedAs("id")] public T key;
+		public T key;
 	}
 
 	[Serializable]
@@ -857,7 +864,7 @@ namespace RCore
 	[Serializable]
 	public class AssetBundleWithIntKey<M> : AssetBundleRef<M> where M : Object
 	{
-		[FormerlySerializedAs("id")] public int key;
+		public int key;
 	}
 
 #endif

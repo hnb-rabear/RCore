@@ -570,6 +570,61 @@ namespace RCore
 			}
 		}
 
+		public static void AdjustAnchorsToCorners(this RectTransform rectTransform)
+		{
+			if (rectTransform == null || rectTransform.parent == null)
+				return;
+
+			var parentRect = rectTransform.parent as RectTransform;
+
+			if (parentRect == null)
+				return;
+
+			var newAnchorMin = new Vector2(
+				rectTransform.anchorMin.x + rectTransform.offsetMin.x / parentRect.rect.width,
+				rectTransform.anchorMin.y + rectTransform.offsetMin.y / parentRect.rect.height);
+
+			var newAnchorMax = new Vector2(
+				rectTransform.anchorMax.x + rectTransform.offsetMax.x / parentRect.rect.width,
+				rectTransform.anchorMax.y + rectTransform.offsetMax.y / parentRect.rect.height);
+
+			rectTransform.anchorMin = newAnchorMin;
+			rectTransform.anchorMax = newAnchorMax;
+
+			rectTransform.offsetMin = Vector2.zero;
+			rectTransform.offsetMax = Vector2.zero;
+		}
+
+		public static void AdjustAnchorsToPivot(this RectTransform rectTransform)
+		{
+			if (rectTransform == null || rectTransform.parent == null)
+				return;
+
+			var parentRect = rectTransform.parent as RectTransform;
+
+			if (parentRect == null)
+				return;
+
+			var pivot = rectTransform.pivot;
+			var size = rectTransform.rect.size;
+			var parentSize = parentRect.rect.size;
+
+			var newAnchorMin = new Vector2(
+				rectTransform.anchorMin.x + (rectTransform.offsetMin.x + size.x * pivot.x) / parentSize.x,
+				rectTransform.anchorMin.y + (rectTransform.offsetMin.y + size.y * pivot.y) / parentSize.y);
+
+			var newAnchorMax = new Vector2(
+				rectTransform.anchorMax.x + (rectTransform.offsetMax.x - size.x * (1 - pivot.x)) / parentSize.x,
+				rectTransform.anchorMax.y + (rectTransform.offsetMax.y - size.y * (1 - pivot.y)) / parentSize.y);
+
+			rectTransform.anchorMin = newAnchorMin;
+			rectTransform.anchorMax = newAnchorMax;
+
+			rectTransform.offsetMin = Vector2.zero;
+			rectTransform.offsetMax = Vector2.zero;
+			rectTransform.sizeDelta = size;
+		}
+
 #endregion
 	}
 }

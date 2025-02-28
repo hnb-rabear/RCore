@@ -4,6 +4,7 @@
 
 using RCore.Audio;
 using RCore.Editor.Tool;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using UnityEditor;
@@ -202,6 +203,34 @@ namespace RCore.Editor
 			}
 		}
 
+		// [MenuItem(GAMEOBJECT_R + "Reorder Children By Y Position")]
+		// public static void ReorderChildrenByYPosition()
+		// {
+		// 	foreach (var target in Selection.gameObjects)
+		// 	{
+		// 		var children = new List<Transform>();
+		// 		foreach (Transform child in target.transform)
+		// 			children.Add(child);
+		//
+		// 		// Sort the children by Y position, with those having lowest X position and near center prioritized
+		// 		children.Sort((a, b) =>
+		// 		{
+		// 			int yComparison = b.localPosition.y.CompareTo(a.localPosition.y);
+		// 			if (yComparison == 0)
+		// 			{
+		// 				float distanceA = Vector2.Distance(a.localPosition, Vector2.zero);
+		// 				float distanceB = Vector2.Distance(b.localPosition, Vector2.zero);
+		// 				return distanceB.CompareTo(distanceA);
+		// 			}
+		// 			return yComparison;
+		// 		});
+		//
+		// 		// Reorder the children based on the sorted list
+		// 		for (int i = children.Count - 1; i >= 0; i--)
+		// 			children[i].SetSiblingIndex(i);
+		// 	}
+		// }
+
 		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
 		public static void PerfectRatioImagesByWidth()
 		{
@@ -222,6 +251,26 @@ namespace RCore.Editor
 				var images = target.GetComponentsInChildren<UnityEngine.UI.Image>(true);
 				foreach (var image in images)
 					image.PerfectRatio();
+			}
+		}
+
+		[MenuItem(GAMEOBJECT_R_UI + "Adjust Anchors To Corners", priority = GROUP_3 + 4)]
+		public static void AdjustAnchorsToCorners()
+		{
+			foreach (var target in Selection.gameObjects)
+			{
+				var rectTransform = target.transform as RectTransform;
+				rectTransform.AdjustAnchorsToCorners();
+			}
+		}
+
+		[MenuItem(GAMEOBJECT_R_UI + "Adjust Anchors To Pivot", priority = GROUP_3 + 5)]
+		public static void AdjustAnchorsToPivot()
+		{
+			foreach (var target in Selection.gameObjects)
+			{
+				var rectTransform = target.transform as RectTransform;
+				rectTransform.AdjustAnchorsToPivot();
 			}
 		}
 

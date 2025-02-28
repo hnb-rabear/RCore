@@ -30,7 +30,7 @@ namespace RCore.Service
 		
 		[SerializeField] private SerializableDictionary<string, ProductType> m_products;
 
-		public static Action<Product> OnIAPSucceed;
+		public static Action<string, Product> OnIAPSucceed;
 		public static Action<Product, string> OnIAPFailed;
 		private Action<bool> m_onInitialized;
 		private Action<Product> m_onPurchaseDeferred;
@@ -42,6 +42,7 @@ namespace RCore.Service
 		private bool m_initialized;
 		private CrossPlatformValidator m_validator;
 		private RPlayerPrefDict<string, string> m_cacheLocalizedPrices;
+		private string m_placement;
 
 #region Init
 
@@ -116,8 +117,9 @@ namespace RCore.Service
 
 #region Purchase
 
-		public void Purchase(string productId, Action<Product> pOnPurchaseSucceed, Action<Product> pOnPurchaseFailed, Action<Product> pOnPurchaseDeferred = null)
+		public void Purchase(string productId, Action<Product> pOnPurchaseSucceed, Action<Product> pOnPurchaseFailed = null, Action<Product> pOnPurchaseDeferred = null, string pPlacement = null)
 		{
+			m_placement = pPlacement;
 			m_onPurchaseSucceed = pOnPurchaseSucceed;
 			m_onPurchaseFailed = pOnPurchaseFailed;
 			m_onPurchaseDeferred = pOnPurchaseDeferred;
@@ -140,7 +142,8 @@ namespace RCore.Service
 			if (isPurchaseValid)
 			{
 				m_onPurchaseSucceed?.Invoke(product);
-				OnIAPSucceed?.Invoke(product);
+				OnIAPSucceed?.Invoke(m_placement, product);
+				m_placement = null;
 			}
 			else
 			{
