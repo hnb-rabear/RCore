@@ -1,4 +1,6 @@
-﻿using Sirenix.OdinInspector;
+﻿#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 using System;
 using UnityEngine;
 
@@ -29,7 +31,11 @@ namespace RCore.UI
 			Validate();
 		}
 
+#if ODIN_INSPECTOR
 		[Button]
+#else
+		[InspectorButton]
+#endif
 		private void Validate()
 		{
 			var offsetHeight = Screen.currentResolution.height - Screen.safeArea.height;
