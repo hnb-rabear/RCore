@@ -18,37 +18,37 @@ namespace RCore.Service
         private static bool m_FetchingToken = true;
         private static Dictionary<string, FirebaseUser> m_UserByAuth;
 
-        private static FirebaseAuth auth => FirebaseAuth.DefaultInstance;
-        public static bool initialized { get; private set; }
-        public static bool authenticated => auth.CurrentUser != null;
+        private static FirebaseAuth Auth => FirebaseAuth.DefaultInstance;
+        public static bool Initialized { get; private set; }
+        public static bool Authenticated => Auth.CurrentUser != null;
 
         public static void Initialize()
         {
-            if (initialized)
+            if (Initialized)
                 return;
 
-            initialized = true;
+            Initialized = true;
 
             m_UserByAuth = new Dictionary<string, FirebaseUser>();
-            auth.StateChanged += OnStateChanged;
-            auth.IdTokenChanged += OnTokenChanged;
-            OnStateChanged(auth, null);
+            Auth.StateChanged += OnStateChanged;
+            Auth.IdTokenChanged += OnTokenChanged;
+            OnStateChanged(Auth, null);
         }
 
         public static void LogUserInfo()
         {
-            if (auth.CurrentUser == null)
+            if (Auth.CurrentUser == null)
                 Debug.Log("RFirebaseAuth:LogUserInfo Not signed in, unable to get info.");
             else
                 Debug.Log(string.Format("RFirebaseAuth:LogUserInfo Current user info: anonymous: {0}, displayName: {1}, email: {2}, userId: {3}",
-                    auth.CurrentUser.IsAnonymous, auth.CurrentUser.DisplayName, auth.CurrentUser.Email, auth.CurrentUser.UserId));
+                    Auth.CurrentUser.IsAnonymous, Auth.CurrentUser.DisplayName, Auth.CurrentUser.Email, Auth.CurrentUser.UserId));
         }
 
         //======== Sign in
 
         public static Task SigninAnonymouslyAsync()
         {
-            var task = auth.SignInAnonymouslyAsync();
+            var task = Auth.SignInAnonymouslyAsync();
             TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Sign-in");
@@ -62,7 +62,7 @@ namespace RCore.Service
         /// </summary>
         public static Task SignInWithCustomTokenAsync(string pToken)
         {
-            var task = auth.SignInWithCustomTokenAsync(pToken);
+            var task = Auth.SignInWithCustomTokenAsync(pToken);
             TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Sign-in");
@@ -75,7 +75,7 @@ namespace RCore.Service
         {
             if (pSignInAndFetchProfile)
             {
-                var task = auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
+                var task = Auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
                 TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -85,7 +85,7 @@ namespace RCore.Service
             }
             else
             {
-                var task = auth.SignInWithEmailAndPasswordAsync(pEmail, pPassword);
+                var task = Auth.SignInWithEmailAndPasswordAsync(pEmail, pPassword);
                 TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -104,7 +104,7 @@ namespace RCore.Service
         {
             if (pSignInAndFetchProfile)
             {
-                var task = auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
+                var task = Auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
                 TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -114,7 +114,7 @@ namespace RCore.Service
             }
             else
             {
-                var task = auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
+                var task = Auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
                 TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
@@ -129,7 +129,7 @@ namespace RCore.Service
         /// </summary>
         public static Task ReauthenticateAsync(bool signInAndFetchProfile, string email, string password)
         {
-            var user = auth.CurrentUser;
+            var user = Auth.CurrentUser;
             if (user == null)
             {
                 Debug.Log("Not signed in, unable to reauthenticate user.");
@@ -163,14 +163,14 @@ namespace RCore.Service
         /// </summary>
         public static Task UnlinkEmailAsync(string pEmail, string pPassword)
         {
-            if (auth.CurrentUser == null)
+            if (Auth.CurrentUser == null)
             {
                 Debug.Log("Not signed in, unable to unlink");
                 var tcs = new TaskCompletionSource<bool>();
                 tcs.SetException(new Exception("Not signed in"));
                 return tcs.Task;
             }
-            var task = auth.CurrentUser.UnlinkAsync(EmailAuthProvider.GetCredential(pEmail, pPassword).Provider);
+            var task = Auth.CurrentUser.UnlinkAsync(EmailAuthProvider.GetCredential(pEmail, pPassword).Provider);
             TimerEventsGlobal.Instance.WaitTask(task, () => { LogTaskCompletion(task, "Unlinking"); });
             return task;
         }
@@ -180,7 +180,7 @@ namespace RCore.Service
 
         public static void ReloadUser()
         {
-            var task = auth.CurrentUser.ReloadAsync();
+            var task = Auth.CurrentUser.ReloadAsync();
             TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Reload");
@@ -190,14 +190,14 @@ namespace RCore.Service
 
         public static void SignOut()
         {
-            auth.SignOut();
+            Auth.SignOut();
         }
 
         public static Task DeleteUserAsync()
         {
-            if (auth.CurrentUser != null)
+            if (Auth.CurrentUser != null)
             {
-                var task = auth.CurrentUser.DeleteAsync();
+                var task = Auth.CurrentUser.DeleteAsync();
                 TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Delete user");
@@ -216,13 +216,13 @@ namespace RCore.Service
 
         public static void GetUserToken()
         {
-            if (auth.CurrentUser == null)
+            if (Auth.CurrentUser == null)
             {
                 Debug.Log("RFirebaseAuth:GetUserToken Not signed in, unable to get token.");
                 return;
             }
             m_FetchingToken = true;
-            var task = auth.CurrentUser.TokenAsync(false);
+            var task = Auth.CurrentUser.TokenAsync(false);
             TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_FetchingToken = false;
@@ -256,7 +256,7 @@ namespace RCore.Service
         private static void OnTokenChanged(object sender, EventArgs e)
         {
             var senderAuth = sender as FirebaseAuth;
-            if (senderAuth == auth && senderAuth.CurrentUser != null && !m_FetchingToken)
+            if (senderAuth == Auth && senderAuth.CurrentUser != null && !m_FetchingToken)
             {
                 var task = senderAuth.CurrentUser.TokenAsync(false);
                 TimerEventsGlobal.Instance.WaitTask(task, () =>
@@ -272,7 +272,7 @@ namespace RCore.Service
             FirebaseUser user = null;
             if (senderAuth != null)
                 m_UserByAuth.TryGetValue(senderAuth.App.Name, out user);
-            if (senderAuth == auth && senderAuth.CurrentUser != user)
+            if (senderAuth == Auth && senderAuth.CurrentUser != user)
             {
                 bool signedIn = user != senderAuth.CurrentUser && senderAuth.CurrentUser != null;
                 if (!signedIn && user != null)
@@ -288,8 +288,8 @@ namespace RCore.Service
             }
         }
 #else
-        public static bool initialized { get; private set; }
-        public static bool logged => false;
+        public static bool Initialized => false;
+		public static bool Authenticated => false;
         public static void Initialize() { }
         public static void LogUserInfo() { }
         public static void SignOut() { }

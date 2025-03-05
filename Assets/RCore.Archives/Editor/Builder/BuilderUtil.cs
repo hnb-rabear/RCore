@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-public class Builder
+public class RBuilder
 {
     //NOTE: used by cmd
     static void BuildCurrent()

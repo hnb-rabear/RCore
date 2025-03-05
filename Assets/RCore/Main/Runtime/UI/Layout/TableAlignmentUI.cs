@@ -1,8 +1,6 @@
 ﻿/***
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
-
-using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
