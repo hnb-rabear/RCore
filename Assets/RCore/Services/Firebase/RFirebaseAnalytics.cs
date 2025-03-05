@@ -13,7 +13,7 @@ namespace RCore.Service
 #if FIREBASE_ANALYTICS
         public static bool initialized { get; private set; }
 
-        public static void Initialize()
+        public static void Init()
         {
             if (initialized)
                 return;

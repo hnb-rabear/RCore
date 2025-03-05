@@ -14,6 +14,7 @@ using UnityEngine.SocialPlatforms;
 #if UNITY_IOS
 using UnityEngine.SocialPlatforms.GameCenter;
 #endif
+
 #if UNITY_ANDROID && GPGS
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
@@ -80,9 +81,6 @@ namespace RCore.Service
 
 		public static bool IsInitialized()
 		{
-#if UNITY_EDITOR
-			return false;
-#endif
 			return Social.localUser.authenticated;
 		}
 
@@ -106,7 +104,7 @@ namespace RCore.Service
 			}
 
 #if UNITY_IOS
-            GameCenterPlatform.ShowLeaderboardUI(leaderboardId, timeScope);
+			GameCenterPlatform.ShowLeaderboardUI(leaderboardId, timeScope);
 #elif UNITY_ANDROID && GPGS
 			PlayGamesPlatform.Instance.ShowLeaderboardUI(leaderboardId, ToGpgsLeaderboardTimeSpan(timeScope), null);
 #else
@@ -447,15 +445,15 @@ namespace RCore.Service
 					DoNextLoadScoreRequest();
 				});
 #elif UNITY_IOS
-                // On iOS, we use LoadScores from ILeaderboard with default parameters.
-                ldb.LoadScores((bool success) =>
-                    {
-						request.callback?.Invoke(request.leaderboardId, ldb.scores);
+				// On iOS, we use LoadScores from ILeaderboard with default parameters.
+				ldb.LoadScores((bool success) =>
+				{
+					request.callback?.Invoke(request.leaderboardId, ldb.scores);
 
-						// Load next request
-						IsLoadingScore = false;
-                        DoNextLoadScoreRequest();
-                    });
+					// Load next request
+					IsLoadingScore = false;
+					DoNextLoadScoreRequest();
+				});
 #endif
 			}
 			else

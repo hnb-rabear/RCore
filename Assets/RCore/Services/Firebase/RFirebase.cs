@@ -3,6 +3,7 @@
  **/
 
 using System;
+using UnityEngine;
 #if FIREBASE
 using Firebase;
 using Firebase.Extensions;
@@ -25,10 +26,11 @@ namespace RCore.Service
                 Debug.Log("Firebase Status " + task.Result);
                 if (task.Result == DependencyStatus.Available)
                 {
-                    RFirebaseAnalytics.Initialize();
-                    RFirebaseAuth.Initialize();
-                    RFirebaseStorage.Initialize();
-                    RFirebaseDatabase.Initialize();
+                    RFirebaseAnalytics.Init();
+                    RFirebaseAuth.Init();
+                    RFirebaseStorage.Init();
+                    RFirebaseDatabase.Init();
+                    RFirebaseFirestore.Init();
                     Initialized = true;
                     pOnFinished.Raise(true);
                 }

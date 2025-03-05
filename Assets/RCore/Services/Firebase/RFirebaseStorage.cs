@@ -118,7 +118,7 @@ namespace RCore.Service
 
 		//=========================================================
 
-		public static void Initialize()
+		public static void Init()
 		{
 			if (m_Initialized)
 				return;

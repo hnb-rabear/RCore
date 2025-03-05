@@ -22,7 +22,7 @@ namespace RCore.Service
         public static bool Initialized { get; private set; }
         public static bool Authenticated => Auth.CurrentUser != null;
 
-        public static void Initialize()
+        public static void Init()
         {
             if (Initialized)
                 return;

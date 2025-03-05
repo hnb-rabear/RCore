@@ -230,7 +230,7 @@ namespace RCore.Service
 
 		public static bool Initialized => m_Initialized;
 #if FIREBASE_DATABASE
-		public static void Initialize()
+		public static void Init()
 		{
 			if (m_Initialized)
 				return;
