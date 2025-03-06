@@ -222,7 +222,7 @@ namespace RCore.Service
 		public string Data { get; set; }
 	}
 
-	public static class RFirebaseFirestore1
+	public static class RFirebaseFirestore
 	{
 		public static void Init() { }
 		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityByEmailAsync(string email) => null;
