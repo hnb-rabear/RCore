@@ -97,7 +97,7 @@ namespace RCore.Service
 			}
 			return null;
 		}
-		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityDocument(string playerId)
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityDoc(string playerId)
 		{
 			if (string.IsNullOrEmpty(playerId))
 				return null;
@@ -108,7 +108,11 @@ namespace RCore.Service
 			var document = task.Result.ConvertTo<PlayerIdentityDoc>();
 			return document;
 		}
-		public static async UniTask<PlayerIdentityDoc> LoadPlayerDataDocument(string playerId)
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityDoc()
+		{
+			return await LoadPlayerIdentityDoc(UserId);
+		}
+		public static async UniTask<PlayerDataDoc> LoadPlayerDataDoc(string playerId)
 		{
 			if (string.IsNullOrEmpty(playerId))
 				return null;
@@ -116,16 +120,12 @@ namespace RCore.Service
 			if (task.IsCanceled || task.IsFaulted)
 				return null;
 			await task;
-			var document = task.Result.ConvertTo<PlayerIdentityDoc>();
+			var document = task.Result.ConvertTo<PlayerDataDoc>();
 			return document;
 		}
-		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityDocument()
+		public static async UniTask<PlayerDataDoc> LoadPlayerDataDoc()
 		{
-			return await LoadPlayerIdentityDocument(UserId);
-		}
-		public static async UniTask<PlayerIdentityDoc> LoadPlayerDataDocument()
-		{
-			return await LoadPlayerDataDocument(UserId);
+			return await LoadPlayerDataDoc(UserId);
 		}
 		public static async UniTask<bool> UploadPlayerIdentityAsync(string playerId, string pEmail, string pFbId, string GPGId, int pLevel, string pCountry, int pLastActive, string pIdentity)
 		{
@@ -206,7 +206,7 @@ namespace RCore.Service
 		}
 	}
 #else
-	public class PlayerIdentityDocument
+	public class PlayerIdentityDoc
 	{
 		public string Email { get; set; }
 		public string FbId { get; set; }
@@ -217,25 +217,26 @@ namespace RCore.Service
 		public string Identity { get; set; } // Avatar, Display Name, etc...
 	}
 
-	public class PlayerDataDocument
+	public class PlayerDataDoc
 	{
 		public string Data { get; set; }
 	}
 
-	public static class RFirebaseFirestore
+	public static class RFirebaseFirestore1
 	{
 		public static void Init() { }
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerIdentityByEmailAsync(string email) => null;
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerIdentityByFbIdAsync(string fbId) => null;
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerIdentityByGPGIdAsync(string GPGId) => null;
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerIdentityDocument(string playerId) => null;
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerDataDocument(string playerId) => null;
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerIdentityDocument() => null;
-		public static async UniTask<PlayerIdentityDocument> LoadPlayerDataDocument() => null;
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityByEmailAsync(string email) => null;
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityByFbIdAsync(string fbId) => null;
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityByGPGIdAsync(string GPGId) => null;
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityDoc(string playerId) => null;
+		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityDoc() => null;
+		public static async UniTask<PlayerDataDoc> LoadPlayerDataDoc(string playerId) => null;
+		public static async UniTask<PlayerDataDoc> LoadPlayerDataDoc() => null;
 		public static async UniTask<bool> UploadPlayerIdentityAsync(string playerId, string pEmail, string pFbId, string GPGId, int pLevel, string pCountry, int pLastActive, string pIdentity) => false;
 		public static async UniTask<bool> UploadPlayerDataAsync(string playerId, string pData) => false;
 		public static async UniTask<bool> UploadPlayerIdentityAsync(string pEmail, string pFbId, string pGPGId, int pLevel, string pCountry, int pLastActive, string pIdentity) => false;
 		public static async UniTask<bool> UploadPlayerDataAsync(string pData) => false;
+		public static async UniTask<List<PlayerIdentityDoc>> FindPlayerIdentityDocs(string country = null, int timestampNowUtc = 0, int version = 0, int limit = 0) => null;
 	}
 #endif
 }
