@@ -866,7 +866,7 @@ namespace RCore.Service
 
 #else
         public static bool Initialized => false;
-        public static void Initialize() { }
+        public static void Init() { }
         public static void CancelOperation() { }
         public static void Delete(Action<bool> pOnFinished, SavedFileDefinition pStoDef)
         {

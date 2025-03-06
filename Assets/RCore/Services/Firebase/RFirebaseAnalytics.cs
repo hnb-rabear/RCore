@@ -149,7 +149,7 @@ namespace RCore.Service
         }
 #else
         public static bool initialized { get; private set; }
-        public static void Initialize() { }
+        public static void Init() { }
         public static void SetUserProperty(string name, string property) { }
         public static void SetUserId(string id) { }
         public static void LogEvent(string name) { }

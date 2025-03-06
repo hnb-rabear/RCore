@@ -290,7 +290,7 @@ namespace RCore.Service
 #else
         public static bool Initialized => false;
 		public static bool Authenticated => false;
-        public static void Initialize() { }
+        public static void Init() { }
         public static void LogUserInfo() { }
         public static void SignOut() { }
         public static Task DeleteUserAsync() { return Task.FromResult(0); }

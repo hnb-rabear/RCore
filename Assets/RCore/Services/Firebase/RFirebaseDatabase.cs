@@ -339,7 +339,7 @@ namespace RCore.Service
 			});
 		}
 #else
-        public static void Initialize() { }
+        public static void Init() { }
         public static void CheckOnline(Action pOnConnected) { }
         public static void GetData(object reference, Action<string, bool> pOnFinished)
         {
