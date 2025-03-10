@@ -75,35 +75,6 @@ namespace RCore.Data.JObject
 			@ref.Init();
 			m_models.Add(@ref);
 		}
-		
-		public CloudSave CreateCloudSave()
-		{
-			var cloudData = new CloudSave
-			{
-				session = this.session.data.SessionsTotal,
-				playTime = this.session.data.activeTime,
-				lastActive = this.session.data.lastActive,
-				deviceId = this.identity.data.deviceId,
-				gpgsId = this.identity.data.gpgsId,
-				level = this.identity.data.level,
-				data = JObjectDB.ToJson()
-			};
-			return cloudData;
-		}
-	}
-	
-	//===============================================================
-	
-	[Serializable]
-	public class CloudSave
-	{
-		public string deviceId;
-		public string gpgsId;
-		public float playTime;
-		public int session;
-		public int lastActive;
-		public int level;
-		public string data;
 	}
 
 	//===============================================================

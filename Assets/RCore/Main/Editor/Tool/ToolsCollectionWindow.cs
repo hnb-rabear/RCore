@@ -902,8 +902,9 @@ namespace RCore.Editor.Tool
 
 #region Remove Duplicate Characters
 
-		private static string m_CombinedTextsResult;
+		private static string m_Characters;
 		private static readonly List<TextAsset> m_TextFiles = new List<TextAsset>();
+		private static string m_ContentForCreatingCharacterSet;
 		private static void GenerateCharactersMap()
 		{
 			if (EditorHelper.HeaderFoldout("Generate Characters Set"))
@@ -911,14 +912,13 @@ namespace RCore.Editor.Tool
 				if (EditorHelper.ButtonColor("Add Txt File", Color.green))
 				{
 					m_TextFiles.Add(null);
-					RemoveDuplicateCharacters();
 				}
 				EditorHelper.DragDropBox<TextAsset>("TextAsset", objs =>
 				{
 					foreach (var obj in objs)
 						m_TextFiles.Add(obj);
-					RemoveDuplicateCharacters();
 				});
+				m_ContentForCreatingCharacterSet = EditorHelper.TextArea(m_ContentForCreatingCharacterSet, null);
 				for (int i = 0; i < m_TextFiles.Count; i++)
 				{
 					EditorGUILayout.BeginHorizontal();
@@ -929,6 +929,8 @@ namespace RCore.Editor.Tool
 						m_TextFiles.RemoveAt(i);
 					EditorGUILayout.EndHorizontal();
 				}
+				if (EditorHelper.Button("Process"))
+					RemoveDuplicateCharacters();
 				void RemoveDuplicateCharacters()
 				{
 					string combineStr = "";
@@ -937,17 +939,18 @@ namespace RCore.Editor.Tool
 						if (textAsset != null)
 							combineStr += textAsset.text;
 					}
+					combineStr += m_ContentForCreatingCharacterSet;
 
-					m_CombinedTextsResult = string.Empty;
+					m_Characters = string.Empty;
 					var unique = new HashSet<char>(combineStr);
 					foreach (char c in unique)
-						m_CombinedTextsResult += c;
-					m_CombinedTextsResult = string.Concat(m_CombinedTextsResult.OrderBy(c => c));
+						m_Characters += c;
+					m_Characters = string.Concat(m_Characters.OrderBy(c => c));
 				}
-				m_CombinedTextsResult = EditorHelper.TextArea(m_CombinedTextsResult, null);
+				EditorHelper.TextArea(m_Characters, null);
 				if (EditorHelper.Button("Save Characters Set"))
 				{
-					EditorHelper.SaveFilePanel(null, "combined_text", m_CombinedTextsResult, "txt");
+					EditorHelper.SaveFilePanel(null, "combined_text", m_Characters, "txt");
 				}
 			}
 		}

@@ -9,8 +9,5 @@ namespace RCore.Data.JObject
 	[Serializable]
 	public class IdentityData : JObjectData
 	{
-		public string deviceId;
-		public string gpgsId;
-		public int level;
 	}
 }

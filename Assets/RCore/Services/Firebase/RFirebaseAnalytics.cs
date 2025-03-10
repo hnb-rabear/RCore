@@ -28,7 +28,7 @@ namespace RCore.Service
         public static void SetUserProperty(string name, string property)
         {
             if (!initialized) return;
-            Debug.Log(string.Format("SetUserProperty_{0}_{1}", name, property));
+            Debug.Log($"SetUserProperty_{name}_{property}");
             FirebaseAnalytics.SetUserProperty(name, property);
         }
 
@@ -43,7 +43,7 @@ namespace RCore.Service
             if (!initialized)
                 return;
 
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name);
         }
 
@@ -52,14 +52,14 @@ namespace RCore.Service
             if (!initialized)
                 return;
 
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
         }
 
         public static void LogEvent(string name, string parameterName, double parameterValue)
         {
             if (!initialized) return;
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
         }
 
@@ -68,7 +68,7 @@ namespace RCore.Service
             if (!initialized)
                 return;
 
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
         }
 
@@ -77,7 +77,7 @@ namespace RCore.Service
             if (!initialized)
                 return;
 
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
         }
 
@@ -86,7 +86,7 @@ namespace RCore.Service
             if (!initialized)
                 return;
 
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, parameterName, parameterValue);
         }
 
@@ -99,7 +99,7 @@ namespace RCore.Service
                 {
                     array[i] = new Parameter(paramNames[i], paramValues[i]);
                 }
-                Debug.Log(string.Format("LogEvent_{0}", name));
+                Debug.Log($"LogEvent_{name}");
                 FirebaseAnalytics.LogEvent(name, array);
             }
         }
@@ -116,7 +116,7 @@ namespace RCore.Service
             {
                 array[i] = new Parameter(paramNames[i], paramValues[i]);
             }
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, array);
         }
 
@@ -129,7 +129,7 @@ namespace RCore.Service
                 {
                     array[i] = new Parameter(paramNames[i], paramValues[i]);
                 }
-                Debug.Log(string.Format("LogEvent_{0}", name));
+                Debug.Log($"LogEvent_{name}");
                 FirebaseAnalytics.LogEvent(name, array);
             }
         }
@@ -144,7 +144,7 @@ namespace RCore.Service
             {
                 array[i] = new Parameter(paramNames[i], paramValues[i]);
             }
-            Debug.Log(string.Format("LogEvent_{0}", name));
+            Debug.Log($"LogEvent_{name}");
             FirebaseAnalytics.LogEvent(name, array);
         }
 #else

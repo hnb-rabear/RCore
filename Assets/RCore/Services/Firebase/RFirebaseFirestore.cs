@@ -45,7 +45,7 @@ namespace RCore.Service
 			get
 			{
 				string id = Social.localUser.id;
-				if (string.IsNullOrEmpty(id))
+				if (string.IsNullOrEmpty(id) || id == "0")
 					id = SystemInfo.deviceUniqueIdentifier;
 				return id;
 			}
@@ -62,6 +62,8 @@ namespace RCore.Service
 			var query = m_PlayerIdentityCollection.WhereEqualTo(nameof(PlayerIdentityDoc.Email), email).Limit(1);
 			var task = query.GetSnapshotAsync();
 			await task;
+			if (task.IsCanceled || task.IsFaulted)
+				return null;
 			foreach (var documentSnapshot in task.Result.Documents)
 			{
 				var playerDocument = documentSnapshot.ConvertTo<PlayerIdentityDoc>();
@@ -76,6 +78,8 @@ namespace RCore.Service
 			var query = m_PlayerIdentityCollection.WhereEqualTo(nameof(PlayerIdentityDoc.FbId), fbId).Limit(1);
 			var task = query.GetSnapshotAsync();
 			await task;
+			if (task.IsCanceled || task.IsFaulted)
+				return null;
 			foreach (var documentSnapshot in task.Result.Documents)
 			{
 				var playerDocument = documentSnapshot.ConvertTo<PlayerIdentityDoc>();
@@ -90,6 +94,8 @@ namespace RCore.Service
 			var query = m_PlayerIdentityCollection.WhereEqualTo(nameof(PlayerIdentityDoc.GPGId), GPGId).Limit(1);
 			var task = query.GetSnapshotAsync();
 			await task;
+			if (task.IsCanceled || task.IsFaulted)
+				return null;
 			foreach (var documentSnapshot in task.Result.Documents)
 			{
 				var playerDocument = documentSnapshot.ConvertTo<PlayerIdentityDoc>();
@@ -102,9 +108,9 @@ namespace RCore.Service
 			if (string.IsNullOrEmpty(playerId))
 				return null;
 			var task = m_PlayerIdentityCollection.Document(playerId).GetSnapshotAsync();
+			await task;
 			if (task.IsCanceled || task.IsFaulted)
 				return null;
-			await task;
 			var document = task.Result.ConvertTo<PlayerIdentityDoc>();
 			return document;
 		}
@@ -112,25 +118,24 @@ namespace RCore.Service
 		{
 			return await LoadPlayerIdentityDoc(UserId);
 		}
-		public static async UniTask<PlayerDataDoc> LoadPlayerDataDoc(string playerId)
+		public static async UniTask<PlayerDataDoc> LoadPlayerDataDocAsync(string playerId)
 		{
 			if (string.IsNullOrEmpty(playerId))
 				return null;
 			var task = m_PlayerDataCollection.Document(playerId).GetSnapshotAsync();
+			await task;
 			if (task.IsCanceled || task.IsFaulted)
 				return null;
-			await task;
 			var document = task.Result.ConvertTo<PlayerDataDoc>();
 			return document;
 		}
-		public static async UniTask<PlayerDataDoc> LoadPlayerDataDoc()
+		public static async UniTask<PlayerDataDoc> LoadPlayerDataDocAsync()
 		{
-			return await LoadPlayerDataDoc(UserId);
+			return await LoadPlayerDataDocAsync(UserId);
 		}
 		public static async UniTask<bool> UploadPlayerIdentityAsync(string playerId, string pEmail, string pFbId, string GPGId, int pLevel, string pCountry, int pLastActive, string pIdentity)
 		{
-			if (string.IsNullOrEmpty(playerId))
-				return false;
+			if (string.IsNullOrEmpty(playerId)) return false;
 			var task = m_PlayerIdentityCollection.Document(playerId).UpdateAsync(new Dictionary<string, object>()
 			{
 				{ nameof(PlayerIdentityDoc.Email), pEmail },
@@ -179,6 +184,8 @@ namespace RCore.Service
 				query = query.Limit(limit);
 			var task = query.GetSnapshotAsync();
 			await task;
+			if (task.IsCanceled || task.IsFaulted)
+				return docs;
 			foreach (var documentSnapshot in task.Result.Documents)
 			{
 				var coopDoc = documentSnapshot.ConvertTo<PlayerIdentityDoc>();

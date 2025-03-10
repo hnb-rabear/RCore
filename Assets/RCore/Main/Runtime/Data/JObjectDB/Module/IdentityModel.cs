@@ -8,7 +8,6 @@ namespace RCore.Data.JObject
 	{
 		public override void Init()
 		{
-			data.deviceId = SystemInfo.deviceUniqueIdentifier;
 		}
 		public override void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
 		{

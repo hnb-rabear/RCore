@@ -125,27 +125,6 @@ namespace RCore.Data.JObject
 			PostLoad();
 		}
 
-		public virtual bool ImportCloudSave(string pCloudData)
-		{
-			var cloudData = JsonUtility.FromJson<CloudSave>(pCloudData);
-			if (cloudData == null)
-				return false;
-
-			bool imported = false;
-			if (cloudData.gpgsId != DataCollection.identity.data.gpgsId)
-			{
-				Import(cloudData.data);
-				imported = true;
-			}
-			else if (cloudData.level > DataCollection.identity.data.level
-			         || cloudData.playTime > DataCollection.session.data.activeTime)
-			{
-				Import(cloudData.data);
-				imported = true;
-			}
-			return imported;
-		}
-
 		public virtual void EnableSave(bool value)
 		{
 			m_enabledSave = value;
