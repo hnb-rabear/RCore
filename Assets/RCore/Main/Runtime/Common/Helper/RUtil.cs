@@ -537,25 +537,25 @@ namespace RCore
 					return "Latin";
 			}
 		}
-		public static string GenerateUserName(string countryCode)
+		public static string GenerateDisplayName(string countryCode)
 		{
 			if (Random.value < 0.11f)
-				return GenerateLatinUserName();
+				return GenerateLatinDisplayName();
 			string characterSet = GetCharacterSet(countryCode);
 			switch (characterSet)
 			{
-				case "Cyrillic": return GenerateCyrillicUserName();
-				case "Chinese": return GenerateChineseUserName();
-				case "Japanese": return GenerateJapaneseUserName();
-				case "Korean": return GenerateKoreanUserName();
-				case "Arabic": return GenerateArabicUserName();
-				case "Vietnamese": return GenerateVietnameseUserName();
-				case "Thai": return GenerateThailandUserName();
-				case "English": return GenerateEnglishUserName();
-				default: return GenerateLatinUserName(); // Default to Latin
+				case "Cyrillic": return GenerateCyrillicDisplayName();
+				case "Chinese": return GenerateChineseDisplayName();
+				case "Japanese": return GenerateJapaneseDisplayName();
+				case "Korean": return GenerateKoreanDisplayName();
+				case "Arabic": return GenerateArabicDisplayName();
+				case "Vietnamese": return GenerateVietnameseDisplayName();
+				case "Thai": return GenerateThailandDisplayName();
+				case "English": return GenerateEnglishDisplayName();
+				default: return GenerateLatinDisplayName(); // Default to Latin
 			}
 		}
-		private static string GenerateCyrillicUserName()
+		private static string GenerateCyrillicDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -585,7 +585,7 @@ namespace RCore
 			};
 			return firstPart[Random.Range(0, firstPart.Length)] + secondPart[Random.Range(0, secondPart.Length)];
 		}
-		private static string GenerateChineseUserName()
+		private static string GenerateChineseDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -615,7 +615,7 @@ namespace RCore
 			};
 			return firstPart[Random.Range(0, firstPart.Length)] + secondPart[Random.Range(0, secondPart.Length)];
 		}
-		private static string GenerateJapaneseUserName()
+		private static string GenerateJapaneseDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -645,7 +645,7 @@ namespace RCore
 			};
 			return firstPart[Random.Range(0, firstPart.Length)] + secondPart[Random.Range(0, secondPart.Length)];
 		}
-		private static string GenerateKoreanUserName()
+		private static string GenerateKoreanDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -675,7 +675,7 @@ namespace RCore
 			};
 			return firstPart[Random.Range(0, firstPart.Length)] + secondPart[Random.Range(0, secondPart.Length)];
 		}
-		private static string GenerateArabicUserName()
+		private static string GenerateArabicDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -698,7 +698,7 @@ namespace RCore
 			};
 			return firstPart[Random.Range(0, firstPart.Length)] + secondPart[Random.Range(0, secondPart.Length)];
 		}
-		private static string GenerateVietnameseUserName()
+		private static string GenerateVietnameseDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -738,7 +738,7 @@ namespace RCore
 				_ => Random.value > 0.5f ? $"{first} {second}" : $"{first.ToLower()} {second.ToLower()}"
 			};
 		}
-		private static string GenerateThailandUserName()
+		private static string GenerateThailandDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -768,7 +768,7 @@ namespace RCore
 			};
 			return firstPart[Random.Range(0, firstPart.Length)] + secondPart[Random.Range(0, secondPart.Length)];
 		}
-		private static string GenerateLatinUserName()
+		private static string GenerateLatinDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -807,7 +807,7 @@ namespace RCore
 				_ => Random.value > 0.5f ? $"{first} {second}" : $"{first.ToLower()} {second.ToLower()}"
 			};
 		}
-		private static string GenerateEnglishUserName()
+		private static string GenerateEnglishDisplayName()
 		{
 			string[] firstPart =
 			{
@@ -1091,8 +1091,7 @@ namespace RCore
 			foreach (var duplicate in duplicates)
 				list.Remove(duplicate);
 		}
-
-
+		
 		public static void Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
 		{
 			foreach (var item in pDict)

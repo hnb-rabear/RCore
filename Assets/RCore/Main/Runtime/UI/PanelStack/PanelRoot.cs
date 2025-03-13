@@ -130,7 +130,7 @@ namespace RCore.UI
 			fullScreenImageObj.transform.SetParent(transform, false);
 
 			var fullScreenImage = fullScreenImageObj.GetComponent<Image>();
-			fullScreenImage.color = Color.black.SetAlpha(0.9f);
+			fullScreenImage.color = Color.black.SetAlpha(0.96f);
 
 			var rectTransform = fullScreenImage.GetComponent<RectTransform>();
 			rectTransform.anchorMin = Vector2.zero;
