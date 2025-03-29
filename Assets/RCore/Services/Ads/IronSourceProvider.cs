@@ -3,26 +3,26 @@ using UnityEngine;
 
 namespace RCore.Service
 {
-    public class IronSourceProvider : MonoBehaviour
-    {
-        private static IronSourceProvider m_Instance;
-        public static IronSourceProvider Instance => m_Instance;
-        public static string ANDROID_APP_KEY => Configuration.KeyValues["IS_APP_KEY_ANDROID"];
-        public static string IOS_APP_KEY => Configuration.KeyValues["IS_APP_KEY_IOS"];
+	public class IronSourceProvider : MonoBehaviour
+	{
+		private static IronSourceProvider m_Instance;
+		public static IronSourceProvider Instance => m_Instance;
+		public string androidAppKey;
+		public string iosAppKey;
+
+		private Action<bool> m_onRewardedAdCompleted;
+		private Action m_onInterstitialAdCompleted;
+		private bool m_isBannerLoaded;
+
+		private void Awake()
+		{
+			if (m_Instance == null)
+				m_Instance = this;
+			else if (m_Instance != this)
+				Destroy(gameObject);
+		}
+
 #if IRONSOURCE
-
-        private Action<bool> m_OnRewardedAdCompleted;
-        private Action m_OnInterstitialAdCompleted;
-        private bool m_IsBannerLoaded;
-
-        private void Awake()
-        {
-            if (m_Instance == null)
-                m_Instance = this;
-            else if (m_Instance != this)
-                Destroy(gameObject);
-        }
-
         public void Init()
         {
             // Create a ConsentRequestParameters object.        
@@ -56,9 +56,9 @@ namespace RCore.Service
             void InitAds()
             {
 #if UNITY_ANDROID
-                string appKey = ANDROID_APP_KEY
+                string appKey = androidAppKey
 #elif UNITY_IPHONE
-				string appKey = IOS_APP_KEY
+				string appKey = iosAppKey
 #endif
                 IronSourceConfig.Instance.setClientSideCallbacks(true);
 
@@ -82,12 +82,12 @@ namespace RCore.Service
         {
             IronSourceBannerEvents.onAdLoadedEvent += adInfo =>
             {
-                m_IsBannerLoaded = true;
+                m_isBannerLoaded = true;
                 Debug.Log($"IronSourceBannerEvents.onAdLoadedEvent AdInfo {adInfo}");
             };
             IronSourceBannerEvents.onAdLoadFailedEvent += error =>
             {
-                m_IsBannerLoaded = false;
+                m_isBannerLoaded = false;
                 Debug.Log($"IronSourceBannerEvents.onAdLoadFailedEvent Error {error}");
             };
             IronSourceBannerEvents.onAdClickedEvent += adInfo =>
@@ -116,7 +116,7 @@ namespace RCore.Service
 
         public bool IsBannerLoaded()
         {
-            return m_IsBannerLoaded;
+            return m_isBannerLoaded;
         }
 
         public void HideBanner()
@@ -144,7 +144,7 @@ namespace RCore.Service
             };
             IronSourceInterstitialEvents.onAdShowSucceededEvent += adInfo =>
             {
-                m_OnInterstitialAdCompleted?.Invoke();
+                m_onInterstitialAdCompleted?.Invoke();
                 Debug.Log($"IronSourceInterstitialEvents.onAdShowSucceededEvent AdInfo {adInfo}");
             };
             IronSourceInterstitialEvents.onAdShowFailedEvent += (ironSourceError, adInfo) =>
@@ -164,7 +164,7 @@ namespace RCore.Service
 
         public void ShowInterstitial(Action onAdCompleted)
         {
-            m_OnInterstitialAdCompleted = onAdCompleted;
+            m_onInterstitialAdCompleted = onAdCompleted;
             IronSource.Agent.showInterstitial();
         }
 
@@ -188,12 +188,12 @@ namespace RCore.Service
             };
             IronSourceRewardedVideoEvents.onAdShowFailedEvent += (ironSourceError, adInfo) =>
             {
-                m_OnRewardedAdCompleted?.Invoke(false);
+                m_onRewardedAdCompleted?.Invoke(false);
                 Debug.Log($"IronSourceRewardedVideoEvents.onAdShowFailedEvent Error{ironSourceError} AdInfo {adInfo}");
             };
             IronSourceRewardedVideoEvents.onAdRewardedEvent += (ironSourcePlacement, adInfo) =>
             {
-                m_OnRewardedAdCompleted?.Invoke(true);
+                m_onRewardedAdCompleted?.Invoke(true);
                 Debug.Log($"IronSourceRewardedVideoEvents.onAdRewardedEvent Placement{ironSourcePlacement} AdInfo {adInfo}");
             };
             IronSourceRewardedVideoEvents.onAdClickedEvent += (ironSourcePlacement, adInfo) =>
@@ -209,11 +209,11 @@ namespace RCore.Service
 
         public void ShowRewardedAd(Action<bool> onAdCompleted)
         {
-            m_OnRewardedAdCompleted = onAdCompleted;
+            m_onRewardedAdCompleted = onAdCompleted;
             IronSource.Agent.showRewardedVideo();
         }
 #else
-    public void Init() { }
+		public void Init() { }
 #endif
-    }
+	}
 }

@@ -35,7 +35,7 @@ namespace RCore
 		public bool loading;
 		private AsyncOperationHandle<GameObject> m_operation;
 		public ComponentRef(string guid) : base(guid) { }
-		
+
 		public override bool ValidateAsset(Object obj)
 		{
 			var go = obj as GameObject;
@@ -593,7 +593,7 @@ namespace RCore
 				WaitLoadTask(operation, pOnComplete);
 				return;
 			}
-            TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
+			TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>
@@ -625,7 +625,7 @@ namespace RCore
 				return;
 			}
 
-            TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
+			TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>
@@ -690,8 +690,15 @@ namespace RCore
 		public ComponentRef<T> reference;
 		public bool loading { get; private set; }
 		public T asset { get; private set; }
-		public T instance { get; private set; }
+		[NonSerialized] public T instance;
 		private AsyncOperationHandle<GameObject> m_operation;
+		public void Instantiate(bool defaultActive = false)
+		{
+			if (instance != null) return;
+			instance = Object.Instantiate(asset, parent);
+			instance.gameObject.SetActive(defaultActive);
+			instance.name = asset.name;
+		}
 		public async UniTask<T> InstantiateAsync(bool defaultActive = false)
 		{
 			UnityEngine.Debug.Assert(parent != null, "parent != null");

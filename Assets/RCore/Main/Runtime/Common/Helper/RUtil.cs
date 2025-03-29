@@ -479,7 +479,56 @@ namespace RCore
 			};
 			return countryCodes[Random.Range(0, countryCodes.Length)];
 		}
-
+		public static string GetCountryCode(SystemLanguage language)
+		{
+			switch (language)
+			{
+				case SystemLanguage.Afrikaans: return "ZA";
+				case SystemLanguage.Arabic: return "SA";
+				case SystemLanguage.Basque: return "ES";
+				case SystemLanguage.Belarusian: return "BY";
+				case SystemLanguage.Bulgarian: return "BG";
+				case SystemLanguage.Catalan: return "ES";
+				case SystemLanguage.Chinese: return "CN";
+				case SystemLanguage.Czech: return "CZ";
+				case SystemLanguage.Danish: return "DK";
+				case SystemLanguage.Dutch: return "NL";
+				case SystemLanguage.English: return "US";
+				case SystemLanguage.Estonian: return "EE";
+				case SystemLanguage.Faroese: return "FO";
+				case SystemLanguage.Finnish: return "FI";
+				case SystemLanguage.French: return "FR";
+				case SystemLanguage.German: return "DE";
+				case SystemLanguage.Greek: return "GR";
+				case SystemLanguage.Hebrew: return "IL";
+				case SystemLanguage.Icelandic: return "IS";
+				case SystemLanguage.Indonesian: return "ID";
+				case SystemLanguage.Italian: return "IT";
+				case SystemLanguage.Japanese: return "JP";
+				case SystemLanguage.Korean: return "KR";
+				case SystemLanguage.Latvian: return "LV";
+				case SystemLanguage.Lithuanian: return "LT";
+				case SystemLanguage.Norwegian: return "NO";
+				case SystemLanguage.Polish: return "PL";
+				case SystemLanguage.Portuguese: return "PT";
+				case SystemLanguage.Romanian: return "RO";
+				case SystemLanguage.Russian: return "RU";
+				case SystemLanguage.SerboCroatian: return "RS"; // Serbia as most common
+				case SystemLanguage.Slovak: return "SK";
+				case SystemLanguage.Slovenian: return "SI";
+				case SystemLanguage.Spanish: return "ES";
+				case SystemLanguage.Swedish: return "SE";
+				case SystemLanguage.Thai: return "TH";
+				case SystemLanguage.Turkish: return "TR";
+				case SystemLanguage.Ukrainian: return "UA";
+				case SystemLanguage.Vietnamese: return "VN";
+				case SystemLanguage.ChineseSimplified: return "CN";
+				case SystemLanguage.ChineseTraditional: return "TW"; // Taiwan as most common
+				case SystemLanguage.Hindi: return "IN";
+				case SystemLanguage.Unknown: return "US"; // Fallback
+				default: return "US";
+			}
+		}
 		public static string GetCharacterSet(string countryCode)
 		{
 			if (string.IsNullOrEmpty(countryCode))
@@ -1091,7 +1140,7 @@ namespace RCore
 			foreach (var duplicate in duplicates)
 				list.Remove(duplicate);
 		}
-		
+
 		public static void Add(this Dictionary<int, int> pSource, Dictionary<int, int> pDict)
 		{
 			foreach (var item in pDict)

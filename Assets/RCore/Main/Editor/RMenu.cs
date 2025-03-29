@@ -68,12 +68,18 @@ namespace RCore.Editor
 			AssetDatabase.SaveAssets();
 		}
 
-		[MenuItem("RCore/Quick Scene Opener " + CTRL + "_" + ALT + "_k", priority = GROUP_2 + 2)]
-		private static void OpenQuickSceneWindow()
+		[MenuItem("RCore/Scenes Navigator " + CTRL + "_" + ALT + "_k", priority = GROUP_2 + 2)]
+		private static void OpenScenesNavigator()
 		{
-			QuickSceneWindow.ShowWindow();
+			ScenesNavigatorWindow.ShowWindow();
 		}
 
+		[MenuItem("RCore/Asset Shortcuts " + CTRL + "_" + ALT + "_l", priority = GROUP_2 + 2)]
+		private static void OpenAssetShortcuts()
+		{
+			AssetShortcutsWindow.ShowWindow();
+		}
+		
 		//==========================================================
 
 		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_4 + 1)]
@@ -202,34 +208,6 @@ namespace RCore.Editor
 				EditorUtility.SetDirty(target);
 			}
 		}
-
-		// [MenuItem(GAMEOBJECT_R + "Reorder Children By Y Position")]
-		// public static void ReorderChildrenByYPosition()
-		// {
-		// 	foreach (var target in Selection.gameObjects)
-		// 	{
-		// 		var children = new List<Transform>();
-		// 		foreach (Transform child in target.transform)
-		// 			children.Add(child);
-		//
-		// 		// Sort the children by Y position, with those having lowest X position and near center prioritized
-		// 		children.Sort((a, b) =>
-		// 		{
-		// 			int yComparison = b.localPosition.y.CompareTo(a.localPosition.y);
-		// 			if (yComparison == 0)
-		// 			{
-		// 				float distanceA = Vector2.Distance(a.localPosition, Vector2.zero);
-		// 				float distanceB = Vector2.Distance(b.localPosition, Vector2.zero);
-		// 				return distanceB.CompareTo(distanceA);
-		// 			}
-		// 			return yComparison;
-		// 		});
-		//
-		// 		// Reorder the children based on the sorted list
-		// 		for (int i = children.Count - 1; i >= 0; i--)
-		// 			children[i].SetSiblingIndex(i);
-		// 	}
-		// }
 
 		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
 		public static void PerfectRatioImagesByWidth()

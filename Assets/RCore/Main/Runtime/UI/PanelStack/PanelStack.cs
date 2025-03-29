@@ -25,7 +25,7 @@ namespace RCore.UI
 
 		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
 
-		public PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
+		public virtual PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 		/// <summary>
 		/// Index in stack
 		/// </summary>
@@ -160,7 +160,7 @@ namespace RCore.UI
 		/// <summary>
 		/// Check if panel is prefab or build-in prefab then create and init
 		/// </summary>
-		public T PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) where T : PanelController
+		public virtual T PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) where T : PanelController
 		{
 			var panel = CreatePanel(ref pPanel);
 			PushPanel(panel, keepCurrentInStack, onlyInactivePanel, instantPopAndPush);
@@ -474,7 +474,7 @@ namespace RCore.UI
 		/// <summary>
 		/// Pop and hide all panels in stack, at the same time
 		/// </summary>
-		public void PopAllPanels()
+		public virtual void PopAllPanels()
 		{
 			var lockedPanels = new List<PanelController>();
 			PanelController lastTopPanel = null;

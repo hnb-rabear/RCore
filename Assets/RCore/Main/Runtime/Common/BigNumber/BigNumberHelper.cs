@@ -106,51 +106,51 @@ namespace RCore
 
         public static string ToKKKNumber(float pValue, int maxNum = 3)
         {
-            if (Math.Abs(pValue) < 1)
-                return "0";
+	        if (Math.Abs(pValue) < 1)
+		        return "0";
 
-            if (Math.Abs(pValue) < 1000)
-                return pValue.ToString("#");
+	        if (Math.Abs(pValue) < 1000)
+		        return pValue.ToString("0.#"); // Uses "0.#" to avoid unnecessary decimal places
 
-            bool negative = pValue < 0;
-            float valueTemp = Mathf.Abs(pValue);
-            int len = GetLength(valueTemp);
-            int intPartNumber = (len - 1) % 3 + 1;
-            string intPart = valueTemp.ToString("#").Substring(0, intPartNumber);
-            if (intPartNumber < maxNum)
-            {
-                string decimalPart = valueTemp.ToString("#").Substring(intPartNumber, maxNum - intPartNumber);
-                numberBuilder.Length = 0;
-                numberBuilder.Capacity = 0;
-                if (negative) numberBuilder.Append("-");
-                numberBuilder.Append(intPart).Append(".").Append(decimalPart);
-            }
-            else
-            {
-                numberBuilder.Length = 0;
-                numberBuilder.Capacity = 0;
-                numberBuilder.Append(intPart);
-                if (negative) numberBuilder.Append("-");
-            }
+	        bool negative = pValue < 0;
+	        float valueTemp = Mathf.Abs(pValue);
+	        int len = (int)Math.Floor(Math.Log10(valueTemp)) + 1;
 
-            if (len > 15)
-            {
-                int unitSize = (len - 16) / (3 * 26) + 2;
-                int unitTypeInt = (len - 16) / 3 % 26;
-                char unitChar = (char)(65 + unitTypeInt);
-                for (int i = 0; i < unitSize; i++)
-                    numberBuilder.Append(unitChar);
-            }
-            else if (len > 12)
-                numberBuilder.Append("T");
-            else if (len > 9)
-                numberBuilder.Append("B");
-            else if (len > 6)
-                numberBuilder.Append("M");
-            else if (len > 3)
-                numberBuilder.Append("K");
+	        int intPartNumber = (len - 1) % 3 + 1;
+	        string intPart = valueTemp.ToString("0.##########").Substring(0, intPartNumber);
 
-            return numberBuilder.ToString();
+	        string decimalPart = "";
+	        if (intPartNumber < maxNum)
+	        {
+		        decimalPart = valueTemp.ToString("0.##########")
+			        .Substring(intPartNumber, Math.Min(maxNum - intPartNumber, len - intPartNumber));
+	        }
+
+	        var numberBuilder = new StringBuilder();
+	        if (negative) numberBuilder.Append("-");
+	        numberBuilder.Append(intPart);
+
+	        if (!string.IsNullOrEmpty(decimalPart))
+		        numberBuilder.Append(".").Append(decimalPart.TrimEnd('0')); // Removes trailing zeros
+
+	        if (len > 15)
+	        {
+		        int unitSize = (len - 16) / (3 * 26) + 2;
+		        int unitTypeInt = (len - 16) / 3 % 26;
+		        char unitChar = (char)(65 + unitTypeInt);
+		        for (int i = 0; i < unitSize; i++)
+			        numberBuilder.Append(unitChar);
+	        }
+	        else if (len > 12)
+		        numberBuilder.Append("T");
+	        else if (len > 9)
+		        numberBuilder.Append("B");
+	        else if (len > 6)
+		        numberBuilder.Append("M");
+	        else if (len > 3)
+		        numberBuilder.Append("K");
+
+	        return numberBuilder.ToString();
         }
 
         public static string RemoveDecimalPart(string pNumber)

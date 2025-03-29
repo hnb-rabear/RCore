@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 629d8f49f7862ed4e88d324a8d205fc6, type: 3}
   m_Name: SessionModel
   m_EditorClassIdentifier: 
+  key: SessionData
   data:
     sessions: 00000000000000000000000000000000
     days: 0
@@ -22,3 +23,4 @@ MonoBehaviour:
     installVersion: 
     updateVersion: 
   secondsTillNextDay: 0
+  secondsTillNextWeek: 0

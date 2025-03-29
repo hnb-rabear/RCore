@@ -15,12 +15,6 @@ namespace RCore.Data.JObject
 	public abstract class JObjectData : IJObjectData
 	{
 		[JsonIgnore] public string key { get; set; }
-
-		public JObjectData() { }
-		public JObjectData(string pKey)
-		{
-			key = pKey;
-		}
 		/// <summary>
 		/// Save data 
 		/// </summary>

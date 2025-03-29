@@ -13,7 +13,6 @@ namespace RCore.Data.JObject
 	public class JObjectModelCollection : ScriptableObject
 	{
 		[AutoFill] public SessionModel session;
-		[AutoFill] public IdentityModel identity;
 
 		private List<IJObjectModel> m_models = new();
 
@@ -22,7 +21,6 @@ namespace RCore.Data.JObject
 			m_models = new List<IJObjectModel>();
 
 			CreateModel(session, "SessionData");
-			CreateModel(identity, "Identity");
 		}
 
 		public virtual void Save()
@@ -72,6 +70,16 @@ namespace RCore.Data.JObject
 			if (string.IsNullOrEmpty(key))
 				key = typeof(TData).Name;
 			@ref.data = JObjectDB.CreateCollection(key, defaultVal);
+			@ref.key = key;
+			@ref.Init();
+			m_models.Add(@ref);
+		}
+		
+		protected void CreateModel<TData>(JObjectModel<TData> @ref, TData defaultVal = null) where TData : JObjectData, new()
+		{
+			if (string.IsNullOrEmpty(@ref.key))
+				@ref.key = typeof(TData).Name;
+			@ref.data = JObjectDB.CreateCollection(@ref.key, defaultVal);
 			@ref.Init();
 			m_models.Add(@ref);
 		}

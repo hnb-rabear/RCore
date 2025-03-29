@@ -21,7 +21,7 @@ using DG.Tweening;
 namespace RCore.UI
 {
 	[AddComponentMenu("RCore/UI/CustomToggleTab")]
-	public class CustomToggleTab : Toggle
+	public class JustToggle : Toggle
 	{
 		[Serializable]
 		public class SizeTransition
@@ -379,7 +379,7 @@ namespace RCore.UI
 								{
 									// Lerp alpha of transition1.target to zero
 									var tempColor = transition1.target.color;
-									tempColor.a = Mathf.Lerp(1, 0.15f, lerp * 2); // Multiply by 2 because lerp is [0, 0.5]
+									tempColor.a = Mathf.Lerp(1, 0.3f, lerp * 2); // Multiply by 2 because lerp is [0, 0.5]
 									transition1.target.color = tempColor;
 									transition1.target.sprite = isOn ? transition1.off : transition1.on;
 								}
@@ -387,7 +387,7 @@ namespace RCore.UI
 								{
 									// Lerp alpha of transition1.target to 1
 									var tempColor = transition1.target.color;
-									tempColor.a = Mathf.Lerp(0.15f, 1, (lerp - 0.5f) * 2);
+									tempColor.a = Mathf.Lerp(0.3f, 1, (lerp - 0.5f) * 2);
 									transition1.target.color = tempColor;
 									transition1.target.sprite = isOn ? transition1.on : transition1.off;
 								}
@@ -432,7 +432,8 @@ namespace RCore.UI
 								transition1.target.sprite = isOn ? transition1.on : transition1.off;
 						})
 						.SetId(GetInstanceID() + 1)
-						.SetEase(Ease.OutCubic);
+						.SetEase(Ease.OutCubic)
+						.SetUpdate(true);
 				}
 				if (m_customToggleGroup != null)
 					m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
@@ -474,16 +475,16 @@ namespace RCore.UI
 		}
 
 #if UNITY_EDITOR
-		[CustomEditor(typeof(CustomToggleTab), true)]
+		[CustomEditor(typeof(JustToggle), true)]
 		public class CustomToggleTabEditor : UnityEditor.UI.ToggleEditor
 		{
-			private CustomToggleTab m_mToggle;
+			private JustToggle m_mToggle;
 
 			protected override void OnEnable()
 			{
 				base.OnEnable();
 
-				m_mToggle = (CustomToggleTab)target;
+				m_mToggle = (JustToggle)target;
 			}
 
 			public override void OnInspectorGUI()

@@ -39,6 +39,7 @@ namespace RCore.Editor.Service
 			Validate_FIREBASE_FIRESTORE();
 			Validate_FIREBASE_DATABASE();
 			Validate_FIREBASE_STORAGE();
+			Validate_ADMOB();
 		}
 
 		private static bool IsNamespaceAvailable(string namespaceName)
@@ -207,6 +208,15 @@ namespace RCore.Editor.Service
 				EditorHelper.RemoveDirective("FIREBASE_MESSAGING");
 		}
 
+		private static void Validate_ADMOB()
+		{
+			var googleMobileAdsType = Type.GetType("GoogleMobileAds.Api.MobileAds, GoogleMobileAds");
+			if (googleMobileAdsType != null)
+				EditorHelper.AddDirective("ADMOB");
+			else
+				EditorHelper.RemoveDirective("ADMOB");
+		}
+		
 		//===============================================
 
 		[MenuItem(RMenu.R_TOOLS + MENU_ITEM)]

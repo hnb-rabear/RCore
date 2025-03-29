@@ -9,7 +9,7 @@ using UnityEditor.SceneManagement;
 
 namespace RCore.Editor
 {
-	public class QuickSceneWindow : EditorWindow
+	public class ScenesNavigatorWindow : EditorWindow
 	{
 		private List<string> m_scenes;
 		private REditorPrefString m_search;
@@ -17,12 +17,12 @@ namespace RCore.Editor
 
 		public static void ShowWindow()
 		{
-			GetWindow<QuickSceneWindow>("Quick Scene Opener");
+			GetWindow<ScenesNavigatorWindow>("Scenes Navigator");
 		}
 
 		private void OnEnable()
 		{
-			m_search = new REditorPrefString(typeof(QuickSceneWindow).FullName);
+			m_search = new REditorPrefString(typeof(ScenesNavigatorWindow).FullName);
 			m_scenes = GetAllScenesInProject();
 		}
 

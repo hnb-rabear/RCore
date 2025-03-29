@@ -9,7 +9,9 @@ namespace RCore.Data.JObject
 
 	public abstract class JObjectModel<T> : ScriptableObject, IJObjectModel where T : JObjectData
 	{
+		public string key;
 		public T data;
+		public JObjectData Data => data;
 		public abstract void Init();
 		public abstract void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
@@ -19,7 +21,6 @@ namespace RCore.Data.JObject
 		{
 			data.Save();
 		}
-		public JObjectData Data => data;
 		/// <summary>
 		/// Triggers an event when data changes.
 		/// </summary>

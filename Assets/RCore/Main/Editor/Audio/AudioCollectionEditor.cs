@@ -28,6 +28,11 @@ namespace RCore.Editor.Audio
 				m_collection.generator.inputSfxsFolder = EditorHelper.FolderField(m_collection.generator.inputSfxsFolder, "SFX Sources Path");
 				m_collection.generator.outputIDsFolder = EditorHelper.FolderField(m_collection.generator.outputIDsFolder, "Audio Ids Export folder");
 
+				if (EditorHelper.Button("Sort clips"))
+				{
+					m_collection.musicClips = m_collection.musicClips.OrderBy(x => x.name).ToArray();
+					m_collection.sfxClips = m_collection.sfxClips.OrderBy(x => x.name).ToArray();
+				}
 				if (EditorHelper.Button("Generate"))
 				{
 					if (!string.IsNullOrEmpty(m_collection.generator.inputMusicsFolder))

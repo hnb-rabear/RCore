@@ -29,6 +29,7 @@ namespace RCore
 		public static IPInfo ipInfo;
 		private static bool m_RequestingOnlineState;
 		private static bool m_RequestingIpInfo;
+		private static NetworkReachability m_NetworkReachability;
 		public static async void RequestIpInfo()
 		{
 			if (Application.internetReachability == NetworkReachability.NotReachable)
@@ -134,6 +135,29 @@ namespace RCore
 			m_RequestingOnlineState = false;
 			await request.SendWebRequest();
 			m_IsOnline = request.error == null;
+		}
+		private static async UniTaskVoid UpdateInternetStateAsync()
+		{
+			while (true)
+			{
+				if (m_NetworkReachability != Application.internetReachability)
+				{
+					m_NetworkReachability = Application.internetReachability;
+					if (m_NetworkReachability != NetworkReachability.NotReachable)
+					{
+						CheckOnline();
+						RequestFCTime();
+						RequestIpInfo();
+					}
+				}
+				await UniTask.Delay(3000);
+			}
+		}
+		// Make this method run at application start
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		private static void Initialize()
+		{
+			UpdateInternetStateAsync().Forget();
 		}
 	}
 }

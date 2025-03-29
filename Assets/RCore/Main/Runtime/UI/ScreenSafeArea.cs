@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 #endif
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RCore.UI
@@ -10,15 +11,17 @@ namespace RCore.UI
 	public class ScreenSafeArea : MonoBehaviour
 	{
 		public static Action OnOffsetChanged;
-		
-		public float topOffset;
-		public float bottomOffset;
 		public Canvas canvas;
 		public RectTransform[] safeRects;
 		public bool fixedTop;
 		public bool fixedBottom;
 
 		private void Start()
+		{
+			screenSafeAreas.Add(this);
+		}
+
+		private void OnEnable()
 		{
 			CheckSafeArea();
 		}
@@ -56,7 +59,7 @@ namespace RCore.UI
 		private void CheckSafeArea()
 		{
 			var safeArea = Screen.safeArea;
-			safeArea.height -= topOffset;
+			safeArea.height -= topBannerOffset;
 			if (fixedTop)
 			{
 				safeArea.height += safeArea.y;
@@ -70,12 +73,12 @@ namespace RCore.UI
 			var anchorMax = safeArea.position + safeArea.size;
 
 			var sizeDelta = ((RectTransform)canvas.transform).sizeDelta;
-			sizeDelta.y = -bottomOffset;
+			sizeDelta.y = -bottomBannerOffset;
 			((RectTransform)canvas.transform).sizeDelta = sizeDelta;
 			var position = ((RectTransform)canvas.transform).anchoredPosition;
-			position.y = bottomOffset / 2;
+			position.y = bottomBannerOffset / 2;
 			((RectTransform)canvas.transform).anchoredPosition = position;
-			
+
 			var pixelRect = canvas.pixelRect;
 			anchorMin.x /= pixelRect.width;
 			anchorMin.y /= pixelRect.height;
@@ -87,60 +90,6 @@ namespace RCore.UI
 				rect.anchorMin = anchorMin;
 				rect.anchorMax = anchorMax;
 			}
-		}
-
-		public static float TopOffset;
-		public static void SetTopOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true)
-		{
-			float offset = 0;
-			var safeAreaHeightOffer = Screen.height - Screen.safeArea.height;
-			if (!pPlaceInSafeArea)
-			{
-				if (pBannerHeight <= safeAreaHeightOffer)
-					offset = 0;
-				else
-					offset = pBannerHeight - safeAreaHeightOffer;
-			}
-			else
-			{
-				offset = pBannerHeight;
-			}
-			
-			TopOffset = offset;
-			var ScreenSafeAreas = FindObjectsOfType<ScreenSafeArea>();
-			foreach (var component in ScreenSafeAreas)
-			{
-				component.topOffset = offset;
-				component.StartCoroutine(component.IEValidate());
-			}
-			OnOffsetChanged?.Invoke();
-		}
-
-		public static float BottomOffset;
-		public static void SetBottomOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true)
-		{
-			float offset = 0;
-			var safeAreaHeightOffer = Screen.height - Screen.safeArea.height;
-			if (!pPlaceInSafeArea)
-			{
-				if (pBannerHeight <= safeAreaHeightOffer)
-					offset = 0;
-				else
-					offset = pBannerHeight - safeAreaHeightOffer;
-			}
-			else
-			{
-				offset = pBannerHeight;
-			}
-			
-			BottomOffset = offset;
-			var screenSafeAreas = FindObjectsOfType<ScreenSafeArea>();
-			foreach (var component in screenSafeAreas)
-			{
-				component.bottomOffset = offset;
-				component.StartCoroutine(component.IEValidate());
-			}
-			OnOffsetChanged?.Invoke();
 		}
 
 		private IEnumerator IEValidate()
@@ -163,5 +112,52 @@ namespace RCore.UI
 		[InspectorButton]
 #endif
 		private void TestBottomOffsetForBannerAd(int height) => SetBottomOffsetForBannerAd(height);
+
+		//========================================================================================
+
+		public static float topBannerOffset;
+		public static float bottomBannerOffset;
+		public static List<ScreenSafeArea> screenSafeAreas = new();
+
+		public static void SetTopOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true)
+		{
+			float offset = 0;
+			var safeAreaHeightOffer = Screen.height - Screen.safeArea.height;
+			if (!pPlaceInSafeArea)
+			{
+				if (pBannerHeight <= safeAreaHeightOffer)
+					offset = 0;
+				else
+					offset = pBannerHeight - safeAreaHeightOffer;
+			}
+			else
+				offset = pBannerHeight;
+
+			topBannerOffset = offset;
+			foreach (var component in screenSafeAreas)
+				if (component != null && component.gameObject.activeSelf)
+					component.StartCoroutine(component.IEValidate());
+			OnOffsetChanged?.Invoke();
+		}
+		public static void SetBottomOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true)
+		{
+			float offset = 0;
+			var safeAreaHeightOffer = Screen.height - Screen.safeArea.height;
+			if (!pPlaceInSafeArea)
+			{
+				if (pBannerHeight <= safeAreaHeightOffer)
+					offset = 0;
+				else
+					offset = pBannerHeight - safeAreaHeightOffer;
+			}
+			else
+				offset = pBannerHeight;
+
+			bottomBannerOffset = offset;
+			foreach (var component in screenSafeAreas)
+				if (component != null && component.gameObject.activeSelf)
+					component.StartCoroutine(component.IEValidate());
+			OnOffsetChanged?.Invoke();
+		}
 	}
 }

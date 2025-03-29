@@ -123,7 +123,7 @@ namespace RCore.UI
 				return true;
 			return StackCount > 0;
 		}
-
+		
 		private Button CreatDimmerOverlay()
 		{
 			var fullScreenImageObj = new GameObject("BtnBackBackground", typeof(Image));

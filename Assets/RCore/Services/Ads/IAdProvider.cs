@@ -1,0 +1,45 @@
+using System;
+using UnityEngine;
+
+namespace RCore.Service
+{
+	public interface IAdProvider
+	{
+		void Init(IAdEvent adEvent);
+		void ShowInterstitial(string pPlacement = null, Action pCallback = null);
+		bool IsInterstitialReady();
+		void ShowRewardedAd(string pPlacement = null, Action<bool> pCallback = null);
+		bool IsRewardedVideoAvailable();
+		bool DisplayBanner() => false;
+		void HideBanner();
+		void DestroyBanner();
+		bool IsBannerReady();
+		bool IsBannerDisplayed();
+	}
+
+	public interface IAdEvent
+	{
+		void OnInterstitialInit();
+		void OnInterstitialLoaded();
+		void OnInterstitialLoadFailed();
+		void OnInterstitialCompleted(string placement);
+		void OnInterstitialClick(string placement);
+		void OnInterstitialShow(bool success, string pPlacement);
+		void OnInterstitialPaid(string pPlacement);
+
+		void OnRewardedInit();
+		void OnRewardedLoaded();
+		void OnRewardedLoadFailed();
+		void OnRewardedCompleted(string placement);
+		void OnRewardedClicked(string placement);
+		void OnRewardedShow(bool success, string pPlacement);
+		void OnRewardedPaid(string pPlacement);
+
+		void OnBannerInit();
+		void OnBannerLoaded();
+		void OnBannerLoadFailed();
+		void OnBannerClicked();
+		void OnBannerPaid();
+		void OnBannerShowed(bool pSuccess);
+	}
+}
