@@ -5,7 +5,7 @@ namespace RCore.Service
 {
 	public interface IAdProvider
 	{
-		void Init(IAdEvent adEvent);
+		void Init();
 		void ShowInterstitial(string pPlacement = null, Action pCallback = null);
 		bool IsInterstitialReady();
 		void ShowRewardedAd(string pPlacement = null, Action<bool> pCallback = null);
@@ -17,7 +17,18 @@ namespace RCore.Service
 		bool IsBannerDisplayed();
 	}
 
-	public interface IAdEvent
+	public interface IRewardedAdEvent
+	{
+		void OnRewardedInit();
+		void OnRewardedLoaded();
+		void OnRewardedLoadFailed();
+		void OnRewardedCompleted(string placement);
+		void OnRewardedClicked(string placement);
+		void OnRewardedShow(bool success, string pPlacement);
+		void OnRewardedPaid(string pPlacement);
+	}
+	
+	public interface IInterstitialAdEvent
 	{
 		void OnInterstitialInit();
 		void OnInterstitialLoaded();
@@ -26,20 +37,15 @@ namespace RCore.Service
 		void OnInterstitialClick(string placement);
 		void OnInterstitialShow(bool success, string pPlacement);
 		void OnInterstitialPaid(string pPlacement);
+	}
 
-		void OnRewardedInit();
-		void OnRewardedLoaded();
-		void OnRewardedLoadFailed();
-		void OnRewardedCompleted(string placement);
-		void OnRewardedClicked(string placement);
-		void OnRewardedShow(bool success, string pPlacement);
-		void OnRewardedPaid(string pPlacement);
-
+	public interface IBannerAdEvent
+	{
 		void OnBannerInit();
 		void OnBannerLoaded();
 		void OnBannerLoadFailed();
 		void OnBannerClicked();
 		void OnBannerPaid();
-		void OnBannerShowed(bool pSuccess);
+		void OnBannerDisplayed(bool pSuccess);
 	}
 }

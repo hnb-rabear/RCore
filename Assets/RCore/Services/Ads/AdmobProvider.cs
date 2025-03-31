@@ -15,11 +15,12 @@ namespace RCore.Service
 		public string adUnitRewarded;
 		public string adUnitBanner;
 		public string placement;
-		private IAdEvent m_adEvent;
+		private IInterstitialAdEvent m_interstitialAdEvent;
+		private IBannerAdEvent m_bannerAdEvent;
+		private IRewardedAdEvent m_rewardedAdEvent;
 #if ADMOB
-		public void Init(IAdEvent adEvent)
+		public void Init()
 		{
-			m_adEvent = adEvent;
 #if UNITY_ANDROID
 			// Create a ConsentRequestParameters object     
 			var request = new ConsentRequestParameters();
@@ -61,7 +62,13 @@ namespace RCore.Service
 				});
 			}
 		}
-
+		public void SetEventListener(GameObject listener)
+		{
+			m_interstitialAdEvent = listener?.GetComponent<IInterstitialAdEvent>();
+			m_bannerAdEvent = listener?.GetComponent<IBannerAdEvent>();
+			m_rewardedAdEvent = listener?.GetComponent<IRewardedAdEvent>();
+		}
+		
 #region Interstitial Ads
 
 		private InterstitialAd m_interstitialAd;
@@ -75,7 +82,7 @@ namespace RCore.Service
 			if (string.IsNullOrEmpty(adUnitInterstitial)) return;
 			m_interstitialInitialized = true;
 			LoadInterstitial();
-			m_adEvent.OnInterstitialInit();
+			m_interstitialAdEvent?.OnInterstitialInit();
 		}
 		private void LoadInterstitial()
 		{
@@ -89,7 +96,7 @@ namespace RCore.Service
 					// Use exponential delay with a cap (here, the delay is capped by 2^6 seconds).
 					float retryDelay = (float)Math.Pow(2, Mathf.Min(6, m_interstitialRetryAttempt));
 					TimerEventsGlobal.Instance.WaitForSeconds(retryDelay, (s) => LoadInterstitial());
-					m_adEvent?.OnInterstitialLoadFailed();
+					m_interstitialAdEvent?.OnInterstitialLoadFailed();
 					return;
 				}
 				m_interstitialRetryAttempt = 0;
@@ -102,7 +109,7 @@ namespace RCore.Service
 				m_interstitialAd.OnAdClicked += InterstitialAd_OnAdClicked;
 				m_interstitialAd.OnAdPaid += InterstitialAd_OnAdPaid;
 
-				m_adEvent?.OnInterstitialLoaded();
+				m_interstitialAdEvent?.OnInterstitialLoaded();
 			});
 		}
 		private void InterstitialAd_OnAdFullScreenContentClosed()
@@ -111,7 +118,7 @@ namespace RCore.Service
 			m_onInterstitialAdCompleted = null;
 			// Load the next interstitial ad.
 			LoadInterstitial();
-			m_adEvent?.OnInterstitialCompleted(placement);
+			m_interstitialAdEvent?.OnInterstitialCompleted(placement);
 		}
 		private void InterstitialAd_OnAdFullScreenContentFailed(AdError error)
 		{
@@ -124,7 +131,7 @@ namespace RCore.Service
 		}
 		private void InterstitialAd_OnAdClicked()
 		{
-			m_adEvent?.OnInterstitialClick(placement);
+			m_interstitialAdEvent?.OnInterstitialClick(placement);
 		}
 		public void ShowInterstitial(string pPlacement, Action callback = null)
 		{
@@ -138,10 +145,10 @@ namespace RCore.Service
 			{
 				m_onInterstitialAdCompleted = callback;
 				m_interstitialAd.Show();
-				m_adEvent?.OnInterstitialShow(true, pPlacement);
+				m_interstitialAdEvent?.OnInterstitialShow(true, pPlacement);
 			}
 			else
-				m_adEvent?.OnInterstitialShow(false, pPlacement);
+				m_interstitialAdEvent?.OnInterstitialShow(false, pPlacement);
 		}
 		public bool IsInterstitialReady()
 		{
@@ -153,7 +160,7 @@ namespace RCore.Service
 		private void InterstitialAd_OnAdPaid(AdValue pAdValue)
 		{
 			interstitialValue = pAdValue;
-			m_adEvent?.OnInterstitialPaid(placement);
+			m_interstitialAdEvent?.OnInterstitialPaid(placement);
 		}
 
 #endregion
@@ -171,7 +178,7 @@ namespace RCore.Service
 			if (string.IsNullOrEmpty(adUnitRewarded)) return;
 			m_rewardedInitialized = true;
 			LoadRewardedAd();
-			m_adEvent.OnRewardedInit();
+			m_rewardedAdEvent?.OnRewardedInit();
 		}
 		private void LoadRewardedAd()
 		{
@@ -184,7 +191,7 @@ namespace RCore.Service
 					m_rewardedRetryAttempt++;
 					float retryDelay = (float)Math.Pow(2, Mathf.Min(6, m_rewardedRetryAttempt));
 					TimerEventsGlobal.Instance.WaitForSeconds(retryDelay, (s) => LoadRewardedAd());
-					m_adEvent?.OnRewardedLoadFailed();
+					m_rewardedAdEvent?.OnRewardedLoadFailed();
 					return;
 				}
 				m_rewardedRetryAttempt = 0;
@@ -196,7 +203,7 @@ namespace RCore.Service
 				m_rewardedAd.OnAdFullScreenContentFailed += RewardedAd_OnAdFullScreenContentFailed;
 				m_rewardedAd.OnAdClicked += RewardedAd_OnAdClicked;
 				m_rewardedAd.OnAdPaid += RewardedAd_OnAdPaid;
-				m_adEvent?.OnRewardedLoaded();
+				m_rewardedAdEvent?.OnRewardedLoaded();
 			});
 		}
 		private void RewardedAd_OnAdFullScreenContentOpened()
@@ -209,7 +216,7 @@ namespace RCore.Service
 			m_onRewardedAdCompleted = null;
 			// Preload the next rewarded ad.
 			LoadRewardedAd();
-			m_adEvent?.OnRewardedCompleted(placement);
+			m_rewardedAdEvent?.OnRewardedCompleted(placement);
 		}
 		private void RewardedAd_OnAdFullScreenContentFailed(AdError error)
 		{
@@ -220,7 +227,7 @@ namespace RCore.Service
 		}
 		private void RewardedAd_OnAdClicked()
 		{
-			m_adEvent?.OnRewardedClicked(placement);
+			m_rewardedAdEvent?.OnRewardedClicked(placement);
 		}
 		public void ShowRewardedAd(string pPlacement, Action<bool> callback = null)
 		{
@@ -234,13 +241,13 @@ namespace RCore.Service
 			{
 				m_onRewardedAdCompleted = callback;
 				m_rewardedAd.Show(null);
-				m_adEvent?.OnRewardedShow(true, pPlacement);
+				m_rewardedAdEvent?.OnRewardedShow(true, pPlacement);
 			}
 			else
 			{
 				m_onRewardedAdCompleted?.Invoke(false);
 				ShowMessage("Rewarded ads unavailable!");
-				m_adEvent?.OnRewardedShow(false, pPlacement);
+				m_rewardedAdEvent?.OnRewardedShow(false, pPlacement);
 			}
 		}
 		public bool IsRewardedVideoAvailable()
@@ -253,7 +260,7 @@ namespace RCore.Service
 		private void RewardedAd_OnAdPaid(AdValue pAdValue)
 		{
 			rewardedValue = pAdValue;
-			m_adEvent?.OnRewardedPaid(placement);
+			m_rewardedAdEvent?.OnRewardedPaid(placement);
 		}
 
 #endregion
@@ -278,26 +285,26 @@ namespace RCore.Service
 
 			var request = new AdRequest();
 			m_bannerView.LoadAd(request);
-			m_adEvent.OnBannerInit();
+			m_bannerAdEvent?.OnBannerInit();
 		}
 		private void Banner_OnBannerAdLoaded()
 		{
 			m_bannerLoaded = true;
-			m_adEvent?.OnBannerLoaded();
+			m_bannerAdEvent?.OnBannerLoaded();
 		}
 		private void Banner_OnBannerAdLoadFailed(LoadAdError obj)
 		{
 			m_bannerLoaded = false;
-			m_adEvent?.OnBannerLoadFailed();
+			m_bannerAdEvent?.OnBannerLoadFailed();
 		}
 		private void Banner_OnAdClicked()
 		{
-			m_adEvent.OnBannerClicked();
+			m_bannerAdEvent?.OnBannerClicked();
 		}
 		private void Banner_OnAdPaid(AdValue obj)
 		{
 			bannerValue = obj;
-			m_adEvent?.OnBannerPaid();
+			m_bannerAdEvent?.OnBannerPaid();
 		}
 		public bool DisplayBanner()
 		{
@@ -305,7 +312,7 @@ namespace RCore.Service
 			{
 				m_bannerView.Show();
 				m_bannerDisplayed = true;
-				m_adEvent.OnBannerShowed(true);
+				m_bannerAdEvent?.OnBannerDisplayed(true);
 				return true;
 			}
 			return false;
@@ -316,7 +323,7 @@ namespace RCore.Service
 			{
 				m_bannerView.Hide();
 				m_bannerDisplayed = false;
-				m_adEvent.OnBannerShowed(false);
+				m_bannerAdEvent?.OnBannerDisplayed(false);
 			}
 		}
 		public void DestroyBanner()
@@ -327,7 +334,7 @@ namespace RCore.Service
 				m_bannerView = null;
 				bannerValue = null;
 				m_bannerDisplayed = false;
-				m_adEvent.OnBannerShowed(false);
+				m_bannerAdEvent?.OnBannerDisplayed(false);
 			}
 		}
 		public bool IsBannerReady()
@@ -364,7 +371,8 @@ namespace RCore.Service
 		}
 
 #else
-		public void Init(IAdEvent adEvent) { }
+		public void Init() { }
+		public void SetEventListener(GameObject listener) { }
         public void ShowInterstitial(string pPlacement = null, Action pCallback = null) => pCallback?.Invoke();
         public bool IsInterstitialReady() => Application.platform == RuntimePlatform.WindowsEditor;
 		public void ShowRewardedAd(string pPlacement = null, Action<bool> pCallback = null) => pCallback?.Invoke(Application.platform == RuntimePlatform.WindowsEditor);

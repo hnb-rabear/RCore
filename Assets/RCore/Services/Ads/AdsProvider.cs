@@ -1,4 +1,6 @@
+#if ODIN
 using Sirenix.OdinInspector;
+#endif
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -48,6 +50,7 @@ namespace RCore.Service
 
 		public bool autoInit;
 		public AdPlatform adPlatform;
+#if ODIN
 		[ShowIf("@(adPlatform == AdPlatform.Applovin)")]
 		public AppLovinConfig androidAppLovinCfg;
 		[ShowIf("@(adPlatform == AdPlatform.Applovin)")]
@@ -55,15 +58,21 @@ namespace RCore.Service
 		[ShowIf("@(adPlatform == AdPlatform.Admob)")]
 		public AdMobConfig androidAdMobCfg;
 		[ShowIf("@(adPlatform == AdPlatform.Admob)")]
+#else
+		public AppLovinConfig androidAppLovinCfg;
+		public AppLovinConfig iosAppLovinCfg;
+		public AdMobConfig androidAdMobCfg;
+#endif
 		public AdMobConfig iosAdMobCfg;
 		public GameObject adEventListener;
 		public Action onRewardedShowed;
+		public Action<bool> onBannerDisplayed;
 
 		public ApplovinProvider AppLovin => ApplovinProvider.Instance;
 		public AdMobProvider AdMob => AdMobProvider.Instance;
-		public bool IsBannerDisplayed => m_provider.IsBannerDisplayed();
 
 		private IAdProvider m_provider;
+		private bool m_initialized;
 
 		private void Start()
 		{
@@ -72,10 +81,8 @@ namespace RCore.Service
 		}
 		public void Init()
 		{
-			Init(adEventListener != null ? adEventListener.GetComponent<IAdEvent>() : null);
-		}
-		public void Init(IAdEvent adEvent)
-		{
+			if (m_initialized)
+				return;
 			AppLovinConfig appLovinConfig;
 			AdMobConfig adMobConfig;
 #if UNITY_IOS
@@ -91,17 +98,20 @@ namespace RCore.Service
 					ApplovinProvider.Instance.adUnitInterstitial = appLovinConfig.adUnitInterstitial;
 					ApplovinProvider.Instance.adUnitRewarded = appLovinConfig.adUnitRewarded;
 					ApplovinProvider.Instance.adUnitBanner = appLovinConfig.adUnitBanner;
+					ApplovinProvider.Instance.SetEventListener(adEventListener);
 					m_provider = ApplovinProvider.Instance;
-					m_provider.Init(adEvent);
+					m_provider.Init();
 					break;
 				case AdPlatform.Admob:
 					AdMobProvider.Instance.adUnitInterstitial = adMobConfig.adUnitInterstitial;
 					AdMobProvider.Instance.adUnitRewarded = adMobConfig.adUnitRewarded;
 					AdMobProvider.Instance.adUnitBanner = adMobConfig.adUnitBanner;
+					AdMobProvider.Instance.SetEventListener(adEventListener);
 					m_provider = AdMobProvider.Instance;
-					m_provider.Init(adEvent);
+					m_provider.Init();
 					break;
 			}
+			m_initialized = true;
 		}
 		public void ShowInterstitial(string placement, Action pCallback = null) => m_provider.ShowInterstitial(placement, pCallback);
 		public bool IsInterstitialReady() => m_provider.IsInterstitialReady();
@@ -115,9 +125,19 @@ namespace RCore.Service
 			});
 		}
 		public bool IsRewardedVideoAvailable() => m_provider.IsRewardedVideoAvailable();
-		public bool DisplayBanner() => m_provider.DisplayBanner();
-		public void HideBanner() => m_provider.HideBanner();
+		public bool DisplayBanner()
+		{
+			bool displayed = m_provider.DisplayBanner();
+			if (displayed)
+				onBannerDisplayed?.Invoke(true);
+			return displayed;
+		}
+		public void HideBanner()
+		{
+			m_provider.HideBanner();
+		}
 		public void DestroyBanner() => m_provider.DestroyBanner();
 		public bool IsBannerReady() => m_provider.IsBannerReady();
+		public bool IsBannerDisplayed() => m_provider != null && m_provider.IsBannerDisplayed();
 	}
 }

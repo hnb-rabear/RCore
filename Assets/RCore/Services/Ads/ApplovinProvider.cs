@@ -14,11 +14,12 @@ namespace RCore.Service
 		public string adUnitRewarded;
 		public string adUnitBanner;
 		public string placement;
-		private IAdEvent m_adEvent;
+		private IInterstitialAdEvent m_interstitialAdEvent;
+		private IBannerAdEvent m_bannerAdEvent;
+		private IRewardedAdEvent m_rewardedAdEvent;
 #if MAX
-		public void Init(IAdEvent adEvent)
+		public void Init()
 		{
-			m_adEvent = adEvent;
 #if UNITY_ANDROID && ADMOB
 			// Create a ConsentRequestParameters object     
 			var request = new ConsentRequestParameters();
@@ -63,6 +64,12 @@ namespace RCore.Service
 				MaxSdk.InitializeSdk();
 			}
 		}
+		public void SetEventListener(GameObject listener)
+		{
+			m_interstitialAdEvent = listener?.GetComponent<IInterstitialAdEvent>();
+			m_bannerAdEvent = listener?.GetComponent<IBannerAdEvent>();
+			m_rewardedAdEvent = listener?.GetComponent<IRewardedAdEvent>();
+		}
 
 #region Interstitial Ad
 
@@ -88,7 +95,7 @@ namespace RCore.Service
 			LoadInterstitial();
 
 			m_interstitialInitialized = true;
-			m_adEvent.OnInterstitialInit();
+			m_interstitialAdEvent.OnInterstitialInit();
 		}
 		private void LoadInterstitial()
 		{
@@ -99,7 +106,7 @@ namespace RCore.Service
 			Debug.Log("Interstitial ad is ready for you to show.");
 			lastInterstitialInfo = adInfo;
 			m_interstitialRetryAttempt = 0;
-			m_adEvent?.OnInterstitialLoaded();
+			m_interstitialAdEvent?.OnInterstitialLoaded();
 		}
 		private void OnInterstitialLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
 		{
@@ -110,14 +117,14 @@ namespace RCore.Service
 			m_interstitialRetryAttempt++;
 			var retryDelay = Mathf.Pow(2, Mathf.Min(6, m_interstitialRetryAttempt));
 			TimerEventsGlobal.Instance.WaitForSeconds(retryDelay, (s) => LoadInterstitial());
-			m_adEvent?.OnInterstitialLoadFailed();
+			m_interstitialAdEvent?.OnInterstitialLoadFailed();
 		}
 		private void OnInterstitialDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
 			lastInterstitialInfo = adInfo;
 			m_onInterstitialAdCompleted?.Invoke();
 			m_onInterstitialAdCompleted = null;
-			m_adEvent?.OnInterstitialCompleted(placement);
+			m_interstitialAdEvent?.OnInterstitialCompleted(placement);
 		}
 		private void OnInterstitialAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
 		{
@@ -126,7 +133,7 @@ namespace RCore.Service
 			lastInterstitialInfo = adInfo;
 			lastInterstitialErrInfo = errorInfo;
 			LoadInterstitial();
-			m_adEvent.OnInterstitialShow(false, placement);
+			m_interstitialAdEvent.OnInterstitialShow(false, placement);
 		}
 		private void OnInterstitialHiddenEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
@@ -136,7 +143,7 @@ namespace RCore.Service
 		}
 		private void OnInterstitialAdClickedEvent(string arg1, MaxSdkBase.AdInfo arg2)
 		{
-			m_adEvent?.OnInterstitialClick(placement);
+			m_interstitialAdEvent?.OnInterstitialClick(placement);
 		}
 		public void ShowInterstitial(string pPlacement = null, Action pCallback = null)
 		{
@@ -151,10 +158,10 @@ namespace RCore.Service
 			{
 				m_onInterstitialAdCompleted = pCallback;
 				MaxSdk.ShowInterstitial(adUnitInterstitial);
-				m_adEvent?.OnInterstitialShow(true, placement);
+				m_interstitialAdEvent?.OnInterstitialShow(true, placement);
 			}
 			else
-				m_adEvent?.OnInterstitialShow(false, placement);
+				m_interstitialAdEvent?.OnInterstitialShow(false, placement);
 		}
 		public bool IsInterstitialReady()
 		{
@@ -166,7 +173,7 @@ namespace RCore.Service
 		private void OnInterstitialAdRevenuePaidEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
 			lastInterstitialInfo = adInfo;
-			m_adEvent?.OnInterstitialPaid(placement);
+			m_interstitialAdEvent?.OnInterstitialPaid(placement);
 		}
 
 #endregion
@@ -196,7 +203,7 @@ namespace RCore.Service
 			LoadRewardedAd();
 
 			m_rewardedInitialized = true;
-			m_adEvent.OnRewardedInit();
+			m_rewardedAdEvent?.OnRewardedInit();
 		}
 		private void LoadRewardedAd()
 		{
@@ -207,7 +214,7 @@ namespace RCore.Service
 			Debug.Log("Rewarded ad is ready for you to show.");
 			lastRewardedInfo = adInfo;
 			m_rewardedRetryAttempt = 0;
-			m_adEvent?.OnRewardedLoaded();
+			m_rewardedAdEvent?.OnRewardedLoaded();
 		}
 		private void OnRewardedAdLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
 		{
@@ -220,7 +227,7 @@ namespace RCore.Service
 
 			TimerEventsGlobal.Instance.WaitForSeconds(retryDelay, _ => LoadRewardedAd());
 
-			m_adEvent?.OnRewardedLoadFailed();
+			m_rewardedAdEvent?.OnRewardedLoadFailed();
 		}
 		private void OnRewardedAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
 		{
@@ -229,7 +236,7 @@ namespace RCore.Service
 			lastRewardedErrInfo = errorInfo;
 			lastRewardedInfo = adInfo;
 			LoadRewardedAd();
-			m_adEvent.OnRewardedShow(false, placement);
+			m_rewardedAdEvent?.OnRewardedShow(false, placement);
 		}
 		private void OnRewardedAdHiddenEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
@@ -244,11 +251,11 @@ namespace RCore.Service
 			lastRewardedInfo = adInfo;
 			m_onRewardedAdCompleted?.Invoke(true);
 			m_onRewardedAdCompleted = null;
-			m_adEvent?.OnRewardedCompleted(placement);
+			m_rewardedAdEvent?.OnRewardedCompleted(placement);
 		}
 		private void OnRewardedAdClickedEvent(string arg1, MaxSdkBase.AdInfo arg2)
 		{
-			m_adEvent?.OnRewardedClicked(placement);
+			m_rewardedAdEvent?.OnRewardedClicked(placement);
 		}
 		public void ShowRewardedAd(string pPlacement = null, Action<bool> pCallback = null)
 		{
@@ -263,11 +270,11 @@ namespace RCore.Service
 			{
 				m_onRewardedAdCompleted = pCallback;
 				MaxSdk.ShowRewardedAd(adUnitRewarded);
-				m_adEvent?.OnRewardedShow(true, placement);
+				m_rewardedAdEvent?.OnRewardedShow(true, placement);
 			}
 			else
 			{
-				m_adEvent?.OnRewardedShow(false, placement);
+				m_rewardedAdEvent?.OnRewardedShow(false, placement);
 				ShowMessage("Rewarded ads unavailable!");
 			}
 		}
@@ -281,7 +288,7 @@ namespace RCore.Service
 		private void OnRewardedAdRevenuePaidEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
 			lastRewardedInfo = adInfo;
-			m_adEvent?.OnRewardedPaid(placement);
+			m_rewardedAdEvent?.OnRewardedPaid(placement);
 		}
 
 #endregion
@@ -310,7 +317,7 @@ namespace RCore.Service
 			MaxSdkCallbacks.Banner.OnAdClickedEvent += OnBannerAdClickedEvent;
 			MaxSdkCallbacks.Banner.OnAdRevenuePaidEvent += OnBannerAdPaidEvent;
 
-			m_adEvent.OnBannerInit();
+			m_bannerAdEvent?.OnBannerInit();
 		}
 		private void OnBannerAdLoadedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
@@ -319,29 +326,29 @@ namespace RCore.Service
 			m_firstLoad = false;
 			lastBannerInfo = adInfo;
 			m_bannerLoaded = true;
-			m_adEvent?.OnBannerLoaded();
+			m_bannerAdEvent?.OnBannerLoaded();
 		}
 		private void OnBannerAdLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
 		{
 			lastBannerErrInfo = errorInfo;
 			m_bannerLoaded = false;
-			m_adEvent?.OnBannerLoadFailed();
+			m_bannerAdEvent?.OnBannerLoadFailed();
 		}
 		private void OnBannerAdClickedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
 			lastBannerInfo = adInfo;
-			m_adEvent.OnBannerClicked();
+			m_bannerAdEvent?.OnBannerClicked();
 		}
 		private void OnBannerAdPaidEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
 		{
 			lastBannerInfo = adInfo;
-			m_adEvent?.OnBannerPaid();
+			m_bannerAdEvent?.OnBannerPaid();
 		}
 		public bool DisplayBanner()
 		{
 			if (!m_bannerLoaded) return false;
 			MaxSdk.ShowBanner(adUnitBanner);
-			m_adEvent.OnBannerShowed(true);
+			m_bannerAdEvent.OnBannerDisplayed(true);
 			m_bannerDisplayed = true;
 			return true;
 		}
@@ -349,7 +356,7 @@ namespace RCore.Service
 		{
 			if (!m_bannerLoaded) return;
 			MaxSdk.HideBanner(adUnitBanner);
-			m_adEvent.OnBannerShowed(false);
+			m_bannerAdEvent.OnBannerDisplayed(false);
 			m_bannerDisplayed = false;
 		}
 		public void DestroyBanner()
@@ -357,7 +364,7 @@ namespace RCore.Service
 			if (!m_bannerLoaded) return;
 			MaxSdk.DestroyBanner(adUnitBanner);
 			if (m_bannerDisplayed)
-				m_adEvent.OnBannerShowed(false);
+				m_bannerAdEvent.OnBannerDisplayed(false);
 			lastBannerInfo = null;
 			lastBannerErrInfo = null;
 			m_bannerDisplayed = false;
