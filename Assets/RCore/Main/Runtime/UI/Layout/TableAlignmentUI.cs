@@ -1,6 +1,7 @@
 ﻿/***
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -64,18 +65,8 @@ namespace RCore.UI
 		private int m_firstGroupIndex;
 		private int m_lastGroupIndex;
 		private Coroutine m_coroutine;
-		private Vector2 m_childTopRight = Vector2.zero;
-		private Vector2 m_childBotLeft = Vector2.zero;
 
-		private Dictionary<int, List<RectTransform>> m_childrenGroup;
-
-		private void OnEnable()
-		{
-			m_childTopRight = Vector2.zero;
-			m_childBotLeft = Vector2.zero;
-			if (m_AutoResizeContentX || m_AutoResizeContentY)
-				AutoResizeContent();
-		}
+		private Dictionary<int, List<RectTransform>> m_childrenGroup = new();
 
 		private void OnValidate()
 		{
@@ -274,21 +265,6 @@ namespace RCore.UI
 							break;
 						}
 					}
-
-					for (int i = 0; i < children.Count; i++)
-					{
-						var topRight = children[i].TopRight();
-						if (topRight.x > m_childTopRight.x)
-							m_childTopRight.x = topRight.x;
-						if (topRight.y > m_childTopRight.y)
-							m_childTopRight.y = topRight.y;
-
-						var botLeft = children[i].BotLeft();
-						if (botLeft.x < m_childBotLeft.x)
-							m_childBotLeft.x = botLeft.x;
-						if (botLeft.y < m_childBotLeft.y)
-							m_childBotLeft.y = botLeft.y;
-					}
 				}
 			}
 			else
@@ -343,21 +319,6 @@ namespace RCore.UI
 								}
 							break;
 					}
-
-					for (int i = 0; i < children.Count; i++)
-					{
-						var topRight = children[i].TopRight();
-						if (topRight.x > m_childTopRight.x)
-							m_childTopRight.x = topRight.x;
-						if (topRight.y > m_childTopRight.y)
-							m_childTopRight.y = topRight.y;
-
-						var botLeft = children[i].BotLeft();
-						if (botLeft.x < m_childBotLeft.x)
-							m_childBotLeft.x = botLeft.x;
-						if (botLeft.y < m_childBotLeft.y)
-							m_childBotLeft.y = botLeft.y;
-					}
 				}
 			}
 
@@ -372,8 +333,29 @@ namespace RCore.UI
 #endif
 		public void AutoResizeContent()
 		{
-			float height = m_childTopRight.y - m_childBotLeft.y + m_ContentSizeBonus.y;
-			float width = m_childTopRight.x - m_childBotLeft.x + m_ContentSizeBonus.x;
+			Vector2 childTopRight = default;
+			Vector2 childBotLeft = default;
+			foreach (var group in m_childrenGroup)
+			{
+				var children = group.Value;
+				for (int i = 0; i < children.Count; i++)
+				{
+					var topRight = children[i].TopRight();
+					if (topRight.x > childTopRight.x)
+						childTopRight.x = topRight.x;
+					if (topRight.y > childTopRight.y)
+						childTopRight.y = topRight.y;
+
+					var botLeft = children[i].BotLeft();
+					if (botLeft.x < childBotLeft.x)
+						childBotLeft.x = botLeft.x;
+					if (botLeft.y < childBotLeft.y)
+						childBotLeft.y = botLeft.y;
+				}
+			}
+
+			float height = childTopRight.y - childBotLeft.y + m_ContentSizeBonus.y;
+			float width = childTopRight.x - childBotLeft.x + m_ContentSizeBonus.x;
 
 			var size = ((RectTransform)transform).sizeDelta;
 			if (m_AutoResizeContentX)
@@ -592,26 +574,17 @@ namespace RCore.UI
 						{
 							var pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
 							children[j].anchoredPosition = pos;
-
-							var topRight = children[j].TopRight();
-							if (topRight.x > m_childTopRight.x)
-								m_childTopRight.x = topRight.x;
-							if (topRight.y > m_childTopRight.y)
-								m_childTopRight.y = topRight.y;
-
-							var botLeft = children[j].BotLeft();
-							if (botLeft.x < m_childBotLeft.x)
-								m_childBotLeft.x = botLeft.x;
-							if (botLeft.y < m_childBotLeft.y)
-								m_childBotLeft.y = botLeft.y;
-
-							if (m_AutoResizeContentX || m_AutoResizeContentY)
-								AutoResizeContent();
 						}
 					}
+
+					if (m_AutoResizeContentX || m_AutoResizeContentY)
+						AutoResizeContent();
 				})
 				.OnComplete(() =>
 				{
+					if (m_AutoResizeContentX || m_AutoResizeContentY)
+						AutoResizeContent();
+
 					onFinish?.Invoke();
 				});
 
@@ -641,23 +614,11 @@ namespace RCore.UI
 					{
 						var pos = Vector2.Lerp(initialPositions[a.Key][j], finalPositions[a.Key][j], t);
 						children[j].anchoredPosition = pos;
-
-						var topRight = children[j].TopRight();
-						if (topRight.x > m_childTopRight.x)
-							m_childTopRight.x = topRight.x;
-						if (topRight.y > m_childTopRight.y)
-							m_childTopRight.y = topRight.y;
-
-						var botLeft = children[j].BotLeft();
-						if (botLeft.x < m_childBotLeft.x)
-							m_childBotLeft.x = botLeft.x;
-						if (botLeft.y < m_childBotLeft.y)
-							m_childBotLeft.y = botLeft.y;
-
-						if (m_AutoResizeContentX || m_AutoResizeContentY)
-							AutoResizeContent();
 					}
 				}
+				
+				if (m_AutoResizeContentX || m_AutoResizeContentY)
+					AutoResizeContent();
 
 				if (lerp >= 1)
 					break;

@@ -15,7 +15,8 @@ namespace RCore.Editor
 	public static class RMenu
 	{
 		// CTRL + ALT + j => Configuration
-		// CTRL + ALT + k => Scene Opener
+		// CTRL + ALT + k => Scenes Navigator
+		// CTRL + ALT + l => Asset Shortcuts
 		// CTRL + ALT + n => JObject Database
 		// CTRL + ALT + m => KeyValue Database
 		// CTRL + ALT + / => Tools Collection

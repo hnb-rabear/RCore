@@ -16,11 +16,12 @@ namespace RCore
 		public string country;
 		public string timezone;
 	}
-	
+
 	public static class WebRequestHelper
 	{
 		public const string WORLD_TIME_API = "https://worldtimeapi.org/api/timezone/Etc/UTC";
 		public const string FC_TIME_API = "https://farmcityer.com/gettime.php";
+		public static Action<bool> OnlineStatusChanged;
 		private static bool m_RequestingServerTime;
 		private static float m_GetServerTimeAt;
 		private static DateTime m_ServerTime;
@@ -29,12 +30,12 @@ namespace RCore
 		public static IPInfo ipInfo;
 		private static bool m_RequestingOnlineState;
 		private static bool m_RequestingIpInfo;
-		private static NetworkReachability m_NetworkReachability;
+		private static int m_ConnectionChecks = 2;
 		public static async void RequestIpInfo()
 		{
 			if (Application.internetReachability == NetworkReachability.NotReachable)
 			{
-				m_IsOnline = false;
+				SetOnlineStatus(false);
 				return;
 			}
 			if (m_RequestingIpInfo || !string.IsNullOrEmpty(ipInfo.ip))
@@ -49,15 +50,16 @@ namespace RCore
 				Debug.LogError(w.error);
 			else
 			{
-				m_IsOnline = true;
+				SetOnlineStatus(true);
 				ipInfo = JsonUtility.FromJson<IPInfo>(w.downloadHandler.text);
+				m_ConnectionChecks--;
 			}
 		}
 		public static async void RequestFCTime(bool renew = false)
 		{
 			if (Application.internetReachability == NetworkReachability.NotReachable)
 			{
-				m_IsOnline = false;
+				SetOnlineStatus(false);
 				return;
 			}
 			if (m_RequestingServerTime || m_GetServerTimeAt > 0 && !renew)
@@ -69,12 +71,13 @@ namespace RCore
 			{
 				if (request.responseCode == 200)
 				{
-					m_IsOnline = true;
+					SetOnlineStatus(true);
 					var text = request.downloadHandler.text;
 					if (int.TryParse(text, out int timestamp))
 					{
 						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
 						m_GetServerTimeAt = Time.unscaledTime;
+						m_ConnectionChecks--;
 					}
 				}
 			}
@@ -83,7 +86,7 @@ namespace RCore
 		{
 			if (Application.internetReachability == NetworkReachability.NotReachable)
 			{
-				m_IsOnline = false;
+				SetOnlineStatus(false);
 				return;
 			}
 			if (m_RequestingServerTime || m_GetServerTimeAt > 0 && !renew)
@@ -95,8 +98,8 @@ namespace RCore
 			{
 				if (request.responseCode == 200)
 				{
-					m_IsOnline = true;
-					
+					SetOnlineStatus(true);
+
 					var text = request.downloadHandler.text;
 					var jsonParse = SimpleJSON.JSON.Parse(text);
 					if (jsonParse != null)
@@ -114,42 +117,12 @@ namespace RCore
 				return m_ServerTime.AddSeconds(Time.unscaledTime - m_GetServerTimeAt);
 			return null;
 		}
-		public static async void CheckOnline()
-		{
-			if (Application.internetReachability == NetworkReachability.NotReachable)
-			{
-				m_IsOnline = false;
-				return;
-			}
-			if (m_RequestingOnlineState)
-				return;
-			var url = "https://www.google.com";
-			//China banned google, we should check different url
-			if (Application.systemLanguage == SystemLanguage.Chinese
-			    || Application.systemLanguage == SystemLanguage.ChineseSimplified
-			    || Application.systemLanguage == SystemLanguage.ChineseTraditional)
-				url = "https://www.baidu.com/";
-
-			m_RequestingOnlineState = true;
-			var request = new UnityWebRequest(url);
-			m_RequestingOnlineState = false;
-			await request.SendWebRequest();
-			m_IsOnline = request.error == null;
-		}
 		private static async UniTaskVoid UpdateInternetStateAsync()
 		{
-			while (true)
+			while (m_ConnectionChecks > 0)
 			{
-				if (m_NetworkReachability != Application.internetReachability)
-				{
-					m_NetworkReachability = Application.internetReachability;
-					if (m_NetworkReachability != NetworkReachability.NotReachable)
-					{
-						CheckOnline();
-						RequestFCTime();
-						RequestIpInfo();
-					}
-				}
+				RequestFCTime();
+				RequestIpInfo();
 				await UniTask.Delay(3000);
 			}
 		}
@@ -158,6 +131,13 @@ namespace RCore
 		private static void Initialize()
 		{
 			UpdateInternetStateAsync().Forget();
+		}
+		private static void SetOnlineStatus(bool pIsOnline)
+		{
+			if (m_IsOnline == pIsOnline)
+				return;
+			m_IsOnline = pIsOnline;
+			OnlineStatusChanged?.Invoke(pIsOnline);
 		}
 	}
 }

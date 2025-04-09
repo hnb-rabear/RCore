@@ -20,7 +20,7 @@ using DG.Tweening;
 
 namespace RCore.UI
 {
-	[AddComponentMenu("RCore/UI/CustomToggleTab")]
+	[AddComponentMenu("RCore/UI/JustToggle")]
 	public class JustToggle : Toggle
 	{
 		[Serializable]

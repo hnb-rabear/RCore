@@ -99,12 +99,12 @@ namespace RCore
 				// Include days if pMaxSplits >= 4
 				int days = totalHours / 24;
 				int hours = totalHours % 24;
-				m_TimeBuilder.Append(days.ToString("D2")).Append('d').Append(hours.ToString("D2")).Append(':').Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
+				m_TimeBuilder.Append(days.ToString()).Append('d').Append(hours.ToString()).Append(':').Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
 			}
 			else if (pMaxSplits == 3)
 			{
 				// Format as total hours:MM:SS
-				m_TimeBuilder.Append(totalHours.ToString("D2")).Append(':').Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
+				m_TimeBuilder.Append(totalHours.ToString()).Append(':').Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
 			}
 			else if (pMaxSplits == 2)
 			{
@@ -112,12 +112,12 @@ namespace RCore
 				if (totalHours > 0)
 				{
 					// Include total hours if totalHours > 0
-					m_TimeBuilder.Append(totalHours.ToString("D2")).Append(':').Append(minutes.ToString("D2"));
+					m_TimeBuilder.Append(totalHours.ToString()).Append(':').Append(minutes.ToString("D2"));
 				}
 				else
 				{
 					// Only minutes and seconds if total hours are 0
-					m_TimeBuilder.Append(minutes.ToString("D2")).Append(':').Append(secs.ToString("D2"));
+					m_TimeBuilder.Append(minutes.ToString()).Append(':').Append(secs.ToString("D2"));
 				}
 			}
 			else

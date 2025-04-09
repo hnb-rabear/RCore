@@ -137,6 +137,7 @@ namespace RCore.UI
 			rectTransform.anchorMax = Vector2.one;
 			rectTransform.offsetMin = Vector2.zero;
 			rectTransform.offsetMax = Vector2.zero;
+			rectTransform.sizeDelta = new Vector2(0, 400);
 
 			fullScreenImageObj.SetActive(false);
 

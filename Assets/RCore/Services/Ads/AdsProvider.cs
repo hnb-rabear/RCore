@@ -1,4 +1,7 @@
+#if ODIN
 using Sirenix.OdinInspector;
+#endif
+using GoogleMobileAds.Ump.Api;
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -16,7 +19,7 @@ namespace RCore.Service
 					m_Instance = FindObjectOfType<AdsProvider>();
 				if (m_Instance == null)
 				{
-					var gameObject = new GameObject("IAPManager");
+					var gameObject = new GameObject("AdsProvider");
 					m_Instance = gameObject.AddComponent<AdsProvider>();
 					gameObject.hideFlags = HideFlags.DontSave;
 				}
@@ -47,7 +50,9 @@ namespace RCore.Service
 		}
 
 		public bool autoInit;
+		public bool requestConsent = true;
 		public AdPlatform adPlatform;
+#if ODIN
 		[ShowIf("@(adPlatform == AdPlatform.Applovin)")]
 		public AppLovinConfig androidAppLovinCfg;
 		[ShowIf("@(adPlatform == AdPlatform.Applovin)")]
@@ -55,15 +60,21 @@ namespace RCore.Service
 		[ShowIf("@(adPlatform == AdPlatform.Admob)")]
 		public AdMobConfig androidAdMobCfg;
 		[ShowIf("@(adPlatform == AdPlatform.Admob)")]
+#else
+		public AppLovinConfig androidAppLovinCfg;
+		public AppLovinConfig iosAppLovinCfg;
+		public AdMobConfig androidAdMobCfg;
+#endif
 		public AdMobConfig iosAdMobCfg;
 		public GameObject adEventListener;
 		public Action onRewardedShowed;
+		public Action<bool> onBannerDisplayed;
 
 		public ApplovinProvider AppLovin => ApplovinProvider.Instance;
 		public AdMobProvider AdMob => AdMobProvider.Instance;
-		public bool IsBannerDisplayed => m_provider.IsBannerDisplayed();
 
 		private IAdProvider m_provider;
+		private bool m_initialized;
 
 		private void Start()
 		{
@@ -72,12 +83,48 @@ namespace RCore.Service
 		}
 		public void Init()
 		{
-			Init(adEventListener != null ? adEventListener.GetComponent<IAdEvent>() : null);
+#if UNITY_ANDROID && ADMOB
+			if (requestConsent)
+			{
+				// Create a ConsentRequestParameters object     
+				var request = new ConsentRequestParameters();
+				// Check the current consent information status
+				ConsentInformation.Update(request, error =>
+				{
+					if (error != null)
+					{
+						// Handle the error.            
+						Debug.LogError(error);
+						InitProvider();
+						return;
+					}
+
+					ConsentForm.LoadAndShowConsentFormIfRequired(formError =>
+					{
+						if (formError != null)
+						{
+							// Consent gathering failed.
+							InitProvider();
+							return;
+						}
+						// Consent has been gathered.            
+						if (ConsentInformation.CanRequestAds())
+							InitProvider();
+					});
+				});
+			}
+			else
+				InitProvider();
+#else
+			InitProvider();
+#endif
 		}
-		public void Init(IAdEvent adEvent)
+		private void InitProvider()
 		{
-			AppLovinConfig appLovinConfig;
-			AdMobConfig adMobConfig;
+			if (m_initialized)
+				return;
+			AppLovinConfig appLovinConfig = default;
+			AdMobConfig adMobConfig = default;
 #if UNITY_IOS
 			appLovinConfig = m_iosAppLovinCfg;
 			adMobConfig = m_iosAdMobCfg;
@@ -91,17 +138,20 @@ namespace RCore.Service
 					ApplovinProvider.Instance.adUnitInterstitial = appLovinConfig.adUnitInterstitial;
 					ApplovinProvider.Instance.adUnitRewarded = appLovinConfig.adUnitRewarded;
 					ApplovinProvider.Instance.adUnitBanner = appLovinConfig.adUnitBanner;
+					ApplovinProvider.Instance.SetEventListener(adEventListener);
 					m_provider = ApplovinProvider.Instance;
-					m_provider.Init(adEvent);
+					m_provider.Init();
 					break;
 				case AdPlatform.Admob:
 					AdMobProvider.Instance.adUnitInterstitial = adMobConfig.adUnitInterstitial;
 					AdMobProvider.Instance.adUnitRewarded = adMobConfig.adUnitRewarded;
 					AdMobProvider.Instance.adUnitBanner = adMobConfig.adUnitBanner;
+					AdMobProvider.Instance.SetEventListener(adEventListener);
 					m_provider = AdMobProvider.Instance;
-					m_provider.Init(adEvent);
+					m_provider.Init();
 					break;
 			}
+			m_initialized = true;
 		}
 		public void ShowInterstitial(string placement, Action pCallback = null) => m_provider.ShowInterstitial(placement, pCallback);
 		public bool IsInterstitialReady() => m_provider.IsInterstitialReady();
@@ -115,9 +165,19 @@ namespace RCore.Service
 			});
 		}
 		public bool IsRewardedVideoAvailable() => m_provider.IsRewardedVideoAvailable();
-		public bool DisplayBanner() => m_provider.DisplayBanner();
-		public void HideBanner() => m_provider.HideBanner();
+		public bool DisplayBanner()
+		{
+			bool displayed = m_provider.DisplayBanner();
+			if (displayed)
+				onBannerDisplayed?.Invoke(true);
+			return displayed;
+		}
+		public void HideBanner()
+		{
+			m_provider.HideBanner();
+		}
 		public void DestroyBanner() => m_provider.DestroyBanner();
 		public bool IsBannerReady() => m_provider.IsBannerReady();
+		public bool IsBannerDisplayed() => m_provider != null && m_provider.IsBannerDisplayed();
 	}
 }
