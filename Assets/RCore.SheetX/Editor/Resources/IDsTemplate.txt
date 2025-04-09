@@ -4,7 +4,7 @@
 
 using System;
 
-public class _IDS_CLASS_NAME_
+public partial class _IDS_CLASS_NAME_
 {
 public const int _FIELDS_ = 0;
 }
