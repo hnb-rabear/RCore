@@ -32,9 +32,6 @@ namespace RCore.Example
 
         private void Start()
         {
-            // Simple Benchmark, It basically is FPS Counter
-            TimerEventsInScene.Instance.StartBenchmark(300, (fPS, minFPS, maxFPS) => Debug.Log($"Benchmark Finished: FPS:{fPS} MinFPS:{minFPS} MaxFPS:{maxFPS}"));
-
             //Simple Wait For Work
             int a = 0;
             TimerEventsInScene.Instance.WaitForSeconds(3f, s => Debug.Log("Wait 3s"));

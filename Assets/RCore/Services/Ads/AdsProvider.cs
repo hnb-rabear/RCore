@@ -1,10 +1,7 @@
-#if ODIN
-using Sirenix.OdinInspector;
-#endif
 using GoogleMobileAds.Ump.Api;
 using System;
+using RCore.Inspector;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace RCore.Service
 {
@@ -52,26 +49,24 @@ namespace RCore.Service
 		public bool autoInit;
 		public bool requestConsent = true;
 		public AdPlatform adPlatform;
-#if ODIN
-		[ShowIf("@(adPlatform == AdPlatform.Applovin)")]
+
+		[ShowIf("IsApplovinSelected")]
 		public AppLovinConfig androidAppLovinCfg;
-		[ShowIf("@(adPlatform == AdPlatform.Applovin)")]
+		[ShowIf("IsApplovinSelected")]
 		public AppLovinConfig iosAppLovinCfg;
-		[ShowIf("@(adPlatform == AdPlatform.Admob)")]
+		[ShowIf("IsAdmobSelected")]
 		public AdMobConfig androidAdMobCfg;
-		[ShowIf("@(adPlatform == AdPlatform.Admob)")]
-#else
-		public AppLovinConfig androidAppLovinCfg;
-		public AppLovinConfig iosAppLovinCfg;
-		public AdMobConfig androidAdMobCfg;
-#endif
+		[ShowIf("IsAdmobSelected")]
 		public AdMobConfig iosAdMobCfg;
+		
 		public GameObject adEventListener;
 		public Action onRewardedShowed;
 		public Action<bool> onBannerDisplayed;
 
 		public ApplovinProvider AppLovin => ApplovinProvider.Instance;
 		public AdMobProvider AdMob => AdMobProvider.Instance;
+		private bool IsApplovinSelected => adPlatform == AdPlatform.Applovin;
+		private bool IsAdmobSelected => adPlatform == AdPlatform.Admob;
 
 		private IAdProvider m_provider;
 		private bool m_initialized;

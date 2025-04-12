@@ -24,7 +24,7 @@ namespace RCore.Data.JObject
 
 			(sessionData, sessionDataHandler) = CreateModel<SessionData, SessionDataHandler, JObjectDataCollection>("SessionData");
 		}
-		
+
 		public virtual void Save()
 		{
 			int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
@@ -64,7 +64,7 @@ namespace RCore.Data.JObject
 			foreach (var handler in m_handlers)
 				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}
-		
+
 		protected TData CreateJObjectData<TData>(string key, TData defaultVal = null)
 			where TData : JObjectData, new()
 		{

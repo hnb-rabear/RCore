@@ -15,7 +15,7 @@ namespace RCore
 			{
 				if (m_Instance == null)
 				{
-					var obj = new GameObject("TimerEventsGlobal");
+					var obj = new GameObject(nameof(TimerEventsGlobal));
 					m_Instance = obj.AddComponent<TimerEventsGlobal>();
 					obj.hideFlags = HideFlags.HideAndDontSave;
 				}
@@ -24,10 +24,8 @@ namespace RCore
 			}
 		}
 
-		protected override void Update()
+		protected void Update()
 		{
-			base.Update();
-			
 			lock (m_ExecutionQueue)
 			{
 				while (m_ExecutionQueue.Count > 0)

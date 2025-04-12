@@ -22,36 +22,27 @@ namespace RCore.Inspector
 	{
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			// Get the attribute
 			var spritePreview = (SpriteBoxAttribute)attribute;
 
-			// Begin the property
 			EditorGUI.BeginProperty(position, label, property);
 
-			// Draw the label
 			position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
 			// Check if the property type is correct
 			if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue is Sprite sprite)
 			{
-				// Calculate the rect for the sprite preview
 				var spriteRect = new Rect(position.x, position.y, spritePreview.width, spritePreview.height);
 				var fieldRect = new Rect(position.x + spritePreview.width + 5, position.y, position.width - spritePreview.width - 5, position.height);
 
-				// Draw the sprite
 				if (sprite != null)
 					property.objectReferenceValue = EditorGUI.ObjectField(spriteRect, sprite, typeof(Sprite), allowSceneObjects: false);
 
-				// Draw the property field
 				EditorGUI.PropertyField(fieldRect, property, GUIContent.none);
 			}
 			else
 			{
-				// If not a Sprite, draw the default property field
 				EditorGUI.PropertyField(position, property, label);
 			}
-
-			// End the property
 			EditorGUI.EndProperty();
 		}
 

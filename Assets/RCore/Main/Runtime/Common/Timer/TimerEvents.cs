@@ -5,53 +5,34 @@ using UnityEngine;
 
 namespace RCore
 {
-	public interface IUpdate
-	{
-		public bool stop { get; set; }
-		void Update(float pDeltaTime);
-	}
-
 	public class TimerEvents : MonoBehaviour
 	{
-		private CountdownEventsGroup m_countdownEventsGroup = new CountdownEventsGroup();
-		private ConditionEventsGroup m_conditionEventsGroup = new ConditionEventsGroup();
-		private List<DelayableEvent> m_DelayableEvents = new List<DelayableEvent>();
-		private List<IUpdate> m_updateActions = new List<IUpdate>();
+		private CountdownEventsGroup m_countdownEventsGroup = new();
+		private ConditionEventsGroup m_conditionEventsGroup = new();
+		private List<DelayableEvent> m_delayableEvents = new();
 
-		public Benchmark benchmark;
-		protected virtual void Update()
-		{
-			for (int i = m_updateActions.Count - 1; i >= 0; i--)
-			{
-				var d = m_updateActions[i];
-				d.Update(Time.deltaTime);
-				if (d.stop)
-					m_updateActions.RemoveAt(i);
-			}
-		}
 		protected virtual void LateUpdate()
 		{
 			m_countdownEventsGroup.LateUpdate();
 			m_conditionEventsGroup.LateUpdate();
 
-			if (m_DelayableEvents.Count > 0)
+			if (m_delayableEvents.Count > 0)
 			{
-				for (int i = m_DelayableEvents.Count - 1; i >= 0; i--)
+				for (int i = m_delayableEvents.Count - 1; i >= 0; i--)
 				{
-					m_DelayableEvents[i].delay -= Time.deltaTime;
-					if (m_DelayableEvents[i].delay <= 0)
+					m_delayableEvents[i].delay -= Time.deltaTime;
+					if (m_delayableEvents[i].delay <= 0)
 					{
-						EventDispatcher.Raise(m_DelayableEvents[i].@event);
-						m_DelayableEvents.RemoveAt(i);
+						EventDispatcher.Raise(m_delayableEvents[i].@event);
+						m_delayableEvents.RemoveAt(i);
 					}
 				}
 			}
 			enabled = CheckEnabled();
 		}
-
 		protected virtual bool CheckEnabled()
 		{
-			bool active = !m_countdownEventsGroup.IsEmpty || !m_conditionEventsGroup.IsEmpty || m_updateActions.Count > 0 || m_DelayableEvents.Count > 0;
+			bool active = !m_countdownEventsGroup.IsEmpty || !m_conditionEventsGroup.IsEmpty || m_delayableEvents.Count > 0;
 			return active;
 		}
 
@@ -119,7 +100,6 @@ namespace RCore
 			};
 			return WaitForCondition(@event);
 		}
-
 		public void RemoveConditionEvent(int id)
 		{
 			m_conditionEventsGroup.UnRegister(id);
@@ -149,48 +129,30 @@ namespace RCore
 
 #endregion
 
-		public void RemoveUpdate(IUpdate pUpdate)
-		{
-			m_updateActions.Remove(pUpdate);
-		}
 		public void OnApplicationPause(bool pause)
 		{
 			m_countdownEventsGroup.OnApplicationPause(pause);
 		}
 		public void AddDelayableEvent(DelayableEvent e)
 		{
-			for (int i = 0; i < m_DelayableEvents.Count; i++)
+			for (int i = 0; i < m_delayableEvents.Count; i++)
 			{
-				if (m_DelayableEvents[i].key == e.key)
+				if (m_delayableEvents[i].key == e.key)
 				{
-					m_DelayableEvents[i].@event = e.@event;
-					m_DelayableEvents[i].delay = e.delay;
+					m_delayableEvents[i].@event = e.@event;
+					m_delayableEvents[i].delay = e.delay;
 					enabled = true;
 					return;
 				}
 			}
-			m_DelayableEvents.Add(e);
+			m_delayableEvents.Add(e);
 			enabled = true;
-		}
-		public IUpdate AddUpdate(IUpdate pUpdater)
-		{
-			if (!m_updateActions.Contains(pUpdater))
-				m_updateActions.Add(pUpdater);
-			enabled = true;
-			return pUpdater;
 		}
 		public void Clear()
 		{
 			m_countdownEventsGroup = new CountdownEventsGroup();
 			m_conditionEventsGroup = new ConditionEventsGroup();
-			m_DelayableEvents = new List<DelayableEvent>();
-			m_updateActions = new List<IUpdate>();
-		}
-
-		public void StartBenchmark(float duration, Action<int, int, int> onFinishedBenchmark)
-		{
-			benchmark = new Benchmark(duration, onFinishedBenchmark);
-			AddUpdate(benchmark);
+			m_delayableEvents = new List<DelayableEvent>();
 		}
 	}
 }

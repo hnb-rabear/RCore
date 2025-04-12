@@ -118,7 +118,6 @@ namespace RCore.Service
 				return GetReturnValue<T>(serializedValue);
 			}
 			var value = FirebaseRemoteConfig.DefaultInstance.GetValue(key).StringValue;
-			UnityEngine.Debug.Log($"GetGenericValue: {key} - {value}");
 			m_CacheStringValues[key] = value;
 			BackUp(key, value);
 			return GetReturnValue<T>(value);
@@ -279,7 +278,7 @@ namespace RCore.Service
 				result.Add(key, value);
 				log += $"Key:{key}, StringValue:{value.StringValue}, Source:{value.Source}\n";
 			}
-			Debug.Log(log);
+			UnityEngine.Debug.Log(log);
 #endif
 		}
 

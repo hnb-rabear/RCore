@@ -11,7 +11,7 @@ namespace RCore
             {
 	            if (m_Instance == null)
 	            {
-		            var obj = new GameObject("TimerEventsInScene");
+		            var obj = new GameObject(nameof(TimerEventsInScene));
 		            m_Instance = obj.AddComponent<TimerEventsInScene>();
 		            obj.hideFlags = HideFlags.HideInHierarchy;
 	            }

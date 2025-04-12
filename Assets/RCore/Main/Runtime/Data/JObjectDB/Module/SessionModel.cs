@@ -88,5 +88,15 @@ namespace RCore.Data.JObject
 			data.SessionsDaily = 1; // Reset daily sessions count
 			DispatchEvent(new NewDayStartedEvent());
 		}
+		public virtual int GetOfflineSeconds()
+		{
+			int offlineSeconds = 0;
+			if (data.lastActive > 0)
+			{
+				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
+				offlineSeconds = utcNowTimestamp - data.lastActive;
+			}
+			return offlineSeconds;
+		}
 	}
 }

@@ -10,19 +10,16 @@ using UnityEngine;
 
 namespace RCore.Data.JObject
 {
-	public class JObjectModelCollection : ScriptableObject
+	public partial class JObjectModelCollection : ScriptableObject
 	{
 		[AutoFill] public SessionModel session;
-
-		private List<IJObjectModel> m_models = new();
-
+		protected List<IJObjectModel> m_models = new();
 		public virtual void Load()
 		{
 			m_models = new List<IJObjectModel>();
 
 			CreateModel(session, "SessionData");
 		}
-
 		public virtual void Save()
 		{
 			if (m_models == null)
@@ -35,7 +32,6 @@ namespace RCore.Data.JObject
 				handler.Save();
 			PlayerPrefs.Save();
 		}
-
 		public virtual void Import(string jsonData)
 		{
 			if (m_models == null)
@@ -45,26 +41,60 @@ namespace RCore.Data.JObject
 			foreach (var controller in m_models)
 				if (keyValuePairs.TryGetValue(controller.Data.key, out string value))
 					controller.Data.Load(value);
-		}
 
-		public void OnUpdate(float deltaTime)
+			PostLoad();
+		}
+		public virtual void Import(Dictionary<string, object> data)
+		{
+			if (m_models == null)
+				return;
+
+			foreach (var model in m_models)
+			{
+				if (data.TryGetValue(model.Data.key, out var valueObject))
+				{
+					try
+					{
+						var valueStr = JsonConvert.SerializeObject(valueObject);
+						model.Data.Load(valueStr);
+					}
+					catch (Exception ex)
+					{
+						Debug.LogError($"Error deserializing data for key: {model.Data.key} - {ex.Message}");
+					}
+				}
+			}
+
+			PostLoad();
+		}
+		public Dictionary<string, object> GetData()
+		{
+			var data = new Dictionary<string, object>();
+			foreach (var model in m_models)
+				data.Add(model.Data.key, model.Data);
+			return data;
+		}
+		public virtual void OnUpdate(float deltaTime)
 		{
 			foreach (var controller in m_models)
 				controller.OnUpdate(deltaTime);
 		}
-
-		public void OnPause(bool pause, int utcNowTimestamp, int offlineSeconds)
+		public virtual void OnPause(bool pause)
 		{
+			int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
+			int offlineSeconds = 0;
+			if (!pause)
+				offlineSeconds = session.GetOfflineSeconds();
 			foreach (var handler in m_models)
 				handler.OnPause(pause, utcNowTimestamp, offlineSeconds);
 		}
-
-		public void OnPostLoad(int utcNowTimestamp, int offlineSeconds)
+		public virtual void PostLoad()
 		{
+			int offlineSeconds = session.GetOfflineSeconds();
+			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 			foreach (var handler in m_models)
 				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}
-
 		protected void CreateModel<TData>(JObjectModel<TData> @ref, string key, TData defaultVal = null) where TData : JObjectData, new()
 		{
 			if (string.IsNullOrEmpty(key))
@@ -74,7 +104,6 @@ namespace RCore.Data.JObject
 			@ref.Init();
 			m_models.Add(@ref);
 		}
-		
 		protected void CreateModel<TData>(JObjectModel<TData> @ref, TData defaultVal = null) where TData : JObjectData, new()
 		{
 			if (string.IsNullOrEmpty(@ref.key))

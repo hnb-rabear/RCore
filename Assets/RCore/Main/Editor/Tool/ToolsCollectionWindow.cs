@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEngine.UI;
@@ -13,11 +12,11 @@ namespace RCore.Editor.Tool
 {
 	public class ToolsCollectionWindow : EditorWindow
 	{
-		private Vector2 m_ScrollPosition;
+		private Vector2 m_scrollPosition;
 
 		private void OnGUI()
 		{
-			m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition, false, false);
+			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 
 			DrawUtilities();
 			DrawRendererUtilities();

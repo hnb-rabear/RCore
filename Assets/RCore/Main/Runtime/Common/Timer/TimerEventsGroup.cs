@@ -96,9 +96,7 @@ namespace RCore
         private readonly List<CountdownEvent> m_countdownEvents = new List<CountdownEvent>();
         private float m_timeBeforePause;
         private float m_pauseSeconds;
-
         public bool IsEmpty => m_countdownEvents.Count == 0;
-
         public void LateUpdate()
         {
             lock (m_countdownEvents)
@@ -130,7 +128,6 @@ namespace RCore
             }
             m_pauseSeconds = 0;
         }
-
         public void OnApplicationPause(bool pause)
         {
             if (pause)
@@ -138,7 +135,6 @@ namespace RCore
             else if (m_timeBeforePause > 0)
                 m_pauseSeconds = Time.realtimeSinceStartup - m_timeBeforePause;
         }
-
         public void Register(CountdownEvent pEvent)
         {
             if (pEvent.id == 0)
@@ -163,7 +159,6 @@ namespace RCore
                     m_countdownEvents.Add(pEvent);
             }
         }
-
         public void UnRegister(int pId)
         {
             for (int i = 0; i < m_countdownEvents.Count; i++)
@@ -176,7 +171,6 @@ namespace RCore
                 }
             }
         }
-
         public void UnRegister(CountdownEvent pEvent)
         {
             m_countdownEvents.Remove(pEvent);
@@ -188,9 +182,7 @@ namespace RCore
     public class ConditionEventsGroup
     {
         private readonly List<ConditionEvent> m_ConditionEvents = new List<ConditionEvent>();
-
         public bool IsEmpty => m_ConditionEvents.Count == 0;
-
         public void LateUpdate()
         {
             lock (m_ConditionEvents)
@@ -210,7 +202,6 @@ namespace RCore
                 }
             }
         }
-
         public void Register(ConditionEvent pEvent)
         {
             if (pEvent.id == 0)
@@ -234,7 +225,6 @@ namespace RCore
                     m_ConditionEvents.Add(pEvent);
             }
         }
-
         public void UnRegister(int pId)
         {
             for (int i = 0; i < m_ConditionEvents.Count; i++)
@@ -247,7 +237,6 @@ namespace RCore
                 }
             }
         }
-
         public void UnRegister(ConditionEvent pEvent)
         {
             m_ConditionEvents.Remove(pEvent);

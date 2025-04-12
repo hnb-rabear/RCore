@@ -369,7 +369,7 @@ namespace RCore
 
 		public static DayOfWeek[] GetRandomDayOfWeeks()
 		{
-			int range = Random.Range(1, 8);
+			int range = Random.Range(2, 8);
 			var daysOfWeeks = new[]
 			{
 				DayOfWeek.Monday,
