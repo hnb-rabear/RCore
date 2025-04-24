@@ -732,7 +732,7 @@ namespace RCore
 				if (image.type == UnityEngine.UI.Image.Type.Sliced)
 				{
 					var nativeSize = image.sprite.NativeSize();
-					var rectSize = image.rectTransform.sizeDelta;
+					var rectSize = new Vector2(image.rectTransform.rect.width, image.rectTransform.rect.height);
 					if (rectSize.y > 0 && rectSize.y < nativeSize.y)
 					{
 						var ratio = nativeSize.y * 1f / rectSize.y;

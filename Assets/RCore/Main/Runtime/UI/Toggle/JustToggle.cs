@@ -196,6 +196,9 @@ namespace RCore.UI
 		protected override void OnEnable()
 		{
 			base.OnEnable();
+			
+			if (m_initialScale == Vector2.zero)
+				m_initialScale = Vector2.one;
 
 			if (scaleBounceEffect)
 				transform.localScale = m_initialScale;
@@ -209,6 +212,9 @@ namespace RCore.UI
 		{
 			base.OnDisable();
 
+			if (m_initialScale == Vector2.zero)
+				m_initialScale = Vector2.one;
+			
 			if (scaleBounceEffect)
 				transform.localScale = m_initialScale;
 

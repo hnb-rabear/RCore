@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -143,7 +144,10 @@ namespace RCore.Editor
 						GUILayout.BeginHorizontal();
 						EditorGUILayout.ObjectField(assetObj, typeof(Object), false);
 						if (assetObj is SceneAsset && EditorHelper.Button("Open", 50))
-							UnityEditor.SceneManagement.EditorSceneManager.OpenScene(path);
+						{
+							if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+								EditorSceneManager.OpenScene(path);
+						}
 						if (PrefabUtility.GetPrefabAssetType(assetObj) == PrefabAssetType.Regular && EditorHelper.Button("Open", 50))
 							AssetDatabase.OpenAsset(assetObj);
 						if (EditorHelper.ButtonColor("Delete", Color.red, 70))

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RCore.UI
 {
@@ -13,8 +14,10 @@ namespace RCore.UI
 		public static Action OnOffsetChanged;
 		public Canvas canvas;
 		public RectTransform[] safeRects;
-		public bool fixedTop;
-		public bool fixedBottom;
+		[FormerlySerializedAs("fixedTop")]
+		public bool fullTop;
+		[FormerlySerializedAs("fixedBottom")]
+		public bool fullBottom;
 
 		private void Start()
 		{
@@ -60,13 +63,13 @@ namespace RCore.UI
 		{
 			var safeArea = Screen.safeArea;
 			safeArea.height -= topBannerOffset;
-			if (fixedTop)
+			if (fullTop)
 			{
-				safeArea.height += safeArea.y;
+				safeArea.height = Screen.currentResolution.height - Screen.safeArea.y;
 			}
-			if (fixedBottom)
+			if (fullBottom)
 			{
-				safeArea.height += safeArea.y;
+				safeArea.height += Screen.safeArea.y;
 				safeArea.y = 0;
 			}
 			var anchorMin = safeArea.position;

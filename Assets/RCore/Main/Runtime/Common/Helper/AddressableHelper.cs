@@ -51,9 +51,9 @@ namespace RCore
             return false;
 #endif
 		}
-		public async UniTask<TComponent> InstantiateAsync(bool pDefaultActive = false)
+		public async new UniTask<TComponent> InstantiateAsync(Transform parent, bool pDefaultActive = false)
 		{
-			m_operation = Addressables.InstantiateAsync(this);
+			m_operation = Addressables.InstantiateAsync(this, parent);
 			loading = true;
 			var go = await m_operation;
 			go.SetActive(pDefaultActive);

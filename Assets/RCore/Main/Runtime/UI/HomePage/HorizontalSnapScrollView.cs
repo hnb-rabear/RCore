@@ -52,7 +52,7 @@ namespace RCore.UI
 		private bool m_checkBoundary;
 		private bool m_checkStop;
 
-		private RectTransform Content => m_ScrollView.content;
+		public RectTransform Content => m_ScrollView.content;
 		public int FocusedItemIndex => m_FocusedItemIndex;
 		public int TotalItems => m_Items.Length;
 		public bool IsSnapping => m_IsSnapping;
@@ -241,18 +241,18 @@ namespace RCore.UI
 		{
 			m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
 #if UNITY_EDITOR
-			string str = "Cotent Top Right: "
-				+ Content.TopRight()
-				+ "\nContent Bot Lert: "
-				+ Content.BotLeft()
-				+ "\nContent Center: "
-				+ Content.Center()
-				+ "\nContent Size"
-				+ Content.sizeDelta
-				+ "\nContent Pivot"
-				+ Content.pivot
-				+ "\nViewPort Size"
-				+ m_ScrollView.viewport.rect.size;
+			// string str = "Cotent Top Right: "
+			// 	+ Content.TopRight()
+			// 	+ "\nContent Bot Left: "
+			// 	+ Content.BotLeft()
+			// 	+ "\nContent Center: "
+			// 	+ Content.Center()
+			// 	+ "\nContent Size"
+			// 	+ Content.sizeDelta
+			// 	+ "\nContent Pivot"
+			// 	+ Content.pivot
+			// 	+ "\nViewPort Size"
+			// 	+ m_ScrollView.viewport.rect.size;
 			//Debug.Log(str);
 #endif
 			Content.TryGetComponent(out ContentSizeFitter contentFilter);

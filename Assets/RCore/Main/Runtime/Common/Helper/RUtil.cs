@@ -463,7 +463,11 @@ namespace RCore
 			}
 			return positions;
 		}
-
+		public static int GetRandomEnum(Type type)
+		{
+			var values = Enum.GetValues(type);
+			return (int)values.GetValue(Random.Range(0, values.Length));
+		}
 		public static string GetRandomCountryCode()
 		{
 			string[] countryCodes =
