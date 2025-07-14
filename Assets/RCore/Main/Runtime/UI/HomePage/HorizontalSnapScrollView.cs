@@ -80,8 +80,6 @@ namespace RCore.UI
 			MoveToItem(m_StartIndex, true);
 		}
 
-		public void SetStartIndex(int pIndex) { }
-
 		private void OnEnable()
 		{
 			m_checkBoundary = m_ScrollView.movementType == ScrollRect.MovementType.Unrestricted;

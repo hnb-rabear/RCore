@@ -295,30 +295,6 @@ namespace RCore.Service
 		}
 #elif UNITY_IOS && !UNITY_EDITOR
 		public static bool Authenticated => true;
-		public static void UploadSavedGame(string pFileName, string jsonData, Action<bool> pCallback = null)
-		{
-			if (string.IsNullOrEmpty(pFileName))
-				pFileName = Application.productName;
-			RNative.SaveStringToiCloud(pFileName, jsonData, pCallback);
-		}
-		public static void UploadSavedGame(string jsonData, Action<bool> pCallback = null)
-		{
-			UploadSavedGame(Application.productName, jsonData, pCallback);
-		}
-		public static void UploadSavedGame(string jsonData, float _ = 0, Action<bool> pCallback = null)
-		{
-			UploadSavedGame(Application.productName, jsonData, pCallback);
-		}
-		public static void DownloadSavedGame(string pFileName, Action<bool, string> pCallback = null)
-		{
-			if (string.IsNullOrEmpty(pFileName))
-				pFileName = Application.productName;
-			RNative.RetrieveStringFromiCloud(pFileName, pCallback);
-		}
-		public static void DownloadSavedGame(Action<bool, string> pCallback = null)
-		{
-			DownloadSavedGame(Application.productName, pCallback);
-		}
 #else
 		public static bool Authenticated => false;
 		public static void ShowSelectSavedGameUI(string uiTitle, Action<ISavedGameMetadata, SelectUIStatus> p) => p?.Invoke(null, SelectUIStatus.AuthenticationError);

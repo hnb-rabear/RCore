@@ -110,7 +110,7 @@ namespace RCore.Data.JObject
 			return false;
 		}
 
-		protected void EnableAutoSave(bool pValue) => m_enableAutoSave = pValue;
+		public void EnableAutoSave(bool pValue) => m_enableAutoSave = pValue;
 
 		public int GetOfflineSeconds() => m_dataCollection.session.GetOfflineSeconds();
 	}

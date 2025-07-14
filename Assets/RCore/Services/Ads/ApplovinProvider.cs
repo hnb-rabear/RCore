@@ -362,14 +362,14 @@ namespace RCore.Service
 				}
 			).Call("show", Array.Empty<object>());
 #elif UNITY_IOS
-			IOSControl.instance.ShowMessage(msg);
 #else
 			Debug.Log("ShowMessage: " + msg);
 #endif
 		}
 
 #else
-		public void Init(IAdEvent adEvent) { }
+		public void Init() { }
+		public void SetEventListener(GameObject listener) { }
         public void ShowInterstitial(string pPlacement = null, Action pCallback = null) => pCallback?.Invoke();
         public bool IsInterstitialReady() => Application.platform == RuntimePlatform.WindowsEditor;
 		public void ShowRewardedAd(string pPlacement = null, Action<bool> pCallback = null) => pCallback?.Invoke(Application.platform == RuntimePlatform.WindowsEditor);

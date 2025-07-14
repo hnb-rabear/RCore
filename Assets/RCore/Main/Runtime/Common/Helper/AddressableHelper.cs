@@ -74,6 +74,13 @@ namespace RCore
 			Debug.Log($"Load Asset Bundle {asset.name}");
 			return asset;
 		}
+		public new void Instantiate(Transform parent, bool defaultActive = false)
+		{
+			if (instance != null) return;
+			instance = Object.Instantiate(asset, parent);
+			instance.gameObject.SetActive(defaultActive);
+			instance.name = asset.name;
+		}
 		public IEnumerator IELoadAsset()
 		{
 			if (asset != null)

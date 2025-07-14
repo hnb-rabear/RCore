@@ -30,7 +30,7 @@ namespace RCore.Service
 		
 		[SerializeField] private SerializableDictionary<string, ProductType> m_products;
 
-		public static Action<string, Product> OnIAPSucceed;
+		public static Action<string, PurchaseEventArgs> OnIAPSucceed;
 		public static Action<Product, string> OnIAPFailed;
 		private Action<bool> m_onInitialized;
 		private Action<Product> m_onPurchaseDeferred;
@@ -43,8 +43,17 @@ namespace RCore.Service
 		private CrossPlatformValidator m_validator;
 		private RPlayerPrefDict<string, string> m_cacheLocalizedPrices;
 		private string m_placement;
+		public bool processing;
 
 #region Init
+
+		private void Awake()
+		{
+			if (m_Instance == null)
+				m_Instance = this;
+			else if (m_Instance != this)
+				Destroy(gameObject);
+		}
 
 		public async void Init(Dictionary<string, ProductType> pProducts, Action<bool> pCallback)
 		{
@@ -100,7 +109,6 @@ namespace RCore.Service
 			{
 				m_appleExtensions = extensions.GetExtension<IAppleExtensions>();
 				m_appleExtensions.RegisterPurchaseDeferredListener(OnDeferredPurchase);
-				m_appleExtensions.simulateAskToBuy = true; // Only applies to Sandbox testing
 			}
 			else if (Application.platform == RuntimePlatform.Android)
 			{
@@ -119,6 +127,7 @@ namespace RCore.Service
 
 		public void Purchase(string productId, Action<Product> pOnPurchaseSucceed, Action<Product> pOnPurchaseFailed = null, Action<Product> pOnPurchaseDeferred = null, string pPlacement = null)
 		{
+			processing = true;
 			m_placement = pPlacement;
 			m_onPurchaseSucceed = pOnPurchaseSucceed;
 			m_onPurchaseFailed = pOnPurchaseFailed;
@@ -142,14 +151,15 @@ namespace RCore.Service
 			if (isPurchaseValid)
 			{
 				m_onPurchaseSucceed?.Invoke(product);
-				OnIAPSucceed?.Invoke(m_placement, product);
-				m_placement = null;
+				OnIAPSucceed?.Invoke(m_placement, e);
 			}
 			else
 			{
 				m_onPurchaseFailed?.Invoke(product);
 				OnIAPFailed?.Invoke(product, "invalid");
 			}
+			m_placement = null;
+			processing = false;
 			return PurchaseProcessingResult.Complete;
 		}
 
@@ -157,7 +167,7 @@ namespace RCore.Service
 		{
 			m_onPurchaseFailed?.Invoke(product);
 			OnIAPFailed?.Invoke(product, failureReason.ToString());
-
+			processing = false;
 			Debug.Log($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
 		}
 
@@ -165,7 +175,7 @@ namespace RCore.Service
 		{
 			m_onPurchaseFailed?.Invoke(product);
 			OnIAPFailed?.Invoke(product, failureDescription.reason.ToString());
-
+			processing = false;
 			Debug.Log($"Purchase failed - Product: '{product.definition.id}'," + $" Purchase failure reason: {failureDescription.reason}," + $" Purchase failure details: {failureDescription.message}");
 		}
 
@@ -243,8 +253,17 @@ namespace RCore.Service
 
 		public void Restore(Action<bool, string> onRestore)
 		{
-			m_googlePlayStoreExtensions?.RestoreTransactions(onRestore);
-			m_appleExtensions?.RestoreTransactions(onRestore);
+			processing = true;
+			m_googlePlayStoreExtensions?.RestoreTransactions((a,b) =>
+			{
+				onRestore?.Invoke(a, b);
+				processing = false;
+			});
+			m_appleExtensions?.RestoreTransactions((a, b) =>
+			{
+				onRestore?.Invoke(a, b);
+				processing = false;
+			});
 		}
 
 		public bool IsSubscribedTo(Product product)

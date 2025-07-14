@@ -12,6 +12,6 @@ namespace RCore.UI
 	public interface IAligned
 	{
 		public void Align();
-		public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null);
+		public void AlignByTweener(Action onFinish);
 	}
 }

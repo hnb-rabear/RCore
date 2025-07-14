@@ -45,7 +45,6 @@ namespace RCore.UI
 		private List<int> m_childrenId = new List<int>();
 		private Vector2[] m_childrenPrePosition;
 		private Vector2[] m_childrenNewPosition;
-		private AnimationCurve m_animCurveTemp;
 #if DOTWEEN
 		private Tweener m_tweener;
 #else
@@ -215,16 +214,15 @@ namespace RCore.UI
 			AlignByTweener(null);
 		}
 		
-		public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		public void AlignByTweener(Action onFinish)
 		{
-			StartCoroutine(IEAlignByTweener(onFinish, pCurve));
+			StartCoroutine(IEAlignByTweener(onFinish));
 		}
 
-		private IEnumerator IEAlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		private IEnumerator IEAlignByTweener(Action onFinish)
 		{
 			Init();
 			RefreshPositions();
-			m_animCurveTemp = pCurve ?? this.m_animCurve;
 #if DOTWEEN
 			bool waiting = true;
 			m_lerp = 0;
@@ -239,8 +237,8 @@ namespace RCore.UI
 				.OnUpdate(() =>
 				{
 					float t = m_lerp;
-					if (m_animCurveTemp.length > 1)
-						t = m_animCurveTemp.Evaluate(m_lerp);
+					if (m_animCurve.length > 1)
+						t = m_animCurve.Evaluate(m_lerp);
 					for (int j = 0; j < m_children.Count; j++)
 					{
 						var pos = Vector2.Lerp(m_childrenPrePosition[j], m_childrenNewPosition[j], t);
@@ -256,7 +254,7 @@ namespace RCore.UI
 							item.OnFinish();
 				})
 				.SetUpdate(true);
-			if (m_animCurveTemp == null)
+			if (m_animCurve == null)
 				m_tweener.SetEase(Ease.InQuint);
 			while (waiting)
 				yield return null;
@@ -282,8 +280,8 @@ namespace RCore.UI
 					time = pDuration;
 				m_lerp = time / pDuration;
 				float t = m_lerp;
-				if (m_animCurveTemp.length > 1)
-					t = m_animCurveTemp.Evaluate(m_lerp);
+				if (m_animCurve.length > 1)
+					t = m_animCurve.Evaluate(m_lerp);
 				for (int j = 0; j < m_children.Count; j++)
 				{
 					var pos = Vector2.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);

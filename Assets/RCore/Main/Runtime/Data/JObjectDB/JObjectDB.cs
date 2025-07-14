@@ -112,6 +112,25 @@ namespace RCore.Data.JObject
 				dict.Add(pair.Key, pair.Value.ToJson());
 			return dict;
 		}
+		
+		public static Dictionary<string, object> GetAllDataObjects()
+		{
+			var dict = new Dictionary<string, object>();
+			if (collections.Count == 0)
+			{
+				var keys = GetCollectionKeys();
+				foreach (string key in keys)
+				{
+					string json = PlayerPrefs.GetString(key);
+					if (!string.IsNullOrEmpty(json))
+						dict.Add(key, JsonConvert.DeserializeObject<object>(json));
+				}
+				return dict;
+			}
+			foreach (var pair in collections)
+				dict.Add(pair.Key, pair.Value);
+			return dict;
+		}
 
 		public static string ToJson()
 		{

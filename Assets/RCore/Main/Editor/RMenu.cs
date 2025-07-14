@@ -4,6 +4,7 @@
 
 using RCore.Audio;
 using RCore.Editor.Tool;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -169,6 +170,12 @@ namespace RCore.Editor
 			FindAndReplaceAssetWindow.ShowWindow();
 		}
 
+		[MenuItem(R_TOOLS + "Datetime Picker", priority = GROUP_6 + 6)]
+		public static void OpenDateTimePickerWindow()
+		{
+			DateTimePickerWindow.ShowWindow(DateTime.Now);
+		}
+		
 		//==============================================
 
 		[MenuItem(GAMEOBJECT_R + "Group GameObjects", priority = GROUP_1 + 1)]

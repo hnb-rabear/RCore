@@ -21,6 +21,11 @@ namespace RCore.Data.JObject
 		{
 			data.Save();
 		}
+		public void Import(T pData)
+		{
+			pData.key = data.key;
+			data = pData;
+		}
 		/// <summary>
 		/// Triggers an event when data changes.
 		/// </summary>

@@ -35,7 +35,6 @@ namespace RCore
         private Transform[] mChildren;
         private Vector3[] mChildrenPrePosition;
         private Vector3[] mChildrenNewPosition;
-        private AnimationCurve m_animCurveTemp;
 #if DOTWEEN
         private Tweener mTweener;
 #else
@@ -135,16 +134,15 @@ namespace RCore
 	        AlignByTweener(null);
         }
 
-        public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+        public void AlignByTweener(Action onFinish)
         {
-            StartCoroutine(IEAlignByTweener(onFinish, pCurve));
+            StartCoroutine(IEAlignByTweener(onFinish));
         }
 
-        private IEnumerator IEAlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+        private IEnumerator IEAlignByTweener(Action onFinish)
         {
             Init();
             RefreshPositions();
-            m_animCurveTemp = pCurve ?? this.animCurve;
 #if DOTWEEN
             bool waiting = true;
             lerp = 0;
@@ -153,8 +151,8 @@ namespace RCore
                 .OnUpdate(() =>
                 {
                     float t = lerp;
-                    if (m_animCurveTemp.length > 1)
-                        t = m_animCurveTemp.Evaluate(lerp);
+                    if (animCurve.length > 1)
+                        t = animCurve.Evaluate(lerp);
                     for (int j = 0; j < mChildren.Length; j++)
                     {
                         var pos = Vector3.Lerp(mChildrenPrePosition[j], mChildrenNewPosition[j], t);
@@ -166,7 +164,7 @@ namespace RCore
                     waiting = false;
                 })
                 .SetUpdate(true);
-            if (m_animCurveTemp == null)
+            if (animCurve == null)
                 mTweener.SetEase(Ease.InQuint);
             while (waiting)
                 yield return null;
@@ -188,7 +186,7 @@ namespace RCore
                     time = pDuration;
                 lerp = time / pDuration;
                 float t = lerp;
-                if (m_animCurveTemp.length > 1)
+                if (animCurve.length > 1)
                     t = animCurve.Evaluate(lerp);
                 for (int j = 0; j < mChildren.Length; j++)
                 {

@@ -2,6 +2,7 @@
  * Author HNB-RaBear - 2017
  **/
 
+using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -116,18 +117,50 @@ namespace RCore.UI
 			container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewRect.rect.size.x * 0.5f);
 		}
 
-		public void ScrollToTop()
+		public void ScrollToTop(bool tween = false)
 		{
 			scrollView.StopMovement();
-			ScrollBarChanged(0);
-			scrollView.horizontalScrollbar.value = 0;
+			if (tween)
+			{
+#if DOTWEEN
+				float fromValue = scrollView.horizontalScrollbar.value;
+				float toValue = 0f;
+				if (fromValue != toValue)
+				{
+					float time = Mathf.Abs(toValue - fromValue) * 2;
+					if (time < 0.1f && time > 0)
+						time = 0.1f;
+					DOTween.To(() => scrollView.horizontalScrollbar.value, x => scrollView.horizontalScrollbar.value = x, toValue, time);
+				}
+#else
+				scrollView.horizontalScrollbar.value = 0;
+#endif
+			}
+			else
+				scrollView.horizontalScrollbar.value = 0;
 		}
 
-		public void ScrollToBot()
+		public void ScrollToBot(bool tween = false)
 		{
 			scrollView.StopMovement();
-			ScrollBarChanged(1);
-			scrollView.horizontalScrollbar.value = 1;
+#if DOTWEEN
+			if (tween)
+			{
+				float fromValue = scrollView.horizontalScrollbar.value;
+				float toValue = 1f;
+				if (fromValue != toValue)
+				{
+					float time = Mathf.Abs(toValue - fromValue) * 2;
+					if (time < 0.1f && time > 0)
+						time = 0.1f;
+					DOTween.To(() => scrollView.horizontalScrollbar.value, x => scrollView.horizontalScrollbar.value = x, toValue, time);
+				}
+			}
+			else
+#endif
+			{
+				scrollView.horizontalScrollbar.value = 1;
+			}
 		}
 
 		public void RefreshScrollBar()
@@ -154,13 +187,13 @@ namespace RCore.UI
 			for (int i = originalIndex; i < m_optimizedTotal; i++)
 			{
 				MoveItemByIndex(m_itemsRect[i], newIndex);
-				m_itemsScrolled[i].UpdateContent(newIndex, false);
+				m_itemsScrolled[i].UpdateContent(newIndex);
 				newIndex++;
 			}
 			for (int i = 0; i < originalIndex; i++)
 			{
 				MoveItemByIndex(m_itemsRect[i], newIndex);
-				m_itemsScrolled[i].UpdateContent(newIndex, false);
+				m_itemsScrolled[i].UpdateContent(newIndex);
 				newIndex++;
 			}
 		}

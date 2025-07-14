@@ -22,15 +22,13 @@ namespace RCore.Inspector
 	{
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			var spritePreview = (SpriteBoxAttribute)attribute;
-
-			EditorGUI.BeginProperty(position, label, property);
-
-			position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
-
 			// Check if the property type is correct
 			if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue is Sprite sprite)
 			{
+				EditorGUI.BeginProperty(position, label, property);
+
+				position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+				var spritePreview = (SpriteBoxAttribute)attribute;
 				var spriteRect = new Rect(position.x, position.y, spritePreview.width, spritePreview.height);
 				var fieldRect = new Rect(position.x + spritePreview.width + 5, position.y, position.width - spritePreview.width - 5, position.height);
 
@@ -38,17 +36,17 @@ namespace RCore.Inspector
 					property.objectReferenceValue = EditorGUI.ObjectField(spriteRect, sprite, typeof(Sprite), allowSceneObjects: false);
 
 				EditorGUI.PropertyField(fieldRect, property, GUIContent.none);
+				EditorGUI.EndProperty();
 			}
 			else
 			{
 				EditorGUI.PropertyField(position, property, label);
 			}
-			EditorGUI.EndProperty();
 		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			SpriteBoxAttribute spriteBox = (SpriteBoxAttribute)attribute;
+			var spriteBox = (SpriteBoxAttribute)attribute;
 			if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue is Sprite sprite && sprite != null)
 			{
 				return Mathf.Max(base.GetPropertyHeight(property, label), spriteBox.height);

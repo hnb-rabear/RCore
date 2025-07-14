@@ -50,7 +50,6 @@ namespace RCore
 		[ReadOnly] public float height;
 
 		private Dictionary<int, List<Transform>> m_childrenGroup;
-		private AnimationCurve m_animCurveTemp;
 
 		public void Init()
 		{
@@ -219,15 +218,14 @@ namespace RCore
 			AlignByTweener(null);
 		}
 
-		public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		public void AlignByTweener(Action onFinish)
 		{
-			StartCoroutine(IEAlignByTweener(onFinish, pCurve));
+			StartCoroutine(IEAlignByTweener(onFinish));
 		}
 
-		private IEnumerator IEAlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		private IEnumerator IEAlignByTweener(Action onFinish)
 		{
 			Init();
-			m_animCurveTemp = pCurve ?? this.animCurve;
 			if (tableLayoutType == TableLayoutType.Horizontal)
 			{
 				foreach (var a in m_childrenGroup)
@@ -285,8 +283,8 @@ namespace RCore
 						.OnUpdate(() =>
 						{
 							float t = lerp;
-							if (m_animCurveTemp.length > 1)
-								t = m_animCurveTemp.Evaluate(lerp);
+							if (animCurve.length > 1)
+								t = animCurve.Evaluate(lerp);
 							for (int j = 0; j < children.Count; j++)
 							{
 								var pos = Vector2.Lerp(childrenPrePosition[j], childrenNewPosition[j], t);
@@ -364,8 +362,8 @@ namespace RCore
 						.OnUpdate(() =>
 						{
 							float t = lerp;
-							if (m_animCurveTemp.length > 1)
-								t = m_animCurveTemp.Evaluate(lerp);
+							if (animCurve.length > 1)
+								t = animCurve.Evaluate(lerp);
 							for (int j = 0; j < children.Count; j++)
 							{
 								var pos = Vector3.Lerp(childrenPrePosition[j], childrenNewPosition[j], t);
@@ -399,8 +397,8 @@ namespace RCore
 					time = pDuration;
 				float lerp = time / pDuration;
 				float t = lerp;
-				if (m_animCurveTemp.length > 1)
-					t = m_animCurveTemp.Evaluate(lerp);
+				if (animCurve.length > 1)
+					t = animCurve.Evaluate(lerp);
 				for (int j = 0; j < pObjs.Count; j++)
 				{
 					var pos = Vector3.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);

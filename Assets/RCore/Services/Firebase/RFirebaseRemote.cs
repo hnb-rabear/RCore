@@ -291,22 +291,21 @@ namespace RCore.Service
 
 		private static void OnFocusChanged(bool focus)
 		{
-			if (m_Changed)
-			{
-				string content = JsonConvert.SerializeObject(m_BackUpValues);
-				PlayerPrefs.SetString(BACK_UP_KEY, content);
-				m_Changed = false;
-			}
+			if (m_Changed && !focus)
+				BackUp();
 		}
 
 		private static void OnApplicationQuit()
 		{
 			if (m_Changed)
-			{
-				string content = JsonConvert.SerializeObject(m_BackUpValues);
-				PlayerPrefs.SetString(BACK_UP_KEY, content);
-				m_Changed = false;
-			}
+				BackUp();
+		}
+
+		public static void BackUp()
+		{
+			string content = JsonConvert.SerializeObject(m_BackUpValues);
+			PlayerPrefs.SetString(BACK_UP_KEY, content);
+			m_Changed = false;
 		}
 	}
 }

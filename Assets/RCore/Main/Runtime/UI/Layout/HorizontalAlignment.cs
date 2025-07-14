@@ -37,7 +37,6 @@ namespace RCore
 		private Transform[] m_children;
 		private Vector3[] m_childrenNewPosition;
 		private Vector3[] m_childrenPrePosition;
-		private AnimationCurve m_animCurveTemp;
 #if DOTWEEN
 		private Tweener m_tweener;
 #else
@@ -140,16 +139,15 @@ namespace RCore
 			AlignByTweener(null);
 		}
 
-		public void AlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		public void AlignByTweener(Action onFinish)
 		{
-			StartCoroutine(IEAlignByTweener(onFinish, pCurve));
+			StartCoroutine(IEAlignByTweener(onFinish));
 		}
 
-		private IEnumerator IEAlignByTweener(Action onFinish, AnimationCurve pCurve = null)
+		private IEnumerator IEAlignByTweener(Action onFinish)
 		{
 			Init();
 			RefreshPositions();
-			m_animCurveTemp = pCurve ?? this.animCurve;
 #if DOTWEEN
 			bool waiting = true;
 			lerp = 0;
@@ -158,8 +156,8 @@ namespace RCore
 				.OnUpdate(() =>
 				{
 					float t = lerp;
-					if (m_animCurveTemp.length > 1)
-						t = m_animCurveTemp.Evaluate(lerp);
+					if (animCurve.length > 1)
+						t = animCurve.Evaluate(lerp);
 					for (int j = 0; j < m_children.Length; j++)
 					{
 						var pos = Vector2.Lerp(m_childrenPrePosition[j], m_childrenNewPosition[j], t);
@@ -193,8 +191,8 @@ namespace RCore
 					time = pDuration;
 				lerp = time / pDuration;
 				float t = lerp;
-				if (m_animCurveTemp.length > 1)
-					t = m_animCurveTemp.Evaluate(lerp);
+				if (animCurve.length > 1)
+					t = animCurve.Evaluate(lerp);
 				for (int j = 0; j < m_children.Length; j++)
 				{
 					var pos = Vector3.Lerp(pChildrenPrePosition[j], pChildrenNewPosition[j], t);

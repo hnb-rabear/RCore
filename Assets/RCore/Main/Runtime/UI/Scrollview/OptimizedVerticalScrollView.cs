@@ -69,7 +69,7 @@ namespace RCore.UI
 				m_itemsScrolled[i].ManualUpdate();
 		}
 
-		public void Init(int pTotalItems, bool pForce, int startIndex)
+		public void Init(int pTotalItems, bool pForce, int startIndex = 0)
 		{
 			if (pTotalItems == total && !pForce)
 				return;
@@ -124,11 +124,10 @@ namespace RCore.UI
 			m_offsetVec = Vector3.down;
 			m_startPos = container.anchoredPosition3D - m_offsetVec * m_halfSizeContainer + m_offsetVec * (prefabScale.y * 0.5f);
 			m_optimizedTotal = Mathf.Min(total, m_totalVisible + m_totalBuffer);
-			startIndex = Mathf.Clamp(startIndex, 0, total - m_optimizedTotal - 1);
 			for (int i = 0; i < m_optimizedTotal; i++)
 			{
-				var cellIndex = (i + startIndex) % totalCellOnRow;
-				var rowIndex = Mathf.FloorToInt((i + startIndex) * 1f / totalCellOnRow);
+				var cellIndex = (i) % totalCellOnRow;
+				var rowIndex = Mathf.FloorToInt((i) * 1f / totalCellOnRow);
 
 				var item = m_itemsScrolled.Obtain(container);
 				var rt = item.transform as RectTransform;
@@ -139,31 +138,75 @@ namespace RCore.UI
 				m_itemsRect.Add(rt);
 
 				item.gameObject.SetActive(true);
-				item.UpdateContent(i + startIndex, true);
+				item.UpdateContent(i, true);
 			}
 
 			prefab.gameObject.SetActive(false);
-			container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewport.rect.size.y * 0.5f) + new Vector3(0, startIndex * m_cellSizeY, 0);
+			if (startIndex <= 0)
+				container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewport.rect.size.y * 0.5f) + new Vector3(0, m_cellSizeY, 0);
+			else
+				ScrollToIndex(startIndex);
 		}
 
 #if ODIN_INSPECTOR
 		[Button]
 #endif
-		public void ScrollToTop()
+		public void ScrollToTop(bool tween = false)
 		{
 			scrollView.StopMovement();
-			scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 1);
+			if (tween)
+			{
+#if DOTWEEN
+				float fromY = scrollView.normalizedPosition.y;
+				float toY = 1f;
+				if (fromY != toY)
+				{
+					float time = Mathf.Abs(toY - fromY);
+					if (time < 0.1f && time > 0)
+						time = 0.1f;
+					float val = fromY;
+					DOTween.To(() => val, x => val = x, toY, time)
+						.OnUpdate(() => scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, val));
+				}
+#else
+				scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 1);
+#endif
+			}
+			else
+			{
+				scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 1);
+			}
 		}
 
 #if ODIN_INSPECTOR
 		[Button]
 #endif
-		public void ScrollToBot()
+		public void ScrollToBot(bool tween = false)
 		{
 			scrollView.StopMovement();
-			scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 0);
+			if (tween)
+			{
+#if DOTWEEN
+				float fromY = scrollView.normalizedPosition.y;
+				float toY = 0f;
+				if (fromY != toY)
+				{
+					float time = Mathf.Abs(toY - fromY);
+					if (time < 0.1f && time > 0)
+						time = 0.1f;
+					float val = fromY;
+					DOTween.To(() => val, x => val = x, toY, time)
+						.OnUpdate(() => scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, val));
+				}
+#else
+				scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 0);
+#endif
+			}
+			else
+			{
+				scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 0);
+			}
 		}
-
 		private void ScrollBarChanged(Vector2 pNormPos)
 		{
 			if (m_optimizedTotal <= 0)
@@ -274,42 +317,16 @@ namespace RCore.UI
 #else
 				scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 1f - toY);
 				pOnComplete?.Invoke();
+				ScrollBarChanged(scrollView.normalizedPosition);
 #endif
 			}
 			else
 			{
 				scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 1f - toY);
 				pOnComplete?.Invoke();
+				ScrollBarChanged(scrollView.normalizedPosition);
 			}
 		}
-
-		public bool CheckIndexInsideViewPort(int index)
-		{
-			OptimizedScrollItem item = null;
-			for (int i = 0; i < m_itemsScrolled.Count; i++)
-			{
-				if (m_itemsScrolled[i].Index == index)
-				{
-					item = m_itemsScrolled[i];
-					break;
-				}
-			}
-			if (item == null)
-				return false;
-
-			var viewportTop = scrollView.viewport.TopRight().y;
-			var viewportBot = scrollView.viewport.BotLeft().y;
-			return true;
-		}
-
-		// Moves item A at index `a` to the position of item B at index `b`.
-		// Clone the Item A at the position of original Item A
-
-
-		// Item A will move to the new position, and the content will scroll accordingly.\
-
-		// Move the cloned item A to the position of Item B.
-		// Item B will be pushed down to make space for item A.
 #if ODIN_INSPECTOR
 		[Button]
 #endif

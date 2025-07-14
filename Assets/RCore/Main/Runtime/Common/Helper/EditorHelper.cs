@@ -5,6 +5,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -128,14 +129,14 @@ namespace RCore.Editor
             if (valueWidth == 0)
             {
 	            if (textArea)
-		            str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40));
+		            str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40), GUILayout.Height(80));
 	            else
 		            str = EditorGUILayout.TextField(value, style, GUILayout.MinWidth(40));
             }
             else
             {
 	            if (textArea)
-		            str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
+		            str = EditorGUILayout.TextArea(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth), GUILayout.Height(80));
 	            else
 		            str = EditorGUILayout.TextField(value, style, GUILayout.MinWidth(40), GUILayout.Width(valueWidth));
             }
@@ -2335,8 +2336,6 @@ namespace RCore.Editor
 
             return results;
         }
-
-
 
         private static object GetValue_Imp(object source, string name)
         {

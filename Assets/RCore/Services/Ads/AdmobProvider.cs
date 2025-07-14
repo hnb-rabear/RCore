@@ -330,7 +330,6 @@ namespace RCore.Service
 				}
 			).Call("show", Array.Empty<object>());
 #elif UNITY_IOS
-			IOSControl.instance.ShowMessage(msg);
 #else
 			Debug.Log("ShowMessage: " + msg);
 #endif

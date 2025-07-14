@@ -11,7 +11,7 @@ namespace RCore.Data.JObject
 		void Delete();
 		string ToJson(bool minimizeSize = false);
 	}
-	
+
 	public abstract class JObjectData : IJObjectData
 	{
 		[JsonIgnore] public string key { get; set; }
@@ -21,6 +21,11 @@ namespace RCore.Data.JObject
 		/// <param name="minimizeSize">True: Minimize json data by Json.Net. False: serialize by JsonUtility; it is recommended due to its better performance.</param>
 		public virtual void Save(bool minimizeSize = false)
 		{
+			if (string.IsNullOrEmpty(key))
+			{
+				UnityEngine.Debug.LogError($"{GetType().Name}: key is null");
+				return;
+			}
 			PlayerPrefs.SetString(key, ToJson(minimizeSize));
 		}
 		public virtual bool Load()

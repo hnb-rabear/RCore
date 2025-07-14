@@ -1,11 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 
 namespace RCore.Editor
 {
-	public static class EditorHelperUtils
+	public static class EditorHelperExtended
 	{
 		public static string[] GetTMPMaterialPresets(TMPro.TMP_FontAsset fontAsset)
 		{
@@ -19,7 +21,7 @@ namespace RCore.Editor
 
 			return materialPresetNames;
 		}
-		
+
 		public static Material[] FindMaterialReferences(TMP_FontAsset fontAsset)
 		{
 			var refs = new List<Material>();
@@ -35,7 +37,10 @@ namespace RCore.Editor
 				string materialPath = AssetDatabase.GUIDToAssetPath(materialAssetGUIDs[i]);
 				var targetMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
 
-				if (targetMaterial.HasProperty(ShaderUtilities.ID_MainTex) && targetMaterial.GetTexture(ShaderUtilities.ID_MainTex) != null && mat.GetTexture(ShaderUtilities.ID_MainTex) != null && targetMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID() == mat.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
+				if (targetMaterial.HasProperty(ShaderUtilities.ID_MainTex)
+				    && targetMaterial.GetTexture(ShaderUtilities.ID_MainTex) != null
+				    && mat.GetTexture(ShaderUtilities.ID_MainTex) != null
+				    && targetMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID() == mat.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
 				{
 					if (!refs.Contains(targetMaterial))
 						refs.Add(targetMaterial);
@@ -94,6 +99,28 @@ namespace RCore.Editor
 				if (invalidGOs.Count > 0)
 					Selection.objects = invalidGOs.ToArray();
 			}
+		}
+
+		public static void DateTimePicker(DateTime? value, string label, int labelWidth, Action<DateTime?> onSelect)
+		{
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
+			if (value != null)
+				EditorGUILayout.SelectableLabel(value.Value.ToString(CultureInfo.CurrentCulture), EditorStyles.textField,
+					GUILayout.Height(EditorGUIUtility.singleLineHeight));
+			else
+				EditorGUILayout.SelectableLabel("No expiry", EditorStyles.textField, GUILayout.Height(EditorGUIUtility.singleLineHeight));
+
+			if (EditorHelper.Button("Set Date"))
+			{
+				var window = DateTimePickerWindow.ShowWindow(value ?? default, true);
+				window.onQuit = datetime => onSelect?.Invoke(datetime);
+			}
+			if (EditorHelper.Button("Remove Date"))
+			{
+				onSelect?.Invoke(null);
+			}
+			EditorGUILayout.EndHorizontal();
 		}
 	}
 }

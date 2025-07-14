@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -45,7 +44,6 @@ namespace RCore.Editor
 			}
 			EditorGUILayout.EndHorizontal();
 		}
-
 		
 		private void OnLostFocus()
 		{
@@ -54,4 +52,3 @@ namespace RCore.Editor
 		}
 	}
 }
-#endif

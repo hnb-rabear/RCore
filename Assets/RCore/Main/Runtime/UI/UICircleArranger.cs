@@ -89,7 +89,7 @@ namespace RCore.UI
 			// Arrange inner circle
 			ArrangeTargetsOnCircle(outerCount, innerCount, currentRadius - radiusStep);
 		}
-		
+
 		private void ArrangeTargetsOnCircle(int startIdx, int count, float radius)
 		{
 			if (count == 0)
@@ -214,6 +214,11 @@ namespace RCore.UI
 		{
 			CalculatePositions();
 
+			if (m_targets.Count == 0)
+			{
+				pCallback?.Invoke();
+				return;
+			}
 			for (var i = 0; i < m_targets.Count; i++)
 			{
 				int index = i;
