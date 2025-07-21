@@ -145,7 +145,7 @@ namespace RCore.Editor.Tool
 								if (m_perfectRatio == PerfectRatio.Height)
 									RUtil.PerfectRatioImageByHeight(image);
 								else if (m_perfectRatio == PerfectRatio.Width)
-									RUtil.PerfectRatioImagesByWidth(image);
+									RUtil.PerfectRatioImageByWidth(image);
 								dirty = true;
 							}
 						}

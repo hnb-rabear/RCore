@@ -66,6 +66,7 @@ namespace RCore.Data.JObject
 				data.installVersion = curVersion;
 			data.updateVersion = curVersion;
 		}
+		public override void OnRemoteConfigFetched() { }
 		private void CheckNewDay()
 		{
 			var lastActive = TimeHelper.UnixTimestampToDateTime(data.lastActive).ToLocalTime();

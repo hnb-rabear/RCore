@@ -8,6 +8,7 @@ namespace RCore.Data.JObject
 		public abstract void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
 		public abstract void OnUpdate(float deltaTime);
 		public abstract void OnPreSave(int utcNowTimestamp);
+		public void OnRemoteConfigFetched() { }
 		public void Save()
 		{
 			throw new System.NotImplementedException("This method should not be called. Save functionality is not implemented.");

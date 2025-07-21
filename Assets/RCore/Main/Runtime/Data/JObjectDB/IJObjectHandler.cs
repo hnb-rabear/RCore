@@ -6,6 +6,7 @@ namespace RCore.Data.JObject
 		public void OnPostLoad(int utcNowTimestamp, int offlineSeconds);
 		public void OnUpdate(float deltaTime);
 		public void OnPreSave(int utcNowTimestamp);
+		public abstract void OnRemoteConfigFetched();
 		public void Save();
 	}
 }

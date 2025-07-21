@@ -9,5 +9,6 @@ namespace RCore.Example.Data.JObject
 		public override void OnPostLoad(int utcNowTimestamp, int offlineSeconds) { }
 		public override void OnUpdate(float deltaTime) { }
 		public override void OnPreSave(int utcNowTimestamp) { }
+		public override void OnRemoteConfigFetched() { }
 	}
 }

@@ -112,6 +112,14 @@ namespace RCore.Data.JObject
 
 		public void EnableAutoSave(bool pValue) => m_enableAutoSave = pValue;
 
+		/// <summary>
+		/// TODO: Call this when remote config is fetched
+		/// </summary>
+		public void OnRemoteConfigFetched()
+		{
+			m_dataCollection.OnRemoteConfigFetched();
+		}
+
 		public int GetOfflineSeconds() => m_dataCollection.session.GetOfflineSeconds();
 	}
 }

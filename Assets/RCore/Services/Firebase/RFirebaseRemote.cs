@@ -128,6 +128,12 @@ namespace RCore.Service
 
 		public static T GetReturnValue<T>(string serializedValue)
 		{
+			if (string.IsNullOrEmpty(serializedValue))
+			{
+				Debug.LogWarning("Serialized value is null or empty.");
+				return default;
+			}
+
 			try
 			{
 				switch (Type.GetTypeCode(typeof(T)))
@@ -135,22 +141,38 @@ namespace RCore.Service
 					case TypeCode.String:
 						return (T)Convert.ChangeType(serializedValue, typeof(T));
 					case TypeCode.Int32:
-						return (T)Convert.ChangeType(Convert.ToInt32(serializedValue), typeof(T));
+						if (int.TryParse(serializedValue, out int intValue))
+							return (T)Convert.ChangeType(intValue, typeof(T));
+						break;
 					case TypeCode.Single:
-						return (T)Convert.ChangeType(Convert.ToSingle(serializedValue), typeof(T));
+						if (float.TryParse(serializedValue, out float floatValue))
+							return (T)Convert.ChangeType(floatValue, typeof(T));
+						break;
 					case TypeCode.Double:
-						return (T)Convert.ChangeType(Convert.ToDouble(serializedValue), typeof(T));
+						if (double.TryParse(serializedValue, out double doubleValue))
+							return (T)Convert.ChangeType(doubleValue, typeof(T));
+						break;
 					case TypeCode.Boolean:
-						return (T)Convert.ChangeType(Convert.ToBoolean(serializedValue), typeof(T));
+						if (bool.TryParse(serializedValue, out bool boolValue))
+							return (T)Convert.ChangeType(boolValue, typeof(T));
+						break;
 					default:
-						return JsonUtility.FromJson<T>(serializedValue);
+						try
+						{
+							return JsonUtility.FromJson<T>(serializedValue);
+						}
+						catch (Exception ex)
+						{
+							Debug.LogError($"Failed to deserialize JSON to type {typeof(T)}: {ex.Message}");
+						}
+						break;
 				}
 			}
 			catch (Exception ex)
 			{
 				Debug.LogException(ex);
-				return default;
 			}
+			return default;
 		}
 
 		public static T GetObjectValue<T>(object pKey)
@@ -306,6 +328,20 @@ namespace RCore.Service
 			string content = JsonConvert.SerializeObject(m_BackUpValues);
 			PlayerPrefs.SetString(BACK_UP_KEY, content);
 			m_Changed = false;
+		}
+
+		public static void RegisterOnFetchedEvent(Action listener)
+		{
+			if (listener != null)
+				OnFetched += listener;
+			if (Fetched)
+				listener?.Invoke();
+		}
+
+		public static void UnregisterOnFetchedEvent(Action listener)
+		{
+			if (listener != null)
+				OnFetched -= listener;
 		}
 	}
 }

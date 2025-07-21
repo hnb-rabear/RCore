@@ -95,6 +95,14 @@ namespace RCore.Data.JObject
 			foreach (var handler in m_models)
 				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}
+		/// <summary>
+		/// TODO: Call this function when remote config is fetched
+		/// </summary>
+		public void OnRemoteConfigFetched()
+		{
+			foreach (var handler in m_models)
+				handler.OnRemoteConfigFetched();
+		}
 		protected void CreateModel<TData>(JObjectModel<TData> @ref, string key, TData defaultVal = null) where TData : JObjectData, new()
 		{
 			if (string.IsNullOrEmpty(key))
