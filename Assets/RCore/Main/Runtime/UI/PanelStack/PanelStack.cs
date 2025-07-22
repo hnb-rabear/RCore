@@ -11,23 +11,51 @@ using UnityEngine;
 
 namespace RCore.UI
 {
+	/// <summary>
+	/// Manages a stack of UI panels, handling their creation, display, and transitions.
+	/// </summary>
 	public abstract class PanelStack : MonoBehaviour
 	{
+		/// <summary>
+		/// Defines how a new panel is added to the stack.
+		/// </summary>
 		public enum PushMode
 		{
+			/// <summary>
+			/// Adds the new panel on top of the current one, without hiding the one below.
+			/// </summary>
 			OnTop,
+			/// <summary>
+			/// Replaces the current top panel with the new one.
+			/// </summary>
 			Replacement,
+			/// <summary>
+			/// The new panel is queued and will be displayed after the current one is closed.
+			/// </summary>
 			Queued,
 		}
 
+		/// <summary>
+		/// The stack that holds the panels.
+		/// </summary>
 		protected Stack<PanelController> panelStack = new();
+		/// <summary>
+		/// The parent PanelStack of this instance.
+		/// </summary>
 		public PanelStack ParentPanel { get; private set; }
 
+		/// <summary>
+		/// Caches panels that are marked for single use.
+		/// </summary>
 		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
 
-		public virtual PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 		/// <summary>
-		/// Index in stack
+		/// Gets the panel at the top of the stack.
+		/// </summary>
+		public virtual PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
+		
+		/// <summary>
+		/// The index of this PanelStack within its parent's stack.
 		/// </summary>
 		public int Index
 		{
@@ -45,8 +73,9 @@ namespace RCore.UI
 				return ParentPanel.panelStack.Count;
 			}
 		}
+
 		/// <summary>
-		/// Order base-on active sibling
+		/// The display order based on its sibling position.
 		/// </summary>
 		public int DisplayOrder
 		{
@@ -57,11 +86,15 @@ namespace RCore.UI
 				return ParentPanel.panelStack.Count - Index;
 			}
 		}
+
 		/// <summary>
-		/// Total children panels
+		/// The total number of child panels in the stack.
 		/// </summary>
 		public int StackCount => panelStack?.Count ?? 0;
 
+		/// <summary>
+		/// Initializes the PanelStack, finding its parent if one exists.
+		/// </summary>
 		protected virtual void Awake()
 		{
 			if (ParentPanel == null)
@@ -74,13 +107,17 @@ namespace RCore.UI
 
 #region Create
 
-		private Dictionary<int, PanelController> m_createdPanels = new();
 		/// <summary>
-		/// Create and init panel
+		/// Caches created panels.
 		/// </summary>
-		/// <typeparam name="T">Panels inherit PanelController</typeparam>
-		/// <param name="pPanel">Can be prefab or buildin prefab</param>
-		/// <returns></returns>
+		private Dictionary<int, PanelController> m_createdPanels = new();
+
+		/// <summary>
+		/// Creates and initializes a panel.
+		/// </summary>
+		/// <typeparam name="T">The type of the panel, inheriting from PanelController.</typeparam>
+		/// <param name="pPanel">The panel prefab to instantiate.</param>
+		/// <returns>The created panel.</returns>
 		public T CreatePanel<T>(ref T pPanel) where T : PanelController
 		{
 			if (pPanel == null)
@@ -124,11 +161,11 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Find child panel of this Panel
+		/// Retrieves a cached panel.
 		/// </summary>
-		/// <typeparam name="T">Panels inherit PanelController</typeparam>
-		/// <param name="pOriginal">Can be prefab or built-in prefab</param>
-		/// <returns></returns>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pOriginal">The original panel prefab.</param>
+		/// <returns>The cached panel instance.</returns>
 		protected T GetCachedPanel<T>(T pOriginal) where T : PanelController
 		{
 			if (pOriginal == null) return null;
@@ -141,11 +178,19 @@ namespace RCore.UI
 			return pOriginal;
 		}
 
+		/// <summary>
+		/// Gets the root PanelStack in the hierarchy.
+		/// </summary>
+		/// <returns>The root PanelStack.</returns>
 		public PanelStack GetRootPanel()
 		{
 			return ParentPanel != null ? ParentPanel.GetRootPanel() : this;
 		}
 
+		/// <summary>
+		/// Gets the highest (topmost) PanelStack in the hierarchy.
+		/// </summary>
+		/// <returns>The highest PanelStack.</returns>
 		public PanelStack GetHighestPanel()
 		{
 			return TopPanel != null ? TopPanel.GetHighestPanel() : this;
@@ -158,8 +203,14 @@ namespace RCore.UI
 #region Single
 
 		/// <summary>
-		/// Check if panel is prefab or build-in prefab then create and init
+		/// Creates and pushes a panel onto the stack.
 		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pPanel">The panel prefab.</param>
+		/// <param name="keepCurrentInStack">If true, the current top panel is kept in the stack but hidden.</param>
+		/// <param name="onlyInactivePanel">If true, the panel is only pushed if it's not already active.</param>
+		/// <param name="instantPopAndPush">If true, the transition happens instantly.</param>
+		/// <returns>The pushed panel.</returns>
 		public virtual T PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) where T : PanelController
 		{
 			var panel = CreatePanel(ref pPanel);
@@ -168,11 +219,12 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Push new panel will hide the current top panel
+		/// Pushes a new panel onto the stack, hiding the current top panel.
 		/// </summary>
-		/// <param name="panel">New Top Panel</param>
-		/// <param name="onlyDisablePanel">Do nothing if panel is currently active</param>
-		/// <param name="instantPopAndPush">Allow pop current panel and push new </param>
+		/// <param name="panel">The new panel to become the top panel.</param>
+		/// <param name="keepCurrentInStack">If true, the current panel remains in the stack but is hidden.</param>
+		/// <param name="onlyInactivePanel">If true, does nothing if the panel is already active.</param>
+		/// <param name="instantPopAndPush">If true, pops the current panel and pushes the new one instantly.</param>
 		public void PushPanel(PanelController panel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true)
 		{
 			if (panel == null)
@@ -250,8 +302,9 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Pop the top panel off the stack and show the one beneath it
+		/// Pops the top panel from the stack and shows the one beneath it.
 		/// </summary>
+		/// <param name="instant">If true, the transition is instant.</param>
 		protected void PopPanel(bool instant = true)
 		{
 			if (TopPanel == null)
@@ -309,8 +362,12 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Check if panel is prefab or build-in prefab then create and init
+		/// Creates and pushes a panel to the top without hiding the panel below it.
 		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pPanel">The panel prefab.</param>
+		/// <param name="hidePusher">If true, the panel that pushed this one will be hidden.</param>
+		/// <returns>The pushed panel.</returns>
 		public virtual T PushPanelToTop<T>(ref T pPanel, bool hidePusher = false) where T : PanelController
 		{
 			if (!hidePusher || ParentPanel == null)
@@ -323,8 +380,9 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Push panel without hiding panel is under it
+		/// Pushes a panel to the top without hiding the panel below it.
 		/// </summary>
+		/// <param name="panel">The panel to push.</param>
 		protected virtual void PushPanelToTop(PanelController panel)
 		{
 			if (TopPanel == panel && TopPanel.Displayed)
@@ -343,8 +401,9 @@ namespace RCore.UI
 #region Multi
 
 		/// <summary>
-		/// Keep only one panel in stack
+		/// Pops all panels and then pushes a new one, leaving only one panel in the stack.
 		/// </summary>
+		/// <param name="panel">The panel to push.</param>
 		public void PopAllThenPush(PanelController panel)
 		{
 			PopAllPanels();
@@ -352,7 +411,7 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Pop all panels till there is only one panel left in the stack
+		/// Pops panels until only one is left in the stack.
 		/// </summary>
 		public void PopTillOneLeft()
 		{
@@ -385,8 +444,9 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Pop till we remove specific panel
+		/// Pops panels until a specific panel is removed from the stack.
 		/// </summary>
+		/// <param name="panel">The panel to pop to.</param>
 		public void PopTillNoPanel(PanelController panel)
 		{
 			if (!panelStack.Contains(panel))
@@ -428,6 +488,10 @@ namespace RCore.UI
 				OnAnyChildHide(lastTopPanel);
 		}
 
+		/// <summary>
+		/// Pops panels until a specific panel is at the top of the stack.
+		/// </summary>
+		/// <param name="panel">The panel to pop to.</param>
 		public void PopTillPanel(PanelController panel)
 		{
 			if (!panelStack.Contains(panel))
@@ -472,7 +536,7 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Pop and hide all panels in stack, at the same time
+		/// Pops and hides all panels in the stack simultaneously.
 		/// </summary>
 		public virtual void PopAllPanels()
 		{
@@ -499,7 +563,7 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// Pop one by one, children then parent
+		/// Pops panels one by one, starting from the children and moving to the parent.
 		/// </summary>
 		public void PopChildrenThenParent()
 		{
@@ -516,24 +580,41 @@ namespace RCore.UI
 
 		//==============================================================
 
+		/// <summary>
+		/// Called when any child panel is hidden.
+		/// </summary>
+		/// <param name="pPanel">The panel that was hidden.</param>
 		protected virtual void OnAnyChildHide(PanelController pPanel)
 		{
 			//Parent notifies to grandparent of hidden panel
 			if (ParentPanel != null)
 				ParentPanel.OnAnyChildHide(pPanel);
 		}
+		
+		/// <summary>
+		/// Called when any child panel is shown.
+		/// </summary>
+		/// <param name="pPanel">The panel that was shown.</param>
 		protected virtual void OnAnyChildShow(PanelController pPanel)
 		{
 			if (ParentPanel != null)
 				ParentPanel.OnAnyChildShow(pPanel);
 		}
 
+		/// <summary>
+		/// Logs a message to the console (Editor only).
+		/// </summary>
+		/// <param name="pMessage">The message to log.</param>
 		[System.Diagnostics.Conditional("UNITY_EDITOR")]
 		protected void Log(string pMessage)
 		{
 			Debug.Log($"<color=yellow><b>[{gameObject.name}]:</b></color>{pMessage}");
 		}
 
+		/// <summary>
+		/// Logs an error message to the console (Editor only).
+		/// </summary>
+		/// <param name="pMessage">The error message to log.</param>
 		[System.Diagnostics.Conditional("UNITY_EDITOR")]
 		protected void LogError(string pMessage)
 		{
@@ -556,6 +637,9 @@ namespace RCore.UI
 				m_script = target as PanelStack;
 			}
 #else
+		/// <summary>
+		/// Custom editor for the PanelStack component.
+		/// </summary>
 		public class PanelStackEditor : UnityEditor.Editor
 		{
 			protected PanelStack m_script;
@@ -565,6 +649,9 @@ namespace RCore.UI
 				m_script = target as PanelStack;
 			}
 #endif
+			/// <summary>
+			/// Draws the custom inspector GUI.
+			/// </summary>
 			public override void OnInspectorGUI()
 			{
 				base.OnInspectorGUI();
@@ -584,6 +671,12 @@ namespace RCore.UI
 
 				EditorGUILayout.EndVertical();
 			}
+
+			/// <summary>
+			/// Recursively displays the list of child panels.
+			/// </summary>
+			/// <param name="panel">The parent panel.</param>
+			/// <param name="pLevelIndent">The indentation level.</param>
 			private void ShowChildrenList(PanelStack panel, int pLevelIndent)
 			{
 				if (panel.panelStack == null)

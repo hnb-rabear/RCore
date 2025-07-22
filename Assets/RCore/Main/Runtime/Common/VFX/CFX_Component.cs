@@ -7,16 +7,16 @@ using UnityEngine;
 
 namespace RCore
 {
-    public abstract class CFX_Component : MonoBehaviour
+    public abstract class CfxComponent : MonoBehaviour
     {
         public bool initialized;
         public Action onHidden;
         public Renderer[] renderers;
         public float lifeTime;
 
-        private bool mAutoDeactivate;
-        private float mElapsedTime;
-        private float mCustomLifeTime;
+        private bool m_autoDeactivate;
+        private float m_elapsedTime;
+        private float m_customLifeTime;
 
         private void Start()
         {
@@ -25,10 +25,10 @@ namespace RCore
 
         private void Update()
         {
-            if (mAutoDeactivate && mCustomLifeTime > 0)
+            if (m_autoDeactivate && m_customLifeTime > 0)
             {
-                mElapsedTime += Time.deltaTime;
-                if (mElapsedTime >= mCustomLifeTime)
+                m_elapsedTime += Time.deltaTime;
+                if (m_elapsedTime >= m_customLifeTime)
                 {
                     Clear();
                     Stop();
@@ -58,26 +58,26 @@ namespace RCore
             return lifeTime;
         }
 
-        public virtual void Play(bool pAutoDeactivate, float pCustomLifeTime = 0)
+        public virtual void Play(bool p_pAutoDeactivate, float p_pCustomLifeTime = 0)
         {
-            mElapsedTime = 0;
-            mCustomLifeTime = pCustomLifeTime > 0 ? pCustomLifeTime : GetLifeTime();
-            mAutoDeactivate = pAutoDeactivate;
-            enabled = pAutoDeactivate;
+            m_elapsedTime = 0;
+            m_customLifeTime = p_pCustomLifeTime > 0 ? p_pCustomLifeTime : GetLifeTime();
+            m_autoDeactivate = p_pAutoDeactivate;
+            enabled = p_pAutoDeactivate;
         }
 
         public abstract void Stop();
 
         public abstract void Clear();
 
-        public virtual void SetSortingOrder(int pValue)
+        public virtual void SetSortingOrder(int p_pValue)
         {
             if (!initialized)
                 Initialize();
 
             if (renderers != null)
                 for (int i = 0; i < renderers.Length; i++)
-                    renderers[i].sortingOrder = pValue;
+                    renderers[i].sortingOrder = p_pValue;
         }
 
 #if UNITY_EDITOR

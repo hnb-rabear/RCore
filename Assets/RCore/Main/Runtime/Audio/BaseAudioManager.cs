@@ -1,9 +1,12 @@
-﻿using System.Collections;
+﻿/**
+ * Author HNB-RaBear - 2021
+ **/
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
 using RCore.Inspector;
-using UnityEngine.Serialization;
 #if DOTWEEN
 using DG.Tweening;
 #endif
@@ -12,19 +15,32 @@ using Random = UnityEngine.Random;
 namespace RCore.Audio
 {
 	/// <summary>
-	/// Used to trigger sfx on UI component
+	/// An event dispatched to request playing a UI sound effect.
 	/// </summary>
 	public struct UISfxTriggeredEvent : BaseEvent
 	{
+		/// <summary>
+		/// The name or key of the sound effect to be played.
+		/// </summary>
 		public string sfx;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UISfxTriggeredEvent"/> struct.
+		/// </summary>
+		/// <param name="val">The name of the sound effect.</param>
 		public UISfxTriggeredEvent(string val)
 		{
 			sfx = val;
 		}
 	}
 
-    public class BaseAudioManager : MonoBehaviour
+	/// <summary>
+	/// A base class for managing audio playback for both music and sound effects.
+	/// It handles volume control, fading, and pooling of AudioSources.
+	/// </summary>
+	public class BaseAudioManager : MonoBehaviour
     {
+		[Tooltip("The collection of all audio clips available to the manager.")]
         [AutoFill] public AudioCollection audioCollection;
         [SerializeField] protected bool m_enabledSfx = true;
         [SerializeField] protected bool m_enabledMusic = true;
@@ -35,11 +51,26 @@ namespace RCore.Audio
         [SerializeField, Range(0, 1f)] protected float m_sfxVolume = 1f;
         [SerializeField, Range(0, 1f)] protected float m_musicVolume = 1f;
 
-        public bool EnabledSFX => m_enabledSfx;
-        public bool EnabledMusic => m_enabledMusic;
-        public float MasterVolume => m_masterVolume;
-        public float SFXVolume => m_sfxVolume;
-        public float MusicVolume => m_musicVolume;
+		/// <summary>
+		/// Gets a value indicating whether sound effects are currently enabled.
+		/// </summary>
+		public bool EnabledSFX => m_enabledSfx;
+		/// <summary>
+		/// Gets a value indicating whether music is currently enabled.
+		/// </summary>
+		public bool EnabledMusic => m_enabledMusic;
+		/// <summary>
+		/// Gets the current master volume level.
+		/// </summary>
+		public float MasterVolume => m_masterVolume;
+		/// <summary>
+		/// Gets the current sound effects volume level.
+		/// </summary>
+		public float SFXVolume => m_sfxVolume;
+		/// <summary>
+		/// Gets the current music volume level.
+		/// </summary>
+		public float MusicVolume => m_musicVolume;
 
 #if DOTWEEN
         private Tweener m_masterTweener;
@@ -48,7 +79,10 @@ namespace RCore.Audio
 #endif
         private Coroutine m_playMusicsCoroutine;
 
-        protected virtual void Start()
+		/// <summary>
+		/// Initializes the volume of all audio sources at the start.
+		/// </summary>
+		protected virtual void Start()
         {
             m_musicSource.volume = m_masterVolume * m_musicVolume;
             m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
@@ -58,7 +92,13 @@ namespace RCore.Audio
 
 #region Common
 
-        public void SetMasterVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
+		/// <summary>
+		/// Sets the master volume for all audio.
+		/// </summary>
+		/// <param name="pValue">The target volume level (0.0 to 1.0).</param>
+		/// <param name="pFadeDuration">The duration of the volume fade in seconds. If 0, the change is instant.</param>
+		/// <param name="pOnComplete">An optional action to invoke when the fade is complete.</param>
+		public void SetMasterVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
         {
 #if DOTWEEN
             m_masterTweener.Kill();
@@ -82,6 +122,7 @@ namespace RCore.Audio
             {
                 float fromVal = m_masterVolume;
 #if DOTWEEN
+                // Smoothly transition the volume using DOTween.
                 float lerp = 0;
                 m_masterTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
                     .SetUpdate(true)
@@ -98,6 +139,7 @@ namespace RCore.Audio
                         pOnComplete?.Invoke();
                     });
 #else
+				// Fallback to a coroutine if DOTween is not available.
 				StartCoroutine(IELerp(pFadeDuration,
 					lerp =>
 					{
@@ -111,7 +153,11 @@ namespace RCore.Audio
             }
         }
 
-        private AudioSource CreateSfxAudioSource()
+		/// <summary>
+		/// Creates a new AudioSource for the SFX pool.
+		/// </summary>
+		/// <returns>The newly created AudioSource.</returns>
+		private AudioSource CreateSfxAudioSource()
         {
             if (m_sfxSources.Count == 0)
             {
@@ -138,31 +184,42 @@ namespace RCore.Audio
             }
         }
 
-        private IEnumerator IELerp(float pTime, Action<float> pOnUpdate, Action pOnFinished)
+		/// <summary>
+		/// A coroutine to linearly interpolate a value over time. Used as a fallback when DOTween is unavailable.
+		/// </summary>
+		private IEnumerator IELerp(float pTime, Action<float> pOnUpdate, Action pOnFinished)
         {
             float time = 0;
-            while (true)
+            while (time < pTime)
             {
                 time += Time.deltaTime;
-                if (pTime > time)
-                    break;
-                pOnUpdate.Raise(time / pTime);
+                pOnUpdate?.Invoke(time / pTime);
                 yield return null;
             }
-            pOnFinished.Raise();
+            pOnFinished?.Invoke();
         }
-        
+
 #endregion
 
 #region Musics
 
-        public void EnableMusic(bool pValue)
+		/// <summary>
+		/// Enables or disables music playback.
+		/// </summary>
+		/// <param name="pValue">True to enable music, false to disable.</param>
+		public void EnableMusic(bool pValue)
         {
             m_enabledMusic = pValue;
             m_musicSource.mute = !pValue;
         }
 
-        public void SetMusicVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
+		/// <summary>
+		/// Sets the volume for music.
+		/// </summary>
+		/// <param name="pValue">The target volume level (0.0 to 1.0).</param>
+		/// <param name="pFadeDuration">The duration of the volume fade in seconds.</param>
+		/// <param name="pOnComplete">An optional action to invoke when the fade is complete.</param>
+		public void SetMusicVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
         {
 #if DOTWEEN
             m_musicTweener.Kill();
@@ -210,7 +267,12 @@ namespace RCore.Audio
             }
         }
 
-        public void StopMusic(float pFadeDuration = 0, Action pOnComplete = null)
+		/// <summary>
+		/// Stops the currently playing music, with an optional fade out.
+		/// </summary>
+		/// <param name="pFadeDuration">The duration of the fade out in seconds.</param>
+		/// <param name="pOnComplete">An optional action to invoke when the music has stopped.</param>
+		public void StopMusic(float pFadeDuration = 0, Action pOnComplete = null)
         {
             SetMusicVolume(0, pFadeDuration, () =>
             {
@@ -219,14 +281,26 @@ namespace RCore.Audio
             });
         }
 
-        public void PlayMusic(float pFadeDuration = 0, float pVolume = 1f)
+		/// <summary>
+		/// Plays the music that is currently assigned to the music source.
+		/// </summary>
+		/// <param name="pFadeDuration">The duration of the fade in seconds.</param>
+		/// <param name="pVolume">The target volume for the music.</param>
+		public void PlayMusic(float pFadeDuration = 0, float pVolume = 1f)
         {
             if (!m_musicSource.isPlaying)
                 m_musicSource.Play();
             SetMusicVolume(pVolume, pFadeDuration);
         }
 
-        public void PlayMusic(AudioClip pClip, bool pLoop, float pFadeDuration = 0, float pVolume = 1f)
+		/// <summary>
+		/// Plays a specific music clip.
+		/// </summary>
+		/// <param name="pClip">The audio clip to play.</param>
+		/// <param name="pLoop">Whether the music should loop.</param>
+		/// <param name="pFadeDuration">The duration of the fade in seconds.</param>
+		/// <param name="pVolume">The target volume for the music.</param>
+		public void PlayMusic(AudioClip pClip, bool pLoop, float pFadeDuration = 0, float pVolume = 1f)
         {
             if (pClip == null)
                 return;
@@ -242,16 +316,25 @@ namespace RCore.Audio
             SetMusicVolume(pVolume, pFadeDuration);
         }
 
-        public void PlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
+		/// <summary>
+		/// Plays a sequence of music clips one after another.
+		/// </summary>
+		/// <param name="pClips">An array of audio clips to play in sequence.</param>
+		/// <param name="pFadeDuration">The fade duration for each clip transition.</param>
+		/// <param name="pVolume">The target volume for the music.</param>
+		public void PlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
         {
             if (m_playMusicsCoroutine != null)
                 StopCoroutine(m_playMusicsCoroutine);
             m_playMusicsCoroutine = StartCoroutine(IEPlayMusics(pClips, pFadeDuration, pVolume));
         }
 
-        private IEnumerator IEPlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
+		/// <summary>
+		/// Coroutine to handle the sequential playback of music clips.
+		/// </summary>
+		private IEnumerator IEPlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
         {
-            if (pClips == null)
+            if (pClips == null || pClips.Length == 0)
                 yield break;
 
             if (pClips.Length == 1)
@@ -281,30 +364,55 @@ namespace RCore.Audio
                     m_musicSource.loop = false;
                     m_musicSource.Play();
                 }
+
                 if (m_enabledMusic)
                     SetMusicVolume(pVolume, pFadeDuration);
                 else
                     SetMusicVolume(0);
+
                 yield return new WaitUntil(() => !m_musicSource.isPlaying || m_musicSource.clip == null);
                 index = (index + 1) % pClips.Length;
             }
         }
 
-        public bool IsPlayingMusic() => m_musicSource.isPlaying;
+		/// <summary>
+		/// Checks if the music source is currently playing.
+		/// </summary>
+		/// <returns>True if music is playing, false otherwise.</returns>
+		public bool IsPlayingMusic() => m_musicSource.isPlaying;
 
-        public void PlayMusic(string pFileName, bool pLoop = false, float pFadeDuration = 0)
+		/// <summary>
+		/// Plays a music clip by its file name from the AudioCollection.
+		/// </summary>
+		/// <param name="pFileName">The name of the music clip.</param>
+		/// <param name="pLoop">Whether the music should loop.</param>
+		/// <param name="pFadeDuration">The duration of the fade in seconds.</param>
+		public void PlayMusic(string pFileName, bool pLoop = false, float pFadeDuration = 0)
         {
             var clip = audioCollection.GetMusicClip(pFileName);
             PlayMusic(clip, pLoop, pFadeDuration);
         }
 
-        public void PlayMusicById(int pId, bool pLoop = false, float pFadeDuration = 0, float pVolume = 1f)
+		/// <summary>
+		/// Plays a music clip by its ID from the AudioCollection.
+		/// </summary>
+		/// <param name="pId">The ID of the music clip.</param>
+		/// <param name="pLoop">Whether the music should loop.</param>
+		/// <param name="pFadeDuration">The duration of the fade in seconds.</param>
+		/// <param name="pVolume">The target volume for the music.</param>
+		public void PlayMusicById(int pId, bool pLoop = false, float pFadeDuration = 0, float pVolume = 1f)
         {
             var clip = audioCollection.GetMusicClip(pId);
             PlayMusic(clip, pLoop, pFadeDuration, pVolume);
         }
 
-        public void PlayMusicByIds(int[] pIds, float pFadeDuration = 0, float pVolume = 1f)
+		/// <summary>
+		/// Plays a sequence of music clips by their IDs from the AudioCollection.
+		/// </summary>
+		/// <param name="pIds">An array of music clip IDs.</param>
+		/// <param name="pFadeDuration">The fade duration for each clip transition.</param>
+		/// <param name="pVolume">The target volume for the music.</param>
+		public void PlayMusicByIds(int[] pIds, float pFadeDuration = 0, float pVolume = 1f)
         {
             var clips = new AudioClip[pIds.Length];
             for (int i = 0; i < pIds.Length; i++)
@@ -316,7 +424,11 @@ namespace RCore.Audio
 
 #region SFX
 
-        public void EnableSFX(bool pValue)
+		/// <summary>
+		/// Enables or disables sound effect playback.
+		/// </summary>
+		/// <param name="pValue">True to enable SFX, false to disable.</param>
+		public void EnableSFX(bool pValue)
         {
             m_enabledSfx = pValue;
             foreach (var s in m_sfxSources)
@@ -324,7 +436,13 @@ namespace RCore.Audio
             m_sfxSourceUnlimited.mute = !pValue;
         }
 
-        public void SetSFXVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
+		/// <summary>
+		/// Sets the volume for sound effects.
+		/// </summary>
+		/// <param name="pValue">The target volume level (0.0 to 1.0).</param>
+		/// <param name="pFadeDuration">The duration of the volume fade in seconds.</param>
+		/// <param name="pOnComplete">An optional action to invoke when the fade is complete.</param>
+		public void SetSFXVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
         {
 #if DOTWEEN
             m_sfxTweener.Kill();
@@ -373,7 +491,11 @@ namespace RCore.Audio
             }
         }
 
-        public void StopSFX(AudioClip pClip)
+		/// <summary>
+		/// Stops all playing instances of a specific sound effect clip.
+		/// </summary>
+		/// <param name="pClip">The sound effect clip to stop.</param>
+		public void StopSFX(AudioClip pClip)
         {
             if (pClip == null)
                 return;
@@ -394,7 +516,10 @@ namespace RCore.Audio
             }
         }
 
-        public void StopSFXs()
+		/// <summary>
+		/// Stops all currently playing sound effects.
+		/// </summary>
+		public void StopSFXs()
         {
             for (int i = 0; i < m_sfxSources.Count; i++)
             {
@@ -405,8 +530,13 @@ namespace RCore.Audio
             m_sfxSourceUnlimited.Stop();
             m_sfxSourceUnlimited.clip = null;
         }
-
-        private AudioSource GetSFXSource(AudioClip pClip, int pLimitNumber, bool pLoop)
+		
+		/// <summary>
+		/// Retrieves an available AudioSource for playing a sound effect.
+		/// Implements logic to limit the number of concurrently playing instances of the same clip.
+		/// </summary>
+		/// <returns>An available AudioSource, or null if none are available.</returns>
+		private AudioSource GetSFXSource(AudioClip pClip, int pLimitNumber, bool pLoop)
         {
             try
             {
@@ -453,7 +583,15 @@ namespace RCore.Audio
             }
         }
 
-        public AudioSource PlaySFX(AudioClip pClip, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
+		/// <summary>
+		/// Plays a sound effect clip.
+		/// </summary>
+		/// <param name="pClip">The audio clip to play.</param>
+		/// <param name="limitNumber">The maximum number of concurrent instances of this clip. 0 for unlimited.</param>
+		/// <param name="pLoop">Whether the sound effect should loop.</param>
+		/// <param name="pPitchRandomMultiplier">A multiplier for pitch randomization. e.g., 1.1 for a 10% variance.</param>
+		/// <returns>The AudioSource that is playing the sound, or null if it could not be played.</returns>
+		public AudioSource PlaySFX(AudioClip pClip, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (pClip == null)
                 return null;
@@ -477,22 +615,32 @@ namespace RCore.Audio
                 source.Play();
             return source;
         }
-        
-        public AudioSource PlaySFX(string pFileName, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
+
+		/// <summary>
+		/// Plays a sound effect by its file name from the AudioCollection.
+		/// </summary>
+		public AudioSource PlaySFX(string pFileName, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (!m_enabledSfx) return null;
             var clip = audioCollection.GetSFXClip(pFileName);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
 
-        public AudioSource PlaySFX(int pIndex, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
+		/// <summary>
+		/// Plays a sound effect by its index from the AudioCollection.
+		/// </summary>
+		public AudioSource PlaySFX(int pIndex, int limitNumber = 0, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
             if (!m_enabledSfx) return null;
             var clip = audioCollection.GetSFXClip(pIndex);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
 
-        public void StopSFX(int pIndex)
+		/// <summary>
+		/// Stops a sound effect by its index from the AudioCollection.
+		/// </summary>
+		/// <param name="pIndex">The index of the sound effect to stop.</param>
+		public void StopSFX(int pIndex)
         {
             var clip = audioCollection.GetSFXClip(pIndex);
             StopSFX(clip);
@@ -500,12 +648,17 @@ namespace RCore.Audio
 
 #endregion
 
-
 #if UNITY_EDITOR
-        protected virtual void OnValidate()
+		/// <summary>
+		/// Editor-only method to automatically find and set up AudioSource components.
+		/// This runs when the script is loaded or a value is changed in the Inspector.
+		/// </summary>
+		protected virtual void OnValidate()
         {
             m_sfxSources ??= new List<AudioSource>();
             var audioSources = gameObject.GetComponentsInChildren<AudioSource>(true);
+
+			// Find and assign the main music and sfx sources by name
             foreach (var source in audioSources)
             {
                 if (m_musicSource == null && source.gameObject.name.Contains("Music"))
@@ -513,6 +666,8 @@ namespace RCore.Audio
                 if (m_sfxSourceUnlimited == null && source.gameObject.name.Contains("Sfx"))
                     m_sfxSourceUnlimited = source;
             }
+
+			// If they don't exist, create them
             if (m_musicSource == null)
             {
                 var obj = new GameObject("Music");
@@ -525,6 +680,8 @@ namespace RCore.Audio
                 obj.transform.SetParent(transform);
                 m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
             }
+
+			// Populate the limited SFX sources list
             foreach (var source in audioSources)
             {
                 if (source != m_musicSource && source != m_sfxSourceUnlimited)
@@ -535,12 +692,14 @@ namespace RCore.Audio
                 else
                     m_sfxSources.Remove(source);
             }
-            
+
+			// Set default properties for the main sources
             m_sfxSourceUnlimited.loop = false;
             m_sfxSourceUnlimited.playOnAwake = false;
             m_musicSource.loop = true;
             m_musicSource.playOnAwake = false;
 
+			// Apply volume changes in the editor in real-time
 #if DOTWEEN
             if (m_masterTweener == null || !m_masterTweener.IsPlaying())
                 SetMasterVolume(m_masterVolume);

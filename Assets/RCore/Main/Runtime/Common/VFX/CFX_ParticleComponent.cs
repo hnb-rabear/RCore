@@ -19,7 +19,7 @@ using UnityEngine.Serialization;
 
 namespace RCore
 {
-	public class CFX_ParticleComponent : CFX_Component
+	public class CFX_ParticleComponent : CfxComponent
 	{
 		public bool isLoop;
 		public Action onFinishedMovement;
