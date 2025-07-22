@@ -6,54 +6,70 @@ using UnityEngine;
 
 namespace RCore
 {
+    /// <summary>
+    /// A static class containing extension methods for Unity's Color and Color32 structs.
+    /// </summary>
     public static class ColorExtension
     {
         private const float LightOffset = 0.0625f;
         private const float DarkerFactor = 0.9f;
 
         /// <summary>
-        /// Returns the same color, but with the specified alpha.
+        /// Returns a new Color with the same RGB values as the original but with the specified alpha value.
         /// </summary>
+        /// <param name="color">The original color.</param>
+        /// <param name="alpha">The new alpha value (0 to 1).</param>
+        /// <returns>A new color with the new alpha.</returns>
         public static Color SetAlpha(this Color color, float alpha)
         {
             return new Color(color.r, color.g, color.b, alpha);
         }
 
         /// <summary>
-        /// Returns a new color that is this color inverted.
+        /// Returns a new color that is the RGB inverse of the original color. Alpha is preserved.
         /// </summary>
+        /// <param name="color">The original color.</param>
+        /// <returns>The inverted color.</returns>
         public static Color Invert(this Color color)
         {
             return new Color(1 - color.r, 1 - color.g, 1 - color.b, color.a);
         }
 
         /// <summary>
-        /// Returns an opaque version of the given color.
+        /// Returns a new color with the same RGB values but with an alpha of 1 (fully opaque).
         /// </summary>
+        /// <param name="color">The original color.</param>
+        /// <returns>An opaque version of the color.</returns>
         public static Color Opaque(this Color color)
         {
-            return new Color(color.r, color.g, color.b);
+            return new Color(color.r, color.g, color.b, 1f);
         }
 
         /// <summary>
-        /// Returns whether the color is black or almost black.
+        /// Checks if the color's RGB components are all very close to zero.
         /// </summary>
+        /// <param name="color">The color to check.</param>
+        /// <returns>True if the color is approximately black.</returns>
         public static bool IsApproximatelyBlack(this Color color)
         {
             return color.r + color.g + color.b <= Mathf.Epsilon;
         }
 
         /// <summary>
-        /// Returns whether the color is white or almost white.
+        /// Checks if the color's RGB components are all very close to one.
         /// </summary>
+        /// <param name="color">The color to check.</param>
+        /// <returns>True if the color is approximately white.</returns>
         public static bool IsApproximatelyWhite(this Color color)
         {
-            return color.r + color.g + color.b >= 1 - Mathf.Epsilon;
+            return color.r + color.g + color.b >= 3 - Mathf.Epsilon;
         }
 
         /// <summary>
-        /// Returns a color lighter than the given color.
+        /// Returns a new color that is slightly lighter than the original by a fixed offset.
         /// </summary>
+        /// <param name="color">The original color.</param>
+        /// <returns>A lighter color.</returns>
         public static Color Lighter(this Color color)
         {
             return new Color(
@@ -64,8 +80,10 @@ namespace RCore
         }
 
         /// <summary>
-        /// Returns a color darker than the given color.
+        /// Returns a new color that is slightly darker than the original by a fixed offset.
         /// </summary>
+        /// <param name="color">The original color.</param>
+        /// <returns>A darker color.</returns>
         public static Color Darker(this Color color)
         {
             return new Color(
@@ -76,30 +94,52 @@ namespace RCore
         }
 
         /// <summary>
-        /// Returns the brightness of the color, 
-        /// defined as the average off the three color channels.
+        /// Calculates the average brightness of the color's RGB components.
         /// </summary>
+        /// <param name="color">The color to check.</param>
+        /// <returns>A float representing the brightness (0 to 1).</returns>
         public static float Brightness(this Color color)
         {
             return (color.r + color.g + color.b) / 3;
         }
 
+        /// <summary>
+        /// Converts the color to an RRGGBBAA hexadecimal string (e.g., "FF0000FF" for red).
+        /// </summary>
+        /// <param name="color">The color to convert.</param>
+        /// <returns>The hexadecimal string representation.</returns>
         public static string ToRGBAHexString(this Color color)
         {
-            return $"{color.r:X2}{color.g:X2}{color.b:X2}{color.a:X2}";
+            Color32 c32 = color;
+            return $"{c32.r:X2}{c32.g:X2}{c32.b:X2}{c32.a:X2}";
         }
-
+        
+        /// <summary>
+        /// Converts the color to a 32-bit integer representation (RRGGBBAA).
+        /// </summary>
+        /// <param name="color">The color to convert.</param>
+        /// <returns>The integer representation of the color.</returns>
         public static int ToRGBAHex(this Color color)
         {
             Color32 c = color;
             return c.ToRGBAHex();
         }
 
+        /// <summary>
+        /// Converts the color to a 32-bit integer representation (RRGGBBAA).
+        /// </summary>
+        /// <param name="color">The color to convert.</param>
+        /// <returns>The integer representation of the color.</returns>
         public static int ToRGBAHex(this Color32 color)
         {
             return color.r << 24 | color.g << 16 | color.b << 8 | color.a;
         }
-
+        
+        /// <summary>
+        /// Converts the color to a 32-bit integer representation (RRGGBBAA).
+        /// </summary>
+        /// <param name="c">The color to convert.</param>
+        /// <returns>The integer representation of the color.</returns>
         public static int ToInt(this Color c)
         {
             int retVal = 0;
@@ -111,16 +151,21 @@ namespace RCore
         }
     }
 
+    /// <summary>
+    /// A static class containing color-related helper methods and a collection of predefined color constants.
+    /// </summary>
     public static class ColorHelper
     {
-        //Light color
+        #region Predefined Colors
+        // A collection of light, predefined colors.
         public static readonly Color LightAzure = HexToColor("#92cbf1");
         public static readonly Color LightBrown = HexToColor("#d3b683");
         public static readonly Color LightLime = HexToColor("#aefd6c");
         public static readonly Color LightGold = HexToColor("#fddc5c");
         public static readonly Color LightPurple = HexToColor("#bf77f6");
         public static readonly Color LightYellow = HexToColor("#fffe7a");
-        //Dark colors
+        
+        // A collection of dark, predefined colors.
         public static readonly Color DarkBlueGray = HexToColor("#666699");
         public static readonly Color DarkBrown = HexToColor("#654321");
         public static readonly Color DarkByzantium = HexToColor("#5D3954");
@@ -149,7 +194,13 @@ namespace RCore
         public static readonly Color DarkSlateBlue = HexToColor("#483D8B");
         public static readonly Color DarkSlateGray = HexToColor("#2F4F4F");
         public static readonly Color DarkSpringGreen = HexToColor("#177245");
-
+        #endregion
+        
+        /// <summary>
+        /// Converts a Color object to a hexadecimal string (e.g., #FF0000). Alpha is ignored.
+        /// </summary>
+        /// <param name="pColor">The color to convert.</param>
+        /// <returns>The hexadecimal string representation.</returns>
         public static string ToHex(Color pColor)
         {
             Color32 color32 = pColor;
@@ -157,6 +208,11 @@ namespace RCore
             return hex;
         }
 
+        /// <summary>
+        /// Converts a hexadecimal string (e.g., "#FF0000" or "FF0000FF") to a Color object.
+        /// </summary>
+        /// <param name="pHex">The hexadecimal string. Can start with #, 0x, or nothing.</param>
+        /// <returns>The corresponding Color object.</returns>
         public static Color HexToColor(string pHex)
         {
             pHex = pHex.Replace("0x", "");//in case the string is formatted 0xFFFFFF
@@ -173,6 +229,11 @@ namespace RCore
             return new Color32(r, g, b, a);
         }
 
+        /// <summary>
+        /// Converts a Color object to a 32-bit integer representation (RRGGBBAA).
+        /// </summary>
+        /// <param name="c">The color to convert.</param>
+        /// <returns>The integer representation of the color.</returns>
         public static int ColorToInt(Color c)
         {
             int retVal = 0;
@@ -182,7 +243,12 @@ namespace RCore
             retVal |= Mathf.RoundToInt(c.a * 255f);
             return retVal;
         }
-
+        
+        /// <summary>
+        /// Converts a 32-bit integer (RRGGBBAA) to a Color object.
+        /// </summary>
+        /// <param name="val">The integer representation of the color.</param>
+        /// <returns>The corresponding Color object.</returns>
         public static Color IntToColor(int val)
         {
             float inv = 1f / 255f;

@@ -5,61 +5,90 @@ using System.Threading;
 namespace RCore
 {
 	/// <summary>
-	/// Event Manager manages publishing raised events to subscribing/listening classes.
+	/// Provides a static, global event management system. It allows for decoupled communication
+	/// between different parts of the application using a publish-subscribe pattern.
+	/// Classes can subscribe (listen) to specific event types and other classes can publish (raise)
+	/// those events without either having direct references to the other.
 	///
-	/// @example subscribe
-	///     EventManager.AddListener<SomethingHappenedEvent>(OnSomethingHappened);
+	/// @example
+	/// // 1. Define an event struct/class that implements BaseEvent
+	/// public struct SomethingHappenedEvent : BaseEvent { public int value; }
 	///
-	/// @example unsubscribe
-	///     EventManager.RemoveListener<SomethingHappenedEvent>(OnSomethingHappened);
+	/// // 2. A listening class subscribes to the event
+	/// public class MyListener
+	/// {
+	///     void OnEnable() { EventDispatcher.AddListener<SomethingHappenedEvent>(OnSomethingHappened); }
+	///     void OnDisable() { EventDispatcher.RemoveListener<SomethingHappenedEvent>(OnSomethingHappened); }
+	///     void OnSomethingHappened(SomethingHappenedEvent e) { Debug.Log("Something happened with value: " + e.value); }
+	/// }
 	///
-	/// @example publish an event
-	///     EventManager.Raise(new SomethingHappenedEvent());
-	///
+	/// // 3. A publishing class raises the event
+	/// public class MyPublisher
+	/// {
+	///     void DoSomething() { EventDispatcher.Raise(new SomethingHappenedEvent { value = 10 }); }
+	/// }
 	/// </summary>
 	public static class EventDispatcher
 	{
+		/// <summary>
+		/// A generic delegate type for event listeners.
+		/// </summary>
+		/// <typeparam name="T">The type of event this delegate handles, must implement BaseEvent.</typeparam>
+		/// <param name="e">The event object passed to the listener.</param>
 		public delegate void EventDelegate<T>(T e) where T : BaseEvent;
+		
+		/// <summary>A non-generic delegate used internally to store all listeners in a single dictionary.</summary>
 		private delegate void EventDelegate(BaseEvent e);
 
 		/// <summary>
-		/// The actual delegate, there is one delegate per unique event. Each
-		/// delegate has multiple invocation list items.
+		/// The primary dictionary storing all event delegates.
+		/// The key is a hash of the event type's name, and the value is a multicast delegate
+		/// containing all listeners for that event type.
 		/// </summary>
-		private static Dictionary<int, EventDelegate> delegates = new Dictionary<int, EventDelegate>();
+		private static readonly Dictionary<int, EventDelegate> delegates = new Dictionary<int, EventDelegate>();
 
 		/// <summary>
-		/// Lookups only, there is one delegate lookup per listener
+		/// A lookup dictionary to map a listener's generic delegate to its internal, non-generic counterpart.
+		/// This is crucial for correctly removing listeners.
 		/// </summary>
-		private static Dictionary<Delegate, EventDelegate> delegateLookup = new Dictionary<Delegate, EventDelegate>();
+		private static readonly Dictionary<Delegate, EventDelegate> delegateLookup = new Dictionary<Delegate, EventDelegate>();
 
 		/// <summary>
-		/// Add the delegate.
+		/// Subscribes a listener to a specific event type.
 		/// </summary>
+		/// <typeparam name="T">The type of event to listen for.</typeparam>
+		/// <param name="del">The method (delegate) that will be called when the event is raised.</param>
 		public static void AddListener<T>(EventDelegate<T> del) where T : BaseEvent
 		{
+			// Prevent double-subscribing the same delegate instance.
 			if (delegateLookup.ContainsKey(del))
 				return;
 
-			// Create a new non-generic delegate which calls our generic one.  This
-			// is the delegate we actually invoke.
+			// Create a new non-generic delegate that wraps the generic one.
+			// This allows us to store all listeners in the `delegates` dictionary,
+			// regardless of their specific event type.
 			EventDelegate internalDelegate = e => del((T)e);
 			delegateLookup[del] = internalDelegate;
 
 			int id = RUtil.GetStableHashCode(typeof(T).Name);
 			if (delegates.TryGetValue(id, out EventDelegate tempDel))
 			{
-				delegates[id] = tempDel += internalDelegate;
+				// If a delegate for this event type already exists, add the new listener to its invocation list.
+				delegates[id] = tempDel + internalDelegate;
 			}
 			else
 			{
+				// Otherwise, create a new entry for this event type.
 				delegates[id] = internalDelegate;
 			}
 		}
 
 		/// <summary>
-		/// Remove the delegate. Can be called multiple times on same delegate.
+		/// Unsubscribes a listener from a specific event type. It is safe to call this
+		/// even if the listener was not previously subscribed.
 		/// </summary>
+		/// <typeparam name="T">The type of event to unsubscribe from.</typeparam>
+		/// <param name="del">The method (delegate) to remove.</param>
 		public static void RemoveListener<T>(EventDelegate<T> del) where T : BaseEvent
 		{
 			if (delegateLookup.TryGetValue(del, out EventDelegate internalDelegate))
@@ -70,6 +99,7 @@ namespace RCore
 					tempDel -= internalDelegate;
 					if (tempDel == null)
 					{
+						// If there are no listeners left for this event type, remove the entry to save memory.
 						delegates.Remove(id);
 					}
 					else
@@ -78,24 +108,27 @@ namespace RCore
 					}
 				}
 
+				// Always remove from the lookup table.
 				delegateLookup.Remove(del);
 			}
 		}
 
 		/// <summary>
-		/// The count of delegate lookups. The delegate lookups will increase by
-		/// one for each unique AddListener. Useful for debugging and not much else.
+		/// Gets the total number of unique listeners currently subscribed to any event.
+		/// Useful for debugging memory leaks or subscription issues.
 		/// </summary>
 		public static int DelegateLookupCount => delegateLookup.Count;
 
 		/// <summary>
-		/// Raise the event to all the listeners
+		/// Publishes an event, notifying all subscribed listeners.
 		/// </summary>
+		/// <param name="e">The event object to be raised.</param>
 		public static void Raise(BaseEvent e)
 		{
 			int id = RUtil.GetStableHashCode(e.GetType().Name);
-#if UNITY_EDITOR
-			Debug.Log("Raise event " + e.GetType().Name);
+#if UNITY_EDITOR && RCORE_DEBUG
+			// Conditional logging for easier debugging in the Unity Editor.
+			Debug.Log($"[EventDispatcher] Raised event: {e.GetType().Name}");
 #endif
 			if (delegates.TryGetValue(id, out EventDelegate del))
 			{
@@ -103,46 +136,61 @@ namespace RCore
 			}
 		}
 		
-		private static Dictionary<Type, CancellationTokenSource> debounceTokens = new Dictionary<Type, CancellationTokenSource>();
+		/// <summary>A dictionary to store cancellation tokens for debounced events.</summary>
+		private static readonly Dictionary<Type, CancellationTokenSource> debounceTokens = new Dictionary<Type, CancellationTokenSource>();
 		
-		public static async void RaiseDeBounce<T>(T e, float pDeBounce = 0) where T : BaseEvent
+		/// <summary>
+		/// Raises an event after a specified delay, but cancels any previously scheduled
+		/// event of the same type that hasn't fired yet. This is useful for preventing
+		/// an event from firing too rapidly (e.g., from rapid button clicks).
+		/// Requires UniTask.
+		/// </summary>
+		/// <typeparam name="T">The type of event to raise.</typeparam>
+		/// <param name="e">The event object to raise.</param>
+		/// <param name="pDeBounce">The delay in seconds before the event is raised.</param>
+		public static async void RaiseDeBounce<T>(T e, float pDeBounce = 0.1f) where T : BaseEvent
 		{
 			var eventType = typeof(T);
 
-			// If there's an existing debounce token for this event type, cancel it
+			// If there's a pending debounced event of this type, cancel it.
 			if (debounceTokens.TryGetValue(eventType, out var existingToken))
 			{
 				existingToken.Cancel();
 				existingToken.Dispose();
 			}
 
-			// Create a new cancellation token source for this event type
+			// Create and store a new cancellation token for this new debounce request.
 			var cts = new CancellationTokenSource();
 			debounceTokens[eventType] = cts;
 
 			try
 			{
-				// Wait for the specified debounce period
+				// Wait for the specified delay.
 				await Cysharp.Threading.Tasks.UniTask.Delay(TimeSpan.FromSeconds(pDeBounce), cancellationToken: cts.Token);
-
-				// Raise the event if not canceled
+				
+				// If the delay completed without being canceled, raise the event.
 				Raise(e);
 			}
 			catch (OperationCanceledException)
 			{
-				// If the task was canceled, do nothing
+				// This is expected if another RaiseDeBounce call for the same event type was made.
 			}
 			finally
 			{
-				// Clean up the token source
-				if (debounceTokens[eventType] == cts)
+				// Clean up the token source if it's the one we created.
+				// This check prevents a race condition where a new token is created before this one is disposed.
+				if (debounceTokens.TryGetValue(eventType, out var currentToken) && currentToken == cts)
 				{
 					debounceTokens.Remove(eventType);
-					cts.Dispose();
 				}
+				cts.Dispose();
 			}
 		}
 	}
 
+    /// <summary>
+    /// A marker interface that all event structs/classes must implement
+    /// to be used with the EventDispatcher.
+    /// </summary>
     public interface BaseEvent { }
 }
