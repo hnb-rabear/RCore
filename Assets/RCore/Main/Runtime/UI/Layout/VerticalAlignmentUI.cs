@@ -2,6 +2,7 @@
  * Author HNB-RaBear - 2017
  **/
 
+using RCore.Inspector;
 using UnityEngine;
 using System.Collections;
 using System;

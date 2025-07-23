@@ -5,127 +5,96 @@ using UnityEditor;
 
 namespace RCore.Inspector
 {
+	/// <summary>
+	/// An attribute used on a ScriptableObject field to expose its properties directly within the inspector of the
+	/// object that holds the reference. This creates an "inline" or "nested" editor for the ScriptableObject,
+	/// making it easy to edit without having to select the asset itself. It also includes a "Create" button
+	/// for convenience.
+	/// </summary>
 	public class ExposeScriptableObjectAttribute : PropertyAttribute
 	{
 		public ExposeScriptableObjectAttribute() { }
 	}
 
 #if UNITY_EDITOR
+	/// <summary>
+	/// The custom property drawer for fields marked with the [ExposeScriptableObject] attribute.
+	/// It handles drawing the foldout, the nested editor for the ScriptableObject, and the "Create" button.
+	/// </summary>
 	[CustomPropertyDrawer(typeof(ExposeScriptableObjectAttribute))]
 	public class ExposeScriptableObjectDrawer : PropertyDrawer
 	{
 		private bool m_foldout = true;
 		private const float PADDING = 5f;
-		private static readonly Color BackgroundColor = new(0.2f, 0.2f, 0.2f);
+		private static readonly Color BackgroundColor = new(0.2f, 0.2f, 0.2f, 0.5f); // Added alpha for subtlety
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			EditorGUI.BeginProperty(position, label, property);
+			
+			// --- Draw the Main Property Field with a Foldout ---
+			var foldoutRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+			m_foldout = EditorGUI.Foldout(foldoutRect, m_foldout, label, true);
+			
+			// Draw the object reference field next to the foldout label.
+			var fieldRect = new Rect(position.x + EditorGUIUtility.labelWidth, position.y, position.width - EditorGUIUtility.labelWidth, EditorGUIUtility.singleLineHeight);
+			EditorGUI.PropertyField(fieldRect, property, GUIContent.none, true);
 
-			// Draw the property field with foldout
-			var foldoutRect = new Rect(position.x, position.y, 10, position.height);
-			float fieldWidth = m_foldout ? position.width : position.width - 70;
-			var fieldRect = new Rect(position.x, position.y, fieldWidth, position.height);
-			var buttonRect = new Rect(position.x + position.width - 65, position.y, 65, position.height);
-
-			m_foldout = EditorGUI.Foldout(foldoutRect, m_foldout, GUIContent.none);
-			EditorGUI.PropertyField(fieldRect, property, label, true);
-
-			// Only show the Create button if the foldout is closed
-			if (!m_foldout)
+			// --- Draw the Inline Editor if Folded Out ---
+			if (m_foldout && property.objectReferenceValue != null && property.objectReferenceValue is ScriptableObject scriptableObject)
 			{
-				// Check if the object is null
-				GUI.enabled = property.objectReferenceValue == null;
-
-				// Draw the Create button
-				if (GUI.Button(buttonRect, "Create"))
-				{
-					var objectType = fieldInfo.FieldType.GetElementType() ?? fieldInfo.FieldType;
-
-					var newObject = ScriptableObject.CreateInstance(objectType);
-					if (newObject != null)
-					{
-						string assetPath = AssetDatabase.GetAssetPath(property.serializedObject.targetObject);
-						string directoryPath = !string.IsNullOrEmpty(assetPath) ? System.IO.Path.GetDirectoryName(assetPath) : null;
-
-						if (string.IsNullOrEmpty(directoryPath))
-						{
-							directoryPath = EditorUtility.OpenFolderPanel("Select Folder to Save New Asset", "Assets", "");
-							if (string.IsNullOrEmpty(directoryPath))
-							{
-								Debug.LogWarning("No folder selected. Creation canceled.");
-								return;
-							}
-
-							directoryPath = "Assets" + directoryPath.Substring(Application.dataPath.Length);
-						}
-
-						string newAssetPath = AssetDatabase.GenerateUniqueAssetPath(directoryPath + "/New" + objectType.Name + ".asset");
-
-						AssetDatabase.CreateAsset(newObject, newAssetPath);
-						AssetDatabase.SaveAssets();
-						AssetDatabase.Refresh();
-
-						property.objectReferenceValue = newObject;
-						property.serializedObject.ApplyModifiedProperties();
-
-						Debug.Log("New " + objectType.Name + " asset created and assigned to the field at " + newAssetPath);
-					}
-					else
-					{
-						Debug.LogError("Failed to create a new instance of " + objectType.Name);
-					}
-				}
-
-				GUI.enabled = true;
-			}
-
-			// Draw foldout for serialized fields
-			if (property.objectReferenceValue != null && property.objectReferenceValue is ScriptableObject)
-			{
-				var scriptableObject = (ScriptableObject)property.objectReferenceValue;
 				var serializedObject = new SerializedObject(scriptableObject);
 				var prop = serializedObject.GetIterator();
-				prop.NextVisible(true);
+				prop.NextVisible(true); // Skip the 'm_Script' field
 
-				if (m_foldout)
+				// --- Draw Background ---
+				float startY = position.y + EditorGUIUtility.singleLineHeight + PADDING;
+				float totalHeight = GetPropertyHeight(property, label) - EditorGUIUtility.singleLineHeight - PADDING;
+				var backgroundRect = new Rect(position.x, startY, position.width, totalHeight);
+				EditorGUI.DrawRect(backgroundRect, BackgroundColor);
+				
+				// --- Draw Serialized Fields ---
+				float currentY = startY;
+				EditorGUI.indentLevel++;
+				while (prop.NextVisible(false))
 				{
-					// Draw background
-					var backgroundRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight + PADDING, position.width, GetPropertyHeight(property, label) - PADDING * 2);
-					EditorGUI.DrawRect(backgroundRect, BackgroundColor);
-
-					position.y += EditorGUIUtility.standardVerticalSpacing + PADDING;
-					while (prop.NextVisible(false))
-					{
-						position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-						EditorGUI.PropertyField(new Rect(position.x + PADDING, position.y, position.width - PADDING * 2, position.height), prop, true);
-					}
+					float propHeight = EditorGUI.GetPropertyHeight(prop, true);
+					var propRect = new Rect(position.x, currentY, position.width, propHeight);
+					EditorGUI.PropertyField(propRect, prop, true);
+					currentY += propHeight + EditorGUIUtility.standardVerticalSpacing;
 				}
+				EditorGUI.indentLevel--;
+				
 				serializedObject.ApplyModifiedProperties();
 			}
 
 			EditorGUI.EndProperty();
 		}
 
+		/// <summary>
+		/// Calculates the total height required for the property, including the nested editor fields when the foldout is open.
+		/// </summary>
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			float totalHeight = EditorGUI.GetPropertyHeight(property, label, true);
+			float totalHeight = EditorGUI.GetPropertyHeight(property, label, false); // Get height of the main field only
 
-			if (property.objectReferenceValue != null && property.objectReferenceValue is ScriptableObject)
+			if (m_foldout && property.objectReferenceValue != null && property.objectReferenceValue is ScriptableObject scriptableObject)
 			{
-				var serializedObject = new SerializedObject((ScriptableObject)property.objectReferenceValue);
+				// Add padding for the top of the exposed editor box.
+				totalHeight += PADDING;
+				
+				var serializedObject = new SerializedObject(scriptableObject);
 				var prop = serializedObject.GetIterator();
-				prop.NextVisible(true);
+				prop.NextVisible(true); // Skip 'm_Script'
 
-				totalHeight += m_foldout ? PADDING * 2 : 0;
-
-				if (m_foldout)
+				// Add height for each visible property inside the ScriptableObject.
+				while (prop.NextVisible(false))
 				{
-					while (prop.NextVisible(false))
-					{
-						totalHeight += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-					}
+					totalHeight += EditorGUI.GetPropertyHeight(prop, true) + EditorGUIUtility.standardVerticalSpacing;
 				}
+				
+				// Add padding for the bottom of the exposed editor box.
+				totalHeight += PADDING;
 			}
 
 			return totalHeight;

@@ -2,6 +2,7 @@
  * Author HNB-RaBear - 2019
  **/
 
+using RCore.Inspector;
 using UnityEngine;
 
 namespace RCore.Misc

@@ -33,6 +33,7 @@ RCore is a Unity framework designed to provide foundational support for game dev
     *   [Panel System](#panel-system)
     *   [UI Components](#ui-components)
 *   [Services Integration](#services-integration)
+*   [Inspector Attributes](#inspector-attributes)
 *   [Editor Tools](#editor-tools)
 
 ---
@@ -58,7 +59,7 @@ This section contains the foundational systems of the framework.
 
 ### Configuration System
 
-**Configuration.cs** — A singleton `ScriptableObject` that serves as the central authority for global project settings. It provides a powerful and user-friendly interface for managing build configurations and other persistent data.
+**`Configuration.cs`** — A singleton `ScriptableObject` that serves as the central authority for global project settings. It provides a powerful and user-friendly interface for managing build configurations and other persistent data.
 
 *   **Environment and Directive Management**: The core feature of this system is its ability to manage build environments (e.g., "Development", "Production"). Each environment is a collection of scripting define symbols (directives) that can be enabled or disabled. This allows developers to easily control which features are included in a build (e.g., `UNITY_IAP`, `FIREBASE_ANALYTICS`, `DEVELOPMENT`) by simply switching the active environment in the editor, which automatically updates the project's conditional compilation symbols.
 *   **Key-Value Data Store**: Includes a serializable dictionary for storing general-purpose configuration data as simple key-value string pairs, accessible globally.
@@ -68,16 +69,16 @@ This section contains the foundational systems of the framework.
 
 A comprehensive and centralized system for managing all aspects of in-game audio.
 
-*   **AudioManager.cs** — A global singleton (`BaseAudioManager`) that serves as the primary interface for all audio operations. It provides independent volume control for master, music, and SFX channels, complete with fade-in/out effects. For performance, it features a robust SFX management system with pooling and concurrency limiting to prevent audio clutter. It also includes support for music playlists and automatically listens for UI events from the `EventDispatcher` to play corresponding sounds.
-*   **AudioCollection.cs** — A `ScriptableObject` that acts as a central database for all `AudioClips`. It is designed for flexible memory management, supporting both direct clip references and dynamic loading via the **`Addressable Assets`** system. A key feature is its integrated **`script generator`**, which can automatically parse audio files from specified folders and create static ID classes (e.g., `SfxIDs.cs`), enabling type-safe and error-free audio calls from code.
-*   **SfxSource.cs** — A versatile `MonoBehaviour` component for playing sound effects from any `GameObject`. It can operate in two modes:
+*   **`AudioManager.cs`** — A global singleton (`BaseAudioManager`) that serves as the primary interface for all audio operations. It provides independent volume control for master, music, and SFX channels, complete with fade-in/out effects. For performance, it features a robust SFX management system with pooling and concurrency limiting to prevent audio clutter. It also includes support for music playlists and automatically listens for UI events from the `EventDispatcher` to play corresponding sounds.
+*   **`AudioCollection.cs`** — A `ScriptableObject` that acts as a central database for all `AudioClips`. It is designed for flexible memory management, supporting both direct clip references and dynamic loading via the **`Addressable Assets`** system. A key feature is its integrated **`script generator`**, which can automatically parse audio files from specified folders and create static ID classes (e.g., `SfxIDs.cs`), enabling type-safe and error-free audio calls from code.
+*   **`SfxSource.cs`** — A versatile `MonoBehaviour` component for playing sound effects from any `GameObject`. It can operate in two modes:
     1.  **Managed**: By default, it acts as a simple trigger, requesting the central `AudioManager` to play a sound from its managed pool.
     2.  **Standalone**: If an `AudioSource` component is assigned directly, it takes full control of that source, making it ideal for positional 3D audio.
-    It also includes features for looping, pitch randomization, and playing a random clip from a predefined list.
+        It also includes features for looping, pitch randomization, and playing a random clip from a predefined list.
 
 ### Event System
 
-**EventDispatcher.cs** — A static class that provides a centralized, type-safe event system using the publish-subscribe pattern. It is designed to create a decoupled architecture, allowing different parts of the application to communicate without holding direct references to one another.
+**`EventDispatcher.cs`** — A static class that provides a centralized, type-safe event system using the publish-subscribe pattern. It is designed to create a decoupled architecture, allowing different parts of the application to communicate without holding direct references to one another.
 
 *   **Core Functionality**: Systems can subscribe to specific event types using `AddListener<T>()` and unsubscribe with `RemoveListener<T>()`. Events are broadcast globally by creating an instance of an event struct (which must implement the `BaseEvent` interface) and passing it to the `EventDispatcher.Raise()` method.
 *   **Debouncing**: Features a `RaiseDeBounce()` method that prevents event spam by ensuring an event is only raised after a specified delay has passed without any new calls for the same event type. This is particularly useful for handling rapid user input, such as button clicks. This functionality is dependent on the **UniTask** library.
@@ -94,7 +95,7 @@ A powerful, attribute-based system designed to create a decoupled architecture. 
 
 ### Data Config Management
 
-**ConfigCollection.cs** — An abstract `ScriptableObject` base class for populating configuration data from external text files (e.g., `JSON`). It promotes a clean, data-driven workflow by separating configuration from code. The system supports loading from a `Resources` folder at runtime or directly from the `AssetDatabase` in the Editor, with a custom Inspector button to refresh the data on demand.
+**`ConfigCollection.cs`** — An abstract `ScriptableObject` base class for populating configuration data from external text files (e.g., `JSON`). It promotes a clean, data-driven workflow by separating configuration from code. The system supports loading from a `Resources` folder at runtime or directly from the `AssetDatabase` in the Editor, with a custom Inspector button to refresh the data on demand.
 
 ---
 
@@ -173,6 +174,28 @@ A collection of robust, production-ready UI components that extend Unity's base 
 *   **Game Services**: `GameServices.cs` (core), `GameServices.CloudSave.cs`, `GameServices.InAppReview.cs`, `GameServices.InAppUpdate.cs`.
 *   **IAP System**: `IAPManager.cs` for managing `In-App Purchases`.
 *   **Notification System**: `NotificationsManager.cs`, `GameNotification.cs`, `PendingNotification.cs`.
+
+---
+
+## Inspector Attributes
+
+A collection of powerful C# attributes designed to enhance the Unity Inspector, making it more organized, intuitive, and efficient. These attributes help reduce boilerplate code and streamline development workflows.
+
+*   **`[AutoFill]`**: Automatically populates `null` fields with component or `ScriptableObject` references, reducing manual drag-and-drop setup. It supports searching by path and automatically filling arrays or lists.
+*   **`[Comment]`**: Displays a descriptive note or instruction above a field, providing helpful context directly in the Inspector.
+*   **`[CreateScriptableObject]`**: Adds a "Create" button next to an empty `ScriptableObject` field, allowing for the quick creation and assignment of new assets without leaving the Inspector.
+*   **`[DisplayEnum]`**: Renders an integer field as a user-friendly enum dropdown menu. The enum type can be specified statically or determined dynamically from a method, offering serialization flexibility.
+*   **`[ExposeScriptableObject]`**: Nests a `ScriptableObject`'s properties directly within the parent object's Inspector, allowing for convenient inline editing.
+*   **`[FolderPath]`**: Turns a string field into a button that opens a folder selection dialog, storing the chosen directory as a project-relative path.
+*   **`[Highlight]`**: Draws attention to an important field by coloring its background, making it stand out visually.
+*   **`[InspectorButton]`**: Renders a method as a clickable button in the Inspector, allowing for the direct execution of code. It fully supports methods with parameters.
+*   **`[ReadOnly]`**: Makes a serialized field visible but non-editable in the Inspector.
+*   **`[Separator]`**: Draws a horizontal line, with or without a title, to visually group and organize fields for a cleaner layout.
+*   **`[ShowIf]`**: Conditionally shows or hides a field based on the boolean state of another field, property, or method, creating dynamic and context-aware Inspectors.
+*   **`[SingleLayer]`**: Displays an integer field as a built-in Unity Layer dropdown, storing the selected layer's index.
+*   **`[SpriteBox]`**: Renders a `Sprite` field with a configurable preview image thumbnail alongside the standard object picker.
+*   **`[TagSelector]`**: Displays a string field as a dropdown menu of all available Unity Tags.
+*   **`[TMPFontMaterials]`**: On a component with a `TextMeshPro` object, this attribute creates a dropdown for a `Material` field, automatically populating it with all materials associated with the current font asset.
 
 ---
 

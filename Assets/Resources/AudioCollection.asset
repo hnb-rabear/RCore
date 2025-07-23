@@ -16,3 +16,8 @@ MonoBehaviour:
   musicClips: []
   abSfxClips: []
   abMusicClips: []
+  generator:
+    namespace: 
+    inputMusicsFolder: 
+    inputSfxsFolder: 
+    outputIDsFolder: 

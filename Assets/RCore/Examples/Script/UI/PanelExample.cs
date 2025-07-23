@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using RCore.UI;
 using RCore.Example.Data.KeyValue;
+using RCore.Inspector;
 using TMPro;
 
 namespace RCore.Example.UI

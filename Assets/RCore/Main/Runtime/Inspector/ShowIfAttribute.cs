@@ -11,13 +11,19 @@ namespace RCore.Inspector
 	/// Conditionally shows a field in the Inspector based on the value of a boolean field,
 	/// property, or method within the same component.
 	/// Usage: [ShowIf("MyBooleanField")] or [ShowIf("MyBoolProperty")] or [ShowIf("MyBoolMethod")]
-	/// The target member must return a boolean value.
+	/// The target member must return a boolean value and be parameterless if it is a method.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
 	public class ShowIfAttribute : PropertyAttribute
 	{
+		/// <summary>
+		/// The name of the boolean field, property, or parameterless method used as the condition.
+		/// </summary>
 		public string ConditionMemberName { get; private set; }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ShowIfAttribute"/> class.
+		/// </summary>
 		/// <param name="conditionMemberName">The name of the boolean field, property, or parameterless method to check.</param>
 		public ShowIfAttribute(string conditionMemberName)
 		{
@@ -26,20 +32,26 @@ namespace RCore.Inspector
 	}
 
 #if UNITY_EDITOR
+	/// <summary>
+	/// Custom property drawer for fields marked with [ShowIfAttribute].
+	/// This drawer checks a condition and shows or hides the field accordingly.
+	/// </summary>
 	[CustomPropertyDrawer(typeof(ShowIfAttribute))]
 	public class ShowIfDrawer : PropertyDrawer
 	{
-		// Cast the attribute for easier access
+		/// <summary>
+		/// Gets the ShowIfAttribute instance for this drawer.
+		/// </summary>
 		private ShowIfAttribute Attribute => (ShowIfAttribute)attribute;
 
 		/// <summary>
-		/// Checks if the condition defined by the ShowIf attribute is met.
+		/// Checks if the condition defined by the ShowIf attribute is met by evaluating
+		/// the specified member (field, property, or method).
 		/// </summary>
 		/// <param name="property">The SerializedProperty representing the field this drawer is for.</param>
-		/// <returns>True if the condition is met (field should be shown), false otherwise.</returns>
+		/// <returns>True if the condition is met and the field should be shown; otherwise, false.</returns>
 		private bool ShouldShow(SerializedProperty property)
 		{
-			// Get the containing object (the MonoBehaviour script)
 			object targetObject = property.serializedObject.targetObject;
 			var targetType = targetObject.GetType();
 			string conditionMemberName = Attribute.ConditionMemberName;
@@ -50,96 +62,50 @@ namespace RCore.Inspector
 				return true; // Show by default if misconfigured
 			}
 
-			var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+			var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-			// Try to find a Field
+			// Check for a field first
 			var field = targetType.GetField(conditionMemberName, bindingFlags);
-			if (field != null)
+			if (field != null && field.FieldType == typeof(bool))
 			{
-				if (field.FieldType == typeof(bool))
-				{
-					return (bool)field.GetValue(targetObject);
-				}
-				else
-				{
-					Debug.LogError($"ShowIfAttribute: Member '{conditionMemberName}' on {targetType.Name} is not a boolean field.");
-					return true; // Show on error
-				}
+				return (bool)field.GetValue(targetObject);
 			}
 
-			// Try to find a Property
+			// Then check for a property
 			var propertyInfo = targetType.GetProperty(conditionMemberName, bindingFlags);
-			if (propertyInfo != null)
+			if (propertyInfo != null && propertyInfo.PropertyType == typeof(bool))
 			{
-				if (propertyInfo.PropertyType == typeof(bool))
-				{
-					try
-					{
-						return (bool)propertyInfo.GetValue(targetObject);
-					}
-					catch (System.Exception e)
-					{
-						Debug.LogError($"ShowIfAttribute: Error evaluating property '{conditionMemberName}' on {targetType.Name}. \n{e}");
-						return true; // Show on error
-					}
-				}
-				else
-				{
-					Debug.LogError($"ShowIfAttribute: Member '{conditionMemberName}' on {targetType.Name} is not a boolean property.");
-					return true; // Show on error
-				}
+				return (bool)propertyInfo.GetValue(targetObject);
 			}
 
-			// Try to find a Method (parameterless)
-			var methodInfo = targetType.GetMethod(conditionMemberName, bindingFlags, null, System.Type.EmptyTypes, null);
-			if (methodInfo != null)
+			// Finally, check for a parameterless method
+			var methodInfo = targetType.GetMethod(conditionMemberName, bindingFlags);
+			if (methodInfo != null && methodInfo.ReturnType == typeof(bool) && methodInfo.GetParameters().Length == 0)
 			{
-				if (methodInfo.ReturnType == typeof(bool))
-				{
-					try
-					{
-						// Ensure it's parameterless
-						if (methodInfo.GetParameters().Length == 0)
-						{
-							return (bool)methodInfo.Invoke(targetObject, null);
-						}
-						else
-						{
-							Debug.LogError($"ShowIfAttribute: Method '{conditionMemberName}' on {targetType.Name} must be parameterless.");
-							return true; // Show on error
-						}
-					}
-					catch (System.Exception e)
-					{
-						Debug.LogError($"ShowIfAttribute: Error evaluating method '{conditionMemberName}' on {targetType.Name}. \n{e}");
-						return true; // Show on error
-					}
-				}
-				else
-				{
-					Debug.LogError($"ShowIfAttribute: Method '{conditionMemberName}' on {targetType.Name} does not return boolean.");
-					return true; // Show on error
-				}
+				return (bool)methodInfo.Invoke(targetObject, null);
 			}
 
-
-			// If no matching member found
-			Debug.LogError($"ShowIfAttribute: Could not find boolean field, property, or parameterless method named '{conditionMemberName}' on {targetType.Name}.");
-			return true; // Show by default if condition member not found
+			Debug.LogError($"ShowIfAttribute: Could not find a boolean field, property, or parameterless method named '{conditionMemberName}' on {targetType.Name}.");
+			return true; // Show by default if the condition member isn't found
 		}
 
+		/// <summary>
+		/// Renders the property field if the condition is met.
+		/// </summary>
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			// Check the condition. If it's not met, don't draw anything.
+			// Only draw the property if the condition is true
 			if (ShouldShow(property))
 			{
 				EditorGUI.PropertyField(position, property, label, true);
 			}
 		}
 
+		/// <summary>
+		/// Gets the height of the property. Returns 0 if the property should be hidden.
+		/// </summary>
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			// Check the condition. If it's not met, return 0 height (or negative to collapse spacing).
 			if (ShouldShow(property))
 			{
 				// Return the standard height for this property
@@ -147,9 +113,8 @@ namespace RCore.Inspector
 			}
 			else
 			{
-				// Return minimal height to hide the field and collapse space
-				return -EditorGUIUtility.standardVerticalSpacing; // Collapses the default spacing between properties
-				// return 0; // Alternative: just returns zero height
+				// Return a negative value to collapse the vertical spacing between properties
+				return -EditorGUIUtility.standardVerticalSpacing;
 			}
 		}
 	}

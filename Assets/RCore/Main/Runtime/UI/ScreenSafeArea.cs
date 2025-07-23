@@ -1,6 +1,7 @@
 ﻿#if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
+using RCore.Inspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
