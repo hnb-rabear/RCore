@@ -238,7 +238,7 @@ namespace RCore.Editor.Tool
 						{
 							EditorHelper.DragDropBox<Object>("Right Textures or Sprites", objs =>
 							{
-								EditorHelper.ClearObjectFolderCaches();
+								EditorAssetUtil.ClearObjectFolderCaches();
 								var spritesNew = m_inputs.Select(x => x.spriteNew).ToList();
 								foreach (var obj in objs)
 								{
