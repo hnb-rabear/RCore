@@ -148,7 +148,7 @@ namespace RCore.Editor
                                 profile.developmentBuild = EditorHelper.Toggle(profile.developmentBuild, "Development Build", 120, 230);
                             EditorHelper.Separator();
                             //--- Draw Scene Section
-                            var btnAddNewScene = new EditorButton();
+                            var btnAddNewScene = new GuiButton();
                             btnAddNewScene.color = Color.green;
                             btnAddNewScene.label = "+ New";
                             btnAddNewScene.onPressed = () =>
@@ -156,7 +156,7 @@ namespace RCore.Editor
                                 profile.buildScenes.Add(new SceneAssetReference(null, false));
                             };
                             btnAddNewScene.width = 60;
-                            var btnAddCurrentScenes = new EditorButton();
+                            var btnAddCurrentScenes = new GuiButton();
                             btnAddCurrentScenes.color = Color.green;
                             btnAddCurrentScenes.label = "+ Current Build Settings";
                             btnAddCurrentScenes.width = 150;
@@ -169,7 +169,7 @@ namespace RCore.Editor
                                     profile.AddScene(s.path, s.enabled);
                                 }
                             };
-                            var btnAddActiveScene = new EditorButton();
+                            var btnAddActiveScene = new GuiButton();
                             btnAddActiveScene.label = "+ Opening Scene";
                             btnAddActiveScene.onPressed = () =>
                             {
@@ -208,7 +208,7 @@ namespace RCore.Editor
                             }
                             EditorHelper.Separator();
                             //--- Draw Build Target Section
-                            var btnBuilTarget = new EditorButton();
+                            var btnBuilTarget = new GuiButton();
                             btnBuilTarget.color = Color.green;
                             btnBuilTarget.label = "+ New";
                             btnBuilTarget.width = 60;
@@ -259,7 +259,7 @@ namespace RCore.Editor
                             profile.customDirectives = EditorHelper.Toggle(profile.customDirectives, "Use Custom Directives", 150);
                             if (profile.customDirectives)
                             {
-                                var btn1 = new EditorButton
+                                var btn1 = new GuiButton
                                 {
                                     label = "+ Current Build Settings",
                                     width = 150,
@@ -269,7 +269,7 @@ namespace RCore.Editor
                                     },
                                     color = Color.green,
                                 };
-                                var btn2 = new EditorButton
+                                var btn2 = new GuiButton
                                 {
                                     label = "Apply",
                                     width = 80,

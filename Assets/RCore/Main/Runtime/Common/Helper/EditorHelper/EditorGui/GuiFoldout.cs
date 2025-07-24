@@ -7,7 +7,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a standard editor foldout group, which persists its state using EditorPrefs.
 	/// </summary>
-	public class EditorFoldout : IDraw
+	public class GuiFoldout : IDraw
 	{
 		/// <summary>The label displayed for the foldout.</summary>
 		public string label;

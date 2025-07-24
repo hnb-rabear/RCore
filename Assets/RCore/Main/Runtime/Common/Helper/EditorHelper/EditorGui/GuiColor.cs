@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable color field for the Unity Editor.
 	/// </summary>
-	public class EditorColor : IDraw
+	public class GuiColor : IDraw
 	{
 		/// <summary>The label displayed next to the color field.</summary>
 		public string label;

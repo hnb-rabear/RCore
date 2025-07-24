@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a set of selectable tabs, persisting the current selection via EditorPrefs.
 	/// </summary>
-	public class EditorTabs : IDraw
+	public class GuiTabs : IDraw
 	{
 		/// <summary>A unique key used to save the current tab's state in EditorPrefs.</summary>
 		public string key;

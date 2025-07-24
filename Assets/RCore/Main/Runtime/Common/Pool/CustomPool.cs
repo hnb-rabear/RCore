@@ -14,75 +14,67 @@ using Object = UnityEngine.Object;
 namespace RCore
 {
     /// <summary>
-    /// A generic, serializable object pooling system for Unity Components.
-    /// It's designed to improve performance by recycling objects (like particle effects, bullets, or UI elements)
-    /// instead of constantly instantiating and destroying them.
+    /// A generic object pooling system for Unity Components.
+    /// It manages the lifecycle of objects (creation, activation, deactivation) to reduce the performance
+    /// overhead of frequent instantiation and destruction. This class manages a pool for a single prefab type.
     /// </summary>
-    /// <typeparam name="T">The type of Component this pool will manage.</typeparam>
+    /// <typeparam name="T">The type of Component to be pooled. Must inherit from UnityEngine.Component.</typeparam>
     [Serializable]
     public class CustomPool<T> where T : Component
     {
         /// <summary>
-        /// An action invoked whenever an object is spawned from the pool.
-        /// Useful for re-initializing the object's state (e.g., resetting health, animation, etc.).
+        /// An action that is invoked whenever a new item is spawned from the pool.
+        /// Useful for re-initializing the state of a reused object.
         /// </summary>
         public Action<T> onSpawn;
 
+        /// <summary>The component prefab used to create new instances for the pool.</summary>
         [SerializeField] protected T m_Prefab;
+        /// <summary>The parent transform under which all pooled objects (active and inactive) will be organized in the hierarchy.</summary>
         [SerializeField] protected Transform m_Parent;
+        /// <summary>The name to be assigned to all GameObjects instantiated by this pool.</summary>
         [SerializeField] protected string m_Name;
+        /// <summary>If true, spawned objects will be moved to the last position in their parent's hierarchy.</summary>
         [SerializeField] protected bool m_PushToLastSibling;
+        /// <summary>If true, the pool will automatically search for and reclaim active objects that have been manually set to inactive in the hierarchy.</summary>
         [SerializeField] protected bool m_AutoRelocate;
+        /// <summary>If greater than 0, this will cap the number of active objects. When the limit is reached, spawning a new object will force the oldest active one to be released.</summary>
         [SerializeField] protected int m_LimitNumber;
+        /// <summary>The list of currently active (in-use) objects.</summary>
         [SerializeField] private List<T> m_ActiveList = new List<T>();
+        /// <summary>The list of currently inactive (available for reuse) objects.</summary>
         [SerializeField] private List<T> m_InactiveList = new List<T>();
 
-        /// <summary>
-        /// The template Component used to create new objects when the pool is empty.
-        /// </summary>
+        /// <summary>Gets the prefab used by this pool to create new instances.</summary>
         public T Prefab => m_Prefab;
-        /// <summary>
-        /// The Transform that will parent all pooled objects, keeping the hierarchy organized.
-        /// </summary>
+        /// <summary>Gets the parent transform where pooled objects are stored.</summary>
         public Transform Parent => m_Parent;
-        /// <summary>
-        /// The name assigned to newly instantiated objects for easier identification in the hierarchy.
-        /// </summary>
+        /// <summary>Gets the name assigned to new instances created by the pool.</summary>
         public string Name => m_Name;
-        /// <summary>
-        /// If true, moves the spawned object to the bottom of the hierarchy under its parent. Useful for UI elements.
-        /// </summary>
+        /// <summary>Gets or sets a value indicating whether spawned objects will be moved to the last position in their parent's hierarchy.</summary>
         public bool pushToLastSibling { get => m_PushToLastSibling; set => m_PushToLastSibling = value; }
-        /// <summary>
-        /// An optional limit on the number of active objects. When the limit is reached,
-        /// the oldest active object will be recycled to make room for a new one.
-        /// </summary>
+        /// <summary>Gets or sets a value that limits the number of active objects. When the limit is reached, the oldest active object will be reused.</summary>
         public int limitNumber { get => m_LimitNumber; set => m_LimitNumber = value; }
+        /// <summary>A flag indicating whether the pool has been initialized.</summary>
         protected bool m_Initialized;
+        /// <summary>The number of objects to create when the pool is first initialized.</summary>
         protected int m_InitialCount;
 
-        /// <summary>
-        /// Gets the list of all currently active objects managed by the pool.
-        /// </summary>
+        /// <summary>Gets a direct reference to the list of active objects.</summary>
         public List<T> ActiveList() => m_ActiveList;
-        /// <summary>
-        /// Gets the list of all currently inactive (pooled) objects available for reuse.
-        /// </summary>
+        /// <summary>Gets a direct reference to the list of inactive (available) objects.</summary>
         public List<T> InactiveList() => m_InactiveList;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
         public CustomPool() { }
 
         /// <summary>
-        /// Creates and initializes a new pool.
+        /// Initializes a new instance of the CustomPool class.
         /// </summary>
         /// <param name="pPrefab">The component prefab to be pooled.</param>
-        /// <param name="pInitialCount">The number of objects to pre-warm the pool with.</param>
-        /// <param name="pParent">The parent transform for all pooled objects.</param>
-        /// <param name="pName">The name for the pool container and its objects.</param>
-        /// <param name="pAutoRelocate">If true, automatically moves objects that are inactive in the hierarchy to the inactive list.</param>
+        /// <param name="pInitialCount">The number of instances to pre-instantiate.</param>
+        /// <param name="pParent">The parent transform for the pooled objects.</param>
+        /// <param name="pName">A name for the new instances. Defaults to the prefab's name.</param>
+        /// <param name="pAutoRelocate">If true, the pool will automatically move inactive objects from the active list to the inactive list.</param>
         public CustomPool(T pPrefab, int pInitialCount, Transform pParent, string pName = "", bool pAutoRelocate = true)
         {
             m_Prefab = pPrefab;
@@ -94,12 +86,20 @@ namespace RCore
         }
 
         /// <summary>
-        /// Creates and initializes a new pool from a GameObject prefab.
+        /// Initializes a new instance of the CustomPool class from a GameObject prefab.
         /// </summary>
+        /// <param name="pPrefab">The GameObject prefab that has the component of type T.</param>
+        /// <param name="pInitialCount">The number of instances to pre-instantiate.</param>
+        /// <param name="pParent">The parent transform for the pooled objects.</param>
+        /// <param name="pName">A name for the new instances. Defaults to the prefab's name.</param>
+        /// <param name="pAutoRelocate">If true, the pool will automatically move inactive objects from the active list to the inactive list.</param>
         public CustomPool(GameObject pPrefab, int pInitialCount, Transform pParent, string pName = "", bool pAutoRelocate = true)
         {
-            if (pPrefab != null)
-                pPrefab.TryGetComponent(out m_Prefab);
+#if UNITY_2019_2_OR_NEWER
+            pPrefab.TryGetComponent(out m_Prefab);
+#else
+            m_Prefab = pPrefab.GetComponent<T>();
+#endif
             m_Parent = pParent;
             m_Name = pName;
             m_AutoRelocate = pAutoRelocate;
@@ -107,37 +107,31 @@ namespace RCore
         }
 
         /// <summary>
-        /// Initializes the pool, creating the parent container and pre-warming if specified.
+        /// Initializes the pool, creates a parent object if one isn't provided, and pre-warms the pool with initial instances.
         /// </summary>
         protected void Init()
         {
             if (m_Initialized)
                 return;
 
-            if (m_Prefab == null)
-            {
-                Debug.LogError("CustomPool cannot be initialized with a null prefab!");
-                return;
-            }
-
             if (string.IsNullOrEmpty(m_Name))
                 m_Name = m_Prefab.name;
 
             if (m_Parent == null)
             {
-                GameObject temp = new GameObject($"Pool_{m_Name}");
+                GameObject temp = new GameObject();
+                temp.name = $"Pool_{m_Name}";
                 m_Parent = temp.transform;
             }
 
             m_ActiveList = new List<T>();
             m_InactiveList = new List<T>();
             m_InactiveList.Prepare(m_Prefab, m_Parent, m_InitialCount, m_Prefab.name);
-            
-            // If the prefab is actually an instance in the scene, add it to the pool.
+            // If the provided "prefab" is actually an object in the scene, add it to the pool to be managed.
             if (!m_Prefab.gameObject.IsPrefab())
             {
                 m_InactiveList.Add(m_Prefab);
-                m_Prefab.transform.SetParent(m_Parent);
+                m_Prefab.SetParent(m_Parent);
                 m_Prefab.transform.SetAsLastSibling();
                 m_Prefab.gameObject.SetActive(false);
             }
@@ -145,66 +139,64 @@ namespace RCore
         }
 
         /// <summary>
-        /// Pre-instantiates a specified number of objects to prevent hitches during gameplay.
+        /// Ensures the pool has at least a certain number of inactive instances available by creating more if needed.
         /// </summary>
-        /// <param name="pInitialCount">The total number of inactive objects the pool should have ready.</param>
+        /// <param name="pInitialCount">The desired number of available instances.</param>
         public void Prepare(int pInitialCount)
         {
             int numberNeeded = pInitialCount - m_InactiveList.Count;
             if (numberNeeded > 0)
             {
-                m_InactiveList.Prepare(m_Prefab, m_Parent, numberNeeded, m_Prefab.name);
+                var list = new List<T>();
+                list.Prepare(m_Prefab, m_Parent, pInitialCount, m_Prefab.name);
+                m_InactiveList.AddRange(list);
             }
         }
 
-        /// <summary>
-        /// Spawns an object from the pool at the parent's local origin.
-        /// </summary>
-        /// <returns>A component of type T from the pool.</returns>
+        /// <summary>Spawns an item from the pool at the parent's origin.</summary>
+        /// <returns>An active instance of the pooled component.</returns>
         public T Spawn()
         {
             return Spawn(Vector3.zero, false);
         }
 
-        /// <summary>
-        /// Spawns an object from the pool at the specified transform's world position.
-        /// </summary>
-        /// <param name="pPoint">The transform to spawn the object at.</param>
-        /// <returns>A component of type T from the pool.</returns>
+        /// <summary>Spawns an item from the pool at the position of a given Transform.</summary>
+        /// <param name="pPoint">The transform whose world position will be matched.</param>
+        /// <returns>An active instance of the pooled component.</returns>
         public T Spawn(Transform pPoint)
         {
             return Spawn(pPoint.position, true);
         }
 
-        /// <summary>
-        /// Spawns an object from the pool at a given position.
-        /// </summary>
+        /// <summary>Spawns an item from the pool at a specific position.</summary>
         /// <param name="position">The position to spawn the object at.</param>
-        /// <param name="pIsWorldPosition">Is the provided position in world space or local space?</param>
-        /// <returns>A component of type T from the pool.</returns>
+        /// <param name="pIsWorldPosition">If true, the position is treated as world space; otherwise, local space.</param>
+        /// <returns>An active instance of the pooled component.</returns>
         public T Spawn(Vector3 position, bool pIsWorldPosition)
         {
             return Spawn(position, pIsWorldPosition, out _);
         }
 
         /// <summary>
-        /// Spawns an object from the pool at a given position and indicates if it was reused.
+        /// The core method for retrieving an object from the pool.
+        /// It reuses an inactive object if available, or creates a new one if not.
         /// </summary>
         /// <param name="position">The position to spawn the object at.</param>
-        /// <param name="pIsWorldPosition">Is the provided position in world space or local space?</param>
-        /// <param name="pReused">Outputs true if an existing object was reused, false if a new one was instantiated.</param>
-        /// <returns>A component of type T from the pool.</returns>
+        /// <param name="pIsWorldPosition">If true, the position is treated as world space; otherwise, local space.</param>
+        /// <param name="pReused">An out parameter indicating if the returned object was reused from the pool (true) or newly instantiated (false).</param>
+        /// <returns>An active instance of the pooled component.</returns>
         public T Spawn(Vector3 position, bool pIsWorldPosition, out bool pReused)
         {
-            // If the pool has a limit, recycle the oldest active object.
-            if (m_LimitNumber > 0 && m_ActiveList.Count >= m_LimitNumber)
+            // If a limit is set and reached, recycle the oldest active item.
+            if (m_LimitNumber > 0 && m_ActiveList.Count == m_LimitNumber)
             {
                 var activeItem = m_ActiveList[0];
-                Release(activeItem);
+                m_InactiveList.Add(activeItem);
+                m_ActiveList.Remove(activeItem);
             }
 
-            // If auto-relocating, check for any active objects that were externally deactivated.
             int count = m_InactiveList.Count;
+            // If auto-relocate is on and we're out of items, check for any active objects that were manually deactivated.
             if (m_AutoRelocate && count == 0)
             {
                 RelocateInactive(out bool relocated);
@@ -212,23 +204,14 @@ namespace RCore
                     count = m_InactiveList.Count;
             }
 
-            // Reuse an object from the inactive list if available.
+            // If an inactive object is available, reuse it.
             if (count > 0)
             {
                 var item = m_InactiveList[count - 1];
-                if (item == null)
-                {
-                    // This can happen if an object was destroyed externally.
-                    m_InactiveList.RemoveAt(count - 1);
-                    pReused = false;
-                    return Spawn(position, pIsWorldPosition, out pReused);
-                }
-                
                 if (pIsWorldPosition)
                     item.transform.position = position;
                 else
                     item.transform.localPosition = position;
-                
                 Active(item, true, count - 1);
                 pReused = true;
 
@@ -240,30 +223,33 @@ namespace RCore
             }
 
             // If no inactive objects are available, instantiate a new one.
-            T newItem;
 #if UNITY_EDITOR
+            // In the editor, use PrefabUtility to maintain the prefab connection.
             if (!Application.isPlaying)
             {
-                newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
+                T newItem = (T)UnityEditor.PrefabUtility.InstantiatePrefab(m_Prefab, m_Parent);
+                newItem.name = m_Name;
+                m_InactiveList.Add(newItem);
+
             }
             else
 #endif
             {
-                newItem = Object.Instantiate(m_Prefab, m_Parent);
+                // At runtime, use the standard Instantiate method.
+                T newItem = Object.Instantiate(m_Prefab, m_Parent);
+                newItem.name = m_Name;
+                m_InactiveList.Add(newItem);
             }
-
-            newItem.name = m_Name;
-            m_InactiveList.Add(newItem);
-
             pReused = false;
+
             // Recursively call Spawn to use the newly created item.
             return Spawn(position, pIsWorldPosition, out pReused);
         }
 
         /// <summary>
-        /// Adds a list of objects that were already in the scene to be managed by this pool.
+        /// Adds a list of existing scene objects to be managed by this pool.
         /// </summary>
-        /// <param name="pInSceneObjs">A list of objects to add.</param>
+        /// <param name="pInSceneObjs">A list of components already in the scene.</param>
         public void AddOutsiders(List<T> pInSceneObjs)
         {
             for (int i = pInSceneObjs.Count - 1; i >= 0; i--)
@@ -271,12 +257,13 @@ namespace RCore
         }
 
         /// <summary>
-        /// Adds a single object that was already in the scene to be managed by this pool.
+        /// Adds a single existing scene object to be managed by this pool. The object will be reparented.
         /// </summary>
-        /// <param name="pInSceneObj">The object to add.</param>
+        /// <param name="pInSceneObj">A component instance already in the scene.</param>
         public void AddOutsider(T pInSceneObj)
         {
-            if (m_InactiveList.Contains(pInSceneObj) || m_ActiveList.Contains(pInSceneObj))
+            if (m_InactiveList.Contains(pInSceneObj)
+                || m_ActiveList.Contains(pInSceneObj))
                 return;
 
             if (pInSceneObj.gameObject.activeSelf)
@@ -287,7 +274,7 @@ namespace RCore
         }
 
         /// <summary>
-        /// Returns an active object to the pool, making it inactive and available for reuse.
+        /// Deactivates an object and returns it to the inactive pool.
         /// </summary>
         /// <param name="pObj">The component instance to release.</param>
         public void Release(T pObj)
@@ -303,48 +290,48 @@ namespace RCore
         }
 
         /// <summary>
-        /// Returns an active object to the pool after a specified delay.
+        /// Releases an object back to the pool after a specified delay.
         /// </summary>
         /// <param name="pObj">The component instance to release.</param>
-        /// <param name="pDelay">The delay in seconds before releasing.</param>
+        /// <param name="pDelay">The delay in seconds.</param>
         public void Release(T pObj, float pDelay)
         {
-	        TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
-	        {
-		        id = pObj.GetInstanceID(),
-		        onTimeOut = s =>
-		        {
-			        if (pObj != null) Release(pObj);
-		        },
-		        waitTime = pDelay
-	        });
+            TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
+            {
+                id = pObj.GetInstanceID(),
+                onTimeOut = s =>
+                {
+                    if (pObj != null) Release(pObj);
+                },
+                waitTime = pDelay
+            });
         }
 
         /// <summary>
-        /// Returns an active object to the pool when a specified condition is met.
+        /// Releases an object back to the pool when a specified condition is met.
         /// </summary>
         /// <param name="pObj">The component instance to release.</param>
-        /// <param name="pCondition">The delegate that must return true to trigger the release.</param>
+        /// <param name="pCondition">The delegate that returns true when the object should be released.</param>
         public void Release(T pObj, ConditionalDelegate pCondition)
         {
-	        TimerEventsInScene.Instance.WaitForCondition(new ConditionEvent()
-	        {
-		        id = pObj.GetInstanceID(),
-		        onTrigger = () =>
-		        {
-			        if (pObj != null) Release(pObj);
-		        },
-		        triggerCondition = pCondition
-	        });
+            TimerEventsInScene.Instance.WaitForCondition(new ConditionEvent()
+            {
+                id = pObj.GetInstanceID(),
+                onTrigger = () =>
+                {
+                    if (pObj != null) Release(pObj);
+                },
+                triggerCondition = pCondition
+            });
         }
 
         /// <summary>
-        /// Convenience method to release an object via its GameObject.
+        /// Deactivates an object and returns it to the inactive pool, finding it by its GameObject.
         /// </summary>
-        /// <param name="pObj">The GameObject to release.</param>
+        /// <param name="pObj">The GameObject of the instance to release.</param>
         public void Release(GameObject pObj)
         {
-            for (int i = m_ActiveList.Count - 1; i >= 0; i--)
+            for (int i = 0; i < m_ActiveList.Count; i++)
             {
                 if (m_ActiveList[i].gameObject.GetInstanceID() == pObj.GetInstanceID())
                 {
@@ -355,63 +342,63 @@ namespace RCore
         }
         
         /// <summary>
-        /// Convenience method to release a GameObject after a delay.
+        /// Releases an object back to the pool after a specified delay, finding it by its GameObject.
         /// </summary>
         public void Release(GameObject pObj, float pDelay)
         {
-	        TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
-	        {
-		        id = pObj.GetInstanceID(),
-		        onTimeOut = s =>
-		        {
-			        if (pObj != null) Release(pObj);
-		        },
-		        waitTime = pDelay
-	        });
+            TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
+            {
+                id = pObj.GetInstanceID(),
+                onTimeOut = s =>
+                {
+                    if (pObj != null) Release(pObj);
+                },
+                waitTime = pDelay
+            });
         }
-
+        
         /// <summary>
-        /// Convenience method to release a GameObject when a condition is met.
+        /// Releases an object back to the pool when a specified condition is met, finding it by its GameObject.
         /// </summary>
         public void Release(GameObject pObj, ConditionalDelegate pCondition)
         {
-	        TimerEventsInScene.Instance.WaitForCondition(new ConditionEvent()
-	        {
-		        id = pObj.GetInstanceID(),
-		        onTrigger = () =>
-		        {
-			        if (pObj != null) Release(pObj);
-		        },
-		        triggerCondition = pCondition
-	        });
+            TimerEventsInScene.Instance.WaitForCondition(new ConditionEvent()
+            {
+                id = pObj.GetInstanceID(),
+                onTrigger = () =>
+                {
+                    if (pObj != null) Release(pObj);
+                },
+                triggerCondition = pCondition,
+            });
         }
 
         /// <summary>
-        /// Deactivates and returns all active objects to the pool.
+        /// Releases all currently active objects back to the pool.
         /// </summary>
         public void ReleaseAll()
         {
-            for (int i = m_ActiveList.Count - 1; i >= 0; i--)
+            int count = m_ActiveList.Count;
+            for (int i = 0; i < count; i++)
             {
                 var item = m_ActiveList[i];
-                Active(item, false, i);
+                m_InactiveList.Add(item);
+                item.gameObject.SetActive(false);
             }
+            m_ActiveList.Clear();
         }
 
         /// <summary>
-        /// Permanently destroys every object managed by this pool (both active and inactive) and clears the lists.
+        /// Destroys all objects managed by this pool (both active and inactive) and clears the lists.
         /// </summary>
         public void DestroyAll()
         {
             foreach (var item in m_ActiveList.Concat(m_InactiveList))
             {
-                if (item != null)
-                {
-                    if (Application.isPlaying)
-                        Object.Destroy(item.gameObject);
-                    else
-                        Object.DestroyImmediate(item.gameObject);
-                }
+                if (Application.isPlaying)
+                    Object.Destroy(item.gameObject);
+                else
+                    Object.DestroyImmediate(item.gameObject);
             }
             m_ActiveList.Clear();
             m_InactiveList.Clear();
@@ -420,39 +407,64 @@ namespace RCore
         /// <summary>
         /// Removes a specific item from the pool's tracking and destroys its GameObject.
         /// </summary>
-        /// <param name="pItem">The item to destroy.</param>
+        /// <param name="pItem">The component instance to destroy.</param>
         public void Destroy(T pItem)
         {
             m_ActiveList.Remove(pItem);
             m_InactiveList.Remove(pItem);
-            if (pItem != null)
-            {
-                if (Application.isPlaying)
-                    Object.Destroy(pItem.gameObject);
-                else
-                    Object.DestroyImmediate(pItem.gameObject);
-            }
+            if (Application.isPlaying)
+                Object.Destroy(pItem.gameObject);
+            else
+                Object.DestroyImmediate(pItem.gameObject);
         }
 
         /// <summary>
-        /// Finds a specific component instance within the active list.
+        /// Finds a specific item within the active list.
         /// </summary>
+        /// <param name="t">The item to find.</param>
+        /// <returns>The item if found, otherwise null.</returns>
         public T FindFromActive(T t)
         {
-            return m_ActiveList.FirstOrDefault(item => item == t);
+            for (int i = 0; i < m_ActiveList.Count; i++)
+            {
+                var item = m_ActiveList[i];
+                if (item == t)
+                    return item;
+            }
+            return null;
         }
 
         /// <summary>
-        /// Finds the pooled component associated with a given GameObject.
+        /// Finds the component associated with a given GameObject by searching both active and inactive lists.
         /// </summary>
+        /// <param name="pObj">The GameObject to search for.</param>
+        /// <returns>The component instance if found, otherwise null.</returns>
         public T FindComponent(GameObject pObj)
         {
-            return m_ActiveList.Concat(m_InactiveList).FirstOrDefault(item => item.gameObject == pObj);
+            for (int i = 0; i < m_ActiveList.Count; i++)
+            {
+                if (m_ActiveList[i].gameObject == pObj)
+                {
+                    var temp = m_ActiveList[i];
+                    return temp;
+                }
+            }
+            for (int i = 0; i < m_InactiveList.Count; i++)
+            {
+                if (m_InactiveList[i].gameObject == pObj)
+                {
+                    var temp = m_InactiveList[i];
+                    return temp;
+                }
+            }
+            return null;
         }
-        
+
         /// <summary>
-        /// Retrieves an active object by its index in the active list.
+        /// Retrieves an active item by its index in the active list.
         /// </summary>
+        /// <param name="pIndex">The index of the item to retrieve.</param>
+        /// <returns>The component instance at the index, or null if the index is out of bounds.</returns>
         public T GetFromActive(int pIndex)
         {
             if (pIndex < 0 || pIndex >= m_ActiveList.Count)
@@ -461,73 +473,81 @@ namespace RCore
         }
 
         /// <summary>
-        /// Finds a specific component instance within the inactive list.
+        /// Finds a specific item within the inactive list.
         /// </summary>
+        /// <param name="t">The item to find.</param>
+        /// <returns>The item if found, otherwise null.</returns>
         public T FindFromInactive(T t)
         {
-            return m_InactiveList.FirstOrDefault(item => item == t);
+            for (int i = 0; i < m_InactiveList.Count; i++)
+            {
+                var item = m_InactiveList[i];
+                if (item == t)
+                    return item;
+            }
+            return null;
         }
 
         /// <summary>
-        /// Scans the active list for any objects that have been deactivated externally and moves them to the inactive list.
+        /// A helper method that finds objects in the active list that have been externally deactivated
+        /// (i.e., `gameObject.SetActive(false)` was called elsewhere) and moves them to the inactive list.
         /// </summary>
+        /// <param name="relocated">An out parameter that is true if at least one object was relocated.</param>
         private void RelocateInactive(out bool relocated)
         {
             relocated = false;
-            for (int i = m_ActiveList.Count - 1; i >= 0; i--)
-            {
+            int count = m_ActiveList.Count;
+            for (int i = count - 1; i >= 0; i--)
                 if (!m_ActiveList[i].gameObject.activeSelf)
                 {
                     Active(m_ActiveList[i], false, i);
                     relocated = true;
                 }
-            }
         }
 
-        /// <summary>
-        /// Sets the parent transform for the pool at runtime.
-        /// </summary>
+        /// <summary>Sets or changes the parent transform for this pool.</summary>
         public void SetParent(Transform pParent)
         {
             m_Parent = pParent;
         }
 
-        /// <summary>
-        /// Sets the name for newly instantiated objects at runtime.
-        /// </summary>
+        /// <summary>Sets or changes the base name for objects instantiated by this pool.</summary>
         public void SetName(string pName)
         {
             m_Name = pName;
         }
-        
+
         /// <summary>
-        /// Internal method to handle moving an item between the active and inactive lists and setting its GameObject's active state.
+        /// Internal helper method to move an item between the active and inactive lists and set its GameObject's active state.
         /// </summary>
+        /// <param name="pItem">The item to move.</param>
+        /// <param name="pValue">The new active state (true for active, false for inactive).</param>
+        /// <param name="index">The current index of the item in its source list, for performance.</param>
         private void Active(T pItem, bool pValue, int index = -1)
         {
             if (pValue)
             {
-                if (index != -1)
-                    m_InactiveList.RemoveAt(index);
-                else
-                    m_InactiveList.Remove(pItem);
                 m_ActiveList.Add(pItem);
+                if (index == -1)
+                    m_InactiveList.Remove(pItem);
+                else
+                    m_InactiveList.RemoveAt(index);
             }
             else
             {
-                if (index != -1)
-                    m_ActiveList.RemoveAt(index);
-                else
-                    m_ActiveList.Remove(pItem);
                 m_InactiveList.Add(pItem);
+                if (index == -1)
+                    m_ActiveList.Remove(pItem);
+                else
+                    m_ActiveList.RemoveAt(index);
             }
             pItem.gameObject.SetActive(pValue);
         }
 
 #if UNITY_EDITOR
         /// <summary>
-        /// An editor-only method intended to be called from a CustomEditor's `OnInspectorGUI`
-        /// to display the active and inactive lists for easy debugging while in play mode.
+        /// A helper method to draw a debug view of the pool's state in a custom editor inspector.
+        /// This should be called from the OnInspectorGUI method of a custom editor script.
         /// </summary>
         public void DrawOnEditor()
         {
@@ -536,9 +556,9 @@ namespace RCore
                 EditorHelper.BoxVertical(() =>
                 {
                     if (m_ActiveList != null)
-                        EditorHelper.ListReadonlyObjects(m_Name + " ActiveList", m_ActiveList, null, false);
+                        EditorHelper.ListReadonlyObjects(m_Name + "ActiveList", m_ActiveList, null, false);
                     if (m_InactiveList != null)
-                        EditorHelper.ListReadonlyObjects(m_Name + " InactiveList", m_InactiveList, null, false);
+                        EditorHelper.ListReadonlyObjects(m_Name + "InactiveList", m_InactiveList, null, false);
                 }, Color.white, true);
             }
         }

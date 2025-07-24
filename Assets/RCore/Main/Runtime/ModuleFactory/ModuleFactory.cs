@@ -14,7 +14,7 @@ namespace RCore.ModulePattern
     /// Contains immutable metadata about a discovered module type,
     /// derived from its ModuleAttribute.
     /// </summary>
-    public readonly struct ModuleMetadata
+    public readonly struct ModuleMetadata // Using readonly struct for immutability and value type
     {
         public Type ModuleType { get; }
         public string Key { get; }
@@ -38,6 +38,7 @@ namespace RCore.ModulePattern
     /// </summary>
     public static class ModuleFactory
     {
+        // Dictionary to store module metadata, keyed by the string provided in the ModuleAttribute.
         private static Dictionary<string, ModuleMetadata> m_moduleMetadataMap;
         private static bool m_isInitialized = false;
 
@@ -53,6 +54,7 @@ namespace RCore.ModulePattern
 
             // Scan all assemblies in the current AppDomain
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
             foreach (Assembly assembly in assemblies)
             {
                 try
@@ -65,18 +67,23 @@ namespace RCore.ModulePattern
                     foreach (Type type in types)
                     {
                         ModuleAttribute attribute = type.GetCustomAttribute<ModuleAttribute>(false);
-                        if (m_moduleMetadataMap.ContainsKey(attribute.Key))
+                        if (attribute != null) // Should always be true due to the Where clause
                         {
-                            Debug.LogWarning($"[ModuleFactory] Duplicate module key '{attribute.Key}' found for type '{type.FullName}'. Overwriting with the last one found. Original: '{m_moduleMetadataMap[attribute.Key].ModuleType.FullName}'");
+                            if (m_moduleMetadataMap.ContainsKey(attribute.Key))
+                            {
+                                Debug.LogWarning($"[ModuleFactory] Duplicate module key '{attribute.Key}' found for type '{type.FullName}'. Overwriting with the last one found. Original: '{m_moduleMetadataMap[attribute.Key].ModuleType.FullName}'");
+                            }
+							// Store the collected metadata
+                            var metadata = new ModuleMetadata(type, attribute.Key, attribute.AutoCreate, attribute.LoadOrder);
+                            m_moduleMetadataMap[attribute.Key] = metadata;
+                            // Reduced logging verbosity slightly
+                            // Debug.Log($"[ModuleFactory] Registered module: Key='{metadata.Key}', Type='{metadata.ModuleType.FullName}', AutoCreate={metadata.AutoCreate}, LoadOrder={metadata.LoadOrder}");
                         }
-                        // Store the collected metadata
-                        var metadata = new ModuleMetadata(type, attribute.Key, attribute.AutoCreate, attribute.LoadOrder);
-                        m_moduleMetadataMap[attribute.Key] = metadata;
                     }
                 }
                 catch (ReflectionTypeLoadException ex)
                 {
-                    // Handle cases where an assembly can't be fully loaded
+					// Handle cases where an assembly can't be fully loaded
                     Debug.LogError($"[ModuleFactory] Error loading types from assembly '{assembly.FullName}': {ex.Message}");
                     foreach (var loaderException in ex.LoaderExceptions)
                     {
@@ -101,7 +108,9 @@ namespace RCore.ModulePattern
         public static IModule CreateModule(string key)
         {
             if (!m_isInitialized)
+            {
                 InitializeFactory();
+            }
 
             if (string.IsNullOrEmpty(key))
             {
@@ -111,18 +120,30 @@ namespace RCore.ModulePattern
 
             if (m_moduleMetadataMap.TryGetValue(key, out ModuleMetadata metadata))
             {
-                // Prevent instantiation of MonoBehaviours, as this must be done by Unity.
+                 // --- Check if the type is a MonoBehaviour ---
+				// Prevent instantiation of MonoBehaviours, as this must be done by Unity.
                 if (typeof(MonoBehaviour).IsAssignableFrom(metadata.ModuleType))
                 {
-                    Debug.LogError($"[ModuleFactory] Cannot create module with key '{key}'. Type '{metadata.ModuleType.FullName}' is a MonoBehaviour. It must be added to a GameObject and registered manually from its Awake/Start method.");
+                    Debug.LogError($"[ModuleFactory] Cannot create module with key '{key}'. Type '{metadata.ModuleType.FullName}' is a MonoBehaviour. Use AddComponent or manual registration instead.");
                     return null;
                 }
+                // --- End Check ---
 
                 try
                 {
-                    // Create an instance of the class using its default constructor.
+					// Create an instance of the class using its default constructor.
                     IModule moduleInstance = Activator.CreateInstance(metadata.ModuleType) as IModule;
-                    return moduleInstance;
+                    if (moduleInstance != null)
+                    {
+                        // Debug.Log($"[ModuleFactory] Successfully created module with key '{key}'. Type: {metadata.ModuleType.FullName}"); // Logged by ModuleManager now
+                        return moduleInstance;
+                    }
+                    else
+                    {
+                        // This case might be less likely now due to the IsAssignableFrom check, but kept for safety.
+                        Debug.LogError($"[ModuleFactory] Failed to cast instance of type '{metadata.ModuleType.FullName}' to IModule for key '{key}'.");
+                        return null;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -130,9 +151,11 @@ namespace RCore.ModulePattern
                     return null;
                 }
             }
-            
-            Debug.LogWarning($"[ModuleFactory] No module found with key '{key}'.");
-            return null;
+            else
+            {
+                Debug.LogWarning($"[ModuleFactory] No module found with key '{key}'.");
+                return null;
+            }
         }
 
         /// <summary>
@@ -142,8 +165,9 @@ namespace RCore.ModulePattern
         public static List<string> GetAvailableModuleKeys()
         {
             if (!m_isInitialized)
+            {
                 InitializeFactory();
-            
+            }
             return m_moduleMetadataMap.Keys.ToList();
         }
         
@@ -156,10 +180,12 @@ namespace RCore.ModulePattern
         public static bool TryGetModuleMetadata(string key, out ModuleMetadata metadata)
         {
             if (!m_isInitialized)
+            {
                 InitializeFactory();
-            
+            }
             return m_moduleMetadataMap.TryGetValue(key, out metadata);
         }
+
 
         /// <summary>
         /// Gets metadata for all modules that are marked for auto-creation, sorted by their LoadOrder.
@@ -169,7 +195,9 @@ namespace RCore.ModulePattern
         public static List<ModuleMetadata> GetModulesForAutoCreation()
         {
             if (!m_isInitialized)
+            {
                 InitializeFactory();
+            }
 
             var autoCreateModules = m_moduleMetadataMap.Values
                 .Where(meta => meta.AutoCreate)

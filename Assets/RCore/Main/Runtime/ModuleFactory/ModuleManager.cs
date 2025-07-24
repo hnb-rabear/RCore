@@ -35,7 +35,7 @@ namespace RCore.ModulePattern
 			}
 		}
 
-		private readonly List<IModule> m_activeModules = new();
+		private List<IModule> m_activeModules = new();
 
 		// --- Unity Lifecycle Methods ---
 		private void Awake()
@@ -58,6 +58,8 @@ namespace RCore.ModulePattern
 		{
 			Debug.Log("[ModuleManager] Starting initialization...");
 			InitializeAutoModules();
+			// RunExamples();
+			// StartCoroutine(ExampleRemovalRoutine()); 
 		}
 
 		/// <summary>
@@ -70,9 +72,13 @@ namespace RCore.ModulePattern
 			var modulesToCreate = ModuleFactory.GetModulesForAutoCreation();
 
 			if (modulesToCreate.Count == 0)
+			{
 				Debug.LogWarning("[ModuleManager] No non-MonoBehaviour modules found for auto-creation.");
+			}
 			else
+			{
 				Debug.Log($"[ModuleManager] Found {modulesToCreate.Count} non-MonoBehaviour modules for auto-creation. Processing in load order...");
+			}
 
 			foreach (var metadata in modulesToCreate)
 			{
@@ -109,6 +115,7 @@ namespace RCore.ModulePattern
 			// Shutdown modules in reverse order of registration.
 			for (int i = m_activeModules.Count - 1; i >= 0; i--)
 			{
+				// This internal method calls IModule.ShutdownModule for POCOs
 				RemoveModuleInternal(m_activeModules[i]);
 			}
 
@@ -123,7 +130,7 @@ namespace RCore.ModulePattern
 		}
 
 		// --- Public Module Access and Management ---
-
+		
 		/// <summary>
 		/// Retrieves the first active module of the specified type.
 		/// </summary>
@@ -151,7 +158,8 @@ namespace RCore.ModulePattern
 		{
 			if (typeof(MonoBehaviour).IsAssignableFrom(typeof(T)))
 			{
-				Debug.LogError($"[ModuleManager] CreateAndRegisterModule<{typeof(T).Name}> failed. This method cannot be used for MonoBehaviour types. Register them via RegisterExistingModule from their Awake/Start.");
+				Debug.LogError(
+					$"[ModuleManager] CreateAndRegisterModule<{typeof(T).Name}> failed. This method cannot be used for MonoBehaviour types. Register them via RegisterExistingModule from their Awake/Start.");
 				return null;
 			}
 
@@ -161,10 +169,10 @@ namespace RCore.ModulePattern
 				Debug.LogWarning($"[ModuleManager] Module of type '{typeof(T).Name}' is already active. Manual creation skipped.");
 				return existingModule;
 			}
-			
-			// Additional check to prevent creating a module if another module of the same concrete type is already registered.
+
 			if (ModuleFactory.TryGetModuleMetadata(key, out var metaDataForKey))
 			{
+				// Additional check to prevent creating a module if another module of the same concrete type is already registered.
 				if (m_activeModules.Any(m => m.GetType() == metaDataForKey.ModuleType))
 				{
 					Debug.LogWarning($"[ModuleManager] A module of type '{metaDataForKey.ModuleType.Name}' (associated with key '{key}') is already active. Manual creation skipped.");
@@ -200,6 +208,8 @@ namespace RCore.ModulePattern
 
 			m_activeModules.Add(moduleInstance);
 			Debug.Log($"[ModuleManager] Registered existing module instance: Type='{moduleType.FullName}', ID='{moduleInstance.ModuleID}'.");
+			// For existing MonoBehaviour modules, we assume their Awake/Start handles their specific initialization.
+			// We do NOT call moduleInstance.InitializeModule() here to prevent double calls or calls at wrong times.
 			return true;
 		}
 
@@ -247,9 +257,11 @@ namespace RCore.ModulePattern
 			{
 				return RemoveModuleInternal(moduleInstance);
 			}
-			
-			Debug.LogWarning($"[ModuleManager] Cannot remove module: No active module found for key '{key}' (Expected Type: {metadata.ModuleType.Name}).");
-			return false;
+			else
+			{
+				Debug.LogWarning($"[ModuleManager] Cannot remove module: No active module found for key '{key}' (Expected Type: {metadata.ModuleType.Name}).");
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -262,8 +274,9 @@ namespace RCore.ModulePattern
 		public bool UnregisterModule(IModule moduleInstance)
 		{
 			if (moduleInstance == null)
+			{
 				return false;
-			
+			}
 			bool removed = m_activeModules.Remove(moduleInstance);
 			if (removed)
 			{
@@ -271,8 +284,6 @@ namespace RCore.ModulePattern
 			}
 			return removed;
 		}
-
-		// --- Private Internal Methods ---
 
 		/// <summary>
 		/// Internal helper to create and register a module.
@@ -303,7 +314,10 @@ namespace RCore.ModulePattern
 					return null;
 				}
 			}
-			return null;
+			else
+			{
+				return null;
+			}
 		}
 
 		/// <summary>
@@ -311,8 +325,11 @@ namespace RCore.ModulePattern
 		/// </summary>
 		private bool RemoveModuleInternal(IModule moduleInstance)
 		{
-			if (moduleInstance == null) return false;
-
+			if (moduleInstance == null)
+			{
+				return false;
+			}
+			
 			// Handle stale references to destroyed Unity Objects
 			if (moduleInstance is UnityEngine.Object unityObject && unityObject == null)
 			{
@@ -322,10 +339,17 @@ namespace RCore.ModulePattern
 
 			string moduleTypeName = moduleInstance.GetType().FullName;
 			string moduleID = "N/A";
-			try { moduleID = moduleInstance.ModuleID; } catch { /* Ignore */ }
+			try
+			{
+				moduleID = moduleInstance.ModuleID;
+			}
+			catch
+			{
+				/* Ignore */
+			}
 
 			Debug.Log($"[ModuleManager] Shutting down module instance: Type='{moduleTypeName}', ID='{moduleID}'...");
-			
+
 			try
 			{
 				moduleInstance.Shutdown();
@@ -335,17 +359,100 @@ namespace RCore.ModulePattern
 				// Ignore MissingReferenceException, which can happen if the GameObject was destroyed before shutdown was called.
 				if (!(ex is MissingReferenceException))
 				{
-					Debug.LogError($"[ModuleManager] Error during Shutdown for module '{moduleID}' (Type: {moduleTypeName}): {ex.Message}\n{ex.StackTrace}");
+					Debug.LogError($"[ModuleManager] Error during ShutdownModule for module '{moduleID}' (Type: {moduleTypeName}): {ex.Message}\n{ex.StackTrace}");
 				}
 			}
 
 			bool removed = m_activeModules.Remove(moduleInstance);
 			if (removed)
+			{
 				Debug.Log($"[ModuleManager] Module instance '{moduleID}' removed from active list.");
+			}
 			else
+			{
 				Debug.LogWarning($"[ModuleManager] Module instance '{moduleID}' (Type: {moduleTypeName}) was not found in the active list during internal removal attempt.");
-			
+			}
 			return removed;
+		}
+
+		/// <summary>
+		/// Internal helper to retrieve a module by its concrete type.
+		/// </summary>
+		private IModule GetModule(Type moduleType)
+		{
+			return m_activeModules.FirstOrDefault(m => m != null && m.GetType() == moduleType);
+		}
+
+		//------------
+		// The following methods are for demonstration purposes.
+		//------------
+
+		private void RunExamples()
+		{
+			Debug.Log("[ModuleManager] Running examples...");
+			var audio = GetModule<AudioModuleExample>();
+			audio?.PlaySound("Startup Jingle");
+
+			var inventory = GetModule<InventoryModuleExample>();
+			if (inventory != null) Debug.Log($"[ModuleManager] Has Sword: {inventory.HasItem("SwordOfDebugging")}");
+
+			var manualModule = CreateAndRegisterModule<ManualCreationModuleExample>(nameof(ManualCreationModuleExample));
+			manualModule?.DoManualThing();
+
+			var remoteConfig = GetModule<IRemoteConfigModuleExample>();
+			if (remoteConfig != null)
+			{
+				Debug.Log(
+					$"[RemoteConfig] Welcome: '{remoteConfig.GetString("welcome_message", "Default")}', FeatureX: {remoteConfig.GetBool("feature_x_enabled", false)}, Lives: {remoteConfig.GetInt("max_lives", 3)}");
+			}
+
+			var monoModule = GetModule<MonoBehaviourModuleExample>();
+			if (monoModule != null)
+			{
+				Debug.Log($"[ModuleManager] Successfully retrieved manually registered {nameof(MonoBehaviourModuleExample)}.");
+				monoModule.DoMonoBehaviourThing();
+			}
+			else
+			{
+				Debug.LogWarning($"[ModuleManager] Could not retrieve {nameof(MonoBehaviourModuleExample)}. Ensure it's added to a GameObject in the scene and registered itself in Awake.");
+			}
+		}
+
+		private IEnumerator ExampleRemovalRoutine()
+		{
+			yield return new WaitForSeconds(5.0f);
+
+			Debug.Log("[ModuleManager] ExampleRemovalRoutine: Attempting to remove ManualCreationModuleExample...");
+			bool removed = RemoveModule<ManualCreationModuleExample>();
+			Debug.Log($"[ModuleManager] ExampleRemovalRoutine: ManualCreationModuleExample removal result: {removed}");
+
+			var manualModule = GetModule<ManualCreationModuleExample>();
+			if (manualModule == null) Debug.Log("[ModuleManager] ExampleRemovalRoutine: Confirmed ManualCreationModuleExample is no longer active (correct).");
+
+			yield return new WaitForSeconds(2.0f);
+
+			Debug.Log("[ModuleManager] ExampleRemovalRoutine: Attempting to remove AudioModuleExample by key...");
+			removed = RemoveModule(nameof(AudioModuleExample));
+			Debug.Log($"[ModuleManager] ExampleRemovalRoutine: AudioModuleExample removal result: {removed}");
+
+			var audioModule = GetModule<AudioModuleExample>();
+			if (audioModule == null) Debug.Log("[ModuleManager] ExampleRemovalRoutine: Confirmed AudioModuleExample is no longer active (correct).");
+
+			yield return new WaitForSeconds(2.0f);
+			Debug.Log("[ModuleManager] ExampleRemovalRoutine: Attempting to destroy GameObject of MonoBehaviourModuleExample (if found)...");
+			var monoModule = GetModule<MonoBehaviourModuleExample>();
+			if (monoModule != null)
+			{
+				Destroy(monoModule.gameObject);
+				yield return null;
+				var monoModuleAfterDestroy = GetModule<MonoBehaviourModuleExample>();
+				if (monoModuleAfterDestroy == null) Debug.Log("[ModuleManager] ExampleRemovalRoutine: Confirmed MonoBehaviourModuleExample is no longer active after GameObject destroy (correct).");
+				else Debug.LogWarning("[ModuleManager] ExampleRemovalRoutine: MonoBehaviourModuleExample still found after GameObject destroy (INCORRECT).");
+			}
+			else
+			{
+				Debug.LogWarning("[ModuleManager] ExampleRemovalRoutine: MonoBehaviourModuleExample not found, cannot test GameObject destruction.");
+			}
 		}
 	}
 }

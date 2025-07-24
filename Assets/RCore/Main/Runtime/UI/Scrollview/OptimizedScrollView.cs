@@ -18,59 +18,86 @@ namespace RCore.UI
 	}
 
 	/// <summary>
-	/// Provides a performance-optimized scroll view that recycles a small pool of UI elements
-	/// to display a large virtual list. This avoids the high cost of instantiating a GameObject
-	/// for every single item, making it suitable for long lists of data.
-	/// This is a basic implementation that supports both horizontal and vertical scrolling.
-	/// For more advanced features like grid layouts, see OptimizedVerticalScrollView.
+	/// A generic optimized scroll view that recycles its items. It can be configured
+	/// to scroll either horizontally or vertically. This is a base for more specialized
+	/// scroll views and is useful for lists with many items to improve performance.
 	/// </summary>
 	public class OptimizedScrollView : MonoBehaviour
 	{
-		#region Public Fields
-		
-		/// <summary>The main ScrollRect component that this script controls.</summary>
-		[Tooltip("The main ScrollRect component that this script controls.")]
+		/// <summary>
+		/// The main ScrollRect component.
+		/// </summary>
 		public ScrollRect scrollView;
-		/// <summary>The RectTransform that holds the visible, recycled item GameObjects. This should be the content of the ScrollRect.</summary>
-		[Tooltip("The RectTransform that holds the visible, recycled item GameObjects. This should be the content of the ScrollRect.")]
+		/// <summary>
+		/// The RectTransform that holds the scrollable content.
+		/// </summary>
 		public RectTransform container;
-		/// <summary>The UI Mask component that defines the visible area of the scroll view.</summary>
-		[Tooltip("The UI Mask component that defines the visible area of the scroll view.")]
+		/// <summary>
+		/// The Mask component that defines the visible area.
+		/// </summary>
 		public Mask mask;
-		/// <summary>The prefab for a single item in the scroll view. It must have an OptimizedScrollItem component.</summary>
-		[Tooltip("The prefab for a single item in the scroll view. It must have an OptimizedScrollItem component.")]
+		/// <summary>
+		/// The prefab for a single item in the scroll view.
+		/// </summary>
 		public OptimizedScrollItem prefab;
-		/// <summary>The total number of items in the virtual list.</summary>
-		[Tooltip("The total number of items in the virtual list.")]
+		/// <summary>
+		/// The total number of items in the list.
+		/// </summary>
 		public int total = 1;
-		/// <summary>The spacing between each item.</summary>
-		[Tooltip("The spacing between each item.")]
+		/// <summary>
+		/// The spacing between items.
+		/// </summary>
 		public float spacing;
-		/// <summary>The scrolling direction (Horizontal or Vertical).</summary>
-		[Tooltip("The scrolling direction (Horizontal or Vertical).")]
+		/// <summary>
+		/// The direction of scrolling (Horizontal or Vertical).
+		/// </summary>
 		public ScrollDirection Direction = ScrollDirection.Horizontal;
-		
-		#endregion
 
-		#region Private Fields
-		
+		/// <summary>
+		/// The RectTransform of the mask, used to determine viewport size.
+		/// </summary>
 		private RectTransform m_maskRect;
+		/// <summary>
+		/// The number of items that can be visible in the viewport at one time.
+		/// </summary>
 		private int m_totalVisible;
-		private int m_totalBuffer = 2; // Extra items on each side to prevent visual pop-ins during fast scrolls
+		/// <summary>
+		/// The number of items to instantiate on either side of the visible area as a buffer.
+		/// </summary>
+		private int m_totalBuffer = 2;
+		/// <summary>
+		/// Half of the container's size in the scrolling direction.
+		/// </summary>
 		private float m_halfSizeContainer;
-		private float m_prefabSize; // The size of one item plus spacing
+		/// <summary>
+		/// The size of a single cell (prefab size + spacing) in the scrolling direction.
+		/// </summary>
+		private float m_prefabSize;
 
+		/// <summary>
+		/// A list of the RectTransforms of the recycled item instances.
+		/// </summary>
 		private List<RectTransform> m_itemsRect = new List<RectTransform>();
+		/// <summary>
+		/// A list of the script components of the recycled item instances.
+		/// </summary>
 		private List<OptimizedScrollItem> m_itemsScrolled = new List<OptimizedScrollItem>();
-		private int m_optimizedTotal = 0; // The actual number of GameObjects instantiated (visible items + buffer)
+		/// <summary>
+		/// The number of items that are actually instantiated (visible items + buffer).
+		/// </summary>
+		private int m_optimizedTotal = 0;
+		/// <summary>
+		/// The starting position for the first item.
+		/// </summary>
 		private Vector3 m_startPos;
-		private Vector3 m_offsetVec; // A directional vector (right or down) used for positioning
-		
-		#endregion
+		/// <summary>
+		/// A vector representing the direction of scrolling (e.g., Vector3.right or Vector3.down).
+		/// </summary>
+		private Vector3 m_offsetVec;
 
 		private void Start()
 		{
-			// Subscribe to the appropriate scrollbar's value changed event
+			// Subscribe to the appropriate scrollbar's value changed event.
 			if (Direction == ScrollDirection.Vertical)
 				scrollView.verticalScrollbar.onValueChanged.AddListener(ScrollBarChanged);
 			else if (Direction == ScrollDirection.Horizontal)
@@ -79,33 +106,29 @@ namespace RCore.UI
 			Initialize(total);
 		}
 
+		/// <summary>
+		/// Called every frame after all Update functions have been called.
+		/// Used to manually update the visible scroll items.
+		/// </summary>
 		private void LateUpdate()
 		{
-			// Provide a manual update tick to all active items.
-			// This can be used for per-frame logic within the OptimizedScrollItem script.
 			for (int i = 0; i < m_itemsScrolled.Count; i++)
 				m_itemsScrolled[i].ManualUpdate();
 		}
 
 		/// <summary>
-		/// Initializes or re-initializes the scroll view. This sets up the content size,
-		/// determines the number of items to pool, and instantiates them.
+		/// Initializes or re-initializes the scroll view. Sets up item pooling, calculates container size,
+		/// and positions the initial items based on the specified scroll direction.
 		/// </summary>
-		/// <param name="pTotalItems">The total number of items the scroll view should represent.</param>
+		/// <param name="pTotalItems">The total number of items in the list.</param>
 		public void Initialize(int pTotalItems)
 		{
-			if (pTotalItems == total && m_itemsScrolled.Count > 0)
+			if (pTotalItems == total)
 				return;
-			
-			if (prefab == null)
-			{
-				Debug.LogError("OptimizedScrollView: Prefab is not assigned.");
-				return;
-			}
 
 			m_itemsRect = new List<RectTransform>();
 
-			// Prepare the object pool for the items
+			// Initialize or reset the item pool.
 			if (m_itemsScrolled == null || m_itemsScrolled.Count == 0)
 			{
 				m_itemsScrolled = new List<OptimizedScrollItem>();
@@ -117,69 +140,65 @@ namespace RCore.UI
 			}
 
 			total = pTotalItems;
-
 			container.anchoredPosition3D = Vector3.zero;
 
 			if (m_maskRect == null)
 				m_maskRect = mask.GetComponent<RectTransform>();
 
-			// Calculate the size of a single cell (item + spacing)
+			// Calculate cell and container sizes based on scroll direction.
 			var prefabScale = m_itemsScrolled[0].GetComponent<RectTransform>().rect.size;
 			m_prefabSize = (Direction == ScrollDirection.Horizontal ? prefabScale.x : prefabScale.y) + spacing;
-			
-			// Set the total size of the content container to simulate the full list
 			container.sizeDelta = Direction == ScrollDirection.Horizontal ? (new Vector2(m_prefabSize * total, prefabScale.y)) : (new Vector2(prefabScale.x, m_prefabSize * total));
 			m_halfSizeContainer = Direction == ScrollDirection.Horizontal ? (container.rect.size.x * 0.5f) : (container.rect.size.y * 0.5f);
 
-			// Calculate how many items are visible at once and the total number to pool
+			// Determine number of visible items.
 			m_totalVisible = Mathf.CeilToInt((Direction == ScrollDirection.Horizontal ? m_maskRect.rect.size.x : m_maskRect.rect.size.y) / m_prefabSize);
-			m_optimizedTotal = Mathf.Min(total, m_totalVisible + m_totalBuffer);
-			
-			// Determine the direction vector and calculate the starting position for the first item
+
+			// Determine starting position and the number of items to instantiate.
 			m_offsetVec = Direction == ScrollDirection.Horizontal ? Vector3.right : Vector3.down;
 			m_startPos = container.anchoredPosition3D - (m_offsetVec * m_halfSizeContainer) + (m_offsetVec * ((Direction == ScrollDirection.Horizontal ? prefabScale.x : prefabScale.y) * 0.5f));
+			m_optimizedTotal = Mathf.Min(total, m_totalVisible + m_totalBuffer);
 			
-			// Instantiate and position the initial set of pooled items
+			// Instantiate and position the initial set of items.
 			for (int i = 0; i < m_optimizedTotal; i++)
 			{
 				var item = m_itemsScrolled.Obtain(container);
 				var rt = item.GetComponent<RectTransform>();
 				rt.anchoredPosition3D = m_startPos + (m_offsetVec * i * m_prefabSize);
 				m_itemsRect.Add(rt);
-
 				item.gameObject.SetActive(true);
 				item.UpdateContent(i, true);
 			}
 
+			// Deactivate the original prefab and set the initial scroll position.
 			prefab.gameObject.SetActive(false);
-			
-			// Adjust the container's initial position to start at the beginning of the list
 			container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - ((Direction == ScrollDirection.Horizontal ? m_maskRect.rect.size.x : m_maskRect.rect.size.y) * 0.5f));
 		}
 
 		/// <summary>
-		/// The core recycling logic, called when the scrollbar's value changes.
-		/// It calculates the new virtual position and repositions/updates the pooled items.
+		/// This is the core logic for the optimized scroll view.
+		/// It is called whenever the scrollbar's value changes. It calculates which items should be visible
+		/// and repositions/recycles the instantiated items to represent the correct data.
 		/// </summary>
-		/// <param name="pNormPos">The normalized position of the scrollbar (0 to 1).</param>
+		/// <param name="pNormPos">The current normalized position of the scrollbar (0 to 1).</param>
 		public void ScrollBarChanged(float pNormPos)
 		{
-			if (m_optimizedTotal == 0) return;
-			
-			// For vertical scroll, the normalized position is inverted (1 is top, 0 is bottom).
+			// Vertical scrollbar value is inverted (1 is top, 0 is bottom).
 			if (Direction == ScrollDirection.Vertical)
 				pNormPos = 1f - pNormPos;
-			
-			pNormPos = Mathf.Clamp01(pNormPos);
 
-			// Calculate how many items are scrolled past the visible area's start
+			if (pNormPos <= 0)
+				return;
+			if (pNormPos > 1)
+				pNormPos = 1f;
+
+			// Calculate the index of the first item that should be in the buffer zone.
 			int numOutOfView = Mathf.CeilToInt(pNormPos * (total - m_totalVisible));
-			// Determine the index of the first item that should be represented by the pool
 			int firstIndex = Mathf.Max(0, numOutOfView - m_totalBuffer);
-			// Find which pooled item corresponds to this new first index using a modulo operation
+			// Determine which of our pooled items corresponds to this new first index.
 			int originalIndex = firstIndex % m_optimizedTotal;
 
-			// Reposition and update the content of all pooled items based on the new virtual starting index
+			// Reposition and update the content of the pooled items based on the new scroll position.
 			int newIndex = firstIndex;
 			for (int i = originalIndex; i < m_optimizedTotal; i++)
 			{
@@ -196,19 +215,19 @@ namespace RCore.UI
 		}
 
 		/// <summary>
-		/// A helper method to calculate and set the anchored position of a pooled item.
+		/// Moves a specific item's RectTransform to the position corresponding to a given data index.
 		/// </summary>
 		/// <param name="item">The RectTransform of the item to move.</param>
-		/// <param name="index">The virtual index of the item in the complete list.</param>
+		/// <param name="index">The data index this item should represent.</param>
 		private void moveItemByIndex(RectTransform item, int index)
 		{
 			item.anchoredPosition3D = m_startPos + (m_offsetVec * index * m_prefabSize);
 		}
 
 		/// <summary>
-		/// Returns the list of currently active (pooled) OptimizedScrollItem instances.
+		/// Gets the list of currently active (pooled) item scripts.
 		/// </summary>
-		/// <returns>A list of the active OptimizedScrollItem components.</returns>
+		/// <returns>A list of OptimizedScrollItem components.</returns>
 		public List<OptimizedScrollItem> GetListItem()
 		{
 			return m_itemsScrolled;

@@ -123,7 +123,7 @@ namespace RCore.Editor.Tool
 
 		public void Draw()
 		{
-			var btnSwap = new EditorButton
+			var btnSwap = new GuiButton
 			{
 				label = "Swap",
 				onPressed = () =>
@@ -132,13 +132,13 @@ namespace RCore.Editor.Tool
 						input.Swap();
 				}
 			};
-			var btnRemoveAll = new EditorButton
+			var btnRemoveAll = new GuiButton
 			{
 				label = "Remove All",
 				color = Color.red,
 				onPressed = Clear
 			};
-			var btnCopyLeftToRight = new EditorButton
+			var btnCopyLeftToRight = new GuiButton
 			{
 				label = "Copy Pivot L To R",
 				onPressed = () =>
@@ -147,7 +147,7 @@ namespace RCore.Editor.Tool
 						EditorHelper.CopyPivotAndBorder(input.spriteNew, input.spriteOriginal, true);
 				}
 			};
-			var btnCopyRightToLeft = new EditorButton
+			var btnCopyRightToLeft = new GuiButton
 			{
 				label = "Copy Pivot R To L",
 				onPressed = () =>
@@ -412,17 +412,17 @@ namespace RCore.Editor.Tool
 
 					if (m_inputs.Count > 0)
 					{
-						var togDisplayIcon = new EditorToggle
+						var togDisplayIcon = new GuiToggle
 						{
 							label = "Display icon",
 							value = m_displayIcon,
 						};
-						var togDisplayNullR = new EditorToggle
+						var togDisplayNullR = new GuiToggle
 						{
 							label = "Display null R",
 							value = m_displayNullR,
 						};
-						var btnQuickFillNullR = new EditorButton
+						var btnQuickFillNullR = new GuiButton
 						{
 							label = "Quick fill null R",
 							onPressed = () =>
@@ -448,7 +448,7 @@ namespace RCore.Editor.Tool
 							},
 							color = Color.yellow,
 						};
-						var btnRemoveNull = new EditorButton
+						var btnRemoveNull = new GuiButton
 						{
 							label = "Remove Null",
 							color = Color.red,

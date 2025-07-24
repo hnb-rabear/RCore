@@ -23,15 +23,12 @@ namespace RCore.Editor.Tool
 		private Configuration m_target;
 		private const string DEFAULT_ENV_NAME = "do_not_remove";
 
-		#region Firebase Configuration Paths (stored in EditorPrefs)
-
+		//-- FIREBASE CONFIGURATION (paths are stored in EditorPrefs to persist between sessions)
 		private static string FirebaseDevConfigPath { get => EditorPrefs.GetString("firebaseDevConfigPath"); set => EditorPrefs.SetString("firebaseDevConfigPath", value); }
 		private static string FirebaseLiveConfigPath { get => EditorPrefs.GetString("firebaseLiveConfigPath"); set => EditorPrefs.SetString("firebaseLiveConfigPath", value); }
 		private static string FirebaseConfigOutputFolder { get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath); set => EditorPrefs.SetString("FirebaseConfigOutputFolder", value); }
 		private static string FirebaseConfig { get => EditorPrefs.GetString("firebase_config_" + Application.productName); set => EditorPrefs.SetString("firebase_config_" + Application.productName, value); }
 		private static string FirebaseProjectNumber { get => EditorPrefs.GetString("project_number"); set => EditorPrefs.SetString("project_number", value); }
-
-		#endregion
 
 		private string m_typedEnvName;
 		private string m_selectedEnv;
@@ -66,9 +63,13 @@ namespace RCore.Editor.Tool
 		private void UpdateEditor()
 		{
 			float currentTime = Time.realtimeSinceStartup;
+
+			// Check if at least 1 second has passed since the last update
 			if (currentTime - m_lastUpdateTime >= 1f)
 			{
 				m_lastUpdateTime = currentTime;
+
+				// Your logic to update the editor
 				m_buildName = EditorHelper.GetBuildName();
 			}
 		}
@@ -78,7 +79,6 @@ namespace RCore.Editor.Tool
 		/// </summary>
 		public override void OnInspectorGUI()
 		{
-			// The "Firebase" tab is currently disabled. To re-enable, add "Firebase" to the list of tabs.
 			var tab = EditorHelper.Tabs("dev_setting_tabs", "Default", "Envs Manager");
 			GUILayout.Space(5);
 			switch (tab)
@@ -86,10 +86,9 @@ namespace RCore.Editor.Tool
 				case "Envs Manager":
 					DrawTabPageEnv();
 					break;
-				// To re-enable the Firebase tab:
-				// case "Firebase":
-				// 	DrawTabPageFirebase();
-				// 	break;
+				case "Firebase":
+					DrawTabPageFirebase();
+					break;
 				default:
 					// Draw the default inspector for the Configuration object
 					EditorHelper.BoxVertical(() => base.OnInspectorGUI(), default, true);
@@ -105,7 +104,7 @@ namespace RCore.Editor.Tool
 				AssetDatabase.SaveAssets();
 			}
 			GUILayout.Space(10);
-			
+
 			// Display the current build name with a copy button.
 			GUILayout.BeginHorizontal();
 			EditorHelper.TextArea(m_buildName, "Name of Build", readOnly: true);
@@ -127,7 +126,7 @@ namespace RCore.Editor.Tool
 			if (!m_previewingEnvs)
 			{
 				// -- VIEW FOR EDITING THE CURRENT ENVIRONMENT --
-				EditorHelper.BoxVertical($"Current Environment: {m_target.curEnv.name}", () =>
+				EditorHelper.BoxVertical(m_target.curEnv.name, () =>
 				{
 					GUILayout.Space(5);
 					EditorGUILayout.BeginVertical("box");
@@ -137,12 +136,12 @@ namespace RCore.Editor.Tool
 				}, isBox: true);
 			}
 			else
-			{
 				// -- VIEW FOR MANAGING ALL SAVED ENVIRONMENTS --
-				EditorHelper.BoxVertical("All Environments", () =>
+				EditorHelper.BoxVertical("Envs", () =>
 				{
 					var envs = m_target.envs;
-					if (envs.Count == 0) return;
+					if (envs.Count == 0)
+						return;
 
 					for (int i = 0; i < envs.Count; i++)
 					{
@@ -155,7 +154,6 @@ namespace RCore.Editor.Tool
 						GUILayout.Space(5);
 					}
 				}, isBox: true);
-			}
 
 			if (EditorGUI.EndChangeCheck())
 				EditorUtility.SetDirty(m_target);
@@ -166,9 +164,9 @@ namespace RCore.Editor.Tool
 		/// </summary>
 		private void InitEnv(Configuration.Env pEnv)
 		{
-			if (pEnv == null) return;
+			if (pEnv == null)
+				return;
 			string[] currentDefines = EditorHelper.GetDirectives();
-			
 			// Ensure all current directives are present in the env's list
 			foreach (string define in currentDefines)
 				pEnv.AddDirective(define, true);
@@ -176,7 +174,18 @@ namespace RCore.Editor.Tool
 			// Update the 'enabled' state of each directive in the env to match PlayerSettings
 			for (int i = 0; i < pEnv.directives.Count; i++)
 			{
-				pEnv.directives[i].enabled = currentDefines.Contains(pEnv.directives[i].name);
+				if (currentDefines.Length > 0)
+				{
+					bool exist = false;
+					for (int j = 0; j < currentDefines.Length; j++)
+					{
+						if (currentDefines[j] == pEnv.directives[i].name)
+							exist = true;
+					}
+					pEnv.directives[i].enabled = exist;
+				}
+				else
+					pEnv.directives[i].enabled = false;
 			}
 		}
 
@@ -185,8 +194,6 @@ namespace RCore.Editor.Tool
 		/// </summary>
 		private void DrawEnv(Configuration.Env pEnv)
 		{
-			if (pEnv == null) return;
-			
 			// Allow renaming of environments (except the default one)
 			if (m_previewingEnvs && pEnv.name != DEFAULT_ENV_NAME)
 			{
@@ -209,8 +216,7 @@ namespace RCore.Editor.Tool
 				if (!m_reorderDirectivesDict.ContainsKey(pEnv.name))
 				{
 					var reorderList = new ReorderableList(pEnv.directives, typeof(Configuration.Directive), true, true, true, true);
-					m_reorderDirectivesDict[pEnv.name] = reorderList;
-					
+					m_reorderDirectivesDict.TryAdd(pEnv.name, reorderList);
 					// Define how each element in the list is drawn
 					reorderList.drawElementCallback = (rect, index, isActive, isFocused) =>
 					{
@@ -229,16 +235,16 @@ namespace RCore.Editor.Tool
 						define.color = EditorGUI.ColorField(new Rect(rect.x + widthTog + 5 + widthName + 5, rect.y, widthColor, 20), define.color);
 						GUI.backgroundColor = Color.white;
 					};
-					
 					// Define the logic for when an item can be removed
-					reorderList.onCanRemoveCallback = (list) =>
+					m_reorderDirectivesDict[pEnv.name].onCanRemoveCallback = (reorderableList) =>
 					{
-						var directive = pEnv.directives[list.index];
+						var directive = pEnv.directives[reorderableList.index];
 						return pEnv.name != DEFAULT_ENV_NAME && !defaultDirectives.Contains(directive.name);
 					};
 				}
-				
 				m_reorderDirectivesDict[pEnv.name].DoLayoutList();
+				if (GUI.changed)
+					pEnv.directives = (List<Configuration.Directive>)m_reorderDirectivesDict[pEnv.name].list;
 
 				// -- Draw action buttons for the environment --
 				EditorGUILayout.BeginHorizontal();
@@ -253,9 +259,14 @@ namespace RCore.Editor.Tool
 					if (EditorHelper.Button("Add Currents"))
 					{
 						// Adds all scripting defines currently in PlayerSettings to this environment
-						string[] directives = EditorHelper.GetDirectives();
+						string directivesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+						string[] directives = directivesStr.Split(';');
 						foreach (string directive in directives)
-							pEnv.AddDirective(directive, true);
+							if (!pEnv.directives.Exists(x => x.name == directive))
+								pEnv.directives.Add(new Configuration.Directive()
+								{
+									name = directive,
+								});
 					}
 					if (pEnv.name != DEFAULT_ENV_NAME && EditorHelper.ButtonColor("Remove", Color.red))
 						m_target.envs.Remove(pEnv);
@@ -268,17 +279,18 @@ namespace RCore.Editor.Tool
 				EditorGUILayout.EndHorizontal();
 			}
 		}
-		
+
 		/// <summary>
 		/// Toggles between the "edit current env" and "manage all envs" views.
 		/// </summary>
 		private void EditEnv(bool pMode)
 		{
-			if (m_previewingEnvs == pMode) return;
+			if (m_previewingEnvs == pMode)
+				return;
 			m_previewingEnvs = pMode;
 			m_reorderDirectivesDict.Clear(); // Clear cache to force ReorderableLists to be rebuilt
 		}
-		
+
 		/// <summary>
 		/// Applies the given list of directives to the project's PlayerSettings.
 		/// </summary>
@@ -290,7 +302,6 @@ namespace RCore.Editor.Tool
 				.ToArray());
 			var target = EditorUserBuildSettings.selectedBuildTargetGroup;
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(target, symbols);
-			Debug.Log($"Applied new directives for {target}: {symbols}");
 		}
 
 		/// <summary>
@@ -308,28 +319,39 @@ namespace RCore.Editor.Tool
 					m_typedEnvName = EditorHelper.TextField(m_typedEnvName, "Env Name");
 					if (EditorHelper.ButtonColor("Save Env", Color.green))
 					{
-						if (string.IsNullOrEmpty(m_typedEnvName)) return;
+						if (string.IsNullOrEmpty(m_typedEnvName))
+							return;
 
-						int index = envs.FindIndex(e => e.name == m_typedEnvName.Trim());
-						if (index != -1)
+						int index = -1;
+						for (int i = 0; i < envs.Count; i++)
 						{
-							// Overwrite existing environment
-							envs[index] = CloneEnv(m_target.curEnv);
+							if (envs[i].name == m_typedEnvName.Trim())
+							{
+								// Overwrite existing environment
+								envs[i] = CloneEnv(m_target.curEnv);
+								index = i;
+								break;
+							}
 						}
-						else
+						if (index == -1)
 						{
 							// Save as new environment
 							var newEnv = CloneEnv(m_target.curEnv);
 							newEnv.name = m_typedEnvName;
 							envs.Add(newEnv);
 						}
+
 						m_selectedEnv = m_typedEnvName;
+
 						ApplyEnv(m_selectedEnv, false);
 					}
 				}, Color.yellow);
 
 				// -- UI for loading an environment from the dropdown --
-				string[] allEnvNames = envs.Select(e => e.name).ToArray();
+				string[] allEnvNames = new string[envs.Count];
+				for (int i = 0; i < envs.Count; i++)
+					allEnvNames[i] = envs[i].name;
+
 				if (allEnvNames.Length > 0)
 				{
 					GUILayout.BeginHorizontal();
@@ -337,7 +359,6 @@ namespace RCore.Editor.Tool
 					m_selectedEnv = EditorHelper.DropdownList(m_selectedEnv, "Envs", allEnvNames);
 					if (m_selectedEnv != preSelectedEnv)
 						ApplyEnv(m_selectedEnv, false); // Load the new selection into the editor view
-					
 					if (EditorHelper.ButtonColor("Edit", Color.yellow))
 						EditEnv(true);
 					if (EditorHelper.ButtonColor("Apply", Color.green))
@@ -346,7 +367,7 @@ namespace RCore.Editor.Tool
 				}
 			}, Color.cyan, true);
 		}
-		
+
 		/// <summary>
 		/// Sets the currently active environment in the configuration.
 		/// </summary>
@@ -354,15 +375,17 @@ namespace RCore.Editor.Tool
 		/// <param name="pApplyDirectives">If true, also applies the environment's directives to PlayerSettings.</param>
 		private void ApplyEnv(string pName, bool pApplyDirectives = true)
 		{
-			var env = m_target.envs.FirstOrDefault(e => e.name == pName);
-			if (env != null)
-			{
-				m_target.curEnv = CloneEnv(env);
-				m_typedEnvName = m_target.curEnv.name;
-				if (pApplyDirectives)
-					ApplyDirectives(m_target.curEnv.directives);
-				m_reorderDirectivesDict.Clear(); // Refresh the reorderable list
-			}
+			var envs = m_target.envs;
+			for (int i = 0; i < envs.Count; i++)
+				if (envs[i].name == pName)
+				{
+					m_target.curEnv = CloneEnv(envs[i]);
+					m_typedEnvName = m_target.curEnv.name;
+					if (pApplyDirectives)
+						ApplyDirectives(m_target.curEnv.directives);
+					m_reorderDirectivesDict.Clear(); // Refresh the reorderable list
+					break;
+				}
 		}
 
 		/// <summary>
@@ -371,7 +394,8 @@ namespace RCore.Editor.Tool
 		private static Configuration.Env CloneEnv(Configuration.Env pEnv)
 		{
 			var toJson = JsonUtility.ToJson(pEnv);
-			return JsonUtility.FromJson<Configuration.Env>(toJson);
+			var fromJson = JsonUtility.FromJson<Configuration.Env>(toJson);
+			return fromJson;
 		}
 
 		//========== FIREBASE ==========
@@ -387,91 +411,76 @@ namespace RCore.Editor.Tool
 				FirebaseLiveConfigPath = EditorHelper.FileField(FirebaseLiveConfigPath, "Live Config Fire", "json,txt");
 				FirebaseConfigOutputFolder = EditorHelper.FolderField(FirebaseConfigOutputFolder, "Output Folder");
 
-				string devPath = Application.dataPath + "/" + FirebaseDevConfigPath;
-				string livePath = Application.dataPath + "/" + FirebaseLiveConfigPath;
-				string destination = Application.dataPath + "/" + FirebaseConfigOutputFolder + "/google-services.json";
+				string testPath = Application.dataPath + FirebaseDevConfigPath;
+				string livePath = Application.dataPath + FirebaseLiveConfigPath;
+				string destination = Application.dataPath + FirebaseConfigOutputFolder + "/google-services.json";
+				string curProjectNumber = FirebaseProjectNumber;
 
 				GUILayout.BeginHorizontal();
-				if (livePath == devPath && !string.IsNullOrEmpty(livePath))
+				if (livePath == testPath && livePath != "")
 				{
-					EditorGUILayout.HelpBox("Live and Dev paths must not be the same!", MessageType.Warning);
-					GUILayout.EndHorizontal();
+					EditorGUILayout.HelpBox("Live and Test Path must not be the same!", MessageType.Warning);
 					return;
 				}
 
 				if (EditorHelper.Button("Use Live Config"))
-					SwitchFirebaseConfig(livePath, destination);
+				{
+					var theSourceFile = new FileInfo(livePath);
+					using var reader = theSourceFile.OpenText();
+					string content = reader.ReadToEnd();
+					var contentNode = SimpleJSON.JSON.Parse(content);
+					var projectNumberNode = contentNode["project_info"]["project_number"];
+					if (curProjectNumber == projectNumberNode)
+						return;
+					curProjectNumber = projectNumberNode;
+					File.WriteAllText(destination, content);
+					FirebaseConfig = content;
+					FirebaseProjectNumber = curProjectNumber;
+					AssetDatabase.Refresh();
+					EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+					EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+				}
 				if (EditorHelper.Button("Use Dev Config"))
-					SwitchFirebaseConfig(devPath, destination);
-				
+				{
+					var theSourceFile = new FileInfo(testPath);
+					using var reader = theSourceFile.OpenText();
+					string content = reader.ReadToEnd();
+					var contentNode = SimpleJSON.JSON.Parse(content);
+					var projectNumberNode = contentNode["project_info"]["project_number"];
+					if (curProjectNumber == projectNumberNode)
+						return;
+					curProjectNumber = projectNumberNode;
+					File.WriteAllText(destination, content);
+					FirebaseConfig = content;
+					FirebaseProjectNumber = curProjectNumber;
+					AssetDatabase.Refresh();
+					EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
+					EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
+				}
 				GUILayout.EndHorizontal();
 
 				// -- Preview of the currently active google-services.json --
-				string currentConfig = GetCurrentFirebaseConfig(destination);
+				string currentConfig = FirebaseConfig;
+				if (string.IsNullOrEmpty(currentConfig))
+				{
+					var sourceFile = new FileInfo(destination);
+					try
+					{
+						using var reader = sourceFile.OpenText();
+						currentConfig = reader.ReadToEnd();
+						FirebaseConfig = currentConfig;
+					}
+					catch
+					{
+						FirebaseConfig = "firebase did not config";
+					}
+				}
 				EditorHelper.BoxVertical(() =>
 				{
-					EditorGUILayout.LabelField("Current Config Preview...", EditorStyles.boldLabel);
+					EditorGUILayout.LabelField("Preview...", EditorStyles.boldLabel);
 					EditorGUILayout.LabelField(currentConfig, GUILayout.MaxHeight(600), GUILayout.MaxWidth(EditorGUIUtility.currentViewWidth - 50));
 				}, Color.white, true);
 			}, default, true);
-		}
-		
-		/// <summary>
-		/// Switches the active google-services.json file.
-		/// </summary>
-		private void SwitchFirebaseConfig(string sourcePath, string destinationPath)
-		{
-			if (!File.Exists(sourcePath))
-			{
-				Debug.LogError($"Firebase config file not found at: {sourcePath}");
-				return;
-			}
-			
-			var sourceFile = new FileInfo(sourcePath);
-			using var reader = sourceFile.OpenText();
-			string content = reader.ReadToEnd();
-			var contentNode = SimpleJSON.JSON.Parse(content);
-			var projectNumberNode = contentNode["project_info"]["project_number"];
-			
-			// Only switch if the project number is different, to avoid unnecessary work
-			if (FirebaseProjectNumber == projectNumberNode.Value)
-			{
-				Debug.Log("Firebase config is already set to this version.");
-				return;
-			}
-			
-			FirebaseProjectNumber = projectNumberNode;
-			File.WriteAllText(destinationPath, content);
-			FirebaseConfig = content;
-			AssetDatabase.Refresh();
-			Debug.Log($"Switched Firebase config to: {sourcePath}");
-			
-			// Force the dependency resolver to run
-			EditorApplication.ExecuteMenuItem("Assets/Play Services Resolver/Android Resolver/Force Resolve");
-			EditorApplication.ExecuteMenuItem("Assets/External Dependency Manager/Android Resolver/Force Resolve");
-		}
-		
-		/// <summary>
-		/// Gets the content of the current google-services.json file for previewing.
-		/// </summary>
-		private string GetCurrentFirebaseConfig(string destinationPath)
-		{
-			string currentConfig = FirebaseConfig;
-			if (string.IsNullOrEmpty(currentConfig) || !File.Exists(destinationPath))
-			{
-				try
-				{
-					using var reader = new FileInfo(destinationPath).OpenText();
-					currentConfig = reader.ReadToEnd();
-					FirebaseConfig = currentConfig;
-				}
-				catch
-				{
-					FirebaseConfig = "google-services.json not found or could not be read.";
-					currentConfig = FirebaseConfig;
-				}
-			}
-			return currentConfig;
 		}
 
 		/// <summary>
@@ -482,13 +491,12 @@ namespace RCore.Editor.Tool
 			string devFilePath = Application.dataPath + "/" + FirebaseDevConfigPath;
 			string liveFilePath = Application.dataPath + "/" + FirebaseLiveConfigPath;
 			string outputFolder = Application.dataPath + "/" + FirebaseConfigOutputFolder;
-			
 			if (!Directory.Exists(outputFolder))
-				FirebaseConfigOutputFolder = "";
+				FirebaseConfigOutputFolder = FirebaseConfigOutputFolder.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseConfigOutputFolder) : "";
 			if (!File.Exists(devFilePath))
-				FirebaseDevConfigPath = "";
+				FirebaseDevConfigPath = FirebaseDevConfigPath.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseDevConfigPath) : "";
 			if (!File.Exists(liveFilePath))
-				FirebaseLiveConfigPath = "";
+				FirebaseLiveConfigPath = FirebaseLiveConfigPath.Contains("Assets") ? EditorHelper.FormatPathToUnityPath(FirebaseLiveConfigPath) : "";
 		}
 	}
 }

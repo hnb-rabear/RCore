@@ -25,13 +25,13 @@ namespace RCore.Editor.Tool
 
 		public void Draw()
 		{
-			var btnClearSprites = new EditorButton
+			var btnClearSprites = new GuiButton
 			{
 				label = "Clear sprites",
 				onPressed = () => m_sprites.Clear(),
 				color = Color.red
 			};
-			var btnClearTargets = new EditorButton
+			var btnClearTargets = new GuiButton
 			{
 				label = "Clear targets",
 				onPressed = () => this.m_targets.Clear(),

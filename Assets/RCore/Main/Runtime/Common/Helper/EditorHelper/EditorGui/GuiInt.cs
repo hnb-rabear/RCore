@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable integer input field for the Unity Editor.
 	/// </summary>
-	public class EditorInt : IDraw
+	public class GuiInt : IDraw
 	{
 		/// <summary>The label displayed next to the integer field.</summary>
 		public string label;

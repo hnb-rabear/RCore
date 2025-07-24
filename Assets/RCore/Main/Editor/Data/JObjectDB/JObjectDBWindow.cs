@@ -24,7 +24,7 @@ namespace RCore.Editor.Data.JObject
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 			var actions = new List<IDraw>();
-			actions.Add(new EditorButton
+			actions.Add(new GuiButton
 			{
 				label = "Delete All",
 				color = Color.red,
@@ -38,12 +38,12 @@ namespace RCore.Editor.Data.JObject
 					}
 				}
 			});
-			actions.Add(new EditorButton
+			actions.Add(new GuiButton
 			{
 				label = "Back Up",
 				onPressed = () => JObjectDB.Backup(openDirectory:true)
 			});
-			actions.Add(new EditorButton
+			actions.Add(new GuiButton
 			{
 				label = "Restore",
 				onPressed = () =>
@@ -57,12 +57,12 @@ namespace RCore.Editor.Data.JObject
 					}
 				}
 			});
-			actions.Add(new EditorButton
+			actions.Add(new GuiButton
 			{
 				label = "Copy All",
 				onPressed = JObjectDB.CopyAllData
 			});
-			actions.Add(new EditorButton
+			actions.Add(new GuiButton
 			{
 				label = "Save (In Game)",
 				color = Application.isPlaying ? Color.yellow : Color.grey,
@@ -76,7 +76,7 @@ namespace RCore.Editor.Data.JObject
 					JObjectDB.Save();
 				},
 			});
-			actions.Add(new EditorButton
+			actions.Add(new GuiButton
 			{
 				label = "Reload",
 				onPressed = () => m_data = JObjectDB.GetAllData()

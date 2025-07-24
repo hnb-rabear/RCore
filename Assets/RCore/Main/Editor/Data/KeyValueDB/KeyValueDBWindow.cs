@@ -24,7 +24,7 @@ namespace RCore.Editor.Data.KeyValue
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 			var actions = new List<IDraw>();
-			actions.Add(new EditorButton()
+			actions.Add(new GuiButton()
 			{
 				label = "Clear",
 				onPressed = () =>
@@ -37,7 +37,7 @@ namespace RCore.Editor.Data.KeyValue
 					}
 				}
 			});
-			actions.Add(new EditorButton()
+			actions.Add(new GuiButton()
 			{
 				label = "Back Up",
 				onPressed = () =>
@@ -50,7 +50,7 @@ namespace RCore.Editor.Data.KeyValue
 					}
 				}
 			});
-			actions.Add(new EditorButton()
+			actions.Add(new GuiButton()
 			{
 				label = "Restore",
 				onPressed = () =>
@@ -64,12 +64,12 @@ namespace RCore.Editor.Data.KeyValue
 					}
 				}
 			});
-			actions.Add(new EditorButton()
+			actions.Add(new GuiButton()
 			{
 				label = "Log",
 				onPressed = KeyValueDB.LogData
 			});
-			actions.Add(new EditorButton()
+			actions.Add(new GuiButton()
 			{
 				label = "Save (In Game)",
 				color = Application.isPlaying ? Color.yellow : Color.grey,

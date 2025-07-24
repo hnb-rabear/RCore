@@ -10,23 +10,15 @@ namespace RCore
 	/// Classes can subscribe (listen) to specific event types and other classes can publish (raise)
 	/// those events without either having direct references to the other.
 	///
-	/// @example
-	/// // 1. Define an event struct/class that implements BaseEvent
-	/// public struct SomethingHappenedEvent : BaseEvent { public int value; }
+	/// @example subscribe
+	///     EventDispatcher.AddListener<SomethingHappenedEvent>(OnSomethingHappened);
 	///
-	/// // 2. A listening class subscribes to the event
-	/// public class MyListener
-	/// {
-	///     void OnEnable() { EventDispatcher.AddListener<SomethingHappenedEvent>(OnSomethingHappened); }
-	///     void OnDisable() { EventDispatcher.RemoveListener<SomethingHappenedEvent>(OnSomethingHappened); }
-	///     void OnSomethingHappened(SomethingHappenedEvent e) { Debug.Log("Something happened with value: " + e.value); }
-	/// }
+	/// @example unsubscribe
+	///     EventDispatcher.RemoveListener<SomethingHappenedEvent>(OnSomethingHappened);
 	///
-	/// // 3. A publishing class raises the event
-	/// public class MyPublisher
-	/// {
-	///     void DoSomething() { EventDispatcher.Raise(new SomethingHappenedEvent { value = 10 }); }
-	/// }
+	/// @example publish an event
+	///     EventDispatcher.Raise(new SomethingHappenedEvent());
+	///
 	/// </summary>
 	public static class EventDispatcher
 	{
@@ -36,7 +28,6 @@ namespace RCore
 		/// <typeparam name="T">The type of event this delegate handles, must implement BaseEvent.</typeparam>
 		/// <param name="e">The event object passed to the listener.</param>
 		public delegate void EventDelegate<T>(T e) where T : BaseEvent;
-		
 		/// <summary>A non-generic delegate used internally to store all listeners in a single dictionary.</summary>
 		private delegate void EventDelegate(BaseEvent e);
 
@@ -45,13 +36,13 @@ namespace RCore
 		/// The key is a hash of the event type's name, and the value is a multicast delegate
 		/// containing all listeners for that event type.
 		/// </summary>
-		private static readonly Dictionary<int, EventDelegate> delegates = new Dictionary<int, EventDelegate>();
+		private static Dictionary<int, EventDelegate> delegates = new Dictionary<int, EventDelegate>();
 
 		/// <summary>
 		/// A lookup dictionary to map a listener's generic delegate to its internal, non-generic counterpart.
 		/// This is crucial for correctly removing listeners.
 		/// </summary>
-		private static readonly Dictionary<Delegate, EventDelegate> delegateLookup = new Dictionary<Delegate, EventDelegate>();
+		private static Dictionary<Delegate, EventDelegate> delegateLookup = new Dictionary<Delegate, EventDelegate>();
 
 		/// <summary>
 		/// Subscribes a listener to a specific event type.
@@ -64,9 +55,8 @@ namespace RCore
 			if (delegateLookup.ContainsKey(del))
 				return;
 
-			// Create a new non-generic delegate that wraps the generic one.
-			// This allows us to store all listeners in the `delegates` dictionary,
-			// regardless of their specific event type.
+			// Create a new non-generic delegate which calls our generic one.  This
+			// is the delegate we actually invoke.
 			EventDelegate internalDelegate = e => del((T)e);
 			delegateLookup[del] = internalDelegate;
 
@@ -74,7 +64,7 @@ namespace RCore
 			if (delegates.TryGetValue(id, out EventDelegate tempDel))
 			{
 				// If a delegate for this event type already exists, add the new listener to its invocation list.
-				delegates[id] = tempDel + internalDelegate;
+				delegates[id] = tempDel += internalDelegate;
 			}
 			else
 			{
@@ -126,9 +116,8 @@ namespace RCore
 		public static void Raise(BaseEvent e)
 		{
 			int id = RUtil.GetStableHashCode(e.GetType().Name);
-#if UNITY_EDITOR && RCORE_DEBUG
-			// Conditional logging for easier debugging in the Unity Editor.
-			Debug.Log($"[EventDispatcher] Raised event: {e.GetType().Name}");
+#if UNITY_EDITOR && RCORE_DEBUG // Example of a custom debug flag
+			Debug.Log("Raise event " + e.GetType().Name);
 #endif
 			if (delegates.TryGetValue(id, out EventDelegate del))
 			{
@@ -137,7 +126,7 @@ namespace RCore
 		}
 		
 		/// <summary>A dictionary to store cancellation tokens for debounced events.</summary>
-		private static readonly Dictionary<Type, CancellationTokenSource> debounceTokens = new Dictionary<Type, CancellationTokenSource>();
+		private static Dictionary<Type, CancellationTokenSource> debounceTokens = new Dictionary<Type, CancellationTokenSource>();
 		
 		/// <summary>
 		/// Raises an event after a specified delay, but cancels any previously scheduled
@@ -148,7 +137,7 @@ namespace RCore
 		/// <typeparam name="T">The type of event to raise.</typeparam>
 		/// <param name="e">The event object to raise.</param>
 		/// <param name="pDeBounce">The delay in seconds before the event is raised.</param>
-		public static async void RaiseDeBounce<T>(T e, float pDeBounce = 0.1f) where T : BaseEvent
+		public static async void RaiseDeBounce<T>(T e, float pDeBounce = 0) where T : BaseEvent
 		{
 			var eventType = typeof(T);
 
@@ -167,13 +156,13 @@ namespace RCore
 			{
 				// Wait for the specified delay.
 				await Cysharp.Threading.Tasks.UniTask.Delay(TimeSpan.FromSeconds(pDeBounce), cancellationToken: cts.Token);
-				
+
 				// If the delay completed without being canceled, raise the event.
 				Raise(e);
 			}
 			catch (OperationCanceledException)
 			{
-				// This is expected if another RaiseDeBounce call for the same event type was made.
+				// This is expected if another RaiseDeBounce call for the same event type was made. Do nothing.
 			}
 			finally
 			{

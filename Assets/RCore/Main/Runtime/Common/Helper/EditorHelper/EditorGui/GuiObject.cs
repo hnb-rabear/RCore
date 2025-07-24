@@ -7,7 +7,7 @@ namespace RCore.Editor
 	/// Represents a drawable Object field for assigning assets or scene objects in the Unity Editor.
 	/// </summary>
 	/// <typeparam name="T">The type of Object to accept.</typeparam>
-	public class EditorObject<T> : IDraw
+	public class GuiObject<T> : IDraw
 	{
 		/// <summary>The Object value to display.</summary>
 		public Object value;

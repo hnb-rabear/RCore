@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable button for the Unity Editor.
 	/// </summary>
-	public class EditorButton : IDraw
+	public class GuiButton : IDraw
 	{
 		/// <summary>The text label displayed on the button.</summary>
 		public string label;

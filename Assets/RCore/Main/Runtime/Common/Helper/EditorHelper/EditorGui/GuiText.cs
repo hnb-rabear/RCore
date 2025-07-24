@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable text field or text area for the Unity Editor.
 	/// </summary>
-	public class EditorText : IDraw
+	public class GuiText : IDraw
 	{
 		/// <summary>The label displayed next to the text field.</summary>
 		public string label;

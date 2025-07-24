@@ -20,7 +20,7 @@ namespace RCore.Editor.Tool
 
 		public void Draw()
 		{
-			var btn = new EditorButton()
+			var btn = new GuiButton()
 			{
 				color = Color.yellow,
 				onPressed = () => m_inputs.Add(new Input()),
@@ -117,7 +117,7 @@ namespace RCore.Editor.Tool
 		
 		public void Draw()
 		{
-			var btn = new EditorButton()
+			var btn = new GuiButton()
 			{
 				color = Color.yellow,
 				onPressed = () => m_inputs.Add(new Input()),

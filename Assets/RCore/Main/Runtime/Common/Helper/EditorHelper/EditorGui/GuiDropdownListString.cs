@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable dropdown list (popup) for string selections in the Unity Editor.
 	/// </summary>
-	public class EditorDropdownListString : IDraw
+	public class GuiDropdownListString : IDraw
 	{
 		/// <summary>The label displayed next to the dropdown.</summary>
 		public string label;

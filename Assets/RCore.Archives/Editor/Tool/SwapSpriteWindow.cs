@@ -94,7 +94,7 @@ namespace RCore.Editor.Tool
 
 		private static void DrawScanSpriteButton(List<Sprite> pOutput)
 		{
-			var scanImageButton = new EditorButton()
+			var scanImageButton = new GuiButton()
 			{
 				label = "Find Sprites In Images",
 				onPressed = () =>
@@ -163,7 +163,7 @@ namespace RCore.Editor.Tool
 
 		private void DrawCompareTab()
 		{
-			var matchButton = new EditorButton()
+			var matchButton = new GuiButton()
 			{
 				label = "Match Sprites",
 				onPressed = () =>
@@ -339,7 +339,7 @@ namespace RCore.Editor.Tool
 
 		private void DrawReplaceTab()
 		{
-			var scanButton = new EditorButton()
+			var scanButton = new GuiButton()
 			{
 				label = "Find Images/SpriteRenderers",
 				color = Color.cyan,

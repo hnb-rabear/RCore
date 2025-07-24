@@ -7,7 +7,7 @@ namespace RCore.Editor
 	/// Represents a stylized header that can be folded (expanded/collapsed).
 	/// Its state is persisted using EditorPrefs.
 	/// </summary>
-	public class EditorHeaderFoldout : IDraw
+	public class GuiHeaderFoldout : IDraw
 	{
 		/// <summary>A unique key used to save the foldout's state in EditorPrefs.</summary>
 		public string key;

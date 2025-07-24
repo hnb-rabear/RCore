@@ -4,23 +4,19 @@ using UnityEngine;
 namespace RCore
 {
     /// <summary>
-    /// A simple, lightweight, and reusable countdown timer class.
-    /// This is a non-MonoBehaviour class that must be manually updated from an external source
-    /// (like a MonoBehaviour's Update loop). It's useful for managing timed actions, cooldowns,
-    /// or delays without the overhead of coroutines or a more complex timer system.
+    /// A simple timer class that executes an action after a specified duration.
+    /// It can be updated manually and supports starting, stopping, and finishing prematurely.
     /// </summary>
     public class TimedAction
     {
         /// <summary>
-        /// The event that is invoked when the timer completes its countdown.
+        /// The action to be invoked when the timer finishes.
         /// </summary>
         public Action onFinished;
-        
         /// <summary>
         /// The total duration in seconds that the timer will run for.
         /// </summary>
         public float timeTarget;
-
         private bool m_active;
         private bool m_finished = true;
         private float m_elapsedTime;
@@ -29,17 +25,16 @@ namespace RCore
         /// Gets a value indicating whether the timer is currently active and running.
         /// </summary>
         public bool IsRunning => m_active && !m_finished;
-        
         /// <summary>
         /// Gets the remaining time in seconds before the timer finishes.
         /// </summary>
         public float RemainTime => timeTarget - m_elapsedTime;
 
         /// <summary>
-        /// Advances the timer's elapsed time, scaled by `Time.timeScale`.
-        /// This method must be called manually from an external update loop (e.g., MonoBehaviour.Update).
+        /// Updates the timer's elapsed time, scaled by Time.timeScale.
+        /// Call this from an Update loop to advance the timer.
         /// </summary>
-        /// <param name="pElapsedTime">The time delta, typically `Time.deltaTime`.</param>
+        /// <param name="pElapsedTime">The time elapsed since the last update (e.g., Time.deltaTime).</param>
         public void UpdateWithTimeScale(float pElapsedTime)
         {
             if (m_active)
@@ -51,10 +46,10 @@ namespace RCore
         }
 
         /// <summary>
-        /// Advances the timer's elapsed time without scaling.
-        /// This method must be called manually from an external update loop (e.g., MonoBehaviour.Update).
+        /// Updates the timer's elapsed time, ignoring Time.timeScale.
+        /// Call this from an Update loop to advance the timer independently of game speed.
         /// </summary>
-        /// <param name="pElapsedTime">The unscaled time delta, typically `Time.unscaledDeltaTime` or a custom value.</param>
+        /// <param name="pElapsedTime">The time elapsed since the last update (e.g., Time.unscaledDeltaTime).</param>
         public void Update(float pElapsedTime)
         {
             if (m_active)
@@ -66,9 +61,9 @@ namespace RCore
         }
 
         /// <summary>
-        /// Starts or restarts the timer with a new target duration.
+        /// Starts or restarts the timer.
         /// </summary>
-        /// <param name="pTargetTime">The total time in seconds for the countdown. If less than or equal to zero, the timer will not start.</param>
+        /// <param name="pTargetTime">The duration in seconds for this timer run.</param>
         public void Start(float pTargetTime)
         {
             if (pTargetTime <= 0)
@@ -86,7 +81,7 @@ namespace RCore
         }
 
         /// <summary>
-        /// Immediately stops the timer, marks it as finished, and invokes the `onFinished` callback.
+        /// Immediately finishes the timer, sets its state to finished, and invokes the onFinished action.
         /// </summary>
         public void Finish()
         {
@@ -99,27 +94,26 @@ namespace RCore
 
         /// <summary>
         /// Manually sets the current elapsed time of the timer.
-        /// This can be used to restore a timer's state or to fast-forward/rewind it.
         /// </summary>
-        /// <param name="pValue">The new elapsed time in seconds.</param>
+        /// <param name="pValue">The new elapsed time value.</param>
         public void SetElapsedTime(float pValue)
         {
             m_elapsedTime = pValue;
         }
-        
+
         /// <summary>
-        /// Gets the current elapsed time in seconds.
+        /// Gets the current elapsed time of the timer.
         /// </summary>
-        /// <returns>The amount of time that has passed since the timer started.</returns>
+        /// <returns>The elapsed time in seconds.</returns>
         public float GetElapsedTime() => m_elapsedTime;
 
         /// <summary>
-        /// Stops the timer and resets its state. Unlike `Finish`, this does NOT invoke the `onFinished` callback.
+        /// Stops the timer and resets its elapsed time without invoking the onFinished action.
         /// </summary>
         public void Stop()
         {
             m_elapsedTime = 0;
-            m_finished = true; // Mark as finished to prevent running, but without calling the event.
+            m_finished = false;
             m_active = false;
         }
     }

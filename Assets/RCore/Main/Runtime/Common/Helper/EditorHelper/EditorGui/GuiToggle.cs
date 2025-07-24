@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable toggle (checkbox) for the Unity Editor.
 	/// </summary>
-	public class EditorToggle : IDraw
+	public class GuiToggle : IDraw
 	{
 		/// <summary>The label displayed next to the toggle.</summary>
 		public string label;

@@ -8,7 +8,7 @@ namespace RCore.Editor
 	/// Represents a drawable dropdown list (popup) for an Enum type in the Unity Editor.
 	/// </summary>
 	/// <typeparam name="T">The Enum type to display in the dropdown.</typeparam>
-	public class EditorDropdownListEnum<T> : IDraw
+	public class GuiDropdownListEnum<T> : IDraw
 	{
 		/// <summary>The label displayed next to the dropdown.</summary>
 		public string label;

@@ -6,7 +6,7 @@ namespace RCore.Editor
 	/// <summary>
 	/// Represents a drawable dropdown list (popup) for integer selections in the Unity Editor.
 	/// </summary>
-	public class EditorDropdownListInt : IDraw
+	public class GuiDropdownListInt : IDraw
 	{
 		/// <summary>The label displayed next to the dropdown.</summary>
 		public string label;
