@@ -22,7 +22,7 @@ namespace RCore.Data.JObject
 	public partial class JObjectModelCollection : ScriptableObject
 	{
 		[Tooltip("The primary model for session-related data, such as last login time.")]
-		[AutoFill] public SessionModel session;
+		[CreateScriptableObject, AutoFill] public SessionModel session;
 		
 		/// <summary>
 		/// An internal list of all data models managed by this collection.
