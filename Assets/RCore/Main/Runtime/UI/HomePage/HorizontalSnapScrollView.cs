@@ -355,6 +355,21 @@ namespace RCore.UI
 		{
 			// Automatically find all SnapScrollItem components in children.
 			m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
+#if UNITY_EDITOR
+			// string str = "Cotent Top Right: "
+			// 	+ Content.TopRight()
+			// 	+ "\nContent Bot Left: "
+			// 	+ Content.BotLeft()
+			// 	+ "\nContent Center: "
+			// 	+ Content.Center()
+			// 	+ "\nContent Size"
+			// 	+ Content.sizeDelta
+			// 	+ "\nContent Pivot"
+			// 	+ Content.pivot
+			// 	+ "\nViewPort Size"
+			// 	+ m_ScrollView.viewport.rect.size;
+			//Debug.Log(str);
+#endif
 
 			// Calculate the content width based on items, layout groups, and padding.
 			Content.TryGetComponent(out ContentSizeFitter contentFilter);

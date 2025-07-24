@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace RCore
 {
-    public abstract class CfxComponent : MonoBehaviour
+    public abstract class CFX_Component : MonoBehaviour
     {
         public bool initialized;
         public Action onHidden;

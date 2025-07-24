@@ -85,11 +85,19 @@ namespace RCore
         /// <returns>True if the position is inside the camera's view, false otherwise.</returns>
         public static bool InsideOrthographicCamera(this Camera pCamera, Vector3 pWorldPosition)
         {
-            float screenAspect = (float)Screen.width / Screen.height;
+            float screenAspect = Screen.width * 1f / Screen.height;
             float cameraHeight = pCamera.orthographicSize * 2;
             var bounds = new Bounds(pCamera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
 
-            return bounds.Contains(pWorldPosition);
+            if (pWorldPosition.x < bounds.min.x)
+                return false;
+            if (pWorldPosition.x > bounds.max.x)
+                return false;
+            if (pWorldPosition.y < bounds.min.y)
+                return false;
+            if (pWorldPosition.y > bounds.max.y)
+                return false;
+            return true;
         }
 
         /// <summary>
@@ -126,8 +134,8 @@ namespace RCore
             Vector2 viewportPosition = camera.WorldToViewportPoint(worldPos);
             // Convert viewport coordinates (0-1) to anchored coordinates within the canvas.
             var anchoredPosition = new Vector2(
-            (viewportPosition.x * canvasRect.rect.size.x) - (canvasRect.rect.size.x * 0.5f),
-            (viewportPosition.y * canvasRect.rect.size.y) - (canvasRect.rect.size.y * 0.5f));
+            viewportPosition.x * canvasRect.rect.size.x - canvasRect.rect.size.x * 0.5f,
+            viewportPosition.y * canvasRect.rect.size.y - canvasRect.rect.size.y * 0.5f);
 
             return anchoredPosition;
         }
@@ -145,8 +153,8 @@ namespace RCore
                 // Note: The conversion here might be incorrect depending on the Canvas render mode.
                 // For "Screen Space - Overlay", Input.mousePosition should be used directly with RectangleContainsScreenPoint.
                 // For "Screen Space - Camera", the camera needs to be provided in the last argument of RectangleContainsScreenPoint.
-                var screenPoint = Input.mousePosition; // Using direct mouse position is often more reliable.
-                var inRect = RectTransformUtility.RectangleContainsScreenPoint(b, screenPoint, camera);
+                var screenPoint = camera.ScreenToWorldPoint(Input.mousePosition);
+                var inRect = RectTransformUtility.RectangleContainsScreenPoint(b, screenPoint);
                 if (inRect)
                     return true;
             }

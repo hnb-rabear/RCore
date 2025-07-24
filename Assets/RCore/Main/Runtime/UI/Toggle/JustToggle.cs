@@ -205,10 +205,6 @@ namespace RCore.UI
 			for (var i = contentsInactive.Count - 1; i >= 0; i--)
 				if (contentsInactive[i] == null)
 					contentsInactive.RemoveAt(i);
-			
-			for (var i = contentsActive.Count - 1; i >= 0; i--)
-				if (contentsActive[i] == null)
-					contentsActive.RemoveAt(i);
 
 			if (enableSizeSwitch)
 			{

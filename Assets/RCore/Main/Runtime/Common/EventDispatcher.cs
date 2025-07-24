@@ -116,7 +116,7 @@ namespace RCore
 		public static void Raise(BaseEvent e)
 		{
 			int id = RUtil.GetStableHashCode(e.GetType().Name);
-#if UNITY_EDITOR && RCORE_DEBUG // Example of a custom debug flag
+#if UNITY_EDITOR
 			Debug.Log("Raise event " + e.GetType().Name);
 #endif
 			if (delegates.TryGetValue(id, out EventDelegate del))

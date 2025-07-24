@@ -137,12 +137,11 @@ namespace RCore.Data.JObject
 		public virtual void OnPause(bool pause)
 		{
 			int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-			// Calculate offline time only on resume.
-			int offlineSeconds = pause ? 0 : session.GetOfflineSeconds();
-			
-			if(m_models != null)
-				foreach (var model in m_models)
-					model.OnPause(pause, utcNowTimestamp, offlineSeconds);
+			int offlineSeconds = 0;
+			if (!pause)
+				offlineSeconds = session.GetOfflineSeconds();
+			foreach (var handler in m_models)
+				handler.OnPause(pause, utcNowTimestamp, offlineSeconds);
 		}
 		
 		/// <summary>
@@ -152,9 +151,8 @@ namespace RCore.Data.JObject
 		{
 			int offlineSeconds = session.GetOfflineSeconds();
 			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
-			if(m_models != null)
-				foreach (var model in m_models)
-					model.OnPostLoad(utcNowTimestamp, offlineSeconds);
+			foreach (var handler in m_models)
+				handler.OnPostLoad(utcNowTimestamp, offlineSeconds);
 		}
 
 		/// <summary>
@@ -163,9 +161,8 @@ namespace RCore.Data.JObject
 		/// </summary>
 		public void OnRemoteConfigFetched()
 		{
-			if(m_models != null)
-				foreach (var model in m_models)
-					model.OnRemoteConfigFetched();
+			foreach (var handler in m_models)
+				handler.OnRemoteConfigFetched();
 		}
 		
 		/// <summary>
