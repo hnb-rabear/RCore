@@ -34,8 +34,12 @@ namespace RCore.Editor
 			return button.IsPressed;
 		}
 
-		public static bool ConfirmPopup(string message = "Are you sure?", string yes = "Yes", string no = "No")
+		public static bool ConfirmPopup(string message = "Are you sure?", string yes = null, string no = null)
 		{
+			if (string.IsNullOrEmpty(yes))
+				yes = "Yes";
+			if (string.IsNullOrEmpty(no))
+				no = "No";
 			return EditorUtility.DisplayDialog("Confirm Action", message, yes, no);
 		}
 
