@@ -25,7 +25,13 @@ namespace RCore
 		/// The instantiated instance of the component.
 		/// </summary>
 		public TComponent instance;
-		
+
+		/// <summary>
+		/// Stores the string representation of the component's type (TComponent).
+		/// This is primarily used for editor-side validation and debugging to identify the component type without loading the asset.
+		/// </summary>
+		public string type;
+
 		/// <summary>
 		/// The loaded asset of the component.
 		/// </summary>
@@ -57,6 +63,7 @@ namespace RCore
 
 		/// <summary>
 		/// Validates the asset at the specified path to ensure it is a GameObject with the required component.
+		/// In the editor, it also caches the component's type name.
 		/// </summary>
 		/// <param name="path">The path to the asset.</param>
 		/// <returns>True if the asset at the path is a valid GameObject with the component, otherwise false.</returns>
@@ -65,7 +72,16 @@ namespace RCore
 #if UNITY_EDITOR
 			//this load can be expensive...
 			var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-			return go != null && go.GetComponent<TComponent>() != null;
+			if (go == null) 
+				return false;
+
+			var component = go.GetComponent<TComponent>();
+			if (component != null)
+			{
+				type = typeof(TComponent).FullName;
+				return true;
+			}
+			return false;
 #else
 			return false;
 #endif
