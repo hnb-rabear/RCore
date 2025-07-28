@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace RCore.Editor
@@ -14,3 +15,4 @@ namespace RCore.Editor
 		void Draw(GUIStyle style = null);
 	}
 }
+#endif

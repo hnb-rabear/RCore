@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -60,3 +61,4 @@ namespace RCore.Editor
 		}
 	}
 }
+#endif
