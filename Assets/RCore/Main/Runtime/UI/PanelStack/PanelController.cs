@@ -102,7 +102,7 @@ namespace RCore.UI
 		protected virtual void OnDisable()
 		{
 			// Ensure the panel is not locked when disabled unexpectedly.
-			LockWhileTransiting(false);
+			LockWhileTransiting();
 		}
 
 		/// <summary>
@@ -153,7 +153,7 @@ namespace RCore.UI
 			onWillHide?.Invoke();
 
 			BeforeHiding();
-			LockWhileTransiting(true);
+			LockWhileTransiting();
 
 			// Wait until all sub-panels are hidden
 			while (panelStack.Count > 0)
@@ -173,7 +173,7 @@ namespace RCore.UI
 			m_showed = false;
 			SetActivePanel(false);
 
-			LockWhileTransiting(false);
+			LockWhileTransiting();
 			AfterHiding();
 			if (useOnce)
 				Destroy(gameObject, 0.1f);
@@ -238,7 +238,7 @@ namespace RCore.UI
 			onWillShow?.Invoke();
 
 			BeforeShowing();
-			LockWhileTransiting(true);
+			LockWhileTransiting();
 
 			// Ensure the panel is rendered on top of its siblings.
 			transform.SetAsLastSibling();
@@ -252,7 +252,7 @@ namespace RCore.UI
 			m_isShowing = false;
 			m_showed = true;
 
-			LockWhileTransiting(false);
+			LockWhileTransiting();
 			AfterShowing();
 
 			pOnDidShow?.Invoke();
@@ -304,12 +304,12 @@ namespace RCore.UI
 		/// <summary>
 		/// Locks the panel's interactability during transitions if FX are enabled.
 		/// </summary>
-		private void LockWhileTransiting(bool value)
+		private void LockWhileTransiting()
 		{
 			if (enableFXTransition)
 			{
 				if (CanvasGroup != null)
-					CanvasGroup.interactable = !value;
+					CanvasGroup.interactable = !Transiting;
 			}
 		}
 
