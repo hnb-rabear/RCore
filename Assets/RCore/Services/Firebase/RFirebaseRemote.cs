@@ -288,6 +288,17 @@ namespace RCore.Service
 			m_Changed = true;
 		}
 
+		public static string GetBackUpValue(string key)
+		{
+			string content = PlayerPrefs.GetString(BACK_UP_KEY);
+			if (string.IsNullOrEmpty(content))
+				return null;
+			var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+			if (data.TryGetValue(key, out object value))
+				return value.ToString();
+			return null;
+		}
+		
 		public static void LogFetchedData()
 		{
 #if FIREBASE_REMOTE_CONFIG
