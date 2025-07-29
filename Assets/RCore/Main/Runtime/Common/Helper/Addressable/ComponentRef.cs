@@ -176,6 +176,11 @@ namespace RCore
 				UnityEngine.Debug.LogError(ex);
 			}
 		}
+		
+		public bool HasType(Type pType)
+		{
+			return typeof(TComponent) == pType;
+		}
 	}
 
 	/// <summary>
