@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
+using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -58,7 +59,16 @@ namespace RCore
 		public override bool ValidateAsset(Object obj)
 		{
 			var go = obj as GameObject;
-			return go != null && go.GetComponent<TComponent>() != null;
+			if (go != null)
+			{
+				var component = go.GetComponent<TComponent>();
+				if (component != null)
+				{
+					type = component.GetType().FullName;
+					return true;
+				}
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -72,13 +82,13 @@ namespace RCore
 #if UNITY_EDITOR
 			//this load can be expensive...
 			var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-			if (go == null) 
+			if (go == null)
 				return false;
 
 			var component = go.GetComponent<TComponent>();
 			if (component != null)
 			{
-				type = typeof(TComponent).FullName;
+				type = component.GetType().FullName;
 				return true;
 			}
 			return false;
@@ -176,10 +186,15 @@ namespace RCore
 				UnityEngine.Debug.LogError(ex);
 			}
 		}
-		
-		public bool HasType(Type pType)
+
+		/// <summary>
+		/// Checks if the provided type is of type TComponent or inherits from it.
+		/// </summary>
+		/// <param name="checkType">The type to check.</param>
+		/// <returns>True if the type is TComponent or a subclass, otherwise false.</returns>
+		public bool HasType(Type checkType)
 		{
-			return typeof(TComponent) == pType;
+			return typeof(TComponent).IsAssignableFrom(checkType);
 		}
 	}
 
