@@ -3,6 +3,7 @@
  **/
 
 using System;
+using System.Reflection;
 using RCore.Inspector;
 using UnityEngine;
 
@@ -25,13 +26,13 @@ namespace RCore.Data.JObject
 
 		[Tooltip("The root ScriptableObject that contains all game data models. This will be automatically found or created in the editor if not assigned.")]
 		[SerializeField, CreateScriptableObject, AutoFill] protected T m_dataCollection;
-		
+
 		[Tooltip("The default delay in seconds before a requested save is actually executed. This helps to batch multiple save requests into one.")]
 		[SerializeField, Range(1, 10)] protected int m_saveDelay = 3;
-		
+
 		[Tooltip("If true, the game data will be saved automatically when the application is paused.")]
 		[SerializeField] protected bool m_saveOnPause = true;
-		
+
 		[Tooltip("If true, the game data will be saved automatically when the application is quit.")]
 		[SerializeField] protected bool m_saveOnQuit = true;
 
@@ -129,6 +130,41 @@ namespace RCore.Data.JObject
 			m_dataCollection.PostLoad();
 			m_initialized = true;
 			onInitialized?.Invoke();
+
+#if FIREBASE_REMOTE_CONFIG
+			// We use reflection here to avoid a hard compile-time dependency on the RCore.Service assembly.
+			// This allows this data module to be used in projects that do not include the Firebase service package.
+			// The code dynamically finds the RFirebaseRemote class and subscribes to its static OnFetched event.
+			try
+			{
+				var remoteConfigType = FindTypeInAssemblies("RCore.Service.RFirebaseRemote");
+				if (remoteConfigType != null)
+				{
+					var onFetchedEvent = remoteConfigType.GetEvent("OnFetched", BindingFlags.Static | BindingFlags.Public);
+					if (onFetchedEvent != null)
+					{
+						// Create a delegate of the correct type (Action) and point it to our local method.
+						Action handler = OnRemoteConfigFetched;
+						// For static events, the target object for AddEventHandler is null.
+						onFetchedEvent.AddEventHandler(null, handler);
+						Debug.Log($"[{GetType().Name}] Successfully subscribed to RFirebaseRemote.OnFetched event via reflection.");
+					}
+					else
+					{
+						Debug.LogWarning($"[{GetType().Name}] Could not find the static event 'OnFetched' on type 'RCore.Service.RFirebaseRemote'.");
+					}
+				}
+				else
+				{
+					// This warning is helpful if the FIREBASE_REMOTE_CONFIG flag is defined but the RCore.Service assembly is missing.
+					Debug.LogWarning($"[{GetType().Name}] Could not find the type 'RCore.Service.RFirebaseRemote'. Remote config integration will be skipped.");
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"[{GetType().Name}] An error occurred while trying to subscribe to RFirebaseRemote.OnFetched event via reflection. \n{ex}");
+			}
+#endif
 		}
 
 		/// <summary>
@@ -147,10 +183,10 @@ namespace RCore.Data.JObject
 				// Debounce immediate saves to prevent spamming writes to disk.
 				if (Time.unscaledTime - m_lastSave < 0.2f)
 					return false;
-				
+
 				m_dataCollection.Save();
 				m_saveDelayCustom = 0; // Reset any custom delay.
-				m_saveCountdown = 0;   // Cancel any pending delayed save.
+				m_saveCountdown = 0; // Cancel any pending delayed save.
 				m_lastSave = Time.unscaledTime;
 				return true;
 			}
@@ -162,7 +198,7 @@ namespace RCore.Data.JObject
 				// Use the shortest requested delay.
 				if (m_saveDelayCustom <= 0 || m_saveDelayCustom > saveDelayCustom)
 					m_saveDelayCustom = saveDelayCustom;
-				
+
 				if (m_saveCountdown > m_saveDelayCustom)
 					m_saveCountdown = m_saveDelayCustom;
 			}
@@ -180,7 +216,7 @@ namespace RCore.Data.JObject
 		/// </summary>
 		public void OnRemoteConfigFetched()
 		{
-			if(m_initialized)
+			if (m_initialized)
 				m_dataCollection.OnRemoteConfigFetched();
 		}
 
@@ -189,5 +225,26 @@ namespace RCore.Data.JObject
 		/// </summary>
 		/// <returns>The duration of the last offline period in seconds.</returns>
 		public int GetOfflineSeconds() => m_dataCollection.session.GetOfflineSeconds();
+
+		/// <summary>
+		/// Helper method to find a Type by its name in any of the currently loaded assemblies.
+		/// This is more robust than Type.GetType() which only checks the calling assembly and mscorlib.
+		/// </summary>
+		/// <param name="typeName">The full name of the type to find.</param>
+		/// <returns>The Type object if found, otherwise null.</returns>
+		private static Type FindTypeInAssemblies(string typeName)
+		{
+			var type = Type.GetType(typeName);
+			if (type != null)
+				return type;
+
+			foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				type = a.GetType(typeName);
+				if (type != null)
+					return type;
+			}
+			return null;
+		}
 	}
 }

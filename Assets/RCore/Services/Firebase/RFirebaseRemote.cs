@@ -21,7 +21,7 @@ namespace RCore.Service
 		private const string BACK_UP_KEY = "RemoteConfig.BackUp";
 
 		public static bool Fetched;
-		public static Action OnFetched;
+		public static event Action OnFetched;
 
 		private static Dictionary<string, object> m_DefaultData = new();
 		private static Dictionary<string, double> m_CacheNumberValues = new();
