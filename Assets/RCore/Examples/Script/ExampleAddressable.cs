@@ -14,6 +14,8 @@ namespace RCore.Example
 		public string label;
 
 		public List<AssetReference> prefabReferences;
+		public List<ComponentRef<Transform>> componentReferences;
+		public ComponentRef<Transform> componentReference;
 
 		[ReadOnly] public List<GameObject> objects;
 		[ReadOnly] public List<GameObject> prefabs;

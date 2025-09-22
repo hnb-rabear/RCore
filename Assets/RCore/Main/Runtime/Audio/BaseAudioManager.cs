@@ -309,8 +309,8 @@ namespace RCore.Audio
 
             m_musicSource.clip = pClip;
             m_musicSource.loop = pLoop;
-            if (!m_enabledMusic) return;
-
+            if (!m_enabledMusic)
+	            m_musicSource.mute = true;
             if (play)
                 m_musicSource.Play();
             SetMusicVolume(pVolume, pFadeDuration);
