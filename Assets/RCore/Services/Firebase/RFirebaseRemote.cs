@@ -133,43 +133,19 @@ namespace RCore.Service
 				Debug.LogWarning("Serialized value is null or empty.");
 				return default;
 			}
-
 			try
 			{
-				switch (Type.GetTypeCode(typeof(T)))
-				{
-					case TypeCode.String:
-						return (T)Convert.ChangeType(serializedValue, typeof(T));
-					case TypeCode.Int32:
-						if (int.TryParse(serializedValue, out int intValue))
-							return (T)Convert.ChangeType(intValue, typeof(T));
-						break;
-					case TypeCode.Single:
-						if (float.TryParse(serializedValue, out float floatValue))
-							return (T)Convert.ChangeType(floatValue, typeof(T));
-						break;
-					case TypeCode.Double:
-						if (double.TryParse(serializedValue, out double doubleValue))
-							return (T)Convert.ChangeType(doubleValue, typeof(T));
-						break;
-					case TypeCode.Boolean:
-						if (bool.TryParse(serializedValue, out bool boolValue))
-							return (T)Convert.ChangeType(boolValue, typeof(T));
-						break;
-					default:
-						try
-						{
-							return JsonUtility.FromJson<T>(serializedValue);
-						}
-						catch (Exception ex)
-						{
-							Debug.LogError($"Failed to deserialize JSON to type {typeof(T)}: {ex.Message}");
-						}
-						break;
-				}
+				// Json.NET can directly handle primitives, objects, arrays, and lists.
+				return JsonConvert.DeserializeObject<T>(serializedValue);
+			}
+			catch (JsonException jsonEx)
+			{
+				// Specific exception for JSON parsing errors
+				Debug.LogError($"Failed to deserialize JSON to type {typeof(T)}: {jsonEx.Message}");
 			}
 			catch (Exception ex)
 			{
+				// General exceptions
 				Debug.LogException(ex);
 			}
 			return default;
@@ -298,7 +274,7 @@ namespace RCore.Service
 				return value.ToString();
 			return null;
 		}
-		
+
 		public static void LogFetchedData()
 		{
 #if FIREBASE_REMOTE_CONFIG

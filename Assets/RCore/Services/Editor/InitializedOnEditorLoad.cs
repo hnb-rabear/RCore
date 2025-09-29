@@ -39,6 +39,7 @@ namespace RCore.Editor.Service
 			Validate_FIREBASE_FIRESTORE();
 			Validate_FIREBASE_DATABASE();
 			Validate_FIREBASE_STORAGE();
+			Validate_FIREBASE_INSTALLATION();
 			Validate_ADMOB();
 		}
 
@@ -196,6 +197,16 @@ namespace RCore.Editor.Service
 				EditorHelper.AddDirectives(new List<string> { "FIREBASE_STORAGE", "FIREBASE" });
 			else
 				EditorHelper.RemoveDirective("FIREBASE_STORAGE");
+		}
+		
+		private static void Validate_FIREBASE_INSTALLATION()
+		{
+			var rcore = IsClassAvailable("RCore.Service.RFirebase");
+			var firebaseInstallationsType = Type.GetType("Firebase.Installations.FirebaseInstallations, Firebase.Installations");
+			if (firebaseInstallationsType != null && rcore)
+				EditorHelper.AddDirectives(new List<string> { "FIREBASE_INSTALLATION", "FIREBASE" });
+			else
+				EditorHelper.RemoveDirective("FIREBASE_INSTALLATION");
 		}
 
 		private static void Validate_FIREBASE_MESSAGING()
