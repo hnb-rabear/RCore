@@ -28,7 +28,7 @@ namespace RCore.UI
 	[AddComponentMenu("RCore/UI/JustToggle")]
 	public class JustToggle : Toggle
 	{
-		#region Nested Classes
+#region Nested Classes
 
 		/// <summary>
 		/// Defines a size change transition for a target RectTransform.
@@ -87,10 +87,10 @@ namespace RCore.UI
 			/// <summary> The sprite to display when the toggle is OFF. </summary>
 			public Sprite off;
 		}
-		
-		#endregion
 
-		#region Public Fields
+#endregion
+
+#region Public Fields
 
 		/// <summary> Optional background image of the toggle. </summary>
 		public Image imgBackground;
@@ -132,17 +132,17 @@ namespace RCore.UI
 
 		/// <summary> An action that is invoked when the user clicks on the toggle while it is locked. </summary>
 		public Action onClickOnLock;
-		
-		#endregion
 
-		#region Private Fields
+#endregion
+
+#region Private Fields
 
 		private CustomToggleGroup m_customToggleGroup;
 		private bool m_isOn2;
 		private Vector2 m_initialScale;
 		private bool m_clicked;
-		
-		#endregion
+
+#endregion
 
 		/// <summary>
 		/// Gets or sets the ON/OFF state of the toggle.
@@ -197,14 +197,15 @@ namespace RCore.UI
 			if (imgBackground == null)
 			{
 				var images = gameObject.GetComponentsInChildren<Image>();
-				if(images.Length > 0)
+				if (images.Length > 0)
 					imgBackground = images[0];
 			}
 
 			// Clean up null entries in lists
-			for (var i = contentsInactive.Count - 1; i >= 0; i--)
-				if (contentsInactive[i] == null)
-					contentsInactive.RemoveAt(i);
+			if (contentsInactive != null)
+				for (var i = contentsInactive.Count - 1; i >= 0; i--)
+					if (contentsInactive[i] == null)
+						contentsInactive.RemoveAt(i);
 
 			if (enableSizeSwitch)
 			{
@@ -214,7 +215,7 @@ namespace RCore.UI
 
 			if (group == null)
 				group = gameObject.GetComponentInParent<ToggleGroup>();
-			
+
 			// Configure animator based on settings
 			if (scaleBounceEffect)
 			{
@@ -243,26 +244,28 @@ namespace RCore.UI
 			}
 
 			// Initialize transition default values
-			foreach (var transition1 in sizeTransitions)
-			{
-				if (transition1.target == null) continue;
-				if (transition1.layoutElement == null) transition1.target.TryGetComponent(out transition1.layoutElement);
-				if (transition1.on == default) transition1.on = transition1.target.rect.size;
-				if (transition1.off == default) transition1.off = transition1.target.rect.size;
-			}
-			foreach (var transition1 in positionTransitions)
-			{
-				if (transition1.target == null) continue;
-				if (transition1.on == default) transition1.on = transition1.target.anchoredPosition;
-				if (transition1.off == default) transition1.off = transition1.target.anchoredPosition;
-			}
+			if (sizeTransitions != null)
+				foreach (var transition1 in sizeTransitions)
+				{
+					if (transition1.target == null) continue;
+					if (transition1.layoutElement == null) transition1.target.TryGetComponent(out transition1.layoutElement);
+					if (transition1.on == default) transition1.on = transition1.target.rect.size;
+					if (transition1.off == default) transition1.off = transition1.target.rect.size;
+				}
+			if (positionTransitions != null)
+				foreach (var transition1 in positionTransitions)
+				{
+					if (transition1.target == null) continue;
+					if (transition1.on == default) transition1.on = transition1.target.anchoredPosition;
+					if (transition1.off == default) transition1.off = transition1.target.anchoredPosition;
+				}
 		}
 #endif
 
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			
+
 			if (m_initialScale == Vector2.zero)
 				m_initialScale = Vector2.one;
 
@@ -281,7 +284,7 @@ namespace RCore.UI
 
 			if (m_initialScale == Vector2.zero)
 				m_initialScale = Vector2.one;
-			
+
 			// Reset scale on disable
 			if (scaleBounceEffect)
 				transform.localScale = m_initialScale;
@@ -363,7 +366,7 @@ namespace RCore.UI
 			if (contentsInactive != null)
 				foreach (var item in contentsInactive)
 					item.gameObject.SetActive(!isOn);
-			
+
 			// Main toggle size
 			if (enableSizeSwitch)
 			{
@@ -378,29 +381,33 @@ namespace RCore.UI
 			}
 
 			// Apply all transitions
-			foreach (var transition1 in sizeTransitions)
-			{
-				var size = isOn ? transition1.on : transition1.off;
-				if (transition1.layoutElement != null)
+			if (sizeTransitions != null)
+				foreach (var transition1 in sizeTransitions)
 				{
-					transition1.layoutElement.minWidth = size.x;
-					transition1.layoutElement.minHeight = size.y;
+					var size = isOn ? transition1.on : transition1.off;
+					if (transition1.layoutElement != null)
+					{
+						transition1.layoutElement.minWidth = size.x;
+						transition1.layoutElement.minHeight = size.y;
+					}
+					if (transition1.target != null)
+						transition1.target.sizeDelta = size;
 				}
-				if(transition1.target != null)
-					transition1.target.sizeDelta = size;
-			}
 
-			foreach (var transition1 in positionTransitions)
-				if(transition1.target != null)
-					transition1.target.anchoredPosition = isOn ? transition1.on : transition1.off;
+			if (positionTransitions != null)
+				foreach (var transition1 in positionTransitions)
+					if (transition1.target != null)
+						transition1.target.anchoredPosition = isOn ? transition1.on : transition1.off;
 
-			foreach (var transition1 in colorTransitions)
-				if(transition1.target != null)
-					transition1.target.color = isOn ? transition1.on : transition1.off;
+			if (colorTransitions != null)
+				foreach (var transition1 in colorTransitions)
+					if (transition1.target != null)
+						transition1.target.color = isOn ? transition1.on : transition1.off;
 
-			foreach (var transition1 in spriteTransitions)
-				if(transition1.target != null)
-					transition1.target.sprite = isOn ? transition1.on : transition1.off;
+			if (spriteTransitions != null)
+				foreach (var transition1 in spriteTransitions)
+					if (transition1.target != null)
+						transition1.target.sprite = isOn ? transition1.on : transition1.off;
 
 			if (m_customToggleGroup != null && isOn)
 				m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
@@ -417,7 +424,7 @@ namespace RCore.UI
 				return;
 
 			m_isOn2 = isOn;
-			
+
 			// Activate/deactivate content immediately
 			if (contentsActive != null)
 				foreach (var item in contentsActive)
@@ -434,14 +441,14 @@ namespace RCore.UI
 					// Disable interaction during tween to prevent issues
 					if (m_customToggleGroup != null)
 						m_customToggleGroup.SetToggleInteractable(false);
-						
+
 					var layoutElement = gameObject.GetComponent<LayoutElement>();
 					var sizeFrom = !isOn ? sizeActive : sizeInactive;
 					var sizeTo = isOn ? sizeActive : sizeInactive;
 					float lerp = 0;
 					var rectTransform = transform as RectTransform;
 					DOTween.Kill(GetInstanceID() + 1);
-					
+
 					// Main tween loop
 					DOTween.To(() => lerp, p_x => lerp = p_x, 1, tweenTime)
 						.OnUpdate(() =>
@@ -458,11 +465,11 @@ namespace RCore.UI
 									layoutElement.minHeight = size.y;
 								}
 							}
-							
+
 							// Animate size transitions
 							foreach (var transition1 in sizeTransitions)
 							{
-								if(transition1.target == null) continue;
+								if (transition1.target == null) continue;
 								var size = isOn ? Vector2.Lerp(transition1.off, transition1.on, lerp) : Vector2.Lerp(transition1.on, transition1.off, lerp);
 								if (transition1.layoutElement != null)
 								{
@@ -471,25 +478,25 @@ namespace RCore.UI
 								}
 								transition1.target.sizeDelta = size;
 							}
-							
+
 							// Animate position transitions
 							foreach (var transition1 in positionTransitions)
-								if(transition1.target != null)
+								if (transition1.target != null)
 									transition1.target.anchoredPosition = isOn ? Vector2.Lerp(transition1.off, transition1.on, lerp) : Vector2.Lerp(transition1.on, transition1.off, lerp);
-							
+
 							// Animate color transitions
 							foreach (var transition1 in colorTransitions)
-								if(transition1.target != null)
+								if (transition1.target != null)
 									transition1.target.color = isOn ? Color.Lerp(transition1.off, transition1.on, lerp) : Color.Lerp(transition1.on, transition1.off, lerp);
-							
+
 							// Animate sprite transitions with a cross-fade effect
 							foreach (var transition1 in spriteTransitions)
 							{
-								if(transition1.target == null) continue;
+								if (transition1.target == null) continue;
 								if (lerp < 0.5f)
 								{
 									var tempColor = transition1.target.color;
-									tempColor.a = Mathf.Lerp(1, 0.3f, lerp * 2); 
+									tempColor.a = Mathf.Lerp(1, 0.3f, lerp * 2);
 									transition1.target.color = tempColor;
 									transition1.target.sprite = isOn ? transition1.off : transition1.on;
 								}
@@ -505,7 +512,7 @@ namespace RCore.UI
 						.OnComplete(() =>
 						{
 							// Re-enable interaction and set final values
-							if(m_customToggleGroup != null)
+							if (m_customToggleGroup != null)
 								m_customToggleGroup.SetToggleInteractable(true);
 							Refresh(); // Set final state precisely
 						})
@@ -533,7 +540,7 @@ namespace RCore.UI
 					EventDispatcher.Raise(new Audio.UISfxTriggeredEvent(sfxClipOff));
 				m_clicked = false;
 			}
-			
+
 #if DOTWEEN
 			// Use tweened refresh if applicable
 			if (Application.isPlaying && tweenTime > 0 && transition != Transition.Animation)
@@ -571,51 +578,100 @@ namespace RCore.UI
 		{
 			private JustToggle m_mToggle;
 
+			// Add SerializedProperty fields for your arrays
+			private SerializedProperty imgBackgroundProp;
+			private SerializedProperty txtLabelProp;
+			private SerializedProperty contentsActiveProp;
+			private SerializedProperty contentsInactiveProp;
+			private SerializedProperty sfxClipProp;
+			private SerializedProperty sfxClipOffProp;
+			private SerializedProperty scaleBounceEffectProp;
+			private SerializedProperty enableSizeSwitchProp;
+			private SerializedProperty sizeActiveProp;
+			private SerializedProperty sizeInactiveProp;
+			private SerializedProperty tweenTimeProp;
+			private SerializedProperty sizeTransitionsProp;
+			private SerializedProperty positionTransitionsProp;
+			private SerializedProperty colorTransitionsProp;
+			private SerializedProperty spriteTransitionsProp;
+
+
 			protected override void OnEnable()
 			{
 				base.OnEnable();
 				m_mToggle = (JustToggle)target;
+
+				// Find the properties by name
+				imgBackgroundProp = serializedObject.FindProperty(nameof(m_mToggle.imgBackground));
+				txtLabelProp = serializedObject.FindProperty(nameof(m_mToggle.txtLabel));
+				contentsActiveProp = serializedObject.FindProperty(nameof(m_mToggle.contentsActive));
+				contentsInactiveProp = serializedObject.FindProperty(nameof(m_mToggle.contentsInactive));
+				sfxClipProp = serializedObject.FindProperty(nameof(m_mToggle.sfxClip));
+				sfxClipOffProp = serializedObject.FindProperty(nameof(m_mToggle.sfxClipOff));
+				scaleBounceEffectProp = serializedObject.FindProperty(nameof(m_mToggle.scaleBounceEffect));
+				enableSizeSwitchProp = serializedObject.FindProperty(nameof(m_mToggle.enableSizeSwitch));
+				sizeActiveProp = serializedObject.FindProperty(nameof(m_mToggle.sizeActive));
+				sizeInactiveProp = serializedObject.FindProperty(nameof(m_mToggle.sizeInactive));
+				tweenTimeProp = serializedObject.FindProperty(nameof(m_mToggle.tweenTime));
+				sizeTransitionsProp = serializedObject.FindProperty(nameof(m_mToggle.sizeTransitions));
+				positionTransitionsProp = serializedObject.FindProperty(nameof(m_mToggle.positionTransitions));
+				colorTransitionsProp = serializedObject.FindProperty(nameof(m_mToggle.colorTransitions));
+				spriteTransitionsProp = serializedObject.FindProperty(nameof(m_mToggle.spriteTransitions));
 			}
 
 			public override void OnInspectorGUI()
 			{
+				// It's good practice to call this at the start
+				serializedObject.Update();
+
 				// Custom fields section
 				EditorGUILayout.LabelField("JustToggle Properties", EditorStyles.boldLabel);
-				serializedObject.SerializeField(nameof(imgBackground));
-				serializedObject.SerializeField(nameof(txtLabel));
-				serializedObject.SerializeField(nameof(contentsActive));
-				serializedObject.SerializeField(nameof(contentsInactive));
-				serializedObject.SerializeField(nameof(sfxClip));
-				serializedObject.SerializeField(nameof(sfxClipOff));
-				serializedObject.SerializeField(nameof(scaleBounceEffect));
+				EditorGUILayout.PropertyField(imgBackgroundProp);
+				EditorGUILayout.PropertyField(txtLabelProp);
+				EditorGUILayout.PropertyField(contentsActiveProp);
+				EditorGUILayout.PropertyField(contentsInactiveProp);
+				EditorGUILayout.PropertyField(sfxClipProp);
+				EditorGUILayout.PropertyField(sfxClipOffProp);
+				EditorGUILayout.PropertyField(scaleBounceEffectProp);
 
 				// Size Switch section
-				var enableSizeSwitch1 = serializedObject.SerializeField(nameof(enableSizeSwitch));
-				if (enableSizeSwitch1.boolValue)
+				EditorGUILayout.PropertyField(enableSizeSwitchProp);
+				if (enableSizeSwitchProp.boolValue)
 				{
 					EditorGUI.indentLevel++;
 					EditorGUILayout.BeginVertical("box");
-					serializedObject.SerializeField(nameof(sizeActive));
-					serializedObject.SerializeField(nameof(sizeInactive));
+					EditorGUILayout.PropertyField(sizeActiveProp);
+					EditorGUILayout.PropertyField(sizeInactiveProp);
 					EditorGUILayout.EndVertical();
 					EditorGUI.indentLevel--;
 				}
-				
+
 				// Transitions section
 				EditorGUILayout.Space();
 				EditorGUILayout.LabelField("Transitions", EditorStyles.boldLabel);
-				serializedObject.SerializeField(nameof(tweenTime));
-				serializedObject.SerializeField(nameof(sizeTransitions));
-				serializedObject.SerializeField(nameof(positionTransitions));
-				serializedObject.SerializeField(nameof(colorTransitions));
-				serializedObject.SerializeField(nameof(spriteTransitions));
-				
+				EditorGUILayout.PropertyField(tweenTimeProp);
+				EditorGUILayout.PropertyField(sizeTransitionsProp);
+				EditorGUILayout.PropertyField(positionTransitionsProp);
+				EditorGUILayout.PropertyField(colorTransitionsProp);
+				EditorGUILayout.PropertyField(spriteTransitionsProp);
+
+
 				// Live label editing
 				if (m_mToggle.txtLabel != null)
-					m_mToggle.txtLabel.text = EditorGUILayout.TextField("Label", m_mToggle.txtLabel.text);
+				{
+					// Use EditorGUI.BeginChangeCheck to save changes to the text component
+					EditorGUI.BeginChangeCheck();
+					string newLabelText = EditorGUILayout.TextField("Label", m_mToggle.txtLabel.text);
+					if (EditorGUI.EndChangeCheck())
+					{
+						Undo.RecordObject(m_mToggle.txtLabel, "Change Label Text");
+						m_mToggle.txtLabel.text = newLabelText;
+					}
+				}
 
+				// Apply any changes made to the serialized properties
 				serializedObject.ApplyModifiedProperties();
-				
+
 				EditorHelper.Separator();
 
 				// Default Toggle Inspector
