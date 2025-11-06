@@ -1,8 +1,4 @@
-﻿/***
- * Author HNB-RaBear - 2019
- **/
-
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using RCore.Inspector;
@@ -20,6 +16,8 @@ namespace RCore.UI
         {
             Left,
             Right,
+            Top,
+            Bottom
         }
 
         public Image imgBackground;
@@ -30,8 +28,8 @@ namespace RCore.UI
         /// False: image can fill, 
         /// Tue: image cannot fill, we have to use delta size
         /// </summary>
-        public bool fillByBarWidth;
-        [Tooltip("If fillByBarWidth = true")] public FillDirection fillByBarWidthDirection;
+        public bool fillByBarSize;
+        [Tooltip("If fillByBarSize = true")] public FillDirection fillDirection;
         /// <summary>
         /// Sometimg we don't fill empty bar as 0%
         /// </summary>
@@ -47,6 +45,7 @@ namespace RCore.UI
         public bool isTimeCountdown;
         public bool isPercent;
         [SerializeField] private float mWidthOffset;
+        [SerializeField] private float mHeightOffset;
         [SerializeField, ReadOnly] private float mValue = -1;
         [SerializeField, ReadOnly] private float mMax = -1;
 
@@ -112,25 +111,34 @@ namespace RCore.UI
 
         public Vector2 BarSize()
         {
-            return new Vector2(imgBackground.rectTransform.rect.width - mWidthOffset, imgBackground.rectTransform.rect.height);
+            return new Vector2(imgBackground.rectTransform.rect.width - mWidthOffset, imgBackground.rectTransform.rect.height - mHeightOffset);
         }
 
         protected virtual void FillBar(float pValue)
         {
-            if (fillByBarWidth)
+            if (fillByBarSize)
             {
                 m_backgroundSize = new Vector2(imgBackground.rectTransform.rect.width, imgBackground.rectTransform.rect.height);
                 m_backgroundSize.x -= mWidthOffset;
+                m_backgroundSize.y -= mHeightOffset;
             }
 
-            if (fillByBarWidth)
+            if (fillByBarSize)
             {
                 if (m_rectProgressValue == null)
                     m_rectProgressValue = imgProgressValue.rectTransform;
-                m_rectProgressValue.sizeDelta = new Vector2(m_backgroundSize.x * pValue, m_rectProgressValue.sizeDelta.y);
+
+                Vector2 newSize = m_rectProgressValue.sizeDelta;
+                if (fillDirection == FillDirection.Left || fillDirection == FillDirection.Right)
+                    newSize.x = m_backgroundSize.x * pValue;
+                else
+                    newSize.y = m_backgroundSize.y * pValue;
+                m_rectProgressValue.sizeDelta = newSize;
             }
             else
+            {
                 imgProgressValue.fillAmount = pValue;
+            }
         }
 
         public virtual void Active(bool pValue)
@@ -198,7 +206,7 @@ namespace RCore.UI
             }
 
             if (txtValue == null)
-                txtValue = imgProgressValue.GetComponentInChildren<TextMeshProUGUI>();
+                txtValue = GetComponentInChildren<TextMeshProUGUI>();
         }
 
 #if UNITY_EDITOR
@@ -233,11 +241,11 @@ namespace RCore.UI
                 if (mBar.txtRank != null)
                     mBar.txtRank.text = EditorGUILayout.TextField("Rank", mBar.txtRank.text);
 
-                if (mBar.fillByBarWidth && mBar.imgBackground != null && mBar.imgProgressValue != null)
+                if (mBar.fillByBarSize && mBar.imgBackground != null && mBar.imgProgressValue != null)
                 {
                     var barTransform = mBar.imgProgressValue.transform as RectTransform;
                     var pivot = new Vector2(0, 0.5f);
-                    switch (mBar.fillByBarWidthDirection)
+                    switch (mBar.fillDirection)
                     {
                         case FillDirection.Left:
                             pivot = new Vector2(0, 0.5f);
@@ -245,13 +253,22 @@ namespace RCore.UI
                         case FillDirection.Right:
                             pivot = new Vector2(1, 0.5f);
                             break;
+                        case FillDirection.Bottom:
+                            pivot = new Vector2(0.5f, 0);
+                            break;
+                        case FillDirection.Top:
+                            pivot = new Vector2(0.5f, 1);
+                            break;
                     }
-                    var size = barTransform.rect.size;
-                    size.x -= mBar.mWidthOffset;
-                    var deltaPivot = barTransform.pivot - pivot;
-                    var deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
-                    barTransform.pivot = pivot;
-                    barTransform.localPosition -= deltaPosition;
+
+                    if (barTransform.pivot != pivot)
+                    {
+                        var size = barTransform.rect.size;
+                        var deltaPivot = barTransform.pivot - pivot;
+                        var deltaPosition = new Vector3(deltaPivot.x * size.x, deltaPivot.y * size.y);
+                        barTransform.pivot = pivot;
+                        barTransform.localPosition -= deltaPosition;
+                    }
                 }
             }
         }
