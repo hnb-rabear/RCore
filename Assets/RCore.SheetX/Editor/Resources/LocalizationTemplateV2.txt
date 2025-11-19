@@ -207,6 +207,10 @@ public static class LOCALIZATION_CLASS_NAME
 
     public static StringBuilder Get(string pIdString)
     {
+#if UNITY_EDITOR
+        if (m_Texts == null && !Application.isPlaying)
+            InitInEditor();
+#endif
         m_StringBuilder.Remove(0, m_StringBuilder.Length);
         int index = GetIndex(pIdString);
         if (index >= 0)
