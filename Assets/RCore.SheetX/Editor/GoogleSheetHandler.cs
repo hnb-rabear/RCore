@@ -905,7 +905,7 @@ namespace RCore.SheetX.Editor
 					string langLower = lang.ToLower();
 					if (langLower.Contains("english") || langLower == "en")
 						systemLanguages.Append($"\t\t\tSystemLanguage.English => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("vietnam") || langLower == "vn")
+					else if (langLower.Contains("vietnam") || langLower == "vn" || langLower == "vi")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Vietnamese => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("spanish") || langLower == "es")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Spanish => \"{lang}\",").AppendLine();
@@ -919,7 +919,7 @@ namespace RCore.SheetX.Editor
 						systemLanguages.Append($"\t\t\tSystemLanguage.Indonesian => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("thai") || langLower == "th")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Thai => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("korea") || langLower == "kr")
+					else if (langLower.Contains("korea") || langLower.Contains("korean") || langLower == "kr" || langLower == "ko")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Korean => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("japan") || langLower == "jp")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Japanese => \"{lang}\",").AppendLine();
@@ -927,6 +927,8 @@ namespace RCore.SheetX.Editor
 						systemLanguages.Append($"\t\t\tSystemLanguage.French => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("italian") || langLower == "it")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Italian => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("turk") || langLower.Contains("turkish") || langLower == "tr")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Turkish => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("chinese") || langLower == "cn")
 						systemLanguages.Append($"\t\t\tSystemLanguage.ChineseSimplified => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("arabic") || langLower == "ar")
