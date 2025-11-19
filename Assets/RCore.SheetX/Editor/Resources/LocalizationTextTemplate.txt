@@ -25,6 +25,7 @@ public class LOCALIZATION_CLASS_NAMEText : MonoBehaviour
     }
 
     [SerializeField] private TextMeshProUGUI m_TxtPro;
+    [SerializeField] private TextMeshPro m_TxtPro3D;
     [SerializeField] private Text m_Txt;
     [SerializeField] private string m_LocalizedIDString;
     [SerializeField] private CaseType m_CaseType;
@@ -87,10 +88,11 @@ public class LOCALIZATION_CLASS_NAMEText : MonoBehaviour
 
     private void Init()
     {
-        if (m_TxtPro == null && m_Txt == null)
+        if (m_TxtPro == null && m_Txt == null && m_TxtPro3D == null)
         {
             m_TxtPro = gameObject.GetComponent<TextMeshProUGUI>();
             m_Txt = gameObject.GetComponent<Text>();
+            m_TxtPro3D = gameObject.GetComponent<TextMeshPro>();
         }
     }
 
@@ -127,6 +129,8 @@ public class LOCALIZATION_CLASS_NAMEText : MonoBehaviour
             m_Txt.text = text;
         if (m_TxtPro != null && !string.IsNullOrEmpty(text))
             m_TxtPro.text = text;
+        if (m_TxtPro3D != null && !string.IsNullOrEmpty(text))
+            m_TxtPro3D.text = text;
 			
 		m_LanguageIndex = CurLangIndex;
     }
