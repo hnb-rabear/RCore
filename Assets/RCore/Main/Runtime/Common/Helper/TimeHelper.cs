@@ -26,6 +26,10 @@ namespace RCore
 		public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		private static StringBuilder m_TimeBuilder = new StringBuilder();
 		private static bool m_HasInternet;
+		private static RPlayerPrefBool Cheat;
+		private static RPlayerPrefInt DayCheat;
+		private static RPlayerPrefInt HourCheat;
+		private static RPlayerPrefInt MinuteCheat;
 
 		/// <summary>
 		/// d h m s
@@ -306,7 +310,27 @@ namespace RCore
 		public static DateTime GetNow(bool utcTime)
 		{
 			var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
-			return utcTime ? utcNow : utcNow.ToLocalTime();
+			var date = utcTime ? utcNow : utcNow.ToLocalTime();
+			if (Cheat == null)
+			{
+				Cheat = new RPlayerPrefBool("TimeHelper.Cheat");
+				DayCheat = new RPlayerPrefInt("TimeHelper.DayCheat");
+				HourCheat = new RPlayerPrefInt("TimeHelper.HourCheat");
+				MinuteCheat = new RPlayerPrefInt("TimeHelper.MinuteCheat");
+			}
+			if (Cheat.Value)
+			{
+				var daysOffset = DayCheat.Value;
+				var hourOffset = HourCheat.Value;
+				var minuteCheat = MinuteCheat.Value;
+				if (daysOffset > 0)
+					date = date.AddDays(daysOffset);
+				if (hourOffset > 0)
+					date = date.AddHours(hourOffset);
+				if (minuteCheat > 0)
+					date = date.AddMinutes(minuteCheat);
+			}
+			return date;
 		}
 
 		public static int GetNowTimestamp(bool utcTime)
@@ -348,7 +372,7 @@ namespace RCore
 						return true;
 				return false;
 			}
-			
+
 			double validSeconds = 0;
 			while (fromDate < toDate)
 			{
