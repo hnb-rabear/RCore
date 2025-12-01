@@ -255,6 +255,10 @@
 	
 	    public static StringBuilder Get(string pIdString, ref int pIndex)
 	    {
+#if UNITY_EDITOR
+		    if (m_Texts == null && !Application.isPlaying)
+			    InitInEditor();
+#endif
 	        m_StringBuilder.Remove(0, m_StringBuilder.Length);
 	        pIndex = GetIndex(pIdString);
 	        if (pIndex >= 0)

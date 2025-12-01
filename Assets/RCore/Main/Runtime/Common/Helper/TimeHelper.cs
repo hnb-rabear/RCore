@@ -26,10 +26,10 @@ namespace RCore
 		public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		private static StringBuilder m_TimeBuilder = new StringBuilder();
 		private static bool m_HasInternet;
-		private static RPlayerPrefBool Cheat;
-		private static RPlayerPrefInt DayCheat;
-		private static RPlayerPrefInt HourCheat;
-		private static RPlayerPrefInt MinuteCheat;
+		public static RPlayerPrefBool Cheat;
+		public static RPlayerPrefInt DayCheat;
+		public static RPlayerPrefInt HourCheat;
+		public static RPlayerPrefInt MinuteCheat;
 
 		/// <summary>
 		/// d h m s
