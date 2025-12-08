@@ -119,6 +119,7 @@ namespace RCore.Data.KeyValue
 			foreach (var g in groups)
 				g.KeyValueCollection.Save(false);
 
+			RPlayerPrefContainer.SaveChanges();
 			PlayerPrefs.Save();
 			PostSave();
 		}

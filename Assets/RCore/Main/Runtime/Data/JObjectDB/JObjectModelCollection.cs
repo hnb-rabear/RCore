@@ -58,6 +58,7 @@ namespace RCore.Data.JObject
 			foreach (var model in m_models)
 				model.Save();
 			
+			RPlayerPrefContainer.SaveChanges();
 			PlayerPrefs.Save();
 		}
 
