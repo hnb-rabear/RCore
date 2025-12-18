@@ -4,5 +4,10 @@
   "displayName": "RCore.Services.GameServices",
   "description": "RCore Game Services Wrapper (GPGS, In-App Update, In-App Review)",
   "unity": "2021.3",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
   "dependencies": {}
 }
