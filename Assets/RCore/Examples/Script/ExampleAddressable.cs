@@ -17,6 +17,8 @@ namespace RCore.Example
 		public List<ComponentRef<Transform>> componentReferences;
 		public ComponentRef<Transform> componentReference;
 
+		[TimeStamp] public int testTimestamp;
+		
 		[ReadOnly] public List<GameObject> objects;
 		[ReadOnly] public List<GameObject> prefabs;
 
