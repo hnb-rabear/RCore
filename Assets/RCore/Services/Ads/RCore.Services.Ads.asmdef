@@ -1,0 +1,28 @@
+{
+    "name": "RCore.Services.Ads",
+    "rootNamespace": "RCore.Services.Ads",
+    "references": [
+        "rcore.runtime",
+        "MaxSdk.Scripts"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.google.ads.mobile",
+            "expression": "0.0.1",
+            "define": "ADMOB"
+        },
+        {
+            "name": "com.applovin.max.sdk",
+            "expression": "0.0.1",
+            "define": "MAX"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -1,0 +1,25 @@
+{
+    "name": "RCore.Services.Notifications",
+    "rootNamespace": "RCore.Services.Notifications",
+    "references": [
+        "rcore.runtime",
+        "Unity.Notifications.Unified",
+        "Unity.Notifications.Android",
+        "Unity.Notifications.iOS"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.mobile.notifications",
+            "expression": "0.0.1",
+            "define": "UNITY_NOTIFICATION"
+        }
+    ],
+    "noEngineReferences": false
+}

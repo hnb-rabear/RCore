@@ -1,0 +1,19 @@
+{
+    "name": "RCore.Services.GameServices.Editor",
+    "rootNamespace": "RCore.Services.GameServices.Editor",
+    "references": [
+        "RCore.Services.GameServices",
+        "rcore.runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

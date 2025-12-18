@@ -1,7 +1,4 @@
-﻿#if ADMOB
-using GoogleMobileAds.Ump.Api;
-#endif
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
 

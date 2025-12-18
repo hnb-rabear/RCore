@@ -1,0 +1,19 @@
+{
+    "name": "RCore.Services.IAP.Editor",
+    "rootNamespace": "RCore.Services.IAP.Editor",
+    "references": [
+        "RCore.Services.IAP",
+        "rcore.runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,3 +1,4 @@
+#if UNITY_IAP
 using System;
 using System.Collections.Generic;
 using Unity.Services.Core;
@@ -5,11 +6,13 @@ using Unity.Services.Core.Environments;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Extension;
+#if !UNITY_EDITOR
 using UnityEngine.Purchasing.Security;
+#endif
 
 namespace RCore.Service
 {
-	public class IAPManager : MonoBehaviour, IDetailedStoreListener
+	public partial class IAPManager : MonoBehaviour, IDetailedStoreListener
 	{
 		private static IAPManager m_Instance;
 		public static IAPManager Instance
@@ -40,7 +43,10 @@ namespace RCore.Service
 		private IAppleExtensions m_appleExtensions;
 		private IGooglePlayStoreExtensions m_googlePlayStoreExtensions;
 		private bool m_initialized;
+		// Validator is not available in Editor because UnityEngine.Purchasing.Security asmdef excludes Editor
+#if !UNITY_EDITOR
 		private CrossPlatformValidator m_validator;
+#endif
 		private RPlayerPrefDict<string, string> m_cacheLocalizedPrices;
 		private string m_placement;
 		public bool processing;
@@ -198,6 +204,7 @@ namespace RCore.Service
 			//If we the validator doesn't support the current store, we assume the purchase is valid
 			if (IsCurrentStoreSupportedByValidator())
 			{
+#if !UNITY_EDITOR
 				try
 				{
 					var result = m_validator.Validate(product.receipt);
@@ -210,6 +217,7 @@ namespace RCore.Service
 					Debug.Log($"Invalid receipt: {reason}");
 					return false;
 				}
+#endif
 			}
 
 			return true;
@@ -360,6 +368,7 @@ namespace RCore.Service
 			return subscriptionIntroductionPriceInfo;
 		}
 
+#if !UNITY_EDITOR
 		private void LogReceipts(IEnumerable<IPurchaseReceipt> receipts)
 		{
 			Debug.Log("Receipt is valid. Contents:");
@@ -377,5 +386,7 @@ namespace RCore.Service
 			if (receipt is AppleInAppPurchaseReceipt appleReceipt)
 				Debug.Log($"Original Transaction ID: {appleReceipt.originalTransactionIdentifier}\n" + $"Subscription Expiration Date: {appleReceipt.subscriptionExpirationDate}\n" + $"Cancellation Date: {appleReceipt.cancellationDate}\n" + $"Quantity: {appleReceipt.quantity}");
 		}
+#endif
 	}
 }
+#endif

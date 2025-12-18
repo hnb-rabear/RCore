@@ -1,0 +1,27 @@
+{
+    "name": "RCore.Services.IAP",
+    "rootNamespace": "RCore.Services.IAP",
+    "references": [
+        "rcore.runtime",
+        "UnityEngine.Purchasing",
+        "UnityEngine.Purchasing.Security",
+        "UnityEngine.Purchasing.Stores",
+        "Unity.Services.Core",
+        "Unity.Services.Core.Environments"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.purchasing",
+            "expression": "0.0.1",
+            "define": "UNITY_IAP"
+        }
+    ],
+    "noEngineReferences": false
+}

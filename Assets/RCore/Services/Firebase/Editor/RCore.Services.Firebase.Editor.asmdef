@@ -1,0 +1,19 @@
+{
+    "name": "RCore.Services.Firebase.Editor",
+    "rootNamespace": "RCore.Services.Firebase.Editor",
+    "references": [
+        "RCore.Services.Firebase",
+        "rcore.runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

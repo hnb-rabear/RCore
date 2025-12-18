@@ -1,0 +1,39 @@
+{
+    "name": "RCore.Services.GameServices",
+    "rootNamespace": "RCore.Services.GameServices",
+    "references": [
+        "rcore.runtime",
+        "Google.Play.Games",
+        "Google.Play.AppUpdate",
+        "Google.Play.Review",
+        "Google.Play.Common",
+        "Google.Play.Core",
+        "UniTask",
+        "Google.Android.AppBundle.Editor"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.google.play.games",
+            "expression": "0.0.1",
+            "define": "GPGS"
+        },
+        {
+            "name": "com.google.play.appupdate",
+            "expression": "0.0.1",
+            "define": "IN_APP_UPDATE"
+        },
+        {
+            "name": "com.google.play.review",
+            "expression": "0.0.1",
+            "define": "IN_APP_REVIEW"
+        }
+    ],
+    "noEngineReferences": false
+}

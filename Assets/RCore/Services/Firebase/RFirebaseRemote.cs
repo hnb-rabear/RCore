@@ -7,6 +7,7 @@ using Firebase.RemoteConfig;
 using Firebase.Extensions;
 #endif
 using System;
+using UnityEngine.Serialization;
 
 namespace RCore.Service
 {
@@ -329,6 +330,97 @@ namespace RCore.Service
 		{
 			if (listener != null)
 				OnFetched -= listener;
+		}
+	}
+
+	[Serializable]
+	public class ABConfig<T>
+	{
+		public bool allowFetching = true;
+		public T value;
+
+		public ABConfig() { }
+
+		public ABConfig(T initialValue)
+		{
+			value = initialValue;
+		}
+
+		public void Import(string json)
+		{
+			try
+			{
+				value = default;
+				value = JsonConvert.DeserializeObject<T>(json);
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"[ABConfig] Import failed: {e.Message}");
+			}
+		}
+
+		public string Export()
+		{
+			var serializerSettings = new JsonSerializerSettings
+			{
+				// Exclude properties that have their default value (e.g., int 0, bool false, null objects).
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+				// Exclude properties that are explicitly null.
+				NullValueHandling = NullValueHandling.Ignore,
+				// Avoid errors with circular references by ignoring them.
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+			};
+			return JsonConvert.SerializeObject(value, serializerSettings);
+		}
+
+		public static implicit operator T(ABConfig<T> abConfig)
+		{
+			return abConfig.value;
+		}
+
+		public override string ToString()
+		{
+			return $"Enabled: {allowFetching}, Value: {value}";
+		}
+
+		public void FetchValue(string key)
+		{
+			if (!allowFetching)
+				return;
+			T fetchedValue;
+			UnityEngine.Debug.Log(key);
+			var type = typeof(T);
+			switch (Type.GetTypeCode(type))
+			{
+				case TypeCode.Boolean:
+					fetchedValue = (T)(object)RFirebaseRemote.GetBoolValue(key);
+					break;
+				case TypeCode.String:
+					fetchedValue = (T)(object)RFirebaseRemote.GetStringValue(key);
+					break;
+				case TypeCode.Byte:
+				case TypeCode.SByte:
+				case TypeCode.UInt16:
+				case TypeCode.UInt32:
+				case TypeCode.UInt64:
+				case TypeCode.Int16:
+				case TypeCode.Int32:
+				case TypeCode.Int64:
+				case TypeCode.Decimal:
+				case TypeCode.Double:
+				case TypeCode.Single:
+					var number = RFirebaseRemote.GetNumberValue(key);
+					fetchedValue = (T)Convert.ChangeType(number, type);
+					break;
+				default:
+					fetchedValue = RFirebaseRemote.GetGenericValue<T>(key);
+					break;
+			}
+			if (fetchedValue != null)
+			{
+				value = default;
+				value = fetchedValue;
+			}
 		}
 	}
 }
