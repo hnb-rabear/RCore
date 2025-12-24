@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
+using System.Threading;
 using UnityEngine;
 #if ADDRESSABLES
 using UnityEngine.AddressableAssets;
@@ -31,7 +32,9 @@ namespace RCore
 		/// <summary>
 		/// Indicates if the asset is currently being loaded.
 		/// </summary>
-		public bool loading { get; private set; }
+		public bool IsLoading => m_operation.IsValid() && !m_operation.IsDone;
+		public bool IsLoaded => asset != null;
+
 		
 		/// <summary>
 		/// The loaded asset.
@@ -62,28 +65,19 @@ namespace RCore
 		/// </summary>
 		/// <param name="defaultActive">Whether the instantiated GameObject should be active by default.</param>
 		/// <returns>A <see cref="UniTask{T}"/> that completes with the instantiated component.</returns>
-		public async UniTask<T> InstantiateAsync(bool defaultActive = false)
+		public async UniTask<T> InstantiateAsync(bool defaultActive = false, CancellationToken pToken = default)
 		{
 			UnityEngine.Debug.Assert(parent != null, "parent != null");
 			if (instance != null) return instance;
-			if (asset != null)
-			{
-				instance = Object.Instantiate(asset, parent);
-				instance.gameObject.SetActive(defaultActive);
-				instance.name = asset.name;
-			}
-			else
-			{
-				loading = true;
-				m_operation = Addressables.InstantiateAsync(reference, parent);
-				var go = await m_operation;
-				loading = false;
-				go.SetActive(defaultActive);
-				go.name = go.name.Replace("(Clone)", "");
-				instance = go.GetComponent<T>();
-				Debug.Log($"Instantiate Asset Bundle {instance.name}");
-				return instance;
-			}
+
+			var loadedAsset = await LoadAsync(null, pToken);
+			if (instance != null) return instance;
+
+			instance = Object.Instantiate(loadedAsset, parent);
+			instance.gameObject.SetActive(defaultActive);
+			instance.name = loadedAsset.name;
+			
+			Debug.Log($"Instantiate Asset Bundle {instance.name}");
 			return instance;
 		}
 
@@ -91,21 +85,23 @@ namespace RCore
 		/// Asynchronously loads the asset.
 		/// </summary>
 		/// <returns>A <see cref="UniTask{T}"/> that completes with the loaded asset.</returns>
-		public async UniTask<T> LoadAsync()
+		public async UniTask<T> LoadAsync(IProgress<float> progress = null, CancellationToken cancellationToken = default)
 		{
 			if (asset != null) return asset;
-			if (asset == null)
-			{
-				loading = true;
-				m_operation = Addressables.LoadAssetAsync<GameObject>(reference);
-				var obj = await m_operation;
-				if (obj)
-					asset = obj.GetComponent<T>();
-				loading = false;
 
-				if (asset != null)
-					Debug.Log($"Load Asset Bundle {asset.name}");
-			}
+			if (m_operation.IsValid() && m_operation.Status == AsyncOperationStatus.Failed)
+				Addressables.Release(m_operation);
+
+			if (!m_operation.IsValid())
+				m_operation = Addressables.LoadAssetAsync<GameObject>(reference);
+
+			var obj = await m_operation.ToUniTask(progress: progress, cancellationToken: cancellationToken);
+			if (obj)
+				asset = obj.GetComponent<T>();
+
+			if (asset != null)
+				Debug.Log($"Load Asset Bundle {asset.name}");
+			
 			return asset;
 		}
 
@@ -116,26 +112,15 @@ namespace RCore
 		public IEnumerator IEInstantiate(bool defaultActive = false)
 		{
 			if (instance != null)
-			{
 				yield break;
-			}
-			if (asset != null)
+
+			yield return IELoad();
+
+			if (asset != null && instance == null)
 			{
 				instance = Object.Instantiate(asset, parent);
 				instance.gameObject.SetActive(defaultActive);
 				instance.name = asset.name;
-			}
-			else
-			{
-				loading = true;
-				m_operation = Addressables.InstantiateAsync(reference, parent);
-				yield return m_operation;
-				var go = m_operation.Result;
-				loading = false;
-				go.SetActive(defaultActive);
-				go.name = go.name.Replace("(Clone)", "");
-				instance = go.GetComponent<T>();
-				Debug.Log($"Instantiate Asset Bundle {instance.name}");
 			}
 		}
 
@@ -146,12 +131,16 @@ namespace RCore
 		{
 			if (asset != null)
 				yield break;
-			loading = true;
-			m_operation = Addressables.LoadAssetAsync<GameObject>(reference);
+
+			if (m_operation.IsValid() && m_operation.Status == AsyncOperationStatus.Failed)
+				Addressables.Release(m_operation);
+
+			if (!m_operation.IsValid())
+				m_operation = Addressables.LoadAssetAsync<GameObject>(reference);
+
 			yield return m_operation;
 			if (m_operation.Result)
 				asset = m_operation.Result.GetComponent<T>();
-			loading = false;
 
 			if (asset != null)
 				Debug.Log($"Load Asset Bundle {asset.name}");
@@ -182,20 +171,14 @@ namespace RCore
 		{
 			try
 			{
-				if (asset != null)
-				{
-					Debug.Log($"Unload Asset Bundle {asset.name}");
-					if (instance != null)
-						Object.Destroy(instance.gameObject);
-					if (m_operation.IsValid())
-						Addressables.Release(m_operation);
-				}
-				else if (instance != null)
-				{
-					string instanceName = instance.name;
-					if (m_operation.IsValid() && Addressables.ReleaseInstance(m_operation))
-						Debug.Log($"Unload Asset Bundle {instanceName}");
-				}
+				if (instance != null)
+					Object.Destroy(instance.gameObject);
+
+				if (m_operation.IsValid())
+					Addressables.Release(m_operation);
+				
+				asset = null;
+				instance = null;
 			}
 			catch (Exception ex)
 			{

@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
+using System.Threading;
 #if ADDRESSABLES
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -26,7 +27,11 @@ namespace RCore
 		/// <summary>
 		/// The loaded asset.
 		/// </summary>
-		public M asset { get; set; }
+		public M asset { get; private set; }
+
+		public bool IsLoading => m_operation.IsValid() && !m_operation.IsDone;
+		public bool IsLoaded => asset != null;
+
 
 		/// <summary>
 		/// Asynchronously loads the asset.
@@ -35,12 +40,18 @@ namespace RCore
 		/// This function should be awaited in an async method, as it does not work correctly within a Coroutine.
 		/// </remarks>
 		/// <returns>A <see cref="UniTask{M}"/> that completes with the loaded asset.</returns>
-		public async UniTask<M> LoadAsync() 
+		public async UniTask<M> LoadAsync(IProgress<float> progress = null, CancellationToken cancellationToken = default)
 		{
 			if (asset != null)
 				return asset;
-			m_operation = Addressables.LoadAssetAsync<M>(reference);
-			await m_operation;
+
+			if (m_operation.IsValid() && m_operation.Status == AsyncOperationStatus.Failed)
+				Addressables.Release(m_operation);
+
+			if (!m_operation.IsValid())
+				m_operation = Addressables.LoadAssetAsync<M>(reference);
+
+			await m_operation.ToUniTask(progress: progress, cancellationToken: cancellationToken);
 			asset = m_operation.Result;
 			return asset;
 		}
@@ -52,7 +63,13 @@ namespace RCore
 		{
 			if (asset != null)
 				yield break;
-			m_operation = Addressables.LoadAssetAsync<M>(reference);
+
+			if (m_operation.IsValid() && m_operation.Status == AsyncOperationStatus.Failed)
+				Addressables.Release(m_operation);
+
+			if (!m_operation.IsValid())
+				m_operation = Addressables.LoadAssetAsync<M>(reference);
+
 			yield return m_operation;
 			asset = m_operation.Result;
 		}
@@ -63,9 +80,8 @@ namespace RCore
 		public void Unload()
 		{
 			if (m_operation.IsValid())
-			{
 				Addressables.Release(m_operation);
-			}
+			asset = null;
 		}
 	}
 

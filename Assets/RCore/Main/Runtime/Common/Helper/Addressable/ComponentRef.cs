@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Linq;
+using System.Threading;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -41,7 +42,7 @@ namespace RCore
 		/// <summary>
 		/// Indicates whether the component is currently being loaded.
 		/// </summary>
-		public bool loading;
+		public bool IsLoading => m_operation.IsValid() && !m_operation.IsDone;
 
 		private AsyncOperationHandle<GameObject> m_operation;
 
@@ -103,14 +104,15 @@ namespace RCore
 		/// <param name="parent">The parent Transform to attach the instantiated GameObject to.</param>
 		/// <param name="pDefaultActive">Whether the instantiated GameObject should be active by default.</param>
 		/// <returns>A UniTask that completes with the instantiated component.</returns>
-		public async new UniTask<TComponent> InstantiateAsync(Transform parent, bool pDefaultActive = false)
+		public async new UniTask<TComponent> InstantiateAsync(Transform parent, bool pDefaultActive = false, CancellationToken pToken = default)
 		{
-			m_operation = Addressables.InstantiateAsync(this, parent);
-			loading = true;
-			var go = await m_operation;
-			go.SetActive(pDefaultActive);
-			go.TryGetComponent(out instance);
-			loading = false;
+			var loadedAsset = await LoadAssetAsync(pToken);
+			if (instance != null) return instance;
+
+			instance = Object.Instantiate(loadedAsset, parent);
+			instance.gameObject.SetActive(pDefaultActive);
+			instance.name = loadedAsset.name;
+			
 			Debug.Log($"Instantiate Asset Bundle {instance.name}");
 			return instance;
 		}
@@ -119,15 +121,19 @@ namespace RCore
 		/// Asynchronously loads the component asset.
 		/// </summary>
 		/// <returns>A UniTask that completes with the loaded component asset.</returns>
-		public async UniTask<TComponent> LoadAssetAsync()
+		public async UniTask<TComponent> LoadAssetAsync(CancellationToken pToken = default)
 		{
-			if (asset != null)
-				return asset;
-			var operation = IsValid() ? OperationHandle.Convert<GameObject>() : LoadAssetAsync<GameObject>();
-			loading = true;
-			await operation;
-			loading = false;
-			asset = operation.Result.GetComponent<TComponent>();
+			if (asset != null) return asset;
+
+			if (m_operation.IsValid() && m_operation.Status == AsyncOperationStatus.Failed)
+				ReleaseAsset();
+
+			if (!m_operation.IsValid())
+				m_operation = LoadAssetAsync<GameObject>();
+
+			await m_operation.ToUniTask(cancellationToken: pToken);
+			asset = m_operation.Result.GetComponent<TComponent>();
+			
 			Debug.Log($"Load Asset Bundle {asset.name}");
 			return asset;
 		}
@@ -152,11 +158,15 @@ namespace RCore
 		{
 			if (asset != null)
 				yield break;
-			var operation = IsValid() ? OperationHandle.Convert<GameObject>() : LoadAssetAsync<GameObject>();
-			loading = true;
-			yield return operation;
-			loading = false;
-			asset = operation.Result.GetComponent<TComponent>();
+
+			if (m_operation.IsValid() && m_operation.Status == AsyncOperationStatus.Failed)
+				ReleaseAsset();
+
+			if (!m_operation.IsValid())
+				m_operation = LoadAssetAsync<GameObject>();
+
+			yield return m_operation;
+			asset = m_operation.Result.GetComponent<TComponent>();
 			Debug.Log($"Load Asset Bundle {asset.name}");
 		}
 
@@ -168,18 +178,16 @@ namespace RCore
 			try
 			{
 				if (instance != null)
+					Object.Destroy(instance.gameObject);
+				
+				if (asset != null || m_operation.IsValid())
 				{
-					string instanceName = instance.name;
-					if (m_operation.IsValid() && Addressables.ReleaseInstance(m_operation))
-						Debug.Log($"Unload asset bundle success {instanceName}");
-				}
-				if (asset != null)
-				{
-					string name = asset.name;
+					string name = asset != null ? asset.name : "Unknown";
 					asset = null;
 					ReleaseAsset();
 					Debug.Log($"Unload asset bundle success {name}");
 				}
+				instance = null;
 			}
 			catch (Exception ex)
 			{
