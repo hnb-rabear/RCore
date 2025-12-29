@@ -315,8 +315,10 @@ namespace RCore.UI
 		{
 			base.OnPointerDown(eventData);
 
-			if (!isLocked && scaleBounceEffect)
+			if (scaleBounceEffect)
 			{
+				if (isLocked && onClickOnLock == null)
+					return;
 #if DOTWEEN
 				DOTween.Kill(GetInstanceID());
 				transform
@@ -338,8 +340,10 @@ namespace RCore.UI
 		{
 			base.OnPointerUp(eventData);
 
-			if (!isLocked && scaleBounceEffect)
+			if (scaleBounceEffect)
 			{
+				if (isLocked && onClickOnLock == null)
+					return;
 #if DOTWEEN
 				DOTween.Kill(GetInstanceID());
 				transform
