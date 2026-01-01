@@ -42,6 +42,14 @@ namespace RCore.LXLite.Editor
 					break;
 			}
 			EditorGUILayout.EndVertical();
+
+			EditorGUILayout.BeginVertical("box");
+			var color = GUI.backgroundColor;
+			GUI.backgroundColor = new Color(0.3f, 0.8f, 0.3f);
+			if (GUILayout.Button("Buy me a coffee", GUILayout.Height(30)))
+				Application.OpenURL("https://ko-fi.com/rabear");
+			GUI.backgroundColor = color;
+			EditorGUILayout.EndVertical();
 			
 			GUILayout.EndScrollView();
 		}
