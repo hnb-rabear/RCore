@@ -6,6 +6,9 @@ using UnityEditorInternal;
 
 namespace RCore.Editor.Inspector
 {
+	/// <summary>
+	/// Custom editor for MeshRenderer to expose Sorting Layer and Order in Layer properties.
+	/// </summary>
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(MeshRenderer))]
 	public class MeshRendererEditor : UnityEditor.Editor

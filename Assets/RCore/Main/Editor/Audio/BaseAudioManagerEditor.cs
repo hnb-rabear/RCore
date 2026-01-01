@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Audio
 {
+	/// <summary>
+	/// Custom editor for the BaseAudioManager class, providing inspector controls for playback and collection management.
+	/// </summary>
 	[CustomEditor(typeof(BaseAudioManager), true)]
 	public class BaseAudioManagerEditor : UnityEditor.Editor
 	{

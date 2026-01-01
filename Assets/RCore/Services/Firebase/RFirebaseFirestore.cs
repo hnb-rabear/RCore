@@ -10,6 +10,9 @@ using Random = UnityEngine.Random;
 namespace RCore.Service
 {
 #if FIREBASE_FIRESTORE
+	/// <summary>
+	/// Represents a player's identity document in Firestore.
+	/// </summary>
 	[Serializable]
 	[FirestoreData]
 	public class PlayerIdentityDoc
@@ -24,6 +27,9 @@ namespace RCore.Service
 		[FirestoreProperty] public string Identity { get; set; } // Avatar, Display Name, etc...
 	}
 
+	/// <summary>
+	/// Represents a player's data document in Firestore.
+	/// </summary>
 	[Serializable]
 	[FirestoreData]
 	public class PlayerDataDoc
@@ -31,6 +37,9 @@ namespace RCore.Service
 		[FirestoreProperty] public string Data { get; set; }
 	}
 
+	/// <summary>
+	/// Static helper class for Firebase Firestore operations.
+	/// </summary>
 	public static class RFirebaseFirestore
 	{
 		private const string COLLECTION_PLAYER_DATA = "player_data";
@@ -55,6 +64,9 @@ namespace RCore.Service
 			m_PlayerDataCollection = DB.Collection(COLLECTION_PLAYER_DATA);
 			m_PlayerIdentityCollection = DB.Collection(COLLECTION_PLAYER_IDENTITY);
 		}
+		/// <summary>
+		/// Loads a player identity document by email.
+		/// </summary>
 		public static async UniTask<PlayerIdentityDoc> LoadPlayerIdentityByEmailAsync(string email)
 		{
 			if (string.IsNullOrEmpty(email))
@@ -133,6 +145,9 @@ namespace RCore.Service
 		{
 			return await LoadPlayerDataDocAsync(UserId);
 		}
+		/// <summary>
+		/// Uploads or updates a player's identity document.
+		/// </summary>
 		public static async UniTask<bool> UploadPlayerIdentityAsync(string playerId, string pEmail, string pFbId, string GPGId, int pLevel, string pCountry, int pLastActive, string pIdentity)
 		{
 			if (string.IsNullOrEmpty(playerId)) return false;
@@ -150,6 +165,9 @@ namespace RCore.Service
 			bool success = !task.IsCanceled && !task.IsFaulted;
 			return success;
 		}
+		/// <summary>
+		/// Uploads or updates a player's data document.
+		/// </summary>
 		public static async UniTask<bool> UploadPlayerDataAsync(string playerId, string pData)
 		{
 			var task = m_PlayerDataCollection.Document(playerId).UpdateAsync(new Dictionary<string, object>()

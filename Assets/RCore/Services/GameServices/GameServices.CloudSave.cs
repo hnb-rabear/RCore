@@ -29,6 +29,9 @@ namespace RCore.Service
 
 		public delegate ConflictResolutionStrategy SavedGameConflictResolver(ISavedGameMetadata baseVersion, byte[] baseVersionData, ISavedGameMetadata remoteVersion, byte[] remoteVersionData);
 
+		/// <summary>
+		/// Opens the saved game using automatic conflict resolution.
+		/// </summary>
 		public static void OpenWithAutomaticConflictResolution(string fileName, DataSource dataSource, ConflictResolutionStrategy conflictResolutionStrategy,
 			Action<ISavedGameMetadata, SavedGameRequestStatus> callback)
 		{
@@ -43,6 +46,9 @@ namespace RCore.Service
 				});
 		}
 
+		/// <summary>
+		/// Opens the saved game using manual conflict resolution.
+		/// </summary>
 		public static void OpenWithManualConflictResolution(string fileName, bool prefetchDataOnConflict, DataSource dataSource, SavedGameConflictResolver resolverFunction,
 			Action<ISavedGameMetadata, SavedGameRequestStatus> completedCallback)
 		{
@@ -77,6 +83,9 @@ namespace RCore.Service
 				});
 		}
 
+		/// <summary>
+		/// Reads binary data from the opened saved game.
+		/// </summary>
 		public static void ReadSavedGameData(ISavedGameMetadata savedGame, Action<ISavedGameMetadata, byte[], SavedGameRequestStatus> callback)
 		{
 			PlayGamesPlatform.Instance.SavedGame.ReadBinaryData(
@@ -89,6 +98,9 @@ namespace RCore.Service
 			);
 		}
 
+		/// <summary>
+		/// Writes binary data to the opened saved game.
+		/// </summary>
 		public static void WriteSavedGameData(ISavedGameMetadata savedGame, byte[] data, TimeSpan totalPlaytime, Action<ISavedGameMetadata, SavedGameRequestStatus> callback)
 		{
 			var builder = new SavedGameMetadataUpdate.Builder();
@@ -110,6 +122,9 @@ namespace RCore.Service
 			);
 		}
 
+		/// <summary>
+		/// Fetches all saved games.
+		/// </summary>
 		public static void FetchAllSavedGames(DataSource dataSource, Action<List<ISavedGameMetadata>, SavedGameRequestStatus> callback)
 		{
 			PlayGamesPlatform.Instance.SavedGame.FetchAllSavedGames(dataSource,
@@ -130,6 +145,9 @@ namespace RCore.Service
 			);
 		}
 
+		/// <summary>
+		/// Deletes a specific saved game.
+		/// </summary>
 		public static void DeleteSavedGame(ISavedGameMetadata savedGame)
 		{
 			PlayGamesPlatform.Instance.SavedGame.Delete(savedGame);

@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Data.JObject
 {
+	/// <summary>
+	/// Custom property drawer for JObjectModelCollection, allowing creation of new asset instances directly from the inspector.
+	/// </summary>
 	[CustomPropertyDrawer(typeof(JObjectModelCollection), true)]
 	public class JObjectModelCollectionDrawer : PropertyDrawer
 	{

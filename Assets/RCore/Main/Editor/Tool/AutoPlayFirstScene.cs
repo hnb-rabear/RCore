@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Automatically plays the first scene in Build Settings when entering Play Mode.
+	/// </summary>
 	[InitializeOnLoad]
 	public class AutoPlayFirstScene
 	{

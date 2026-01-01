@@ -7,8 +7,14 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Provides extended helper methods for the Unity Editor, including TMP material handling and missing script removal.
+	/// </summary>
 	public static class EditorHelperExtended
 	{
+		/// <summary>
+		/// Gets a list of material preset names associated with the given TMP Font Asset.
+		/// </summary>
 		public static string[] GetTMPMaterialPresets(TMPro.TMP_FontAsset fontAsset)
 		{
 			if (fontAsset == null) return null;
@@ -22,6 +28,9 @@ namespace RCore.Editor
 			return materialPresetNames;
 		}
 
+		/// <summary>
+		/// Finds all materials that reference the texture of the given TMP Font Asset.
+		/// </summary>
 		public static Material[] FindMaterialReferences(TMP_FontAsset fontAsset)
 		{
 			var refs = new List<Material>();
@@ -55,6 +64,9 @@ namespace RCore.Editor
 			return refs.ToArray();
 		}
 
+		/// <summary>
+		/// Scans selected GameObjects (and their children/prefabs) for missing MonoBehaviours and removes them.
+		/// </summary>
 		[MenuItem("GameObject/RCore/Remove Missing Script In GameObject")]
 		[MenuItem("Assets/RCore/Find Missing Script In GameObject")]
 		public static void RemoveMissingScriptInGameObject()
@@ -101,6 +113,9 @@ namespace RCore.Editor
 			}
 		}
 
+		/// <summary>
+		/// Draws a date time picker field in the inspector.
+		/// </summary>
 		public static void DateTimePicker(DateTime? value, string label, int labelWidth, Action<DateTime?> onSelect)
 		{
 			EditorGUILayout.BeginHorizontal();

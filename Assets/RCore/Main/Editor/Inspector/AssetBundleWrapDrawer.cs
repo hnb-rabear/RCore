@@ -8,6 +8,9 @@ using UnityEditor;
 namespace RCore.Editor.Inspector
 {
 #if ADDRESSABLES
+	/// <summary>
+	/// Custom property drawer for AssetBundleWrap, displaying both the reference and its parent group properly.
+	/// </summary>
 	[CustomPropertyDrawer(typeof(AssetBundleWrap<>))]
 	public class AssetBundleWrapDrawer : PropertyDrawer
 	{

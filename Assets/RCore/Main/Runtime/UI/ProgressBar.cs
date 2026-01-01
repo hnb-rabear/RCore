@@ -10,6 +10,9 @@ using UnityEditor;
 
 namespace RCore.UI
 {
+	/// <summary>
+	/// A multipurpose progress bar component that supports simple value filling, time countdowns, and ranking displays.
+	/// </summary>
     public class ProgressBar : MonoBehaviour
     {
         public enum FillDirection
@@ -54,6 +57,9 @@ namespace RCore.UI
         private RectTransform m_rectProgressValue;
 
 
+        /// <summary>
+        /// Gets or sets the fill amount of the progress bar (normalized 0-1).
+        /// </summary>
         public virtual float FillAmount
         {
             get => mFill;
@@ -64,6 +70,9 @@ namespace RCore.UI
                 FillBar(interpolatedFill);
             }
         }
+        /// <summary>
+        /// Gets or sets the current value of the progress bar.
+        /// </summary>
         public virtual float Value
         {
             get => mValue;
@@ -78,6 +87,9 @@ namespace RCore.UI
                 }
             }
         }
+        /// <summary>
+        /// Gets or sets the maximum value of the progress bar.
+        /// </summary>
         public virtual float Max
         {
             get => mMax;
@@ -94,6 +106,9 @@ namespace RCore.UI
                 }
             }
         }
+        /// <summary>
+        /// Gets or sets the rank to be displayed on the progress bar.
+        /// </summary>
         public virtual int Rank
         {
             get => m_rank;
@@ -109,6 +124,9 @@ namespace RCore.UI
             }
         }
 
+        /// <summary>
+        /// Calculates the effective size of the bar area.
+        /// </summary>
         public Vector2 BarSize()
         {
             return new Vector2(imgBackground.rectTransform.rect.width - mWidthOffset, imgBackground.rectTransform.rect.height - mHeightOffset);
@@ -141,6 +159,9 @@ namespace RCore.UI
             }
         }
 
+        /// <summary>
+        /// Activates or deactivates the progress bar components.
+        /// </summary>
         public virtual void Active(bool pValue)
         {
             imgBackground.gameObject.SetActive(pValue);

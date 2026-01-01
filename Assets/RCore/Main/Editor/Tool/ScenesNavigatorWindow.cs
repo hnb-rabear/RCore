@@ -9,6 +9,9 @@ using UnityEditor.SceneManagement;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Editor window to quickly navigate and open scenes in the project.
+	/// </summary>
 	public class ScenesNavigatorWindow : EditorWindow
 	{
 		private List<string> m_scenes;

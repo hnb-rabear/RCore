@@ -50,6 +50,33 @@ To install, add the following Git URLs to the Unity Package Manager (UPM) by sel
     ```
     https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Main
     ```
+3.  **RCore Services** (Optional)
+    *   **Ads**:
+        ```
+        https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Services/Ads
+        ```
+    *   **Firebase**:
+        ```
+        https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Services/Firebase
+        ```
+    *   **GameServices**:
+        ```
+        https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Services/GameServices
+        ```
+    *   **IAP**:
+        ```
+        https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Services/IAP
+        ```
+    *   **Notification**:
+        ```
+        https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Services/Notification
+        ```
+4.  **RCore.SheetX** (Optional)
+    *   **SheetX**:
+        ```
+        https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.SheetX
+        ```
+        [Read Documentation](Assets/RCore.SheetX/Document/Document.md)
 
 ---
 
@@ -118,7 +145,23 @@ This system is built on a layered architecture that separates the persistence en
 ## Common Utilities
 
 ### Helper Classes
-UPDATING...
+
+*   **`CameraHelper`**: Utilities for camera manipulation and screen-to-world conversions.
+*   **`ColorHelper`**: Extensions for color manipulation, hex conversion, and random color generation.
+*   **`ComponentHelper`**: Methods for easily finding, adding, or copying components.
+*   **`DebugDrawHelper`**: Tools for visualizing debug information in the scene view.
+*   **`JsonHelper`**: Wrapper for Unity's JSON utility to handle arrays and lists easily.
+*   **`MathHelper`**: A collection of mathematical functions, probability tools, and vector extensions.
+*   **`NameGenerator`**: Procedural name generation for game entities.
+*   **`RUtil`**: General-purpose utility methods for common tasks.
+*   **`SpineAnimationHelper`**: Helpers for working with Spine animations.
+*   **`TimeHelper`**: Utilities for time tracking, formatting, and conversion.
+*   **`TrajectoryHelper`**: Physics trajectory calculations for projectiles.
+*   **`TransformHelper`**: Extensions for easier Transform manipulation (resetting, scaling, children management).
+*   **`WebRequestHelper`**: Simplified wrapper for `UnityWebRequest` to handle HTTP requests.
+*   **`Encryption`**: Simple string encryption/decryption utilities.
+*   **`RPlayerPrefs`**: Enhanced `PlayerPrefs` wrapper with support for additional types (bool, Vector3, DateTime, etc.) and simple encryption.
+*   **`REditorPrefs`**: Similar to `RPlayerPrefs` but for Editor preferences.
 
 ### Pool System
 
@@ -169,7 +212,7 @@ A collection of robust, production-ready UI components that extend Unity's base 
 
 ## Services Integration
 
-*   **Ads System**: `AdsProvider.cs` (base), `AdmobProvider.cs`, `ApplovinProvider.cs`, `IronSourceProvider.cs`.
+*   **Ads System**: `IAdProvider.cs` (base interface), `AdmobProvider.cs`, `ApplovinProvider.cs`, `IronSourceProvider.cs`.
 *   **Firebase Integration**: `RFirebase.cs` (core), `RFirebaseAnalytics.cs`, `RFirebaseAuth.cs`, `RFirebaseDatabase.cs`, `RFirebaseFirestore.cs`, `RFirebaseRemote.cs`, `RFirebaseStorage.cs`.
 *   **Game Services**: `GameServices.cs` (core), `GameServices.CloudSave.cs`, `GameServices.InAppReview.cs`, `GameServices.InAppUpdate.cs`.
 *   **IAP System**: `IAPManager.cs` for managing `In-App Purchases`.
@@ -200,4 +243,26 @@ A collection of powerful C# attributes designed to enhance the Unity Inspector, 
 ---
 
 ## Editor Tools
-UPDATING...
+
+A suite of productivity tools designed to speed up the development workflow in the Unity Editor.
+
+### Essential Windows
+*   **Tools Collection** (`Ctrl+Alt+/`): A centralized hub that aggregates all RCore tools and common actions into a single window.
+*   **Scenes Navigator** (`Ctrl+Alt+K`): A floating window for quickly switching between scenes in your project build settings or specific folders.
+*   **Asset Shortcuts** (`Ctrl+Alt+L`): Allows you to bookmark frequently used assets (prefabs, scriptable objects) for quick access.
+*   **Editor Icon Dictionary**: A viewer for browsing built-in Unity editor icons.
+
+### Utility Tools
+*   **Screenshot Taker**: A tool to capture high-resolution screenshots of the game view, with options for transparency and scaling.
+*   **Find Component Reference**: Search for all usages of a specific component type in prefabs or scenes.
+*   **Find Objects**: An advanced search tool to find objects by various criteria.
+*   **Find and Replace Assets**: Batch replace references of one asset with another across the project.
+*   **Date Time Picker**: A custom editor window for visually selecting date and time values.
+
+### Helper Shortcuts (RMenu)
+*   **Configuration** (`Ctrl+Alt+J`): Selects the main `Configuration` asset.
+*   **Group/Ungroup GameObjects**: Quickly parent selected objects under a new container or unparent them.
+*   **UI Tools**:
+    *   **Perfect Image Size**: Adjusts UI Image dimensions to match their sprite's native ratio.
+    *   **Anchor Tools**: Quickly snap RectTransform anchors to corners or pivot points.
+    *   **Text Replacer**: Batch convert legacy standard `Text` components to `TextMeshProUGUI`.

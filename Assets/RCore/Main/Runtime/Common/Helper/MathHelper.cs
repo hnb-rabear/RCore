@@ -67,10 +67,14 @@ namespace RCore
 		/// <summary>
 		/// Ensure that the angle is within -180 to 180 range.
 		/// </summary>
+		/// <summary>
+		/// Ensure that the angle is within -180 to 180 range.
+		/// </summary>
 		public static float WrapAngle(float angle)
 		{
-			while (angle > 180f) angle -= 360f;
-			while (angle < -180f) angle += 360f;
+			angle %= 360;
+			if (angle > 180) return angle - 360;
+			if (angle < -180) return angle + 360;
 			return angle;
 		}
 		
@@ -122,15 +126,54 @@ namespace RCore
 			return Quaternion.Euler(pAngle) * Vector3.forward;
 		}
 		
+		/// <summary>
+		/// Sine of an angle in radians.
+		/// </summary>
 		public static float SinRad(float pRadiant) => Mathf.Sin(pRadiant);
+
+		/// <summary>
+		/// Cosine of an angle in radians.
+		/// </summary>
 		public static float CosRad(float pRadiant) => Mathf.Cos(pRadiant);
+
+		/// <summary>
+		/// Sine of an angle in degrees.
+		/// </summary>
 		public static float SinDeg(float pDegree) => Mathf.Sin(pDegree * Mathf.Deg2Rad);
+
+		/// <summary>
+		/// Cosine of an angle in degrees.
+		/// </summary>
 		public static float CosDeg(float pDegree) => Mathf.Cos(pDegree * Mathf.Deg2Rad);
+
+		/// <summary>
+		/// Tangent of an angle in degrees.
+		/// </summary>
 		public static float TanDeg(float pDegree) => Mathf.Tan(pDegree * Mathf.Deg2Rad);
+
+		/// <summary>
+		/// Converts degrees to radians.
+		/// </summary>
 		public static float Ded2Rad(float pDegree) => pDegree * Mathf.Deg2Rad;
+
+		/// <summary>
+		/// Converts radians to degrees.
+		/// </summary>
 		public static float Tad2Deg(float pRadiant) => pRadiant * Mathf.Rad2Deg;
+
+		/// <summary>
+		/// Calculates the angle in degrees between two 2D points.
+		/// </summary>
 		public static float AngleDeg(Vector2 pFrom, Vector2 pTo) => AtanDeg(pTo.y - pFrom.y, pTo.x - pFrom.x);
+
+		/// <summary>
+		/// ArcTangent in degrees.
+		/// </summary>
 		public static float AtanDeg(float dy, float dx) => Mathf.Atan2(dy, dx) * Mathf.Rad2Deg;
+
+		/// <summary>
+		/// ArcTangent in radians.
+		/// </summary>
 		public static float AtanRad(float dy, float dx) => Mathf.Atan2(dy, dx);
 		
 		#endregion
@@ -158,23 +201,21 @@ namespace RCore
 		}
 
 		/// <summary>
-		/// Calculates the area of a triangle formed by three points.
-		/// </summary>
-		private static float Area(Vector2 a, Vector2 b, Vector2 c)
-		{
-			return Mathf.Abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.0f);
-		}
-
-		/// <summary>
 		/// Checks whether a point P lies inside the triangle formed by A, B, and C.
+		/// Uses Barycentric coordinates for efficient calculation.
 		/// </summary>
 		public static bool IsInside(Vector2 a, Vector2 b, Vector2 c, Vector2 p)
 		{
-			float totalArea = Area(a, b, c);
-			float area1 = Area(p, b, c);
-			float area2 = Area(a, p, c);
-			float area3 = Area(a, b, p);
-			return Mathf.Approximately(totalArea, area1 + area2 + area3);
+			float denom = ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
+			
+			// Avoid division by zero
+			if (Mathf.Abs(denom) < Mathf.Epsilon) return false;
+
+			float w1 = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denom;
+			float w2 = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
+			float w3 = 1.0f - w1 - w2;
+
+			return w1 >= 0 && w2 >= 0 && w3 >= 0;
 		}
 
 		/// <summary>
@@ -209,9 +250,24 @@ namespace RCore
 			return pRootPos + pDir.normalized * pDistance;
 		}
 
+		/// <summary>
+		/// Returns the cross product of Up and Forward, representing the Left direction.
+		/// </summary>
 		public static Vector3 LeftDirection(Vector3 pForward, Vector3 pUp) => Vector3.Cross(pUp, pForward);
+
+		/// <summary>
+		/// Returns the cross product of Forward and Up, representing the Right direction.
+		/// </summary>
 		public static Vector3 RightDirection(Vector3 pForward, Vector3 pUp) => Vector3.Cross(pForward, pUp);
+
+		/// <summary>
+		/// Returns the Left direction in the XZ plane.
+		/// </summary>
 		public static Vector3 LeftDirectionXZ(Vector3 pForward) => new Vector3(-pForward.z, pForward.y, pForward.x);
+
+		/// <summary>
+		/// Returns the Right direction in the XZ plane.
+		/// </summary>
 		public static Vector3 RightDirectionXZ(Vector3 pForward) => new Vector3(pForward.z, pForward.y, -pForward.x);
 
 		/// <summary>
@@ -292,16 +348,25 @@ namespace RCore
 			return new Vector3(pCenter.x + pos.x, pCenter.y + pos.y, 0);
 		}
 		
+		/// <summary>
+		/// Returns a 2D position on a circle given an angle and radius.
+		/// </summary>
 		public static Vector2 GetPosOnCircle(float pAngleDeg, float pRadius)
 		{
 			return new Vector2(CosDeg(pAngleDeg) * pRadius, SinDeg(pAngleDeg) * pRadius);
 		}
-		
+
+		/// <summary>
+		/// Returns a 3D position on a circle around a root position, given an angle (Y-axis rotation) and radius.
+		/// </summary>
 		public static Vector3 GetPosOnCircle(Vector3 pRoot, float pAngleDeg, float pRadius)
 		{
 			return pRoot + DirOfYAngle(pAngleDeg) * pRadius;
 		}
 		
+		/// <summary>
+		/// Returns a random index based on a list of weight probabilities.
+		/// </summary>
 		public static int GetRandomIndexFromChances(List<int> chances)
 		{
 			int totalRatios = 0;
@@ -317,6 +382,9 @@ namespace RCore
 			return chances.Count - 1;
 		}
 
+		/// <summary>
+		/// Returns a random index based on an array of weight probabilities (float).
+		/// </summary>
 		public static int GetRandomIndexFromChances(params float[] chances)
 		{
 			float totalRatios = 0;
@@ -332,6 +400,9 @@ namespace RCore
 			return chances.Length - 1;
 		}
 
+		/// <summary>
+		/// Returns a random index based on an array of weight probabilities (int).
+		/// </summary>
 		public static int GetRandomIndexFromChances(params int[] chances)
 		{
 			int totalRatios = 0;
@@ -447,6 +518,9 @@ namespace RCore
 			return IsPointInsideEllipse(point, ellipsePos, ellipseSize.x, ellipseSize.y);
 		}
 		
+		/// <summary>
+		/// Checks if a point is inside an ellipse defined by center, width, and height.
+		/// </summary>
 		public static bool IsPointInsideEllipse(Vector2 pointToCheck, Vector2 ellipsePos, float ellipseWidth, float ellipseHeight)
 		{
 			if (ellipseWidth <= 0 || ellipseHeight <= 0) return false;
@@ -675,10 +749,24 @@ namespace RCore
 			return num < 10 ? (char)('0' + num) : (char)('A' + num - 10);
 		}
 		
+		/// <summary>
+		/// Converts a decimal integer to an 8-bit hex string.
+		/// </summary>
 		public static string DecimalToHex8(int num) => (num & 0xFF).ToString("X2");
+
+		/// <summary>
+		/// Converts a decimal integer to a 24-bit hex string.
+		/// </summary>
 		public static string DecimalToHex24(int num) => (num & 0xFFFFFF).ToString("X6");
+
+		/// <summary>
+		/// Converts a decimal integer to a 32-bit hex string.
+		/// </summary>
 		public static string DecimalToHex32(int num) => num.ToString("X8");
 		
+		/// <summary>
+		/// Calculates the sum of a list of integers.
+		/// </summary>
 		public static int Sum(params int[] pNumbers)
 		{
 			int sum = 0;
@@ -686,12 +774,18 @@ namespace RCore
 			return sum;
 		}
 		
+		/// <summary>
+		/// Calculates the Greatest Common Divisor (GCD) of two numbers.
+		/// </summary>
 		public static int GCD(int a, int b)
 		{
 			while (b > 0) (a, b) = (b, a % b);
 			return a;
 		}
 		
+		/// <summary>
+		/// Calculates the Greatest Common Divisor (GCD) of a list of numbers.
+		/// </summary>
 		public static int GCD(List<int> arr)
 		{
 			if (arr == null || arr.Count == 0) return 0;
@@ -700,6 +794,9 @@ namespace RCore
 			return result;
 		}
 
+		/// <summary>
+		/// Calculates the factorial of a number.
+		/// </summary>
 		public static int Factorial(int pVal)
 		{
 			if (pVal < 0) return 0; // Factorial is not defined for negative numbers
@@ -708,6 +805,10 @@ namespace RCore
 			return result;
 		}
 		
+		/// <summary>
+		/// Calculates a base value that can be upgraded over levels to reach a final total value, considering a surplus buffer.
+		/// Formula: Total = Base * (1 + grow)^0 + Base * (1 + grow)^1 + ...
+		/// </summary>
 		public static float CalcBaseValue(int pMaxLevel, float pTotalValue, float pValueGrow, float pSurplus = 0)
 		{
 			float total = pTotalValue * (1f - pSurplus / 100f);
@@ -720,6 +821,9 @@ namespace RCore
 			return total / denominator;
 		}
 
+		/// <summary>
+		/// Calculates the value at a specific level using compound interest formula.
+		/// </summary>
 		public static float CalcCompoundingValue(float pBase, float pGrow, int pLevel)
 		{
 			if (pLevel <= 1) return pBase;

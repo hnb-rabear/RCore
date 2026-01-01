@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace RCore.Service
 {
+	/// <summary>
+	/// Implementation of IAdProvider (via MonoBehaviour) for the IronSource SDK.
+	/// </summary>
 	public class IronSourceProvider : MonoBehaviour
 	{
 		private static IronSourceProvider m_Instance;

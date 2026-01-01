@@ -13,6 +13,9 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Defines the "RCore" menu items and shortcuts in the Unity Editor.
+	/// </summary>
 	public static class RMenu
 	{
 		// CTRL + ALT + j => Configuration

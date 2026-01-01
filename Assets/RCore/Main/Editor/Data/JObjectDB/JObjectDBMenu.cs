@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Data.JObject
 {
+	/// <summary>
+	/// Menu items for managing the JObject Database (Editor Window, Clear, Backup, Restore, Log).
+	/// </summary>
 	public static class JObjectDBMenu
 	{
 		private const string ALT = "&";

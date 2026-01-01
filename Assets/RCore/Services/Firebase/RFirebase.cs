@@ -15,11 +15,17 @@ using Firebase.Installations;
 
 namespace RCore.Service
 {
+	/// <summary>
+	/// Main entry point for Firebase initialization in RCore.
+	/// </summary>
 	public static class RFirebase
 	{
 		public static bool Initialized;
 		public static string InstallationID;
 
+		/// <summary>
+		/// Initializes Firebase and its dependencies.
+		/// </summary>
 		public static void Init(Action<bool> pOnFinished)
 		{
 			if (Initialized)

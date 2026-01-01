@@ -16,6 +16,9 @@ namespace RCore.UI
 		public void OnFinish();
 	}
 
+	/// <summary>
+	/// Arranges child RectTransforms in a circle or multiple circles, with support for animations.
+	/// </summary>
 	public class UICircleArranger : MonoBehaviour
 	{
 		public float radius = 500f;
@@ -36,6 +39,9 @@ namespace RCore.UI
 		private Vector3[] m_newPositions;
 		private Quaternion[] m_newRotations;
 
+		/// <summary>
+		/// Arranges the children immediately.
+		/// </summary>
 		private void Start()
 		{
 			Arrange();
@@ -129,6 +135,9 @@ namespace RCore.UI
 #if ODIN_INSPECTOR
 		[Button]
 #endif
+		/// <summary>
+		/// Calculates positions and applies them immediately to the children.
+		/// </summary>
 		private void Arrange()
 		{
 			CalculatePositions();
@@ -143,6 +152,9 @@ namespace RCore.UI
 #if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
 #endif
+		/// <summary>
+		/// Arranges children by moving them from one edge of the circle layout to their target positions.
+		/// </summary>
 		public void ArrangeFromEdgeWithTween(bool leftToRight)
 		{
 			CalculatePositions();
@@ -210,6 +222,9 @@ namespace RCore.UI
 #if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
 #endif
+		/// <summary>
+		/// Arranges children by expanding them from the center of the circle.
+		/// </summary>
 		public void ArrangeFromCenterWithTween(Action pCallback)
 		{
 			CalculatePositions();
@@ -266,6 +281,9 @@ namespace RCore.UI
 #if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
 #endif
+		/// <summary>
+		/// Recalculates and smoothly moves children to their new positions.
+		/// </summary>
 		public void RefreshTargetPositionsWithTween()
 		{
 			CalculatePositions();

@@ -4,6 +4,9 @@ using System;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Performs initialization tasks when the editor loads, such as setting culture and validating defines.
+	/// </summary>
 	[InitializeOnLoad]
 	public static class InitializedOnEditorLoad
 	{

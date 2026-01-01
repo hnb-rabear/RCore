@@ -13,11 +13,17 @@ using NPOI.XSSF.UserModel;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Base class for objects that can be toggled via a selection checkbox.
+	/// </summary>
 	[Serializable]
 	public class Selectable
 	{
 		public bool selected = true;
 	}
+	/// <summary>
+	/// Represents an individual sheet within an Excel or Google Spreadsheet using its name.
+	/// </summary>
 	[Serializable]
 	public class SheetPath : Selectable
 	{
@@ -35,12 +41,18 @@ namespace RCore.SheetX.Editor
 			}
 		}
 	}
+	/// <summary>
+	/// Represents a physical Excel file path and its contained sheets.
+	/// </summary>
 	[Serializable]
 	public class ExcelSheetsPath : Selectable
 	{
 		public string path;
 		public List<SheetPath> sheets = new();
 		public string name;
+		/// <summary>
+		/// Opens the Excel file and populates the list of available sheets.
+		/// </summary>
 		public void Load()
 		{
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -67,6 +79,9 @@ namespace RCore.SheetX.Editor
 			}
 			name = Path.GetFileNameWithoutExtension(path);
 		}
+		/// <summary>
+		/// Re-validates the list of sheets against the actual Excel file contents, removing missing sheets.
+		/// </summary>
 		public void Validate()
 		{
 			if (sheets.Count > 0)
@@ -85,6 +100,9 @@ namespace RCore.SheetX.Editor
 			}
 			name = Path.GetFileNameWithoutExtension(path);
 		}
+		/// <summary>
+		/// Creates an NPOI Workbook object from the file path.
+		/// </summary>
 		public IWorkbook GetWorkBook()
 		{
 			if (!File.Exists(path))
@@ -96,6 +114,9 @@ namespace RCore.SheetX.Editor
 			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 			return WorkbookFactory.Create(file);
 		}
+		/// <summary>
+		/// Returns the number of sheets currently selected for processing.
+		/// </summary>
 		public int CountSelected()
 		{
 			int count = 0;
@@ -120,6 +141,9 @@ namespace RCore.SheetX.Editor
 		}
 	}
 
+	/// <summary>
+	/// Represents a Google Spreadsheet identified by its ID and its contained sheets.
+	/// </summary>
 	[Serializable]
 	public class GoogleSheetsPath : Selectable, IComparable<GoogleSheetsPath>
 	{
@@ -168,6 +192,9 @@ namespace RCore.SheetX.Editor
 				onSelected?.Invoke(value);
 			}
 		}
+		/// <summary>
+		/// Opens the Google Spreadsheet in the default web browser.
+		/// </summary>
 		public void OpenFile()
 		{
 			string url = $"https://docs.google.com/spreadsheets/d/{id}/edit";

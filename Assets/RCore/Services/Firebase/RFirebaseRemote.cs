@@ -35,6 +35,10 @@ namespace RCore.Service
 		{
 			Init(remoteConfig.GetDefaultValues(), _ => remoteConfig.LoadRemoteValues());
 		}
+		
+		/// <summary>
+		/// Initializes Remote Config with default values and fetches new data.
+		/// </summary>
 		public static void Init(Dictionary<string, object> pDefaultData, Action<bool> pOnFetched)
 		{
 #if FIREBASE_REMOTE_CONFIG
@@ -80,6 +84,9 @@ namespace RCore.Service
 #endif
 		}
 
+		/// <summary>
+		/// Get a string value from Remote Config.
+		/// </summary>
 		public static string GetStringValue(object pKey)
 		{
 #if FIREBASE_REMOTE_CONFIG
@@ -95,6 +102,9 @@ namespace RCore.Service
 #endif
 		}
 
+		/// <summary>
+		/// Get a boolean value from Remote Config.
+		/// </summary>
 		public static bool GetBoolValue(object pKey)
 		{
 #if FIREBASE_REMOTE_CONFIG
@@ -110,6 +120,9 @@ namespace RCore.Service
 #endif
 		}
 
+		/// <summary>
+		/// Get a generic type value which was stored as JSON string.
+		/// </summary>
 		public static T GetGenericValue<T>(object pKey)
 		{
 #if FIREBASE_REMOTE_CONFIG
@@ -311,6 +324,9 @@ namespace RCore.Service
 				BackUp();
 		}
 
+		/// <summary>
+		/// Saves the backup values to PlayerPrefs.
+		/// </summary>
 		public static void BackUp()
 		{
 			string content = JsonConvert.SerializeObject(m_BackUpValues);

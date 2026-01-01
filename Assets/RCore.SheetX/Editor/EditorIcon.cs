@@ -5,7 +5,10 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
-		public static class EditorIcon
+		/// <summary>
+	/// Provides easy access to standard Unity editor icons.
+	/// </summary>
+	public static class EditorIcon
 	{
 		public enum Icon
 		{
@@ -129,6 +132,9 @@ namespace RCore.SheetX.Editor
 
 		private static Dictionary<Icon, Texture2D> m_Texture2Ds = new Dictionary<Icon, Texture2D>();
 
+		/// <summary>
+		/// Retrieves the texture for a specific named icon type, caching it for future use.
+		/// </summary>
 		public static Texture2D GetIcon(Icon pIcon)
 		{
 			if (m_Texture2Ds.TryGetValue(pIcon, out var icon1))

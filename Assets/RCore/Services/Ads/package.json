@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.services.ads",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "RCore Ads Service",
   "description": "RCore Ads Service Wrapper",
   "unity": "2021.3",

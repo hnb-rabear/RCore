@@ -5,6 +5,9 @@ using System;
 
 namespace RCore.Services.IAP.Editor
 {
+	/// <summary>
+	/// Automatically handles IAP directives based on available classes and SDKs.
+	/// </summary>
 	[InitializeOnLoad]
 	public static class IAPValidator
 	{

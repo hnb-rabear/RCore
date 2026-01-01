@@ -8,6 +8,9 @@ using UnityEngine.SceneManagement;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to identify used and unused MonoScripts in the project.
+	/// </summary>
 	public class ScriptFinder
 	{
 		private List<MonoScript> m_allScripts;

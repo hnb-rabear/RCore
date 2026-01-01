@@ -5,6 +5,9 @@ using System;
 
 namespace RCore.Services.GameServices.Editor
 {
+	/// <summary>
+	/// Automatically handles GameServices directives based on available classes and SDKs.
+	/// </summary>
 	[InitializeOnLoad]
 	public static class GameServicesValidator
 	{

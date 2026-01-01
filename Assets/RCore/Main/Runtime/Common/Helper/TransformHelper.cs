@@ -268,13 +268,21 @@ namespace RCore
 		/// Sort children by conditions
 		/// E.g: transform.Sort(t => t.name);
 		/// </summary>
+		/// <summary>
+		/// Sort children by conditions
+		/// E.g: transform.Sort(t => t.name);
+		/// </summary>
 		public static void Sort(this Transform transform, Func<Transform, IComparable> sortFunction)
 		{
-			var children = transform.GetChildren();
-			var sortedChildren = children.OrderBy(sortFunction).ToList();
+			int count = transform.childCount;
+			var children = new List<Transform>(count);
+			for (int i = 0; i < count; i++)
+				children.Add(transform.GetChild(i));
 
-			for (int i = 0; i < sortedChildren.Count(); i++)
-				sortedChildren[i].SetSiblingIndex(i);
+			children.Sort((a, b) => sortFunction(a).CompareTo(sortFunction(b)));
+
+			for (int i = 0; i < count; i++)
+				children[i].SetSiblingIndex(i);
 		}
 
 		public static IEnumerable<Transform> GetAllChildren(this Transform transform)
@@ -283,15 +291,13 @@ namespace RCore
 
 			openList.Enqueue(transform);
 
-			while (openList.Any())
+			while (openList.Count > 0)
 			{
 				var currentChild = openList.Dequeue();
 
 				yield return currentChild;
 
-				var children = transform.GetChildren();
-
-				foreach (var child in children)
+				foreach (Transform child in currentChild)
 				{
 					openList.Enqueue(child);
 				}

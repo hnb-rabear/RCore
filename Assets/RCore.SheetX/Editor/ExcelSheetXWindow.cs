@@ -15,6 +15,9 @@ using UnityEditor.Compilation;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Handles the "Excel Spreadsheets" tab within the SheetX window, allowing for single or multi-file export.
+	/// </summary>
 	public class ExcelSheetXWindow
 	{
 		public EditorWindow editorWindow;

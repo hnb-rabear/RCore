@@ -4,12 +4,18 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// A simple editor window for editing multi-line text content.
+	/// </summary>
 	public class TextEditorWindow : EditorWindow
 	{
 		private string m_content;
 		private Action<string> m_onContentSaved;
 		private Vector2 m_scrollPosition;
 
+		/// <summary>
+		/// Opens the Text Editor window with initial content and a callback for saving.
+		/// </summary>
 		public static void ShowWindow(string initialContent, Action<string> onQuit)
 		{
 			var window = CreateInstance<TextEditorWindow>();

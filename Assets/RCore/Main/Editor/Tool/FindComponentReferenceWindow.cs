@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Editor window to find prefabs that contain specific components.
+	/// </summary>
 	public class FindComponentReferenceWindow : EditorWindow
 	{
 		public static void ShowWindow()

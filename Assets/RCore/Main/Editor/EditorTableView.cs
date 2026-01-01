@@ -11,6 +11,9 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// A generic helper for drawing a multi-column table view in the customized Editor window.
+	/// </summary>
 	public class EditorTableView<TData>
 	{
 		public delegate void DrawItem(Rect rect, TData item);
@@ -113,6 +116,9 @@ namespace RCore.Editor
 			m_editorWindow = pWindow;
 			m_header = header;
 		}
+		/// <summary>
+		/// Adds a new column to the table definition.
+		/// </summary>
 		public ColumnDef AddColumn(string title, int minWidth, int maxWidth, DrawItem onDrawItem)
 		{
 			var columnDef = new ColumnDef()
@@ -179,6 +185,9 @@ namespace RCore.Editor
 				}
 			}
 		}
+		/// <summary>
+		/// Draws the table view with the provided list of data items.
+		/// </summary>
 		public void DrawOnGUI(List<TData> data, float maxHeight = float.MaxValue, float rowHeight = -1)
 		{
 			if (m_multiColumnHeader == null || m_columnResized)
@@ -296,7 +305,13 @@ namespace RCore.Editor
 				m_sortingDirty = false;
 			}
 		}
+		/// <summary>
+		/// Retrieves a column definition by its header name.
+		/// </summary>
 		public ColumnDef GetColumnByName(string name) => m_columnDefs.FirstOrDefault(def => def.column.headerContent.text == name);
+		/// <summary>
+		/// Retrieves a column definition by its index.
+		/// </summary>
 		public ColumnDef GetColumnByIndex(int index)
 		{
 			if (index < 0 || index >= m_columnDefs.Count)

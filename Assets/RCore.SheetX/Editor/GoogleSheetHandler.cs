@@ -17,6 +17,9 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Handles fetching data from Google Sheets via the API and exporting it to various formats (constants, IDs, localization).
+	/// </summary>
 	public class GoogleSheetHandler
 	{
 		private SheetXSettings m_settings;
@@ -52,6 +55,9 @@ namespace RCore.SheetX.Editor
 
 #region Export IDs
 
+		/// <summary>
+		/// Fetches ID definitions from Google Sheets (ending with 'IDs') and generates C# constants files.
+		/// </summary>
 		public void ExportIDs()
 		{
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
@@ -363,6 +369,10 @@ namespace RCore.SheetX.Editor
 
 #region Export Constants
 
+		/// <summary>
+		/// Fetches constant definitions from Google Sheets (ending with 'Constants') and generates C# constants files.
+		/// Supports various types like int, float, string, arrays, and vectors.
+		/// </summary>
 		public void ExportConstants()
 		{
 #if !SX_LOCALIZATION
@@ -579,6 +589,9 @@ namespace RCore.SheetX.Editor
 
 #region Export Localizations
 
+		/// <summary>
+		/// Fetches localization data from Google Sheets (starting with 'Localization') and exports it to JSON files and C# dictionaries.
+		/// </summary>
 		public void ExportLocalizations()
 		{
 #if !SX_NO_LOCALIZATION

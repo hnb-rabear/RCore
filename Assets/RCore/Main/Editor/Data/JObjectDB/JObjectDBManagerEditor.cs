@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Data.JObject
 {
+	/// <summary>
+	/// Custom editor for JObjectDBManager, providing buttons for saving, backing up, restoring, and clearing data.
+	/// </summary>
 	[CustomEditor(typeof(JObjectDBManager<>), true)]
 	public class JObjectDBManagerEditor : UnityEditor.Editor
 	{

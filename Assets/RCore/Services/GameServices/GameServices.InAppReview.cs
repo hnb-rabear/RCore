@@ -10,6 +10,9 @@ namespace RCore.Service
     {
 #if UNITY_ANDROID && IN_APP_REVIEW
         private static ReviewManager m_ReviewManager;
+        /// <summary>
+        /// Shows the in-app review dialog.
+        /// </summary>
         public static async void ShowInAppReview()
         {
             m_ReviewManager ??= new ReviewManager();

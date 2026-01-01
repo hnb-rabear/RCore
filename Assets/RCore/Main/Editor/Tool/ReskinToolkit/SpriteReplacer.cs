@@ -18,6 +18,9 @@ using tpsDecimalByte;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to replace sprites in the project, supporting pivot and border copying and TPS sheet detection.
+	/// </summary>
 	[Serializable]
 	public class SpriteReplacer
 	{

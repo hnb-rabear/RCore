@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Editor window for capturing screenshots, supporting high resolution and transparency.
+	/// </summary>
 	public class ScreenshotTaker : EditorWindow
 	{
 		private int m_resWidth = Screen.width * 4;

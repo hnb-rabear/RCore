@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace RCore.Services.Firebase.Editor
 {
+	/// <summary>
+	/// Automatically handles Firebase directives based on available classes and SDKs.
+	/// </summary>
 	[InitializeOnLoad]
 	public static class FirebaseValidator
 	{

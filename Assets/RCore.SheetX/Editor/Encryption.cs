@@ -5,6 +5,9 @@
 
 namespace RCore.SheetX.Editor
 {
+    /// <summary>
+    /// Simple XOR encryption used for obfuscating data like API credentials.
+    /// </summary>
     public class Encryption
     {
         private static Encryption m_Singleton { get; set; }
@@ -23,12 +26,18 @@ namespace RCore.SheetX.Editor
             m_EncryptKey = encryptKey;
         }
 
+        /// <summary>
+        /// Encrypts a string value using XOR logic and returns a Base64 result.
+        /// </summary>
         public string Encrypt(string value)
         {
             var plainTextBytes = XOR(System.Text.Encoding.UTF8.GetBytes(value), m_EncryptKey);
             return System.Convert.ToBase64String(plainTextBytes);
         }
 
+        /// <summary>
+        /// Decrypts a Base64 string value using XOR logic.
+        /// </summary>
         public string Decrypt(string value)
         {
             var base64EncodedBytes = System.Convert.FromBase64String(value);

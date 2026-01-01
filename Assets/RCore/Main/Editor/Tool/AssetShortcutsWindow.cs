@@ -9,6 +9,9 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Editor window to manage shortcuts to frequently used assets.
+	/// </summary>
 	public class AssetShortcutsWindow : EditorWindow
 	{
 		[Serializable]

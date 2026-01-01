@@ -224,13 +224,14 @@ namespace RCore
 
 #region String Manipulation
 
+		private static readonly Regex _numRegex = new Regex(@"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?", RegexOptions.IgnorePatternWhitespace);
+
 		/// <summary>
 		/// Separates the numeric and non-numeric parts of a string.
 		/// </summary>
 		public static void SeparateStringAndNum(string pStr, out string pNumberPart, out string pStringPart)
 		{
-			var regexObj = new Regex(@"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?", RegexOptions.IgnorePatternWhitespace);
-			pNumberPart = regexObj.Match(pStr).ToString();
+			pNumberPart = _numRegex.Match(pStr).ToString();
 			pStringPart = pStr.Replace(pNumberPart, "");
 		}
 
@@ -517,17 +518,22 @@ namespace RCore
 			int pointsLength = arrayToCurve.Length;
 			int curvedLength = pointsLength * Mathf.RoundToInt(smoothness) - 1;
 			var curvedPoints = new List<Vector3>(curvedLength);
+			
+			// Reuse buffer to reduce allocations
+			Vector3[] tempPoints = new Vector3[pointsLength];
 
 			for (int pointInTimeOnCurve = 0; pointInTimeOnCurve < curvedLength + 1; pointInTimeOnCurve++)
 			{
 				float t = Mathf.InverseLerp(0, curvedLength, pointInTimeOnCurve);
-				var points = new List<Vector3>(arrayToCurve);
+				
+				// Copy points to buffer
+				System.Array.Copy(arrayToCurve, tempPoints, pointsLength);
 
 				for (int j = pointsLength - 1; j > 0; j--)
 					for (int i = 0; i < j; i++)
-						points[i] = (1 - t) * points[i] + t * points[i + 1];
+						tempPoints[i] = (1 - t) * tempPoints[i] + t * tempPoints[i + 1];
 
-				curvedPoints.Add(points[0]);
+				curvedPoints.Add(tempPoints[0]);
 			}
 			return curvedPoints.ToArray();
 		}
@@ -549,6 +555,7 @@ namespace RCore
 		/// <summary>
 		/// Performs a deep copy of a serializable object.
 		/// </summary>
+		[Obsolete("BinaryFormatter is insecure and obsolete. Use JSON serialization instead.")]
 		public static T Clone<T>(T source)
 		{
 			if (!typeof(T).IsSerializable)
@@ -615,7 +622,17 @@ namespace RCore
 		/// </summary>
 		public static string DictToString(IDictionary<string, object> d)
 		{
-			return $"{{ {d.Select(kv => $"({kv.Key}, {kv.Value})").Aggregate("", (current, next) => $"{current}{next}, ")}}}";
+			if (d == null) return "{}";
+			var sb = new StringBuilder("{ ");
+			bool first = true;
+			foreach (var kv in d)
+			{
+				if (!first) sb.Append(", ");
+				sb.Append($"({kv.Key}, {kv.Value})");
+				first = false;
+			}
+			sb.Append(" }");
+			return sb.ToString();
 		}
 
 #endregion
@@ -707,13 +724,16 @@ namespace RCore
 
 #region String Extensions
 
+		private static readonly Regex _sentenceCaseRegex = new Regex(@"(^|\.\s+)([a-z])");
+		private static readonly Regex _specialCharRegex = new Regex("[^a-zA-Z0-9_.]+");
+
 		/// <summary>
 		/// Converts a string to Sentence case.
 		/// </summary>
 		public static string ToSentenceCase(this string pString)
 		{
 			if (string.IsNullOrEmpty(pString)) return pString;
-			return Regex.Replace(pString.ToLower(), @"(^|\.\s+)([a-z])", m => m.Value.ToUpper());
+			return _sentenceCaseRegex.Replace(pString.ToLower(), m => m.Value.ToUpper());
 		}
 
 		/// <summary>
@@ -739,7 +759,7 @@ namespace RCore
 		/// </summary>
 		public static string RemoveSpecialCharacters(this string str, string replace = "")
 		{
-			return Regex.Replace(str, "[^a-zA-Z0-9_.]+", replace, RegexOptions.Compiled);
+			return _specialCharRegex.Replace(str, replace);
 		}
 
 #endregion

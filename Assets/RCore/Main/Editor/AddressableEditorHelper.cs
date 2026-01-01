@@ -7,8 +7,14 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Helper class for managing Addressable assets in the Unity Editor.
+	/// </summary>
 	public static class AddressableEditorHelper
 	{
+        /// <summary>
+        /// Removes asset bundles from the list that have an empty asset GUID.
+        /// </summary>
         public static void RemoveEmptyAssetBundles<M>(List<AssetBundleWithIntKey<M>> list) where M : UnityEngine.Object
         {
             for (int i = 0; i < list.Count; i++)
@@ -22,6 +28,9 @@ namespace RCore.Editor
                 }
             }
         }
+		/// <summary>
+		/// Creates or updates an addressable asset entry for the specified source object.
+		/// </summary>
 		public static AddressableAssetEntry CreateAssetEntry<T>(T source, string groupName, string label) where T : Object
 		{
 			var entry = CreateAssetEntry(source, groupName, false);
@@ -30,6 +39,9 @@ namespace RCore.Editor
 
 			return entry;
 		}
+		/// <summary>
+		/// Creates or updates an addressable asset entry for the specified source object, with options for group and address naming.
+		/// </summary>
 		public static AddressableAssetEntry CreateAssetEntry<T>(T source, string groupName, bool fileNameAsAddress, string prefix = null) where T : Object
 		{
 			if (source == null || string.IsNullOrEmpty(groupName) || !AssetDatabase.Contains(source))
@@ -54,6 +66,9 @@ namespace RCore.Editor
 			return entry;
 		}
 
+		/// <summary>
+		/// Creates or updates an addressable asset entry in the default group.
+		/// </summary>
 		public static AddressableAssetEntry CreateAssetEntry<T>(T source, bool fileNameAsAddress, string prefix = null) where T : Object
 		{
 			if (source == null || !AssetDatabase.Contains(source))
@@ -76,6 +91,9 @@ namespace RCore.Editor
 
 			return entry;
 		}
+		/// <summary>
+		/// Finds an existing addressable asset group by name.
+		/// </summary>
 		public static AddressableAssetGroup GetGroup(string groupName)
 		{
 			if (string.IsNullOrEmpty(groupName))
@@ -84,6 +102,9 @@ namespace RCore.Editor
 			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
 			return addressableSettings.FindGroup(groupName);
 		}
+		/// <summary>
+		/// Creates a new addressable asset group.
+		/// </summary>
 		public static AddressableAssetGroup CreateGroup(string groupName)
 		{
 			if (string.IsNullOrEmpty(groupName))
@@ -96,11 +117,17 @@ namespace RCore.Editor
 
 			return group;
 		}
+		/// <summary>
+		/// Checks if an addressable asset group exists.
+		/// </summary>
 		public static bool GroupExists(string groupName)
 		{
 			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
 			return addressableSettings.FindGroup(groupName) != null;
 		}
+		/// <summary>
+		/// Sets the address and optional labels for an addressable asset identified by its GUID.
+		/// </summary>
 		public static bool SetAddressableAssetAddress(string guid, string pAddress, params string[] pLabels)
 		{
 			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid);
@@ -124,6 +151,9 @@ namespace RCore.Editor
 			return false;
 		}
         
+        /// <summary>
+        /// Checks if the object is included in the Addressables build (i.e., has an entry and is not in the "Excluded Content" group).
+        /// </summary>
         public static bool IncludedInBuild(Object obj)
         {
             if (obj == null)
@@ -151,6 +181,9 @@ namespace RCore.Editor
         }
     }
 
+	/// <summary>
+	/// Extension methods for interacting with Addressable assets directly from Unity Objects.
+	/// </summary>
 	public static class AddressableEditorExtension
 	{
 		public static void RemoveAddressableAssetLabel(this Object source, string label, out string guid)

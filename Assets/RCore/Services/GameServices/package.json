@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.services.gameservices",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "RCore Game Services",
   "description": "RCore Game Services Wrapper (GPGS, In-App Update, In-App Review)",
   "unity": "2021.3",

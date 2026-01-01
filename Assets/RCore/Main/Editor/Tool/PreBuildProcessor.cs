@@ -7,6 +7,9 @@ using UnityEditor.AddressableAssets.Settings;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Pre-build processor to handle tasks like building Addressables before the player build.
+	/// </summary>
 	public class PreBuildProcessor : IPreprocessBuildWithReport
 	{
 		private const string MENU_ADDRESSABLES = "Toggle Auto Build Addressables";

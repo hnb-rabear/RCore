@@ -12,6 +12,9 @@ using UnityEngine.Purchasing.Security;
 
 namespace RCore.Service
 {
+	/// <summary>
+	/// Manages In-App Purchases (IAP) for the application.
+	/// </summary>
 	public partial class IAPManager : MonoBehaviour, IDetailedStoreListener
 	{
 		private static IAPManager m_Instance;
@@ -61,6 +64,9 @@ namespace RCore.Service
 				Destroy(gameObject);
 		}
 
+		/// <summary>
+		/// Initializes the IAP manager with a list of products.
+		/// </summary>
 		public async void Init(Dictionary<string, ProductType> pProducts, Action<bool> pCallback)
 		{
 			if (m_initialized)
@@ -131,6 +137,9 @@ namespace RCore.Service
 
 #region Purchase
 
+		/// <summary>
+		/// Initiates a purchase for the specified product.
+		/// </summary>
 		public void Purchase(string productId, Action<Product> pOnPurchaseSucceed, Action<Product> pOnPurchaseFailed = null, Action<Product> pOnPurchaseDeferred = null, string pPlacement = null)
 		{
 			processing = true;
@@ -227,6 +236,9 @@ namespace RCore.Service
 
 #region Price
 
+		/// <summary>
+		/// Gets the localized price string for a product.
+		/// </summary>
 		public string GetProductLocalizedPrice(string productId)
 		{
 			if (m_storeController == null)
@@ -259,6 +271,9 @@ namespace RCore.Service
 
 #endregion
 
+		/// <summary>
+		/// Restores previous purchases (iOS and Android).
+		/// </summary>
 		public void Restore(Action<bool, string> onRestore)
 		{
 			processing = true;
@@ -290,6 +305,9 @@ namespace RCore.Service
 			return info.isSubscribed() == Result.True;
 		}
 
+		/// <summary>
+		/// Checks if the user is subscribed to a product.
+		/// </summary>
 		public bool IsSubscribedTo(string productId)
 		{
 			var product = m_storeController.products.WithStoreSpecificID(productId);

@@ -11,6 +11,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Visualizes Play Asset Delivery groups in the Project window with color coding.
+	/// </summary>
 	[InitializeOnLoad]
 	public class PlayAssetDeliveryFilter
 	{

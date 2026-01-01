@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Editor window hosting the FindAndReplaceAssetToolkit, allowing users to replace sprites, cut sprite sheets, fix image properties, and replace objects.
+	/// </summary>
 	public class FindAndReplaceAssetWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;

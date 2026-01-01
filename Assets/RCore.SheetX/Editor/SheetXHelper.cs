@@ -25,8 +25,14 @@ using Color = UnityEngine.Color;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Provides utility methods for parsing, formatting, and handling various operations related to SheetX data processing.
+	/// </summary>
 	public class SheetXHelper : MonoBehaviour
 	{
+		/// <summary>
+		/// Converts a cell's formula result into a string representation based on its cached result type (Numeric, String, Boolean).
+		/// </summary>
 		public static string ConvertFormulaCell(ICell pCell)
 		{
 			if (pCell.CellType == CellType.Formula)
@@ -41,6 +47,9 @@ namespace RCore.SheetX.Editor
 			return null;
 		}
 
+		/// <summary>
+		/// Writes content to a file at the specified folder path. Creates the directory and file if they don't exist.
+		/// </summary>
 		public static void WriteFile(string pFolderPath, string pFileName, string pContent)
 		{
 			if (!Directory.Exists(pFolderPath))
@@ -55,6 +64,9 @@ namespace RCore.SheetX.Editor
 			sw.Close();
 		}
 
+		/// <summary>
+		/// Splits a string value into an array using separators like colon, pipe, and newlines.
+		/// </summary>
 		public static string[] SplitValueToArray(string pValue, bool pIncludeColon = true)
 		{
 			string[] splits = { ":", "|", Environment.NewLine, "\n" };
@@ -67,6 +79,9 @@ namespace RCore.SheetX.Editor
 			return result;
 		}
 
+		/// <summary>
+		/// Analyzes a Google Sheet to determine the data types of its columns (Text, Number, Bool, Json, Arrays).
+		/// </summary>
 		public static List<FieldValueType> GetFieldValueTypes(Sheet sheet, IList<IList<object>> pValues)
 		{
 			if (pValues == null || pValues.Count == 0)
@@ -189,6 +204,9 @@ namespace RCore.SheetX.Editor
 			return fieldValueTypes;
 		}
 
+		/// <summary>
+		/// Analyzes an Excel NPOI Workbook Sheet to determine the data types of its columns.
+		/// </summary>
 		public static List<FieldValueType> GetFieldValueTypes(IWorkbook pWorkBook, string pSheetName)
 		{
 			var sheet = pWorkBook.GetSheet(pSheetName);
@@ -307,6 +325,9 @@ namespace RCore.SheetX.Editor
 			return fieldValueTypes;
 		}
 
+		/// <summary>
+		/// Removes the last occurrence of a specified character from the text.
+		/// </summary>
 		public static string RemoveLast(string text, string character)
 		{
 			if (text.Length < 1) return text;
@@ -314,6 +335,9 @@ namespace RCore.SheetX.Editor
 			return index >= 0 ? text.Remove(index, character.Length) : text;
 		}
 
+		/// <summary>
+		/// Checks if a string is a valid JSON object or array.
+		/// </summary>
 		public static bool IsValidJson(string strInput)
 		{
 			strInput = strInput.Trim();
@@ -340,12 +364,18 @@ namespace RCore.SheetX.Editor
 			return false;
 		}
 
+		/// <summary>
+		/// Sorts a dictionary of IDs by key length.
+		/// </summary>
 		public static Dictionary<string, int> SortIDsByLength(Dictionary<string, int> dict)
 		{
 			var sortedDict = dict.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
 			return sortedDict;
 		}
 
+		/// <summary>
+		/// Converts a flat list of JObjects with dot-notation keys into a nested JSON string.
+		/// </summary>
 		public static string ConvertToNestedJson(List<JObject> original)
 		{
 			// Parse the original JSON into a JArray
@@ -392,6 +422,9 @@ namespace RCore.SheetX.Editor
 			return combineJson.ToString(Formatting.None);
 		}
 
+		/// <summary>
+		/// Merges a list of JObjects into a single JObject.
+		/// </summary>
 		public static JObject CombineJsonObjects(List<JObject> jsonArray)
 		{
 			var combined = new JObject();
@@ -441,6 +474,9 @@ namespace RCore.SheetX.Editor
 			return combined;
 		}
 
+		/// <summary>
+		/// Creates an Encryption object from a comma-separated string of byte values.
+		/// </summary>
 		public static Encryption CreateEncryption(string text)
 		{
 			string[] keysString = text.Trim().Replace(" ", "").Split(',');
@@ -465,6 +501,9 @@ namespace RCore.SheetX.Editor
 			return null;
 		}
 
+		/// <summary>
+		/// Wraps the file content in a C# namespace block.
+		/// </summary>
 		public static string AddNamespace(string fileContent, string @namespace)
 		{
 			if (!string.IsNullOrEmpty(@namespace))
@@ -477,6 +516,9 @@ namespace RCore.SheetX.Editor
 			return fileContent;
 		}
 
+		/// <summary>
+		/// Determines if a sheet should be treated as a JSON data sheet based on its name (excluding IDs, Constants, Settings, Localization).
+		/// </summary>
 		public static bool IsJsonSheet(string pName)
 		{
 			return !pName.EndsWith(SheetXConstants.IDS_SHEET)
@@ -485,6 +527,9 @@ namespace RCore.SheetX.Editor
 				&& !pName.StartsWith(SheetXConstants.LOCALIZATION_SHEET);
 		}
 
+		/// <summary>
+		/// Creates an EditorTableView for displaying sheet paths with a toggle column.
+		/// </summary>
 		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow, string name, Action<bool> pOnTogSelected)
 		{
 			var table = new EditorTableView<SheetPath>(editorWindow, name);
@@ -514,6 +559,9 @@ namespace RCore.SheetX.Editor
 			return table;
 		}
 
+		/// <summary>
+		/// Generates unique character sets for multiple content groups.
+		/// </summary>
 		public static Dictionary<string, string> GenerateCharacterSets(Dictionary<string, string> pContentGroups)
 		{
 			var output = new Dictionary<string, string>();
@@ -522,6 +570,9 @@ namespace RCore.SheetX.Editor
 			return output;
 		}
 
+		/// <summary>
+		/// Generates a string containing all unique characters found in the input content, sorted.
+		/// </summary>
 		public static string GenerateCharacterSet(string pContent)
 		{
 			string charactersSet = "";
@@ -532,6 +583,9 @@ namespace RCore.SheetX.Editor
 			return charactersSet;
 		}
 
+		/// <summary>
+		/// Gets the 'Assets/Editor' directory path, creating it if it doesn't exist.
+		/// </summary>
 		public static string GetSaveDirectory()
 		{
 			var path = Path.Combine(Application.dataPath, "Editor");
@@ -540,6 +594,9 @@ namespace RCore.SheetX.Editor
 			return path;
 		}
 
+		/// <summary>
+		/// Authenticates with Google and fetches the spreadsheet metadata, updating the SheetPath list.
+		/// </summary>
 		public static void DownloadGoogleSheet(string googleClientId, string googleClientSecret, GoogleSheetsPath pGoogleSheetsPath)
 		{
 			if (string.IsNullOrEmpty(pGoogleSheetsPath.id))
@@ -609,6 +666,9 @@ namespace RCore.SheetX.Editor
 			pGoogleSheetsPath.name = spreadsheet.Properties.Title;
 		}
 
+		/// <summary>
+		/// Authenticates the user with Google using Client ID and Secret, requesting SpreadsheetsReadonly scope.
+		/// </summary>
 		public static UserCredential AuthenticateGoogleUser(string googleClientId, string googleClientSecret)
 		{
 			var clientSecrets = new ClientSecrets();
@@ -628,11 +688,17 @@ namespace RCore.SheetX.Editor
 			return credential;
 		}
 
+		/// <summary>
+		/// Removes C-style block comments (/* ... */) from the input string.
+		/// </summary>
 		public static string RemoveComments(string input)
 		{
 			return Regex.Replace(input, @"/\*.*?\*/", string.Empty);
 		}
 		
+		/// <summary>
+		/// Checks if a cell at a specific row and column index matches any merged region in the Google Sheet.
+		/// </summary>
 		public static bool IsMergedCell(Sheet sheet, int row, int col)
 		{
 			var mergedCells = sheet.Merges;

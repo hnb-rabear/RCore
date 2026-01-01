@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to scan and list ParticleSystem prefabs in a specified folder.
+	/// </summary>
 	public class ParticleSystemFinder
 	{
 		private List<GameObject> m_particleSystemPrefabs;

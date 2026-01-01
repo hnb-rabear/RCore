@@ -7,6 +7,9 @@ using GoogleMobileAds.Ump.Api;
 
 namespace RCore.Service
 {
+	/// <summary>
+	/// Implementation of IAdProvider for the Google Mobile Ads (AdMob) SDK.
+	/// </summary>
 	public class AdMobProvider : IAdProvider
 	{
 		private static AdMobProvider m_Instance;
@@ -116,6 +119,7 @@ namespace RCore.Service
 			else
 				m_interstitialAdListener?.OnInterstitialShow(false, pPlacement);
 		}
+		
 		public bool IsInterstitialReady()
 		{
 #if UNITY_EDITOR
@@ -216,6 +220,7 @@ namespace RCore.Service
 				m_rewardedAdListener?.OnRewardedShow(false, pPlacement);
 			}
 		}
+		
 		public bool IsRewardedVideoAvailable()
 		{
 #if UNITY_EDITOR
@@ -283,6 +288,7 @@ namespace RCore.Service
 			}
 			return false;
 		}
+		
 		public void HideBanner()
 		{
 			if (m_bannerLoaded && m_bannerView != null)
@@ -292,6 +298,7 @@ namespace RCore.Service
 				m_bannerAdListener?.OnBannerDisplayed(false);
 			}
 		}
+		
 		public void DestroyBanner()
 		{
 			if (m_bannerLoaded && m_bannerView != null)
@@ -303,10 +310,12 @@ namespace RCore.Service
 				m_bannerAdListener?.OnBannerDisplayed(false);
 			}
 		}
+		
 		public bool IsBannerReady()
 		{
 			return m_bannerLoaded;
 		}
+		
 		public bool IsBannerDisplayed()
 		{
 			return m_bannerDisplayed;

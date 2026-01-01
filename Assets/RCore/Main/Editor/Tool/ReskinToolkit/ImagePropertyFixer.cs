@@ -7,6 +7,9 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to batch update Image properties (RaycastTarget, Maskable, etc.) for selected sprites or objects.
+	/// </summary>
 	[System.Serializable]
 	public class ImagePropertyFixer
 	{

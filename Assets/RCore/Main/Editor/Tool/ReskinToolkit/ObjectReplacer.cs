@@ -6,6 +6,9 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to replace references of specific objects with others in the project.
+	/// </summary>
 	[Serializable]
 	public class ObjectReplacer
 	{

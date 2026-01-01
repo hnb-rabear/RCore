@@ -10,6 +10,9 @@ using System;
 
 namespace RCore.Service
 {
+	/// <summary>
+	/// Wrapper class for Firebase Database references to simplify data access.
+	/// </summary>
 	public class RDatabaseReference
 	{
 #if FIREBASE_DATABASE
@@ -37,6 +40,9 @@ namespace RCore.Service
 				reference = pParent.reference.Child(pName);
 		}
 
+		/// <summary>
+		/// Gets data from the reference.
+		/// </summary>
 		public void GetData(Action<string, bool> pOnFinished)
 		{
 			if (string.IsNullOrEmpty(name))
@@ -106,6 +112,9 @@ namespace RCore.Service
 			});
 		}
 
+		/// <summary>
+		/// Sets data at the reference location.
+		/// </summary>
 		public void SetData(string pUploadData, Action<bool> pOnFinished)
 		{
 			if (string.IsNullOrEmpty(name))
@@ -224,6 +233,9 @@ namespace RCore.Service
 #endif
 	}
 
+	/// <summary>
+	/// Static helper class for Firebase Database operations.
+	/// </summary>
 	public static class RFirebaseDatabase
 	{
 		private static bool m_Initialized;

@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Editor window for selecting which sheets within a Google Spreadsheet should be processed.
+	/// </summary>
 	public class EditGoogleSheetsWindow : EditorWindow
 	{
 		private GoogleSheetsPath m_googleSheetsPath;
@@ -19,6 +22,9 @@ namespace RCore.SheetX.Editor
 		private Action<GoogleSheetsPath> m_onQuit;
 		private bool m_isEditing;
 
+		/// <summary>
+		/// Opens the Edit Google Sheets window for a specific Google Sheets path configuration.
+		/// </summary>
 		public static void ShowWindow(GoogleSheetsPath googleSheetsPath, string googleClientId, string googleClientSecret, Action<GoogleSheetsPath> onQuit)
 		{
 			var window = CreateInstance<EditGoogleSheetsWindow>();

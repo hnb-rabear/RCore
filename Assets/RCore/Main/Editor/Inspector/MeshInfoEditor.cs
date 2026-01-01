@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Inspector
 {
+    /// <summary>
+    /// Custom editor for SkinnedMeshRenderer to display vertex, triangle, and submesh counts.
+    /// </summary>
     [CustomEditor(typeof(SkinnedMeshRenderer))]
     [CanEditMultipleObjects]
     public class SkinnedMeshRendererEditor : UnityEditor.Editor
@@ -32,6 +35,9 @@ namespace RCore.Editor.Inspector
         }
     }
 
+    /// <summary>
+    /// Custom editor for MeshFilter to display vertex, triangle, and submesh counts.
+    /// </summary>
     [CustomEditor(typeof(MeshFilter))]
     [CanEditMultipleObjects]
     public class MeshFilterEditor : UnityEditor.Editor

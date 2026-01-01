@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Inspector
 {
+	/// <summary>
+	/// Custom property drawer for AssetBundleRef, displaying the Addressable reference field.
+	/// </summary>
 	[CustomPropertyDrawer(typeof(AssetBundleRef<>), true)]
 	public class AssetBundleRefDrawer : PropertyDrawer
 	{

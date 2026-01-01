@@ -16,6 +16,9 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Handles reading data from Excel files using NPOI and exporting it to various formats (constants, IDs, localization).
+	/// </summary>
 	public class ExcelSheetHandler
 	{
 		private SheetXSettings m_settings;
@@ -36,6 +39,9 @@ namespace RCore.SheetX.Editor
 
 #region Export IDs
 
+		/// <summary>
+		/// Reads ID definitions from Excel sheets (ending with 'IDs') and generates C# constants files.
+		/// </summary>
 		public void ExportIDs()
 		{
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
@@ -300,6 +306,10 @@ namespace RCore.SheetX.Editor
 
 #region Export Constants
 
+		/// <summary>
+		/// Reads constant definitions from Excel sheets (ending with 'Constants') and generates C# constants files.
+		/// Supports various types like int, float, string, arrays, and vectors.
+		/// </summary>
 		public void ExportConstants()
 		{
 #if !SX_LOCALIZATION
@@ -530,6 +540,9 @@ namespace RCore.SheetX.Editor
 
 #region Export Localizations
 
+		/// <summary>
+		/// Reads localization data from Excel sheets (starting with 'Localization') and exports it to JSON files and C# dictionaries.
+		/// </summary>
 		public void ExportLocalizations()
 		{
 #if !SX_NO_LOCALIZATION

@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.services.firebase",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "RCore Firebase Service",
   "description": "RCore Firebase Service Wrapper",
   "unity": "2021.3",

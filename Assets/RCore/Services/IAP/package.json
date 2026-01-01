@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.services.iap",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "RCore IAP Service",
   "description": "RCore IAP Service Wrapper",
   "unity": "2021.3",

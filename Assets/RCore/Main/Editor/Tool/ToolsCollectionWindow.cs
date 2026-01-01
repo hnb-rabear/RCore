@@ -10,6 +10,9 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// A collection of miscellaneous utility tools for the editor, including GameObject replacement, mesh combining, and UI formatting.
+	/// </summary>
 	public class ToolsCollectionWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;

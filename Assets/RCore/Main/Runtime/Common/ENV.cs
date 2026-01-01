@@ -7,6 +7,10 @@ using UnityEngine;
 
 namespace RCore
 {
+    /// <summary>
+    /// A helper class for managing environment variables (reading from .env files or system environment).
+    /// Used for handling configuration specific to different environments (DEV, PROD, etc.).
+    /// </summary>
     public static class Env
     {
         public static readonly string EnvPath = Path.Combine(Application.dataPath, "../", $".env");
@@ -21,6 +25,9 @@ namespace RCore
             Load();
         }
 
+        /// <summary>
+        /// Logs all loaded environment variables to the Unity console.
+        /// </summary>
         public static void LogEnv()
         {
             if (variables != null)
@@ -32,6 +39,11 @@ namespace RCore
                     UnityEngine.Debug.Log($"[builtIn env]{variable.Key} {variable.Value}");
         }
 
+        /// <summary>
+        /// Parses the content of an .env file into a dictionary of key-value pairs.
+        /// </summary>
+        /// <param name="contents">The raw string content of the .env file.</param>
+        /// <returns>A dictionary containing the parsed environment variables.</returns>
         public static Dictionary<string, string> ParseEnvironmentFile(string contents)
         {
             return contents.Trim().Split(new[] { Environment.NewLine }, StringSplitOptions.None)
@@ -39,6 +51,13 @@ namespace RCore
                 .ToDictionary(l => l.Substring(0, l.IndexOf("=", StringComparison.Ordinal)).Trim().ToUpper(), l => l.Substring(l.IndexOf("=", StringComparison.Ordinal) + 1).Trim().Trim('"', '\''));
         }
 
+        /// <summary>
+        /// Tries to retrieve a string value for the given key.
+        /// Checks system environment variables first, then the loaded .env file variables, then built-in variables.
+        /// </summary>
+        /// <param name="key">The environment variable key.</param>
+        /// <param name="value">The retrieved value.</param>
+        /// <returns>True if the key was found, false otherwise.</returns>
         public static bool TryParse(string key, out string value)
         {
             value = "";
@@ -59,6 +78,9 @@ namespace RCore
             return !string.IsNullOrEmpty(value);
         }
 
+        /// <summary>
+        /// Tries to retrieve a boolean value for the given key.
+        /// </summary>
         public static bool TryParse(string key, out bool value)
         {
             value = false;
@@ -76,6 +98,9 @@ namespace RCore
             return builtInVariables != null && builtInVariables.ContainsKey(key) && bool.TryParse(builtInVariables[key], out value);
 		}
 
+        /// <summary>
+        /// Tries to retrieve a double value for the given key.
+        /// </summary>
         public static bool TryParse(string key, out double value)
         {
             value = 0;
@@ -93,6 +118,9 @@ namespace RCore
             return builtInVariables != null && builtInVariables.ContainsKey(key) && double.TryParse(builtInVariables[key], out value);
 		}
 
+        /// <summary>
+        /// Tries to retrieve a float value for the given key.
+        /// </summary>
         public static bool TryParse(string key, out float value)
         {
             value = 0;
@@ -110,6 +138,9 @@ namespace RCore
             return builtInVariables != null && builtInVariables.ContainsKey(key) && float.TryParse(builtInVariables[key], out value);
 		}
 
+        /// <summary>
+        /// Tries to retrieve an integer value for the given key.
+        /// </summary>
         public static bool TryParse(string key, out int value)
         {
             value = 0;
@@ -134,6 +165,9 @@ namespace RCore
                 Environment.SetEnvironmentVariable(key, value.ToString());
         }
 
+        /// <summary>
+        /// Loads environment variables from the .env file located at the project root and from Resources.
+        /// </summary>
         public static void Load()
         {
             variables = new Dictionary<string, string>();

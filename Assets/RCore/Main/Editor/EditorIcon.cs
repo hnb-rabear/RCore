@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Provides easy access to standard Unity editor icons.
+	/// </summary>
 	public static class EditorIcon
 	{
 		public enum Icon
@@ -129,6 +132,9 @@ namespace RCore.Editor
 
 		private static Dictionary<Icon, Texture2D> m_Texture2Ds = new Dictionary<Icon, Texture2D>();
 
+		/// <summary>
+		/// Retrieves the texture for a specific named icon type, caching it for future use.
+		/// </summary>
 		public static Texture2D GetIcon(Icon pIcon)
 		{
 			if (m_Texture2Ds.TryGetValue(pIcon, out var icon1))
@@ -138,6 +144,9 @@ namespace RCore.Editor
 			return m_Texture2Ds[pIcon];
 		}
 
+		/// <summary>
+		/// Retrieves all available editor icons as a list of textures.
+		/// </summary>
 		public static List<Texture2D> GetAllIcons()
 		{
 			var icons = new List<Texture2D>();

@@ -9,11 +9,17 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Editor window for selecting which sheets within an Excel file should be processed.
+	/// </summary>
 	public class EditExcelSheetsWindow : EditorWindow
 	{
 		private ExcelSheetsPath m_excelSheetsPath;
 		private EditorTableView<SheetPath> m_tableSheets;
 		
+		/// <summary>
+		/// Opens the Edit Excel Sheets window for a specific Excel path.
+		/// </summary>
 		public static void ShowWindow(ExcelSheetsPath excelSheetsPath)
 		{
 			var window = CreateInstance<EditExcelSheetsWindow>();

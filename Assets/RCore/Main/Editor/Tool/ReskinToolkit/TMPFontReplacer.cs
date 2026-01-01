@@ -7,6 +7,9 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to replace TextMeshPro fonts in scenes and project assets.
+	/// </summary>
 	[Serializable]
 	public class TMPFontReplacer
 	{

@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Displays a window showing all available built-in editor icons.
+	/// </summary>
 	public class EditorIconsWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;

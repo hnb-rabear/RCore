@@ -5,6 +5,9 @@ using System;
 
 namespace RCore.Services.Ads.Editor
 {
+	/// <summary>
+	/// Automatically managing defining symbols based on the existence of specific types in the project.
+	/// </summary>
 	[InitializeOnLoad]
 	public static class AdsValidator
 	{

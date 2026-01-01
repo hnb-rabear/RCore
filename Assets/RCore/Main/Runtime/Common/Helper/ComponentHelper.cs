@@ -13,32 +13,43 @@ using UnityEngine;
 
 namespace RCore
 {
+	/// <summary>
+	/// specific for Component and GameObject
+	/// </summary>
 	public static class ComponentHelper
 	{
+		/// <summary>
+		/// Reorders the sorting order of an array of SpriteRenderers based on their current sorting order.
+		/// </summary>
 		public static void ReorderSortingOfSpriteRenderers(SpriteRenderer[] pItems)
 		{
-			var dict = new Dictionary<SpriteRenderer, int>();
-			foreach (var item in pItems)
-				dict.Add(item, item.sortingOrder);
+			if (pItems == null || pItems.Length == 0) return;
 
-			var sortedDict = dict.OrderBy(x => x.Value);
+			// Sort by sorting order
+			Array.Sort(pItems, (a, b) => a.sortingOrder.CompareTo(b.sortingOrder));
 
 			int order = -1;
-			int lastSortingOrder = -1;
-			foreach (var item in sortedDict)
+			int lastSortingOrder = -2147483648; // int.MinValue
+
+			for (int i = 0; i < pItems.Length; i++)
 			{
-				if (lastSortingOrder < item.Key.sortingOrder)
+				var item = pItems[i];
+				if (lastSortingOrder < item.sortingOrder)
 				{
 					order++;
-					lastSortingOrder = item.Key.sortingOrder;
+					if (lastSortingOrder == -2147483648) order = 0; // First item
+					lastSortingOrder = item.sortingOrder;
 				}
-				item.Key.sortingOrder = order;
+				item.sortingOrder = order;
 			}
 		}
 	}
 	
 	public static class ComponentExtension
 	{
+		/// <summary>
+		/// Sets the alpha value of the image color.
+		/// </summary>
 		public static void SetAlpha(this UnityEngine.UI.Image img, float alpha)
 		{
 			var color = img.color;
@@ -59,29 +70,35 @@ namespace RCore
 			}
 		}
 
+		/// <summary>
+		/// Checks if the component's game object is active in the hierarchy.
+		/// Returns false if the reference is null or an error occurs.
+		/// </summary>
 		public static bool IsActive(this Component target)
 		{
-			try
-			{
-				return target.gameObject.activeSelf;
-			}
-			catch (Exception ex)
-			{
-				Debug.LogError(ex.ToString());
-				return false;
-			}
+			return target != null && target.gameObject.activeSelf;
 		}
 
+		/// <summary>
+		/// Sorts a list of Unity Objects by their name.
+		/// </summary>
 		public static List<T> SortByName<T>(this List<T> objects) where T : UnityEngine.Object
 		{
-			return objects.OrderBy(m => m.name).ToList();
+			objects.Sort((a, b) => a.name.CompareTo(b.name));
+			return objects;
 		}
 
+		/// <summary>
+		/// Sets the parent of the component's transform.
+		/// </summary>
 		public static void SetParent(this Component target, Transform parent)
 		{
 			target.transform.SetParent(parent);
 		}
 
+		/// <summary>
+		/// Finds a component of type T in the parent hierarchy of the game object.
+		/// </summary>
 		public static T FindComponentInParent<T>(this GameObject objRoot) where T : Component
 		{
 			objRoot.TryGetComponent(out T component);
@@ -92,6 +109,9 @@ namespace RCore
 			return component;
 		}
 
+		/// <summary>
+		/// Finds a component of type T in the children of the game object using a recursive search.
+		/// </summary>
 		public static T FindComponentInChildren<T>(this GameObject objRoot) where T : Component
 		{
 			// if we don't find the component in this object 
@@ -130,6 +150,9 @@ namespace RCore
 			pOutput = objRoot.FindComponentInChildren<T>();
 		}
 
+		/// <summary>
+		/// Finds the Nth component of type T in the children of the game object.
+		/// </summary>
 		public static T FindComponentInChildrenWithIndex<T>(this GameObject objRoot, int pIndex) where T : Component
 		{
 			int index = -1;
@@ -164,23 +187,24 @@ namespace RCore
 		public static List<T> FindComponentsInChildren<T>(this GameObject objRoot) where T : Component
 		{
 			var list = new List<T>();
-#if UNITY_2019_2_OR_NEWER
-			objRoot.TryGetComponent(out T component);
-#else
-            T component = objRoot.GetComponent<T>();
-#endif
+			FindComponentsInChildren(objRoot, list);
+			return list;
+		}
 
-			if (component != null)
+		private static void FindComponentsInChildren<T>(GameObject objRoot, List<T> list) where T : Component
+		{
+#if UNITY_2019_2_OR_NEWER
+			if (objRoot.TryGetComponent(out T component))
 				list.Add(component);
+#else
+            var component = objRoot.GetComponent<T>();
+            if (component != null) list.Add(component);
+#endif
 
 			foreach (Transform t in objRoot.transform)
 			{
-				var components = FindComponentsInChildren<T>(t.gameObject);
-				if (components != null)
-					list.AddRange(components);
+				FindComponentsInChildren(t.gameObject, list);
 			}
-
-			return list;
 		}
 
 		public static void FindComponentsInChildren<T>(this GameObject objRoot, out List<T> pOutput) where T : Component
@@ -188,6 +212,9 @@ namespace RCore
 			pOutput = objRoot.FindComponentsInChildren<T>();
 		}
 
+		/// <summary>
+		/// Finds a component of type T in a child with a specific name.
+		/// </summary>
 		public static T FindComponentInChildren<T>(this GameObject objRoot, string pChildName, bool pContainChildName = false) where T : Component
 		{
 			var components = objRoot.FindComponentsInChildren<T>();
@@ -202,34 +229,45 @@ namespace RCore
 		public static List<T> FindAllComponentsInChildren<T>(this GameObject objRoot) where T : Component
 		{
 			var list = new List<T>();
-			var component = objRoot.GetComponents<T>();
-
-			if (component != null)
-				list.AddRange(component);
-
-			foreach (Transform t in objRoot.transform)
-			{
-				var components = FindAllComponentsInChildren<T>(t.gameObject);
-				if (components != null)
-					list.AddRange(components);
-			}
-
+			FindAllComponentsInChildren(objRoot, list);
 			return list;
 		}
 
+		private static void FindAllComponentsInChildren<T>(GameObject objRoot, List<T> list) where T : Component
+		{
+			var components = objRoot.GetComponents<T>();
+			if (components != null && components.Length > 0)
+				list.AddRange(components);
+
+			foreach (Transform t in objRoot.transform)
+			{
+				FindAllComponentsInChildren(t.gameObject, list);
+			}
+		}
+
+		/// <summary>
+		/// Gets a list of all child game objects recursively.
+		/// </summary>
+		/// <summary>
+		/// Gets a list of all child game objects recursively.
+		/// </summary>
 		public static List<GameObject> GetAllChildren(this GameObject pParent)
 		{
 			var list = new List<GameObject>();
+			GetAllChildren(pParent, list);
+			return list;
+		}
+
+		private static void GetAllChildren(GameObject pParent, List<GameObject> list)
+		{
 			foreach (Transform t in pParent.transform)
 			{
 				list.Add(t.gameObject);
 				if (t.childCount > 0)
 				{
-					var children = GetAllChildren(t.gameObject);
-					list.AddRange(children);
+					GetAllChildren(t.gameObject, list);
 				}
 			}
-			return list;
 		}
 
 		public static List<string> ToList(this string[] pArray)
@@ -240,6 +278,9 @@ namespace RCore
 			return list;
 		}
 
+		/// <summary>
+		/// Finds a child game object by name recursively.
+		/// </summary>
 		public static GameObject FindChildObject(this GameObject objRoot, string pName, bool pContain = false)
 		{
 			GameObject obj;
@@ -263,6 +304,9 @@ namespace RCore
 			return null;
 		}
 
+		/// <summary>
+		/// Finds all child game objects with a specific name recursively and adds them to the output list.
+		/// </summary>
 		public static void FindChildObjects(this GameObject objRoot, string pName, List<GameObject> pOutput, bool pContain = false)
 		{
 			bool found = !pContain ? objRoot.name == pName : objRoot.name.Contains(pName);
@@ -274,6 +318,9 @@ namespace RCore
 				trnsRoot.GetChild(i).gameObject.FindChildObjects(pName, pOutput, pContain);
 		}
 
+		/// <summary>
+		/// Stops or resumes the NavMeshAgent movement.
+		/// </summary>
 		public static void StopMove(this UnityEngine.AI.NavMeshAgent pAgent, bool pStop)
 		{
 			if (pAgent.gameObject.activeSelf || !pAgent.enabled || !pAgent.isOnNavMesh)
@@ -281,6 +328,9 @@ namespace RCore
 			pAgent.isStopped = pStop;
 		}
 
+		/// <summary>
+		/// Checks if the collider's tag matches any of the provided tags.
+		/// </summary>
 		public static bool CompareTags(this Collider collider, params string[] tags)
 		{
 			for (int i = 0; i < tags.Length; i++)
@@ -291,6 +341,9 @@ namespace RCore
 			return false;
 		}
 
+		/// <summary>
+		/// Checks if the game object's tag matches any of the provided tags.
+		/// </summary>
 		public static bool CompareTags(this GameObject gameObject, params string[] tags)
 		{
 			for (int i = 0; i < tags.Length; i++)
@@ -301,6 +354,9 @@ namespace RCore
 			return false;
 		}
 
+		/// <summary>
+		/// Gets the component of type T, or adds it if it doesn't exist.
+		/// </summary>
 		public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
 		{
 			var component = gameObject.GetComponent<T>();
@@ -309,6 +365,9 @@ namespace RCore
 		
 #region Simple Pool
 
+		/// <summary>
+		/// Obtains an inactive component of type T from the pool, or instantiates a new one from the prefab.
+		/// </summary>
 		public static T Obtain<T>(this List<T> pool, GameObject prefab, Transform parent, string name = null) where T : Component
 		{
 			for (int i = 0; i < pool.Count; i++)
@@ -334,6 +393,9 @@ namespace RCore
 			return t;
 		}
 
+		/// <summary>
+		/// Obtains an inactive component of type T from the pool, or instantiates a new one by cloning the first item in the pool.
+		/// </summary>
 		public static T Obtain<T>(this List<T> pool, Transform parent, string name = null) where T : Component
 		{
 			for (int i = 0; i < pool.Count; i++)
@@ -359,6 +421,10 @@ namespace RCore
 			return t;
 		}
 
+		/// <summary>
+		/// Obtains a component from the pool with a maximum count limit.
+		/// If the pool is full, it reuses the oldest active item (or the one at the end of the list).
+		/// </summary>
 		public static T Obtain<T>(this List<T> pool, Transform pParent, int max, string pName = null) where T : Component
 		{
 			for (int i = pool.Count - 1; i >= 0; i--)
@@ -396,12 +462,18 @@ namespace RCore
 			}
 		}
 
+		/// <summary>
+		/// Deactivates all items in the pool.
+		/// </summary>
 		public static void Free<T>(this List<T> pool) where T : Component
 		{
 			foreach (var t in pool)
 				t.gameObject.SetActive(false);
 		}
 
+		/// <summary>
+		/// Deactivates all items in the pool and sets their parent.
+		/// </summary>
 		public static void Free<T>(this List<T> pool, Transform pParent) where T : Component
 		{
 			for (int i = 0; i < pool.Count; i++)
@@ -411,6 +483,9 @@ namespace RCore
 			}
 		}
 
+		/// <summary>
+		/// Pre-instantiates a specific number of items and adds them to the pool.
+		/// </summary>
 		public static void Prepare<T>(this List<T> pool, GameObject prefab, Transform parent, int count) where T : Component
 		{
 			for (int i = 0; i < count; i++)
@@ -587,6 +662,9 @@ namespace RCore
 		}
 #endregion
 
+		/// <summary>
+		/// Finds a component with a specific name in the list.
+		/// </summary>
 		public static T Find<T>(this List<T> pList, string pName) where T : Component
 		{
 			for (int i = 0; i < pList.Count; i++)
@@ -597,6 +675,9 @@ namespace RCore
 			return null;
 		}
 
+		/// <summary>
+		/// Finds a component with a specific name in the array.
+		/// </summary>
 		public static T Find<T>(this T[] pList, string pName) where T : Component
 		{
 			for (int i = 0; i < pList.Length; i++)
@@ -607,11 +688,17 @@ namespace RCore
 			return null;
 		}
 
+		/// <summary>
+		/// Checks if the game object is a prefab asset (not part of a loaded scene).
+		/// </summary>
 		public static bool IsPrefab(this GameObject target)
 		{
 			return target.scene.name == null;
 		}
 
+		/// <summary>
+		/// Calculates the native size of the sprite in world units.
+		/// </summary>
 		public static Vector2 NativeSize(this Sprite pSprite)
 		{
 			var sizeX = pSprite.bounds.size.x * pSprite.pixelsPerUnit;
@@ -619,6 +706,9 @@ namespace RCore
 			return new Vector2(sizeX, sizeY);
 		}
 
+		/// <summary>
+		/// Calculates the pivot of the sprite in normalized coordinates (0 to 1).
+		/// </summary>
 		public static Vector2 NormalizedPivot(this Sprite pSprite)
 		{
 			float x = pSprite.pivot.x / pSprite.bounds.size.x / pSprite.pixelsPerUnit;
@@ -627,6 +717,9 @@ namespace RCore
 			return normalizedPivot;
 		}
 
+		/// <summary>
+		/// Gets the InstanceID of the game object the component is attached to.
+		/// </summary>
 		public static int GameObjectId<T>(this T target) where T : Component
 		{
 			return target.gameObject.GetInstanceID();

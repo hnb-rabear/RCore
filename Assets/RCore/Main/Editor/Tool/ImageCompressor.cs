@@ -14,6 +14,9 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Editor tool for compressing images using TinyPNG and removing EXIF data.
+	/// </summary>
 	public class ImageCompressor : EditorWindow
 	{
 #region TinyPNG Compression

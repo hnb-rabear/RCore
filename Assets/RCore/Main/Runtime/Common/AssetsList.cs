@@ -10,6 +10,10 @@ using UnityEngine;
 
 namespace RCore
 {
+    /// <summary>
+    /// A generic wrapper for a list of assets (e.g., Sprites, AudioClips) that provides helper methods
+    /// to retrieve items by index or name, with a fallback default asset.
+    /// </summary>
     [System.Serializable]
     public class AssetsList<T> where T : Object
     {
@@ -30,6 +34,9 @@ namespace RCore
             defaultAsset = pDefault;
         }
 
+        /// <summary>
+        /// Initializes the list with a source collection and an optional default asset.
+        /// </summary>
         public AssetsList<T> Init(List<T> pSource, T pDefault = null)
         {
             source = pSource;
@@ -37,6 +44,12 @@ namespace RCore
             return this;
         }
 
+        /// <summary>
+        /// Retrieves an asset by its name.
+        /// </summary>
+        /// <param name="pSpriteName">The name of the asset to find.</param>
+        /// <param name="pContain">If true, checks if the asset name contains the search string; otherwise, checks for equality.</param>
+        /// <returns>The matching asset, or the default asset if not found.</returns>
         public T GetAsset(string pSpriteName, bool pContain = false)
         {
             foreach (var s in source)
@@ -49,6 +62,11 @@ namespace RCore
             return defaultAsset;
         }
 
+        /// <summary>
+        /// Retrieves an asset by its index.
+        /// </summary>
+        /// <param name="pIndex">The index of the asset.</param>
+        /// <returns>The asset at the specified index, or the default asset if the index is invalid.</returns>
         public T GetAsset(int pIndex)
         {
             if (pIndex < 0 || pIndex >= source.Count)
@@ -59,6 +77,11 @@ namespace RCore
             return source[pIndex];
         }
 
+        /// <summary>
+        /// Finds the index of an asset by its name.
+        /// </summary>
+        /// <param name="pSpriteName">The name of the asset.</param>
+        /// <returns>The index of the asset, or -1 if not found.</returns>
         public int GetAssetIndex(string pSpriteName)
         {
             for (int i = 0; i < source.Count; i++)

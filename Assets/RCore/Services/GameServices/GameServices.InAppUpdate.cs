@@ -7,6 +7,9 @@ namespace RCore.Service
 {
 	public static partial class GameServices
 	{
+		/// <summary>
+		/// Checks for and triggers an in-app update.
+		/// </summary>
 		public static async void ShowInAppUpdate(bool forceUpdate)
 		{
 #if UNITY_EDITOR

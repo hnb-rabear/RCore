@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// The main editor window for the SheetX tool, providing tabs for Excel, Google Sheets, and Settings.
+	/// </summary>
 	public class SheetXWindow : EditorWindow
 	{
 #if !SX_LOCALIZATION
@@ -70,6 +73,9 @@ namespace RCore.SheetX.Editor
 #else
 		[MenuItem("RCore/Tools/" + MENU)]
 #endif
+		/// <summary>
+		/// Opens the SheetX editor window.
+		/// </summary>
 		public static void ShowWindow()
 		{
 			var window = GetWindow<SheetXWindow>(NAME, true);

@@ -7,6 +7,9 @@ using UnityEngine.EventSystems;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to scan for GameObjects with persistent events (e.g. OnClick) configured in the inspector.
+	/// </summary>
 	public class PersistentEventFinder
 	{
 		private static List<GameObject> m_PersistentEvents;

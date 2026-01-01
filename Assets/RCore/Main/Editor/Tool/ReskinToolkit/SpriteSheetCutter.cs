@@ -7,6 +7,9 @@ using UnityEngine.Serialization;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Helper class to slice sprite sheets into individual sprites and export them.
+	/// </summary>
 	[Serializable]
 	public class SpriteSheetCutter
 	{

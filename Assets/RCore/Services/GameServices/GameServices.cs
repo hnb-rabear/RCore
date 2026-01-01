@@ -38,6 +38,9 @@ namespace RCore.Service
 		NotInitialized = -30,
 	}
 
+	/// <summary>
+	/// Provides a cross-platform interface for game services (leaderboards, achievements, etc.).
+	/// </summary>
 	public static partial class GameServices
 	{
 		private static Action<bool> m_OnUserLoginSucceeded;
@@ -59,6 +62,9 @@ namespace RCore.Service
 		private static bool IsLoadingScore;
 		private static readonly List<LoadScoreRequest> LoadScoreRequests = new List<LoadScoreRequest>();
 
+		/// <summary>
+		/// Initializes the game services and authenticates the user.
+		/// </summary>
 		public static void Init(Action<bool> pOnAuthenticated)
 		{
 			if (IsInitialized())
@@ -79,6 +85,9 @@ namespace RCore.Service
 #endif
 		}
 
+		/// <summary>
+		/// Checks if the user is authenticated.
+		/// </summary>
 		public static bool IsInitialized()
 		{
 			return Social.localUser.authenticated;

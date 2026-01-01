@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Handles the "Settings" tab within the SheetX window, allowing configuration of paths and options.
+	/// </summary>
 	public class SheetXSettingsWindow
 	{
 		private SheetXSettings m_sheetXSettings;
@@ -59,6 +62,9 @@ namespace RCore.SheetX.Editor
 				m_sheetXSettings.ResetToDefault();
 		}
 
+		/// <summary>
+		/// Saves the current settings to a JSON file (.sx).
+		/// </summary>
 		public void Save()
 		{
 			string content = JsonUtility.ToJson(m_sheetXSettings);
@@ -66,6 +72,9 @@ namespace RCore.SheetX.Editor
 			EditorHelper.SaveFilePanel(directory, "SheetXSave", content, "sx", "Save SheetX Settings");
 		}
 
+		/// <summary>
+		/// Loads settings from a JSON file (.sx).
+		/// </summary>
 		public void Load()
 		{
 			string directory = Application.dataPath.Replace("Assets", "");

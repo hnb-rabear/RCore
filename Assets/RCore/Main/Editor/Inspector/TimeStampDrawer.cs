@@ -6,6 +6,9 @@ using System;
 
 namespace RCore.Editor.Inspector
 {
+	/// <summary>
+	/// Custom property drawer for fields with the [TimeStamp] attribute, providing a date picker and human-readable date display.
+	/// </summary>
 	[CustomPropertyDrawer(typeof(TimeStampAttribute))]
 	public class TimeStampDrawer : PropertyDrawer
 	{

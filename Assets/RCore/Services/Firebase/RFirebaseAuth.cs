@@ -12,6 +12,9 @@ using Firebase.Auth;
 
 namespace RCore.Service
 {
+	/// <summary>
+	/// Wrapper for Firebase Authentication.
+	/// </summary>
 	public static class RFirebaseAuth
 	{
 #if FIREBASE_AUTH
@@ -22,6 +25,9 @@ namespace RCore.Service
 		public static bool Initialized { get; private set; }
 		public static bool Authenticated => Auth.CurrentUser != null;
 
+		/// <summary>
+		/// Initializes Firebase Auth and listens for state changes.
+		/// </summary>
 		public static void Init()
 		{
 			if (Initialized)
@@ -46,6 +52,9 @@ namespace RCore.Service
 
 		//======== Sign in
 
+		/// <summary>
+		/// Sign in anonymously.
+		/// </summary>
 		public static Task SigninAnonymouslyAsync()
 		{
 			var task = Auth.SignInAnonymouslyAsync();
@@ -180,6 +189,9 @@ namespace RCore.Service
 
 		//========
 
+		/// <summary>
+		/// Reloads the current user's profile data.
+		/// </summary>
 		public static void ReloadUser()
 		{
 			var task = Auth.CurrentUser.ReloadAsync();
@@ -190,11 +202,17 @@ namespace RCore.Service
 			});
 		}
 
+		/// <summary>
+		/// Signs out the current user.
+		/// </summary>
 		public static void SignOut()
 		{
 			Auth.SignOut();
 		}
 
+		/// <summary>
+		/// Deletes the current user account.
+		/// </summary>
 		public static Task DeleteUserAsync()
 		{
 			if (Auth.CurrentUser != null)

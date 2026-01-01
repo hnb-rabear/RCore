@@ -15,6 +15,9 @@ namespace RCore.SheetX.Editor
 		void Draw(GUIStyle style = null);
 	}
 
+	/// <summary>
+	/// Draws a tab bar UI in the editor.
+	/// </summary>
 	public class EditorTabs : IDraw
 	{
 		public string key;
@@ -57,6 +60,9 @@ namespace RCore.SheetX.Editor
 		}
 	}
 
+	/// <summary>
+	/// Draws a text field with an optional label in the editor.
+	/// </summary>
 	public class EditorText : IDraw
 	{
 		public string label;
@@ -118,6 +124,9 @@ namespace RCore.SheetX.Editor
 		}
 	}
 
+	/// <summary>
+	/// Draws a button in the editor.
+	/// </summary>
 	public class EditorButton : IDraw
 	{
 		public string label;
@@ -153,6 +162,9 @@ namespace RCore.SheetX.Editor
 		}
 	}
 
+	/// <summary>
+	/// Draws a toggle checkbox in the editor.
+	/// </summary>
 	public class EditorToggle : IDraw
 	{
 		public string label;
@@ -201,10 +213,16 @@ namespace RCore.SheetX.Editor
 		}
 	}
 
+	/// <summary>
+	/// A collection of helper methods for drawing common Editor UI elements and file operations.
+	/// </summary>
 	public static class EditorHelper
 	{
 		private static string LastOpenedDirectory { get => EditorPrefs.GetString("LastOpenedDirectory"); set => EditorPrefs.SetString("LastOpenedDirectory", value); }
 
+		/// <summary>
+		/// Draws a tab bar and returns the currently selected tab key.
+		/// </summary>
 		public static string Tabs(string pKey, params string[] pTabsName)
 		{
 			var tabs = new EditorTabs()
@@ -216,6 +234,9 @@ namespace RCore.SheetX.Editor
 			return tabs.CurrentTab;
 		}
 
+		/// <summary>
+		/// Draws a text field with a label and returns the input value.
+		/// </summary>
 		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, Color color = default)
 		{
 			var text = new EditorText()
@@ -231,6 +252,9 @@ namespace RCore.SheetX.Editor
 			return text.OutputValue;
 		}
 
+		/// <summary>
+		/// Draws a label field with customizable style and alignment.
+		/// </summary>
 		public static void LabelField(string label, int width = 0, bool isBold = true, TextAnchor pTextAnchor = TextAnchor.MiddleLeft, Color pTextColor = default)
 		{
 			var style = new GUIStyle(isBold ? EditorStyles.boldLabel : EditorStyles.label)
@@ -246,6 +270,9 @@ namespace RCore.SheetX.Editor
 				EditorGUILayout.LabelField(label, style);
 		}
 
+		/// <summary>
+		/// Draws a button and returns true if it was clicked.
+		/// </summary>
 		public static bool Button(string pLabel, int pWidth = 0, int pHeight = 0)
 		{
 			var button = new EditorButton()
@@ -258,6 +285,9 @@ namespace RCore.SheetX.Editor
 			return button.IsPressed;
 		}
 
+		/// <summary>
+		/// Draws a button with an icon and label, returning true if clicked.
+		/// </summary>
 		public static bool Button(string label, Texture2D icon, Color color = default, int width = 0, int height = 0)
 		{
 			var button = new EditorButton()
@@ -272,6 +302,9 @@ namespace RCore.SheetX.Editor
 			return button.IsPressed;
 		}
 		
+		/// <summary>
+		/// Opens the standard file selection dialog and returns the selected file path.
+		/// </summary>
 		public static string OpenFilePanel(string title, string extension, string directory = null)
 		{
 			string path = EditorUtility.OpenFilePanel(title, directory ?? LastOpenedDirectory, extension);
@@ -280,6 +313,9 @@ namespace RCore.SheetX.Editor
 			return path;
 		}
 
+		/// <summary>
+		/// Opens the standard save file dialog. If a file is selected, it writes the content to it.
+		/// </summary>
 		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt", string header = "Save File")
 		{
 			if (string.IsNullOrEmpty(mainDirectory))
@@ -291,6 +327,9 @@ namespace RCore.SheetX.Editor
 			return path;
 		}
 		
+		/// <summary>
+		/// Writes string content to a file at the specified path, replacing any existing file.
+		/// </summary>
 		public static void SaveFile(string path, string content)
 		{
 			if (!string.IsNullOrEmpty(content) && content != "{}")
@@ -301,6 +340,9 @@ namespace RCore.SheetX.Editor
 			}
 		}
 		
+		/// <summary>
+		/// Converts an absolute system path to a Unity project relative path (e.g., "Assets/...").
+		/// </summary>
 		public static string FormatPathToUnityPath(string path)
 		{
 			string[] paths = path.Split('/');
@@ -325,6 +367,9 @@ namespace RCore.SheetX.Editor
 			return realPath;
 		}
 
+		/// <summary>
+		/// Creates a new ScriptableObject asset at the specified path.
+		/// </summary>
 		public static T CreateScriptableAsset<T>(string path) where T : ScriptableObject
 		{
 			var asset = ScriptableObject.CreateInstance<T>();
@@ -340,6 +385,9 @@ namespace RCore.SheetX.Editor
 			return asset;
 		}
 
+		/// <summary>
+		/// Draws a text field with a button to open a folder selection dialog.
+		/// </summary>
 		public static string FolderField(string defaultPath, string label, int labelWidth = 0, bool pFormatToUnityPath = true)
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -359,6 +407,9 @@ namespace RCore.SheetX.Editor
 			return string.IsNullOrEmpty(newPath) ? defaultPath : newPath;
 		}
 
+		/// <summary>
+		/// Draws a toggle field with a label.
+		/// </summary>
 		public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0, Color color = default)
 		{
 			var toggle = new EditorToggle()
@@ -373,6 +424,9 @@ namespace RCore.SheetX.Editor
 			return toggle.OutputValue;
 		}
 		
+		/// <summary>
+		/// Draws a horizontal separator line.
+		/// </summary>
 		public static void DrawLine(float padding = 0)
 		{
 			if (padding > 0)

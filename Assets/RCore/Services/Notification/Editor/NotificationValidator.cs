@@ -5,6 +5,9 @@ using System;
 
 namespace RCore.Services.Notifications.Editor
 {
+	/// <summary>
+	/// Automatically handles Notification directives based on available classes and SDKs.
+	/// </summary>
 	[InitializeOnLoad]
 	public static class NotificationValidator
 	{

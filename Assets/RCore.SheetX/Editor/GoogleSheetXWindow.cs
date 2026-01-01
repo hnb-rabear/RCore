@@ -12,6 +12,9 @@ using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
+	/// <summary>
+	/// Handles the "Google Spreadsheets" tab within the SheetX window, allowing for fetching and exporting data from Google Sheets.
+	/// </summary>
 	public class GoogleSheetXWindow
 	{
 		public EditorWindow editorWindow;

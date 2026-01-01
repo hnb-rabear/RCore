@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Data.JObject
 {
+	/// <summary>
+	/// Editor window for viewing and managing JObject Database data.
+	/// </summary>
 	public class JObjectDBWindow : EditorWindow
 	{
 		private Dictionary<string, string> m_data;

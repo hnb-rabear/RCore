@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.sheetx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "SheetX - Sheets Exporter",
   "description": "This tool simplifies database design and management for game developers and designers, allowing easy modification of game statistics without needing developer help.\nAs game projects grow, so does the need for efficient data table, constant, and ID management. This tool centralizes the process, enabling easy search, modification, and updates.\nOriginally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.",
   "unity": "2022.3",

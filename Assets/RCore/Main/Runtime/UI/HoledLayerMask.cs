@@ -102,6 +102,9 @@ namespace RCore.UI
             }
         }
 
+        /// <summary>
+        /// Activates or deactivates the mask and its components.
+        /// </summary>
         public void Active(bool pValue)
         {
             enabled = pValue;
@@ -114,6 +117,9 @@ namespace RCore.UI
             imgBot.gameObject.SetActive(pValue);
         }
 
+        /// <summary>
+        /// Sets the color of the mask surrounding the hole.
+        /// </summary>
         public void SetColor(Color pColor)
         {
             imgLeft.color = pColor;
@@ -122,6 +128,9 @@ namespace RCore.UI
             imgBot.color = pColor;
         }
 
+        /// <summary>
+        /// smooth focus to target
+        /// </summary>
         public void FocusToTarget(RectTransform pTarget, float pTime)
         {
             Active(true);
@@ -169,6 +178,9 @@ namespace RCore.UI
 #endif
         }
 
+        /// <summary>
+        /// immediately focus to target
+        /// </summary>
         public void FocusToTargetImmediately(RectTransform pTarget, bool pPostValidatingRect = true)
         {
             Active(true);
@@ -279,13 +291,19 @@ namespace RCore.UI
             }
         }
 
+        /// <summary>
+        /// Clears the sprite used for the hole, resetting it to a simple rect.
+        /// </summary>
         public void ClearSpriteMask()
         {
             imgHole.sprite = null;
             imgHole.color = Color.clear;
         }
 
-        private void CreateComponents()
+        /// <summary>
+        /// Creates the necessary Image components for the mask if they don't exist.
+        /// </summary>
+        public void CreateComponents()
         {
             if (imgHole == null)
             {

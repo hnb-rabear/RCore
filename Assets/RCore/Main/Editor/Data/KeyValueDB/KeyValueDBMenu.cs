@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace RCore.Editor.Data.KeyValue
 {
+	/// <summary>
+	/// Menu items for managing the KeyValue Database (Editor Window, Clear, Backup, Restore, Log).
+	/// </summary>
 	public static class KeyValueDBMenu
 	{
 		private const string ALT = "&";

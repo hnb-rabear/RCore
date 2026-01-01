@@ -5,6 +5,9 @@ using System.Globalization;
 
 namespace RCore.Editor
 {
+	/// <summary>
+	/// Editor window providing a calendar and time picker interface.
+	/// </summary>
 	public class DateTimePickerWindow : EditorWindow
 	{
 		public DateTime selectedDateTime = DateTime.Now;

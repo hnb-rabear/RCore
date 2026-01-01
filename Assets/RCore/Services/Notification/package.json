@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.services.notifications",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "RCore Notifications Service",
   "description": "RCore Notifications Service Wrapper",
   "unity": "2021.3",

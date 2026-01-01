@@ -10,6 +10,9 @@ using EditorPrefs = UnityEditor.EditorPrefs;
 
 namespace RCore.Editor.Data.KeyValue
 {
+	/// <summary>
+	/// Editor window for viewing and editing Key-Value Database entries.
+	/// </summary>
 	public class KeyValueDBWindow : EditorWindow
 	{
 		private Dictionary<string, List<KeyValueSS>> m_dictKeyValues;

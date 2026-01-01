@@ -8,6 +8,9 @@ using UnityEngine.Events;
 namespace RCore.Editor.Audio
 {
 	[CanEditMultipleObjects]
+	/// <summary>
+	/// Custom editor for the SfxSource component, facilitating SFX clip selection and preview from an AudioCollection.
+	/// </summary>
 	[CustomEditor(typeof(SfxSource))]
 	public class SfxSourceEditor : UnityEditor.Editor
 	{

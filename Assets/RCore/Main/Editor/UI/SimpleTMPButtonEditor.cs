@@ -8,6 +8,9 @@ using UnityEngine;
 namespace RCore.Editor.UI
 {
     [CanEditMultipleObjects]
+    /// <summary>
+    /// Custom editor for SimpleTMPButton, adding support for font color swapping and material swapping.
+    /// </summary>
     [CustomEditor(typeof(SimpleTMPButton), true)]
     public class SimpleTMPButtonEditor : JustButton.JustButtonEditor
     {

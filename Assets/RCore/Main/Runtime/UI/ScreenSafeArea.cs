@@ -10,6 +10,10 @@ using UnityEngine.Serialization;
 
 namespace RCore.UI
 {
+	/// <summary>
+	/// Adjusts the size and position of a container to fit within the screen's safe area.
+	/// Useful for phones with notches or rounded corners.
+	/// </summary>
 	public class ScreenSafeArea : MonoBehaviour
 	{
 		public static Action OnOffsetChanged;
@@ -35,6 +39,9 @@ namespace RCore.UI
 #else
 		[InspectorButton]
 #endif
+		/// <summary>
+		/// Logs debug information about screen resolution and safe area offsets.
+		/// </summary>
 		public void Log()
 		{
 			var safeArea = Screen.safeArea;
@@ -60,6 +67,9 @@ namespace RCore.UI
 			CheckSafeArea();
 		}
 
+		/// <summary>
+		/// Validates and applies the safe area adjustments.
+		/// </summary>
 		private void CheckSafeArea()
 		{
 			var safeArea = Screen.safeArea;
@@ -123,6 +133,9 @@ namespace RCore.UI
 		public static float bottomBannerOffset;
 		public static List<ScreenSafeArea> screenSafeAreas = new();
 
+		/// <summary>
+		/// Sets the top offset for a banner advertisement and triggers a safe area update.
+		/// </summary>
 		public static void SetTopOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true)
 		{
 			float offset = 0;
@@ -143,6 +156,9 @@ namespace RCore.UI
 					component.StartCoroutine(component.IEValidate());
 			OnOffsetChanged?.Invoke();
 		}
+		/// <summary>
+		/// Sets the bottom offset for a banner advertisement and triggers a safe area update.
+		/// </summary>
 		public static void SetBottomOffsetForBannerAd(float pBannerHeight, bool pPlaceInSafeArea = true)
 		{
 			float offset = 0;

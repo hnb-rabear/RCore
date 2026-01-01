@@ -60,6 +60,9 @@ namespace RCore.Service
 
 	//=======================================================
 
+	/// <summary>
+	/// Represents a file definition for storage operations.
+	/// </summary>
 	public class SavedFileDefinition
 	{
 		public string rootFolder { get; private set; }
@@ -95,6 +98,9 @@ namespace RCore.Service
 
 	//=======================================================
 
+	/// <summary>
+	/// Static helper class for Firebase Storage operations (Upload, Download, Delete).
+	/// </summary>
 	public static class RFirebaseStorage
 	{
 #if FIREBASE_STORAGE
@@ -169,6 +175,9 @@ namespace RCore.Service
 
 		//== DELETE
 
+		/// <summary>
+		/// Deletes a file from storage.
+		/// </summary>
 		public static void Delete(Action<bool> pOnFinished, SavedFileDefinition pStoDef)
 		{
 			if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
@@ -230,6 +239,9 @@ namespace RCore.Service
 
 		//== DOWNLOAD / UPLOAD STREAM
 
+		/// <summary>
+		/// Uploads content from a string using a stream.
+		/// </summary>
 		public static void UploadStream(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
 		{
 			if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
@@ -299,6 +311,9 @@ namespace RCore.Service
 			pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
 		}
 
+		/// <summary>
+		/// Downloads content to a string using a stream.
+		/// </summary>
 		public static void DownloadStream(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
 		{
 			if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
@@ -386,6 +401,9 @@ namespace RCore.Service
 
 		//== DOWNLOAD / UPLOAD FILE
 
+		/// <summary>
+		/// Uploads a local file to storage.
+		/// </summary>
 		public static void UploadFromFile(Action<bool> pOnFinished, string pOriginalFilePath, SavedFileDefinition pStoDef)
 		{
 			if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
@@ -457,6 +475,9 @@ namespace RCore.Service
 			pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
 		}
 
+		/// <summary>
+		/// Downloads a file from storage to a local path.
+		/// </summary>
 		public static void DownloadToFile(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef)
 		{
 			if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
@@ -598,6 +619,9 @@ namespace RCore.Service
 			pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
 		}
 
+		/// <summary>
+		/// Uploads raw bytes to storage.
+		/// </summary>
 		public static void UploadBytes(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
 		{
 			if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))

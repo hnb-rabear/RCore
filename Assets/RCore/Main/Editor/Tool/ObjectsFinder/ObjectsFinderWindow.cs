@@ -3,6 +3,9 @@ using UnityEditor;
 
 namespace RCore.Editor.Tool
 {
+	/// <summary>
+	/// Editor window to find objects in the project, such as scripts, particle systems, and persistent events.
+	/// </summary>
 	public class ObjectsFinderWindow : EditorWindow
 	{
 		private Vector2 m_scrollPosition;
