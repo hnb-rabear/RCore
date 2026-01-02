@@ -8,15 +8,17 @@ As game projects grow, so does the need for efficient data table, constant, and 
 
 Originally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.
 
-__You can download Example [Here](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)__
+### Samples
+This package includes samples to help you get started. You can find them in the `Samples~` folder. To view them in Unity, you may need to copy them from the package cache or enable "Show Packages" in the Project window if embedded. 
+Alternatively, you can download an example project [Here](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage).
 
-## 2. Main functions
+## 2. Main Functions
 
-- __Excel and Google Sheets Integration:__ Manage your entire database using Excel or Google Spreadsheets.
-- __ID and Constant Management:__ Make batch adjustments to IDs and constants without impacting the database.
-- __Localization System:__ Effortlessly handle multiple languages, with seamless Unity integration.
-- __JSON Export:__ Convert data tables to JSON files for easy Unity integration.
-- __Flexible Data Formats:__ Support a variety of data formats, adaptable to your design needs.
+- **Excel and Google Sheets Integration:** Manage your entire database using Excel or Google Spreadsheets.
+- **ID and Constant Management:** Make batch adjustments to IDs and constants without impacting the database.
+- **Localization System:** Effortlessly handle multiple languages, with seamless Unity integration.
+- **JSON Export:** Convert data tables to JSON files for easy Unity integration.
+- **Flexible Data Formats:** Support a variety of data formats, adaptable to your design needs.
 
 ## 3. Settings
 
@@ -24,31 +26,31 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
 
 ![tab_settings](https://github.com/user-attachments/assets/8d339afe-3323-4f03-99d0-34b3cc7dc56e)
 
-- __Scripts Output Folder:__ Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
-- __Json Output Folder:__ Stores exported JSON data.
-- __Localization Output:__ Stores Localization Data, which should be inside the Resources folder for loading via Resources, or in the Localizations folder for loading via Addressable Asset System.
-- __Namespace:__ Defines the namespace for the exported C# files.
-- __Separate IDs: Sheets__
-  - TRUE: Exports _[%IDs]_ sheets to individual C# files named _[SheetName] + IDs.cs_.
-  - FALSE: Merges all _[%IDs]_ sheets from all Excel files into a single C# file named _IDs.cs._
-- __Separate Constants: Sheets__
-  - TRUE: Exports _[%Constants]_ sheets to individual C# files named _[SheetName] + %Constants.cs_.
-  - FALSE: Merges all _[%Constants]_ sheets from all Excel files into a single C# file named _Constants.cs_.
-- __Separate Localization Sheets:__
-  - TRUE (default): Exports _[Localization%]_ sheets to separate groups, each containing Localization Data, Component, and API, with the following file name structure:
-    - Localization Data: _[SheetName]\_[language].txt_
-    - Component: _[SheetName] + Text.cs_
-    - API: _[SheetName].cs_
-  - FALSE: Merges all _[Localization%]_ sheets from all Excel files into a single group, with the following file name structure:
-    - Localization Data: _Localization\_ + [language].txt_
-    - Component: _LocalizationText.cs_
-    - API: _Localization.cs_
-- __Only enum as IDs:__ For _[%IDs]_ sheets, columns with the extension _[enum]_ will be exported as enums and will not include the Integer Constant form.
-- __Combine Json Sheets:__ Merges the Data Table from one Excel file into a single JSON file, named _[ExcelName].txt_.
-- __Language Char Sets:__ Used in Localization with TextMeshPro to compile the character table of a language, mainly applied for Korean, Japanese, and Chinese due to their extensive character systems.
-- __Persistent columns:__ Specifies the names of columns to retain during processing even if they are empty.
-- __Google Client ID:__ Enter your Google Client ID (retrieved from Credentials in Google Console).
-- __Google Client Secret:__ Enter your Google Secret (retrieved from Credentials in Google Console).
+- **Scripts Output Folder:** Stores exported C# scripts, including IDs, Constants, Localization Components, and Localization API.
+- **Json Output Folder:** Stores exported JSON data.
+- **Localization Output:** Stores Localization Data, which should be inside the Resources folder for loading via Resources, or in the Localizations folder for loading via Addressable Asset System.
+- **Namespace:** Defines the namespace for the exported C# files.
+- **Separate IDs: Sheets**
+  - **TRUE:** Exports `[%IDs]` sheets to individual C# files named `[SheetName] + IDs.cs`.
+  - **FALSE:** Merges all `[%IDs]` sheets from all Excel files into a single C# file named `IDs.cs`.
+- **Separate Constants: Sheets**
+  - **TRUE:** Exports `[%Constants]` sheets to individual C# files named `[SheetName] + %Constants.cs`.
+  - **FALSE:** Merges all `[%Constants]` sheets from all Excel files into a single C# file named `Constants.cs`.
+- **Separate Localization Sheets:**
+  - **TRUE (default):** Exports `[Localization%]` sheets to separate groups, each containing Localization Data, Component, and API, with the following file name structure:
+    - Localization Data: `[SheetName]_[language].txt`
+    - Component: `[SheetName] + Text.cs`
+    - API: `[SheetName].cs`
+  - **FALSE:** Merges all `[Localization%]` sheets from all Excel files into a single group, with the following file name structure:
+    - Localization Data: `Localization_[language].txt`
+    - Component: `LocalizationText.cs`
+    - API: `Localization.cs`
+- **Only enum as IDs:** For `[%IDs]` sheets, columns with the extension `[enum]` will be exported as enums and will not include the Integer Constant form.
+- **Combine Json Sheets:** Merges the Data Table from one Excel file into a single JSON file, named `[ExcelName].txt`.
+- **Language Char Sets:** Used in Localization with TextMeshPro to compile the character table of a language, mainly applied for Korean, Japanese, and Chinese due to their extensive character systems.
+- **Persistent columns:** Specifies the names of columns to retain during processing even if they are empty.
+- **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
+- **Google Client Secret:** Enter your Google Secret (retrieved from Credentials in Google Console).
 
 ## 4. Excel Sheets Exporter
 
@@ -62,13 +64,13 @@ This function is ideal for learning how to use the tools. It's great for small, 
 
 Key Functions:
 
-- __Export IDs:__ Converts ID sheets to C# files.
-- __Export Constants:__ Converts Constants sheets to C# files.
-- __Export Json:__ Transforms Data Table sheets into JSON data.
-- __Export Localization:__ Exports Localization Data, Localization Components, and Localization API.
-- __Export All:__ Performs all the functions with a single click.
+- **Export IDs:** Converts ID sheets to C# files.
+- **Export Constants:** Converts Constants sheets to C# files.
+- **Export Json:** Transforms Data Table sheets into JSON data.
+- **Export Localization:** Exports Localization Data, Localization Components, and Localization API.
+- **Export All:** Performs all the functions with a single click.
 
-### 4.2. Export multiple Excel Files (PRO only)
+### 4.2. Export Multiple Excel Files (PRO only)
 
 ![tab_excel_2](https://github.com/user-attachments/assets/54b3632d-18f9-4053-b2fe-3feef6f71f92)
 ![tab_excel_2_edit](https://github.com/user-attachments/assets/d958d749-5410-416b-9095-a598f9fe5a82)
@@ -91,28 +93,28 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Google Spreadshe
 
 1. Visit the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a new project or select an existing one.
-3. Click on __Go to APIs overview__.
-4. Select __Enable APIs and Services__.
-5. Search for and select __Google Sheets API__, then click __Enable__.
+3. Click on **Go to APIs overview**.
+4. Select **Enable APIs and Services**.
+5. Search for and select **Google Sheets API**, then click **Enable**.
 
 #### Step 2: Obtain Credentials
 
-1. On the top Google Sheets API screen, click on __Create Credentials__.
-2. Choose __Google Sheets API__, __User data__, then click __Next__.
-3. In the Scopes section, click on __Add or remove scopes__.
-4. Find and select the __Google Sheets API__ (description: "See all your Google Sheets Spreadsheets"), then __Save and Continue__.
-5. In the OAuth Client ID section, select Application Type as Desktop App, enter any name, then click __Create__.
-6. Click __Done__.
+1. On the top Google Sheets API screen, click on **Create Credentials**.
+2. Choose **Google Sheets API**, **User data**, then click **Next**.
+3. In the Scopes section, click on **Add or remove scopes**.
+4. Find and select the **Google Sheets API** (description: "See all your Google Sheets Spreadsheets"), then **Save and Continue**.
+5. In the OAuth Client ID section, select Application Type as Desktop App, enter any name, then click **Create**.
+6. Click **Done**.
 
 #### Step 3: Accessing Your Client ID and Client Secret:
 
-1. On the Google Sheets API screen, go to the __Credentials__ tab, you will find the new Client ID.
+1. On the Google Sheets API screen, go to the **Credentials** tab, you will find the new Client ID.
 2. Click on the Edit button to find the Client ID and Client Secret.
-3. Copy the __Client ID__ and __Client Secret__, and paste them into the corresponding settings in the __Sheets Exporter Settings__ Window
+3. Copy the **Client ID** and **Client Secret**, and paste them into the corresponding settings in the **Sheets Exporter Settings** Window
 
 ![tab_settings_2](https://github.com/user-attachments/assets/4140a3e8-05df-4bbe-a3b8-a2fb0576f1ee)
 
-### 5.2. Export single Google Spreadsheet
+### 5.2. Export Single Google Spreadsheet
 
 ![tab_google_1](https://github.com/user-attachments/assets/02d6e2a9-3c39-4087-9a1e-0e77eec73a19)
 
@@ -122,9 +124,9 @@ Enter the Google Sheet ID, then click the Download button. You can find the ID i
 https://docs.google.com/spreadsheets/d/[GOOGLE_SHEET_ID]/edit?......
 ```
 
-### 5.3. Export multiple Google Spreadsheets (PRO only)
+### 5.3. Export Multiple Google Spreadsheets (PRO only)
 
-Click on __Add Google Spreadsheets__, then enter the Google Sheet ID in the popup that appears. Press __Download__, then select the sheets you want to process.
+Click on **Add Google Spreadsheets**, then enter the Google Sheet ID in the popup that appears. Press **Download**, then select the sheets you want to process.
 
 ![tab_google_2](https://github.com/user-attachments/assets/f2ba3d93-7785-42b3-b33b-13b2687f699f)
 ![tab_google_2_edit](https://github.com/user-attachments/assets/3386dda3-a2ba-4f88-87d0-f25e43ebfa56)
@@ -153,10 +155,10 @@ ID Sheets, named with the suffix `IDs` are used to compile all IDs into Integer 
 - The first row contains the group name for easy reference.
 - The first column holds the Key Name, and the next column holds the Key Value.
 - Key Value must be an integer.
-- By default, all IDs in a column will be exported as Integer Constants. Add the suffix [enum] to the group name to export them as an enum.
+- By default, all IDs in a column will be exported as Integer Constants. Add the suffix `[enum]` to the group name to export them as an enum.
 - To only export enums and skip Integer Constants, select `Only enum as IDs` in the Settings.
 
-```a
+```
 | Group | Key | Comment |
 | ----- | --- | ------- |
 ```
@@ -186,11 +188,11 @@ Constants Sheets, named with the suffix `Constants` compile project constants. T
 
 - The sheet name must end with `Constants`.
 - There are four columns: Name, Type, Value, and Comment.
-  - Name: The name of the constant; must be continuous, without special characters.
-  - Type: The data type of the constant. Possible data types include: `int`, `float`, `bool`, `string`, `int-array`, `float-array`, `vector2`, and `vector3`.
-  - Value: The value matching the data type. For array types, separate elements with `:` or `|` or `newline`.
+  - **Name:** The name of the constant; must be continuous, without special characters.
+  - **Type:** The data type of the constant. Possible data types include: `int`, `float`, `bool`, `string`, `int-array`, `float-array`, `vector2`, and `vector3`.
+  - **Value:** The value matching the data type. For array types, separate elements with `:` or `|` or `newline`.
 
-```a
+```
 | Name | Type | Value | Comment |
 | ---- | ---- | ----- | ------- |
 ```
@@ -219,20 +221,20 @@ Constants Sheets, named with the suffix `Constants` compile project constants. T
 
 Localization Sheets are named with the prefix `Localization` and follow these rules:
 
-- TThe sheet name must start with `Localization`.
+- The sheet name must start with `Localization`.
 - Each sheet has two key columns: the main key `idString` and an additional key `relativeId`.
 - The following columns contain localized content.
 - The key for each row is a combination of `idString` and `relativeId`.
 - `relativeId` can reference an ID from the IDs sheets.
 
-```a
+```
 | idString | relativeId | english | spanish | japan | .... |
 | -------- | ---------- | ------- | ------- | ----- | ---- |
 ```
 
-### 6.4. Data table - JSON Data
+### 6.4. Data Table - JSON Data
 
-#### Basic data type: Boolean, Number, String
+#### Basic Data Type: Boolean, Number, String
 
 | numberExample1 | numberExample2 | numberExample3 | boolExample | stringExample |
 | -------------- | -------------- | -------------- | ----------- | ------------- |
@@ -242,21 +244,21 @@ Localization Sheets are named with the prefix `Localization` and follow these ru
 | 6              | HERO_3         | 10.7           | FALSE       | text          |
 | 9              | PET_2          | 16.4           | FALSE       | text          |
 
-#### Extended data type: Array, JSON object
+#### Extended Data Type: Array, JSON Object
 
-| array1[]                | array2[]    | array3[]                       | array4[]              | array5[]   | array6[]    | JSON\{}                                                                   |
+| array1[]                | array2[]    | array3[]                       | array4[]              | array5[]   | array6[]    | JSON{}                                                                   |
 | ----------------------- | ----------- | ------------------------------ | --------------------- | ---------- | ----------- | ------------------------------------------------------------------------- |
-| text1                   | 1           | 1                              | TRUE                  | 123<br/>66 | aaa<br/>ccc | \{}                                                                       |
-| text2                   | 2 \| 2 \| 3 | 1 \| 2 \| 3                    | TRUE \| FALSE \| TRUE | 123<br/>71 | aaa<br/>ccc | \{"id":1, "name":"John Doe 1"}                                            |
-| text1 \| text2          | 1 \| 2      | 1 \| BUILDING_2                | TRUE \| FALSE         | 123<br/>67 | aaa<br/>ccc | \{"id":2, "name":"John Doe 2"}                                            |
-| text1 \| text2 \| text3 | 1 \| 2 \| 3 | BUILDING_1 \| HERO_2           | TRUE \| FALSE \| TRUE | 123<br/>68 | aaa<br/>ccc | \{"id":HERO_2, "name":"JohnDoe 2"}                                        |
-| text3                   | 4 \| 2      | BUILDING_3 \| HERO_1 \| HERO_2 | TRUE \| FALSE         | 123<br/>76 | aaa<br/>ccc | [\{"id":HERO_1, "name":"John Doe 1"},\{"id":HERO_2, "name":"Mary Sue 2"}] |
-| text1 \| text2 \| text7 | 5           | 1 \| 2 \| 4 \| PET_5           | TRUE                  | 123<br/>78 | aaa<br/>ccc | [\{"id":HERO_1, "name":"John Doe 1"},\{"id":HERO_2, "name":"Mary Sue 2"}] |
+| text1                   | 1           | 1                              | TRUE                  | 123<br/>66 | aaa<br/>ccc | {}                                                                       |
+| text2                   | 2 \| 2 \| 3 | 1 \| 2 \| 3                    | TRUE \| FALSE \| TRUE | 123<br/>71 | aaa<br/>ccc | {"id":1, "name":"John Doe 1"}                                            |
+| text1 \| text2          | 1 \| 2      | 1 \| BUILDING_2                | TRUE \| FALSE         | 123<br/>67 | aaa<br/>ccc | {"id":2, "name":"John Doe 2"}                                            |
+| text1 \| text2 \| text3 | 1 \| 2 \| 3 | BUILDING_1 \| HERO_2           | TRUE \| FALSE \| TRUE | 123<br/>68 | aaa<br/>ccc | {"id":HERO_2, "name":"JohnDoe 2"}                                        |
+| text3                   | 4 \| 2      | BUILDING_3 \| HERO_1 \| HERO_2 | TRUE \| FALSE         | 123<br/>76 | aaa<br/>ccc | [{"id":HERO_1, "name":"John Doe 1"},{"id":HERO_2, "name":"Mary Sue 2"}] |
+| text1 \| text2 \| text7 | 5           | 1 \| 2 \| 4 \| PET_5           | TRUE                  | 123<br/>78 | aaa<br/>ccc | [{"id":HERO_1, "name":"John Doe 1"},{"id":HERO_2, "name":"Mary Sue 2"}] |
 
 - For array types, the column name must end with `[]`.
 - For JSON object types, the column name must end with `{}`.
 
-#### Special data type: Attributes list
+#### Special Data Type: Attributes List
 
 | attribute0 | value0 | unlock0 | increase0 | max0 | attribute1 | value1[] | unlock1[] | increase1[] | max1[]   | ... | attributeN |
 | ---------- | ------ | ------- | --------- | ---- | ---------- | -------- | --------- | ----------- | -------- | --- | ---------- |
@@ -276,37 +278,37 @@ To define an attribute object type, the following rules should be followed:
 - Attribute id is a constant integer, so it should be defined in the IDs sheet.
 - An attribute has the following structure:
 
-  1. __`attribute`__: The column name follows the pattern _`attribute + (index)`_, where index can be any number, but should start from 0 and increase. The value of this column is the id of the attribute, which is an Integer type, this value should be set in the IDs sheet.
-  2. __`value`__: The column name follows the pattern _`value + (index)`_ or _`value + (index) + []`_, the value of the column can be a number or a number array.
-  3. __`increase`__: The column name follows the pattern _`increase + (index)`_ or _`increase + (index) + []`_. This is an additional value, which can be present or not, usually used for level-up situations, specifying the additional increase when a character or item levels up.
-  4. __`unlock`__: The column name follows the pattern _`unlock + (index)`_ or _`unlock + (index) + []`_. This is an additional value, which can be present or not, usually used for situations where the attribute needs conditions to be unlocked, such as minimum level or minimum rank.
-  5. __`max`__: The column name follows the pattern _`max + (index)`_ or _`max + (index) + []`_. This is an additional value, which can be present or not, usually used for situations where the attribute has a maximum value.
+  1. **`attribute`**: The column name follows the pattern _`attribute + (index)`_, where index can be any number, but should start from 0 and increase. The value of this column is the id of the attribute (Integer), this value should be set in the IDs sheet.
+  2. **`value`**: The column name follows the pattern _`value + (index)`_ or _`value + (index) + []`_, the value of the column can be a number or a number array.
+  3. **`increase`**: The column name follows the pattern _`increase + (index)`_ or _`increase + (index) + []`_. This is an additional value, used for level-up situations (optional).
+  4. **`unlock`**: The column name follows the pattern _`unlock + (index)`_ or _`unlock + (index) + []`_. This is an additional value, used for unlock conditions like minimum level (optional).
+  5. **`max`**: The column name follows the pattern _`max + (index)`_ or _`max + (index) + []`_. This is an additional value, for maximum limits (optional).
 
-    ```a
+    ```
     Example 1: attribute0, value0, increase0, value0, max0.
     Example 2: attribute1, value1[], increase1[], value1[], max1[].
     ```
 
-## 7. How to integration
+## 7. How to Integrate
 
-__Download and import the [Example](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)__
+**Download and import the [Example](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)**
 
-First, open the excel file located at `/Assets/SheetX/Examples/Exporting a Single Excel/Example.xlsx`. This is a sample Excel file. Within this file, there are sheets containing sample data that will help you understand how to design various types of data such as IDs, Constants, and Data Tables.
+First, open the excel file located at `/Assets/SheetX/Samples~/BasicUsage/Import/Excel/Example.xlsx` (Note: `Samples~` is a hidden folder). This is a sample Excel file identifying various types of data such as IDs, Constants, and Data Tables.
 
 ![Excel File](https://github.com/user-attachments/assets/2b4c8fe3-3c58-42bc-a85b-dea33c8122cf)
 
-__For the example using Google Sheets, you can view the file here.__
+**For the example using Google Sheets, you can view the file here.**
 
 Example for exporting single file
-[__Example__](https://docs.google.com/spreadsheets/d/1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo/edit?usp=drive_link)
+[**Example**](https://docs.google.com/spreadsheets/d/1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo/edit?usp=drive_link)
 
 Example for exporting multiple files
-[__Example 1__](https://docs.google.com/spreadsheets/d/1l9_elk7QfABbWlKanOHqkSIYlWcxWO1EIPt9Ax4XtUE/edit?usp=drive_link)
-[__Example 2__](https://docs.google.com/spreadsheets/d/1d53vWQzrp-qNsoeyEmkqQx4KeQObONOk55oWeNS2YXg/edit?usp=drive_link)
-[__Example 3__](https://docs.google.com/spreadsheets/d/1i2CmDGYpAYuX_8vBUbHXBAhuWPKHi_gd52uwzsegLdY/edit?usp=drive_link)
-[__Example 4__](https://docs.google.com/spreadsheets/d/1kq0KaQxQ129f1OABm62x6GtfOKTg_3t4M8gODGHzSu8/edit?usp=drive_link)
+[**Example 1**](https://docs.google.com/spreadsheets/d/1l9_elk7QfABbWlKanOHqkSIYlWcxWO1EIPt9Ax4XtUE/edit?usp=drive_link)
+[**Example 2**](https://docs.google.com/spreadsheets/d/1d53vWQzrp-qNsoeyEmkqQx4KeQObONOk55oWeNS2YXg/edit?usp=drive_link)
+[**Example 3**](https://docs.google.com/spreadsheets/d/1i2CmDGYpAYuX_8vBUbHXBAhuWPKHi_gd52uwzsegLdY/edit?usp=drive_link)
+[**Example 4**](https://docs.google.com/spreadsheets/d/1kq0KaQxQ129f1OABm62x6GtfOKTg_3t4M8gODGHzSu8/edit?usp=drive_link)
 
-### 7.1. Create folders for exporting files
+### 7.1. Create Folders for Exporting Files
 
 Create 3 directories to store the files that will be exported:
 
@@ -315,8 +317,8 @@ Create 3 directories to store the files that will be exported:
 - A folder to store the Localization data.
 
   - There are two ways to set up the folder for Localization data, depending on how you want to load Localizations:
-    - The easiest method is to load from the Resources folder. Create a folder inside the Resources folder to store Localization data. You can name this folder anything you like.
-    - Alternatively, use the Addressable Asset System. In this case, create a "Localizations" folder outside the Resources folder and set it as an Addressable Asset. It's recommended to name this folder "Localizations".
+    - **Resources:** Create a folder inside the Resources folder (e.g., `Resources/Localizations`).
+    - **Addressables:** Create a "Localizations" folder outside Resources and set it as an Addressable Asset.
 
 - Navigate to `RCore > Tools > SheetX > Settings`
 - In Sheets Exporter Settings, set up the paths for the "Scripts Output Folder," "Json Output Folder," and "Localization Output Folder" using the three folders you just created.
@@ -431,7 +433,7 @@ private void LoadData()
 
 ![Example Data Collection](https://github.com/user-attachments/assets/23e9aec3-cfbd-416c-8459-66cbb0e2fb58)
 
-### 7.3. Localization integration
+### 7.3. Localization Integration
 
 - Initialization
 
@@ -455,7 +457,7 @@ LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
 
 - You can retrieve localized content using three different methods.
 
-  1. Retrieve localized content using a Key. Note that the text will not automatically refresh when the language changes using this method.
+  1. **Key Retrieval:** Retrieve localized content using a Key. Note that the text will not automatically refresh when the language changes using this method.
 
       ```cs
       // Retrieve localized text using an integer key
@@ -466,7 +468,7 @@ LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
       m_simpleText3.text = LocalizationExample2.Get("REQUIRED_CITY_LEVEL_X", 25).ToString();
       ```
 
-  2. Link a GameObject containing a Text or TextMeshProUGUI component with a key so that the text automatically updates when the language changes.
+  2. **Dynamic Binding:** Link a GameObject containing a Text or TextMeshProUGUI component with a key so that the text automatically updates when the language changes.
 
       ```cs
       // Register dynamic localized text using an integer key
@@ -481,7 +483,7 @@ LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
       Localization.UnregisterDynamicText(m_dynamicText3);
       ```
 
-  3. Using Localization Component.
+  3. **Component:** Using Localization Component.
 
       ![Using Localization Component](https://github.com/user-attachments/assets/0f0214b9-51ed-44bf-9b27-f2a210e6f0f6)
 
@@ -489,11 +491,11 @@ LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
 
 If you want to combine all Localization Sheets, simply deselect the "Separate Localization Sheets" checkbox in the Settings. Next, delete all generated files and re-export everything.
 
-Then, replace instances of __LocalizationExample1__ and __LocalizationExample2__ with __Localization__. Also, replace component __LocalizationExample1Text__ and __LocalizationExample2Text__ with __LocalizationText__.
+Then, replace instances of **LocalizationExample1** and **LocalizationExample2** with **Localization**. Also, replace component **LocalizationExample1Text** and **LocalizationExample2Text** with **LocalizationText**.
 
 #### Creating TextMeshPro Fonts for Different Languages
 
-To create TextMeshPro fonts for Japanese, Korean, and Chinese, follow these steps using the respective character set files __characters_set_jp__, __characters_set_ko__, and __characters_set_cn__, which include all characters from the localization sheets:
+To create TextMeshPro fonts for Japanese, Korean, and Chinese, follow these steps using the respective character set files `characters_set_jp`, `characters_set_ko`, and `characters_set_cn`, which include all characters from the localization sheets:
 
 Fonts to use in this example:
 
@@ -505,7 +507,7 @@ Creating TextMeshPro Fonts:
 
 - For each language font, create a TextMeshPro font asset.
 - Open the Font Asset Creator window in Unity.
-- Under the _Character Set_ section, select _Character From File_.
+- Under the *Character Set* section, select *Character From File*.
 - Choose the appropriate character set file (e.g., characters_set_jp) in the Character File section.
 
 ![Create Japanese font](https://github.com/user-attachments/assets/7bc98c77-9994-4551-8e5a-dae51eba9f45)

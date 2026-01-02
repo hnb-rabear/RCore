@@ -63,8 +63,14 @@ namespace RCore.SheetX.Editor
 
 			var color = GUI.backgroundColor;
 			GUI.backgroundColor = new Color(0.3f, 0.8f, 0.3f);
+			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Buy me a coffee", GUILayout.Height(30)))
 				Application.OpenURL("https://ko-fi.com/rabear");
+			if (GUILayout.Button("Rate Asset", GUILayout.Height(30)))
+				Application.OpenURL("https://assetstore.unity.com/packages/tools/utilities/sheetx-pro-manage-constants-data-localization-with-excel-google--300772");
+			if (GUILayout.Button("Star Repository", GUILayout.Height(30)))
+				Application.OpenURL("https://github.com/hnb-rabear/RCore");
+			GUILayout.EndHorizontal();
 			GUI.backgroundColor = color;
 		}
 
