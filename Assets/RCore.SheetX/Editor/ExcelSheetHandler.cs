@@ -883,8 +883,38 @@ namespace RCore.SheetX.Editor
 						systemLanguages.Append($"\t\t\tSystemLanguage.Italian => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("turk") || langLower.Contains("turkish") || langLower == "tr")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Turkish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("chinese") || langLower == "cn")
+					else if (langLower.Contains("chinese") && (langLower.Contains("traditional") || langLower.Contains("tw")))
+						systemLanguages.Append($"\t\t\tSystemLanguage.ChineseTraditional => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("chinese") || langLower == "cn" || langLower == "zh")
 						systemLanguages.Append($"\t\t\tSystemLanguage.ChineseSimplified => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("czech") || langLower == "cs")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Czech => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("danish") || langLower == "da")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Danish => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("dutch") || langLower == "nl")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Dutch => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("finnish") || langLower == "fi")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Finnish => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("greek") || langLower == "el")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Greek => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("hebrew") || langLower == "he")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Hebrew => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("hungarian") || langLower == "hu")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Hungarian => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("icelandic") || langLower == "is")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Icelandic => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("norwegian") || langLower == "no")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Norwegian => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("polish") || langLower == "pl")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Polish => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("romanian") || langLower == "ro")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Romanian => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("slovak") || langLower == "sk")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Slovak => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("swedish") || langLower == "sv")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Swedish => \"{lang}\",").AppendLine();
+					else if (langLower.Contains("ukrainian") || langLower == "uk")
+						systemLanguages.Append($"\t\t\tSystemLanguage.Ukrainian => \"{lang}\",").AppendLine();
 					else if (langLower.Contains("arabic") || langLower == "ar")
 						systemLanguages.Append($"\t\t\tSystemLanguage.Arabic => \"{lang}\",").AppendLine();
 				}
