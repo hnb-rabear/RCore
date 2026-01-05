@@ -4,6 +4,7 @@
   "displayName": "RCore Ads Service",
   "description": "RCore Ads Service Wrapper",
   "unity": "2021.3",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/Services/Ads/CHANGELOG.md",
   "author": {
     "name": "HNB RaBear",
     "email": "nbhung71711@gmail.com",

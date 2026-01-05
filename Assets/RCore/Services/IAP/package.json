@@ -4,6 +4,7 @@
   "displayName": "RCore IAP Service",
   "description": "RCore IAP Service Wrapper",
   "unity": "2021.3",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/Services/IAP/CHANGELOG.md",
   "author": {
     "name": "HNB RaBear",
     "email": "nbhung71711@gmail.com",

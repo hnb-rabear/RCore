@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3]
+### Added
+- **RCore Packages Manager**: Added a new editor tool (`RCore -> Packages Manager`) to easily install and uninstall RCore packages and UniTask via git URLs.
+
 ## [1.0.2]
 - Maintenance update.
 

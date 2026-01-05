@@ -4,6 +4,7 @@
   "displayName": "RCore Notifications Service",
   "description": "RCore Notifications Service Wrapper",
   "unity": "2021.3",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/Services/Notification/CHANGELOG.md",
   "author": {
     "name": "HNB RaBear",
     "email": "nbhung71711@gmail.com",
