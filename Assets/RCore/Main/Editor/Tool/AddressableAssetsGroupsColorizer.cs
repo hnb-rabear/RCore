@@ -12,18 +12,20 @@ using UnityEngine;
 namespace RCore.Editor.Tool
 {
 	/// <summary>
-	/// Visualizes Play Asset Delivery groups in the Project window with color coding.
+	/// Visualizes Addressable Asset Groups in the Project window with color coding.
 	/// </summary>
 	[InitializeOnLoad]
-	public class PlayAssetDeliveryFilter
+	public class AddressableAssetsGroupsColorizer
 	{
-		private const string MENU_ITEM = "Toggle PAD Filter";
+		private const string MENU_ITEM = "Toggle Addressable Groups Colorizer";
 		
 		private static Dictionary<string, Color> m_Colors;
 		private static Dictionary<string, Color> m_Directories;
 		private static HashSet<string> m_IgnoreGuids;
 		private static REditorPrefBool m_Active;
 		private static Dictionary<string, string> m_PathCache = new Dictionary<string, string>();
+
+		private static AddressableAssetsGroupsColorizerSettings m_Settings;
 
 		[MenuItem(RMenu.R_TOOLS + MENU_ITEM)]
 		private static void ToggleActive()
@@ -38,8 +40,36 @@ namespace RCore.Editor.Tool
 			Menu.SetChecked(RMenu.R_TOOLS + MENU_ITEM, m_Active.Value);
 			return true;
 		}
+		
+		[MenuItem(RMenu.R_TOOLS + "Addressable Groups Colorizer Settings", priority = RMenu.GROUP_6 + 11)]
+		private static void OpenSettings()
+		{
+			LoadSettings();
+			if (m_Settings != null)
+			{
+				Selection.activeObject = m_Settings;
+				EditorGUIUtility.PingObject(m_Settings);
+			}
+			else
+			{
+				if (EditorUtility.DisplayDialog("Settings not found", 
+					    "AddressableAssetsGroupsColorizerSettings asset not found in Resources or project.\n\nWould you like to create one now?", "Create", "Cancel"))
+				{
+					var path = EditorUtility.SaveFilePanelInProject("Save Settings", "AddressableAssetsGroupsColorizerSettings", "asset", "Save AddressableAssetsGroupsColorizerSettings");
+					if (!string.IsNullOrEmpty(path))
+					{
+						m_Settings = ScriptableObject.CreateInstance<AddressableAssetsGroupsColorizerSettings>();
+						AssetDatabase.CreateAsset(m_Settings, path);
+						AssetDatabase.SaveAssets();
+						AssetDatabase.Refresh();
+						Selection.activeObject = m_Settings;
+						EditorGUIUtility.PingObject(m_Settings);
+					}
+				}
+			}
+		}
 
-		static PlayAssetDeliveryFilter()
+		static AddressableAssetsGroupsColorizer()
 		{
 			Init();
 			EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
@@ -49,11 +79,26 @@ namespace RCore.Editor.Tool
 
 		private static void Init()
 		{
-			m_Active = new REditorPrefBool(nameof(PlayAssetDeliveryFilter), true);
+			m_Active = new REditorPrefBool(nameof(AddressableAssetsGroupsColorizer), true);
 			m_IgnoreGuids = new HashSet<string>();
 			m_Colors = new Dictionary<string, Color>();
 			m_Directories = new Dictionary<string, Color>();
 			m_PathCache = new Dictionary<string, string>();
+			LoadSettings();
+		}
+		
+		private static void LoadSettings()
+		{
+			m_Settings = Resources.Load<AddressableAssetsGroupsColorizerSettings>("AddressableAssetsGroupsColorizerSettings");
+			if (m_Settings == null)
+			{
+				string[] guids = AssetDatabase.FindAssets("t:AddressableAssetsGroupsColorizerSettings");
+				if (guids.Length > 0)
+				{
+					string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+					m_Settings = AssetDatabase.LoadAssetAtPath<AddressableAssetsGroupsColorizerSettings>(path);
+				}
+			}
 		}
 
 		private static void OnSettingsModificationCustom(AddressableAssetSettings arg1, AddressableAssetSettings.ModificationEvent arg2, object arg3)
@@ -101,16 +146,43 @@ namespace RCore.Editor.Tool
 				if (entry != null && entry.parentGroup != null)
 				{
 					string lbl = entry.parentGroup.name;
-					if (lbl.StartsWith("In")) //InstallTime
-						color = Color.green;
-					else if (lbl.StartsWith("Fa")) //FastFollow
-						color = Color.blue;
-					else if (lbl.StartsWith("On")) //OnDemand
-						color = Color.cyan;
-					else if (lbl.StartsWith("Ex")) //Excluded
-						color = Color.red;
-					else
-						color = Color.yellow;
+					bool colorFound = false;
+
+					if (m_Settings != null && m_Settings.rules != null)
+					{
+						foreach (var rule in m_Settings.rules)
+						{
+							if (lbl.StartsWith(rule.prefix))
+							{
+								color = rule.color;
+								colorFound = true;
+								break;
+							}
+						}
+					}
+
+					if (!colorFound)
+					{
+						// Fallback to hardcoded defaults if settings missing or no match found yet
+						if (m_Settings == null)
+						{
+							if (lbl.StartsWith("In")) //InstallTime
+								color = Color.green;
+							else if (lbl.StartsWith("Fa")) //FastFollow
+								color = Color.blue;
+							else if (lbl.StartsWith("On")) //OnDemand
+								color = Color.cyan;
+							else if (lbl.StartsWith("Ex")) //Excluded
+								color = Color.red;
+							else
+								color = Color.yellow;
+						}
+						else
+						{
+							color = Color.yellow;
+						}
+					}
+					
 					m_Colors.Add(guid, color);
 
 					if (AssetDatabase.IsValidFolder(path))
@@ -138,24 +210,6 @@ namespace RCore.Editor.Tool
 				GUI.Box(selectionRect, "");
 				GUI.color = oldColor;
 			}
-		}
-		
-		public static Color GetColorForString(string input)
-		{
-			// Use a hash function to get a unique integer based on the input string
-			int hash = input.GetHashCode();
-        
-			// Use the hash to generate pseudo-random RGB values
-			float r = (hash & 0xFF0000) >> 16;
-			float g = (hash & 0x00FF00) >> 8;
-			float b = (hash & 0x0000FF);
-
-			// Normalize the RGB values to be between 0 and 1
-			r /= 255.0f;
-			g /= 255.0f;
-			b /= 255.0f;
-
-			return new Color(r, g, b);
 		}
 	}
 }
