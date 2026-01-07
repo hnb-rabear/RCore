@@ -12,7 +12,7 @@ namespace RCore.Services.Firebase.Editor
 	[InitializeOnLoad]
 	public static class FirebaseValidator
 	{
-		private const string MENU_ITEM = "Toggle Firebase Directives Validator";
+		private const string MENU_ITEM = "Directives/Toggle Firebase Directives Validator";
 		private static REditorPrefBool m_Active;
 
 		static FirebaseValidator()

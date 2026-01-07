@@ -11,7 +11,7 @@ namespace RCore.Services.GameServices.Editor
 	[InitializeOnLoad]
 	public static class GameServicesValidator
 	{
-		private const string MENU_ITEM = "Toggle GameServices Directives Validator";
+		private const string MENU_ITEM = "Directives/Toggle GameServices Directives Validator";
 		private static REditorPrefBool m_Active;
 
 		static GameServicesValidator()

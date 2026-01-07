@@ -41,7 +41,7 @@ namespace RCore.SheetX.Editor
 		private void OnGUI()
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
-			
+
 			GUILayout.BeginHorizontal();
 			var iconSave = EditorIcon.GetIcon(EditorIcon.Icon.SaveAs);
 			if (EditorHelper.Button(null, iconSave, default, 30, 30))
@@ -71,7 +71,9 @@ namespace RCore.SheetX.Editor
 #if ASSETS_STORE
 		[MenuItem("Window/" + MENU)]
 #else
-		[MenuItem("RCore/Tools/" + MENU)]
+		public const int GROUP_14 = 140;
+
+		[MenuItem("RCore/Tools/" + MENU, priority = GROUP_14)]
 #endif
 		/// <summary>
 		/// Opens the SheetX editor window.

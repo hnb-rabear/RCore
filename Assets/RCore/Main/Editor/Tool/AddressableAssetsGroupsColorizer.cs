@@ -17,7 +17,8 @@ namespace RCore.Editor.Tool
 	[InitializeOnLoad]
 	public class AddressableAssetsGroupsColorizer
 	{
-		private const string MENU_ITEM = "Toggle Addressable Groups Colorizer";
+		private const string MENU_ITEM = "Addressable/Toggle Groups Colorizer";
+		private const string SETTINGS = "Addressable/Groups Colorizer Settings";
 		
 		private static Dictionary<string, Color> m_Colors;
 		private static Dictionary<string, Color> m_Directories;
@@ -27,7 +28,7 @@ namespace RCore.Editor.Tool
 
 		private static AddressableAssetsGroupsColorizerSettings m_Settings;
 
-		[MenuItem(RMenu.R_TOOLS + MENU_ITEM)]
+		[MenuItem(RMenu.R_TOOLS + MENU_ITEM, priority = RMenu.GROUP_12 + 1)]
 		private static void ToggleActive()
 		{
 			Init(); // Reinitialize when toggled
@@ -41,7 +42,7 @@ namespace RCore.Editor.Tool
 			return true;
 		}
 		
-		[MenuItem(RMenu.R_TOOLS + "Addressable Groups Colorizer Settings", priority = RMenu.GROUP_6 + 11)]
+		[MenuItem(RMenu.R_TOOLS + SETTINGS, priority = RMenu.GROUP_12 + 2)]
 		private static void OpenSettings()
 		{
 			LoadSettings();
@@ -89,10 +90,10 @@ namespace RCore.Editor.Tool
 		
 		private static void LoadSettings()
 		{
-			m_Settings = Resources.Load<AddressableAssetsGroupsColorizerSettings>("AddressableAssetsGroupsColorizerSettings");
+			m_Settings = Resources.Load<AddressableAssetsGroupsColorizerSettings>(nameof(AddressableAssetsGroupsColorizerSettings));
 			if (m_Settings == null)
 			{
-				string[] guids = AssetDatabase.FindAssets("t:AddressableAssetsGroupsColorizerSettings");
+				string[] guids = AssetDatabase.FindAssets("t:" + nameof(AddressableAssetsGroupsColorizerSettings));
 				if (guids.Length > 0)
 				{
 					string path = AssetDatabase.GUIDToAssetPath(guids[0]);

@@ -11,7 +11,7 @@ namespace RCore.Services.IAP.Editor
 	[InitializeOnLoad]
 	public static class IAPValidator
 	{
-		private const string MENU_ITEM = "Toggle IAP Directives Validator";
+		private const string MENU_ITEM = "Directives/Toggle IAP Directives Validator";
 		private static REditorPrefBool m_Active;
 
 		static IAPValidator()

@@ -26,12 +26,16 @@ namespace RCore.Editor
 		// CTRL + ALT + / => Tools Collection
 		// SHIFT + 1 => Save Assets
 
-		public const int GROUP_1 = 0;
+		public const int GROUP_0 = 0;
 		public const int GROUP_2 = 20;
-		public const int GROUP_3 = 40;
-		public const int GROUP_4 = 60;
-		public const int GROUP_5 = 80;
-		public const int GROUP_6 = 100;
+		public const int GROUP_4 = 40;
+		public const int GROUP_6 = 60;
+		public const int GROUP_8 = 80;
+		public const int GROUP_10 = 100;
+		public const int GROUP_12 = 120;
+		public const int GROUP_14 = 140;
+		public const int GROUP_16 = 160;
+		public const int GROUP_18 = 180;
 
 		public const string GAMEOBJECT_R = "GameObject/RCore/";
 		public const string GAMEOBJECT_R_CREATE = "GameObject/RCore/Create/";
@@ -45,13 +49,13 @@ namespace RCore.Editor
 		private const string SHIFT = "#";
 		private const string CTRL = "%";
 
-		[MenuItem("RCore/Configuration " + CTRL + "_" + ALT + "_j", priority = GROUP_1 + 1)]
+		[MenuItem("RCore/Configuration " + CTRL + "_" + ALT + "_j", priority = GROUP_0 + 1)]
 		private static void OpenEnvSetting()
 		{
 			Selection.activeObject = Configuration.Instance;
 		}
 
-		[MenuItem("RCore/Copy name of Build", priority = GROUP_1 + 2)]
+		[MenuItem("RCore/Copy name of Build", priority = GROUP_0 + 2)]
 		private static void CopyBuildName()
 		{
 			string buildName = EditorHelper.GetBuildName();
@@ -87,7 +91,7 @@ namespace RCore.Editor
 		
 		//==========================================================
 
-		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_4 + 1)]
+		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_6 + 1)]
 		private static void ClearPlayerPrefs()
 		{
 			if (EditorHelper.ConfirmPopup("Clear PlayerPrefs"))
@@ -96,7 +100,7 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem(R_EXPLORER + "DataPath Folder", false, GROUP_5 + 1)]
+		[MenuItem(R_EXPLORER + "DataPath Folder", false, GROUP_8 + 1)]
 		private static void OpenDataPathFolder()
 		{
 			string path = Application.dataPath;
@@ -104,7 +108,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "StreamingAssets Folder", false, GROUP_5 + 2)]
+		[MenuItem(R_EXPLORER + "StreamingAssets Folder", false, GROUP_8 + 2)]
 		private static void OpenStreamingAssetsFolder()
 		{
 			string path = Application.streamingAssetsPath;
@@ -117,7 +121,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "PersistentData Folder", false, GROUP_5 + 3)]
+		[MenuItem(R_EXPLORER + "PersistentData Folder", false, GROUP_8 + 3)]
 		private static void OpenPersistentDataFolder()
 		{
 			string path = Application.persistentDataPath;
@@ -127,7 +131,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "UnityEditor Folder", false, GROUP_5 + 4)]
+		[MenuItem(R_EXPLORER + "UnityEditor Folder", false, GROUP_8 + 4)]
 		private static void OpenUnityEditorFolder()
 		{
 			string path = EditorApplication.applicationPath.Substring(0, EditorApplication.applicationPath.LastIndexOf("/"));
@@ -135,7 +139,7 @@ namespace RCore.Editor
 			Process.Start(psi);
 		}
 
-		[MenuItem(R_EXPLORER + "Editor Icon Dictionary", false, GROUP_5 + 5)]
+		[MenuItem(R_EXPLORER + "Editor Icon Dictionary", false, GROUP_8 + 5)]
 		public static void OpenEditorIconsWindow()
 		{
 			EditorIconsWindow.ShowWindow();
@@ -143,37 +147,37 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem(R_TOOLS + "Tools Collection " + CTRL + "_" + ALT + "_/", priority = GROUP_6 + 1)]
+		[MenuItem(R_TOOLS + "Tools Collection " + CTRL + "_" + ALT + "_/", priority = GROUP_10 + 1)]
 		private static void OpenToolsCollectionWindow()
 		{
 			ToolsCollectionWindow.ShowWindow();
 		}
 
-		[MenuItem(R_TOOLS + "Screenshot Taker", priority = GROUP_6 + 2)]
+		[MenuItem(R_TOOLS + "Screenshot Taker", priority = GROUP_10 + 2)]
 		public static void OpenScreenshotTaker()
 		{
 			ScreenshotTaker.ShowWindow();
 		}
 
-		[MenuItem(R_TOOLS + "Find Component Reference", priority = GROUP_6 + 3)]
+		[MenuItem(R_TOOLS + "Find Component Reference", priority = GROUP_10 + 3)]
 		public static void OpenFindComponentReferenceWindow()
 		{
 			FindComponentReferenceWindow.ShowWindow();
 		}
 
-		[MenuItem(R_TOOLS + "Find Objects", priority = GROUP_6 + 4)]
+		[MenuItem(R_TOOLS + "Find Objects", priority = GROUP_10 + 4)]
 		public static void OpenObjectsFinderWindow()
 		{
 			ObjectsFinderWindow.ShowWindow();
 		}
 
-		[MenuItem(R_TOOLS + "Find And Replace Assets", priority = GROUP_6 + 5)]
+		[MenuItem(R_TOOLS + "Find And Replace Assets", priority = GROUP_10 + 5)]
 		public static void OpenSearchAndReplaceAssetWindow()
 		{
 			FindAndReplaceAssetWindow.ShowWindow();
 		}
 
-		[MenuItem(R_TOOLS + "Datetime Picker", priority = GROUP_6 + 6)]
+		[MenuItem(R_TOOLS + "Datetime Picker", priority = GROUP_10 + 6)]
 		public static void OpenDateTimePickerWindow()
 		{
 			DateTimePickerWindow.ShowWindow(DateTime.Now);
@@ -181,7 +185,7 @@ namespace RCore.Editor
 		
 		//==============================================
 
-		[MenuItem(GAMEOBJECT_R + "Group GameObjects", priority = GROUP_1 + 1)]
+		[MenuItem(GAMEOBJECT_R + "Group GameObjects", priority = GROUP_0 + 1)]
 		private static void GroupGameObjects()
 		{
 			var objs = Selection.gameObjects;
@@ -199,7 +203,7 @@ namespace RCore.Editor
 			}
 		}
 
-		[MenuItem(GAMEOBJECT_R + "Ungroup GameObjects", priority = GROUP_1 + 2)]
+		[MenuItem(GAMEOBJECT_R + "Ungroup GameObjects", priority = GROUP_0 + 2)]
 		private static void UngroupGameObjects()
 		{
 			var objs = Selection.gameObjects;
@@ -220,19 +224,19 @@ namespace RCore.Editor
 			}
 		}
 
-		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (W)", priority = GROUP_3 + 1)]
+		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (W)", priority = GROUP_4 + 1)]
 		public static void PerfectRatioImagesByWidth()
 		{
 			RUtil.PerfectRatioImagesByWidth(Selection.gameObjects);
 		}
 
-		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (H)", priority = GROUP_3 + 2)]
+		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image pixels per unit multiplier (H)", priority = GROUP_4 + 2)]
 		public static void PerfectRatioImagesByHeight()
 		{
 			RUtil.PerfectRatioImagesByHeight(Selection.gameObjects);
 		}
 
-		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image Size", priority = GROUP_3 + 3)]
+		[MenuItem(GAMEOBJECT_R_UI + "Perfect Image Size", priority = GROUP_4 + 3)]
 		public static void SetImagesPerfectRatio()
 		{
 			foreach (var target in Selection.gameObjects)
@@ -243,7 +247,7 @@ namespace RCore.Editor
 			}
 		}
 
-		[MenuItem(GAMEOBJECT_R_UI + "Adjust Anchors To Corners", priority = GROUP_3 + 4)]
+		[MenuItem(GAMEOBJECT_R_UI + "Adjust Anchors To Corners", priority = GROUP_4 + 4)]
 		public static void AdjustAnchorsToCorners()
 		{
 			foreach (var target in Selection.gameObjects)
@@ -253,7 +257,7 @@ namespace RCore.Editor
 			}
 		}
 
-		[MenuItem(GAMEOBJECT_R_UI + "Adjust Anchors To Pivot", priority = GROUP_3 + 5)]
+		[MenuItem(GAMEOBJECT_R_UI + "Adjust Anchors To Pivot", priority = GROUP_4 + 5)]
 		public static void AdjustAnchorsToPivot()
 		{
 			foreach (var target in Selection.gameObjects)

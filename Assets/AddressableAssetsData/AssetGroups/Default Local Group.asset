@@ -17,16 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: d81189c29943a7042a40da92f826bcb6
   m_SerializeEntries:
-  - m_GUID: d9c1edbdc47f014448bf21eb194d3e3a
-    m_Address: Assets/RCore/Examples/Prefab/CubeBlue.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d0374dfb08e950547a875b00cb4519e1
-    m_Address: Assets/RCore/Examples/Prefab/CubeGreen.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7d905ed7a01f716489dbe5c4722e19b1
     m_Address: Assets/RCore/Examples/Prefab/CubeRed.prefab
     m_ReadOnly: 0
@@ -37,9 +27,19 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0374dfb08e950547a875b00cb4519e1
+    m_Address: Assets/RCore/Examples/Prefab/CubeGreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9c1edbdc47f014448bf21eb194d3e3a
+    m_Address: Assets/RCore/Examples/Prefab/CubeBlue.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 3fc3d101e9613744f8c32610c31d9cd5, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 1617952bbba2956429a2756096fca781, type: 2}
     - {fileID: 11400000, guid: a6d7863bffed4a14a81881d1683b0c69, type: 2}
+    - {fileID: 11400000, guid: 1617952bbba2956429a2756096fca781, type: 2}

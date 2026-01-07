@@ -93,7 +93,8 @@ namespace RCore.LXLite.Editor
 #if ASSETS_STORE
 		[MenuItem("Window/" + MENU)]
 #else
-		[MenuItem("RCore/Tools/" + MENU)]
+		public const int GROUP_14 = 140;
+		[MenuItem("RCore/Tools/" + MENU, priority = GROUP_14)]
 #endif
 		public static void ShowWindow()
 		{

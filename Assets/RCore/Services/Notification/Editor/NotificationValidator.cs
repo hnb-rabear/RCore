@@ -11,7 +11,7 @@ namespace RCore.Services.Notifications.Editor
 	[InitializeOnLoad]
 	public static class NotificationValidator
 	{
-		private const string MENU_ITEM = "Toggle Notification Directives Validator";
+		private const string MENU_ITEM = "Directives/Toggle Notification Directives Validator";
 		private static REditorPrefBool m_Active;
 
 		static NotificationValidator()

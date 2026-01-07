@@ -16,7 +16,7 @@ namespace RCore.Editor.Tool
 			public string label; // Optional: description of what this group represents
 		}
 
-		public List<GroupColorRule> rules = new List<GroupColorRule>()
+		public List<GroupColorRule> rules = new()
 		{
 			new GroupColorRule() { prefix = "In", color = Color.green, label = "InstallTime" },
 			new GroupColorRule() { prefix = "Fa", color = Color.blue, label = "FastFollow" },

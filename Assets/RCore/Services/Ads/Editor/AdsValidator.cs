@@ -11,7 +11,7 @@ namespace RCore.Services.Ads.Editor
 	[InitializeOnLoad]
 	public static class AdsValidator
 	{
-		private const string MENU_ITEM = "Toggle Ads Directives Validator";
+		private const string MENU_ITEM = "Directives/Toggle Ads Directives Validator";
 		private static REditorPrefBool m_Active;
 
 		static AdsValidator()
