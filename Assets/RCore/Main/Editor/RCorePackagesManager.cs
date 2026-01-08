@@ -159,6 +159,11 @@ namespace RCore.Editor
 
 				if (isInstalled)
 				{
+					GUI.backgroundColor = Color.cyan;
+					if (GUILayout.Button("Update", GUILayout.Width(80), GUILayout.Height(30)))
+					{
+						Install(pkg);
+					}
 					GUI.backgroundColor = Color.red;
 					if (GUILayout.Button("Uninstall", GUILayout.Width(80), GUILayout.Height(30)))
 					{

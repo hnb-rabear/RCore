@@ -3,6 +3,7 @@
 ## [1.0.5]
 ### Changed
 - **TimeHelper**: Optimized `GetNowTimestamp` for per-frame usage.
+- **RCore Packages Manager**: Added `Update` button to easily update installed packages.
 
 ## [1.0.4]
 ### Changed
