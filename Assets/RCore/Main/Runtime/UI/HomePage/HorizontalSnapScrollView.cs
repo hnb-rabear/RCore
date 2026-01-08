@@ -66,6 +66,7 @@ namespace RCore.UI
 		[SerializeField, ReadOnly] private bool m_IsSnapping;
 		[SerializeField, ReadOnly] private bool m_IsDragging;
 		[SerializeField, ReadOnly] private bool m_Validated;
+		private bool m_validateNextFrame;
 
 		// The content's anchored position in the previous frame, used to calculate velocity.
 		private Vector2 m_previousPosition;
@@ -155,6 +156,15 @@ namespace RCore.UI
 		{
 			// Do nothing if the component is not validated or is set to vertical scrolling.
 			if (!m_Validated || !m_ScrollView.horizontal)
+				return;
+
+			if (m_validateNextFrame)
+			{
+				m_validateNextFrame = false;
+				Validate();
+			}
+
+			if (m_Items == null || m_Items.Length == 0)
 				return;
 
 			// Calculate the velocity of the content.
@@ -347,14 +357,32 @@ namespace RCore.UI
 			MoveToFocusedItem(pImmediately, m_SpringThreshold);
 		}
 
+		public void ValidateNextFrame()
+		{
+			if (m_validateNextFrame) return;
+			m_validateNextFrame = true;
+		}
+
 		/// <summary>
 		/// Validates the component's setup. Finds all child items and calculates content boundaries.
 		/// This should be called if items are added or removed at runtime.
 		/// </summary>
 		public void Validate()
 		{
+			SnapScrollItem focusedItem = null;
+			if (m_Items != null && m_FocusedItemIndex >= 0 && m_FocusedItemIndex < m_Items.Length)
+				focusedItem = m_Items[m_FocusedItemIndex];
+
 			// Automatically find all SnapScrollItem components in children.
 			m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
+			if (focusedItem != null)
+			{
+				int index = Array.IndexOf(m_Items, focusedItem);
+				if (index != -1)
+					m_FocusedItemIndex = index;
+				else
+					m_FocusedItemIndex = Mathf.Clamp(m_FocusedItemIndex, 0, Mathf.Max(0, m_Items.Length - 1));
+			}
 #if UNITY_EDITOR
 			// string str = "Cotent Top Right: "
 			// 	+ Content.TopRight()
@@ -415,7 +443,7 @@ namespace RCore.UI
 			m_Validated = true;
 
 			// If StartIndex has changed, move to the new item.
-			if (m_StartIndex != m_PreviousItemIndex)
+			if (!Application.isPlaying && m_StartIndex != m_PreviousItemIndex)
 				MoveToItem(m_StartIndex, true);
 		}
 
@@ -426,6 +454,9 @@ namespace RCore.UI
 		/// <param name="pSpeed">The speed of the movement, used to calculate animation duration.</param>
 		private void MoveToFocusedItem(bool pImmediately, float pSpeed)
 		{
+			if (m_Items == null || m_Items.Length == 0)
+				return;
+
 			// Stop any residual movement from the ScrollRect.
 			m_ScrollView.StopMovement();
 
@@ -575,7 +606,7 @@ namespace RCore.UI
 			onIndexChanged?.Invoke(pIndex);
 
 			// Automatically adjust the scroll reaction sensitivity if enabled.
-			if (m_AutoSetMinScrollReaction)
+			if (m_AutoSetMinScrollReaction && m_Items != null && m_Items.Length > 0 && m_FocusedItemIndex < m_Items.Length)
 				m_MinScrollReaction = m_Items[m_FocusedItemIndex].RectTransform.rect.width / 20f;
 		}
 

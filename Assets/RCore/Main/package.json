@@ -1,9 +1,10 @@
 {
   "name": "com.rabear.rcore.main",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "displayName": "RCore.Main",
-  "description": "",
+  "description": "RCore Main Package",
   "unity": "2022.3",
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/tree/main/Assets/RCore/Main",
   "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore/Main/CHANGELOG.md",
   "author": {
     "name": "HNB RaBear",

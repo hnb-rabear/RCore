@@ -38,6 +38,26 @@ namespace RCore.UI
             }
         }
 
+        protected virtual void OnEnable()
+        {
+            NotifyChange();
+        }
+
+        protected virtual void OnDisable()
+        {
+            NotifyChange();
+        }
+
+        private void NotifyChange()
+        {
+            if (transform.parent != null)
+            {
+                var scrollView = GetComponentInParent<HorizontalSnapScrollView>();
+                if (scrollView != null)
+                    scrollView.ValidateNextFrame();
+            }
+        }
+
         protected virtual void Update()
         {
             // If the item was marked for refresh (e.g., by OnBeginDrag),

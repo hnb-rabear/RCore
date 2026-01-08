@@ -2,8 +2,10 @@
   "name": "com.rabear.rcore.localizationxlite",
   "version": "1.0.2",
   "displayName": "LocalizationX - Lite",
-  "description": "",
+  "description": "LocalizationX - Lite",
   "unity": "2022.3",
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/tree/main/Assets/RCore.LXLite",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.LXLite/CHANGELOG.md",
   "author": {
     "name": "HNB RaBear",
     "email": "nbhung71711@gmail.com",

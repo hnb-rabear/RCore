@@ -25,3 +25,6 @@ MonoBehaviour:
   - prefix: Ex
     color: {r: 1, g: 0, b: 0, a: 1}
     label: Excluded
+  - prefix: UI
+    color: {r: 1, g: 0, b: 0, a: 1}
+    label: Excluded
