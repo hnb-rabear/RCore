@@ -28,6 +28,7 @@ namespace RCore.Editor
 
 		private static readonly List<PackageData> m_Packages = new List<PackageData>()
 		{
+			new PackageData("RCore Main", "com.rabear.rcore.main", "https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Main"),
 			new PackageData("UniTask", "com.cysharp.unitask", "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"),
 			new PackageData("SheetX", "com.rabear.rcore.sheetx", "https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.SheetX"),
 			new PackageData("Ads", "com.rabear.rcore.services.ads", "https://github.com/hnb-rabear/RCore.git?path=Assets/RCore/Services/Ads"),
