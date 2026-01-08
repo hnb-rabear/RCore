@@ -25,6 +25,9 @@ namespace RCore
 	{
 		public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		private static StringBuilder m_TimeBuilder = new StringBuilder();
+		private static float m_LastRefreshTime;
+		private static int m_CachedTimestampUtc;
+		private static int m_CachedTimestampLocal;
 		private static bool m_HasInternet;
 		public static RPlayerPrefBool Cheat;
 		public static RPlayerPrefInt DayCheat;
@@ -385,25 +388,26 @@ namespace RCore
 		/// </summary>
 		public static int GetNowTimestamp(bool utcTime)
 		{
-			int timestamp;
-			var serverTs = WebRequestHelper.GetServerTimestampUtc();
-			if (serverTs.HasValue)
-				timestamp = serverTs.Value;
-			else
-				timestamp = DateTime.UtcNow.ToUnixTimestampInt();
-
-			InitCheats();
-
-			if (Cheat.Value)
+			if (Time.unscaledTime - m_LastRefreshTime >= 1f)
 			{
-				timestamp += DayCheat.Value * 86400 + HourCheat.Value * 3600 + MinuteCheat.Value * 60;
-			}
+				m_LastRefreshTime = Time.unscaledTime;
 
-			if (!utcTime)
-			{
-				timestamp += (int)TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalSeconds;
+				var serverTs = WebRequestHelper.GetServerTimestampUtc();
+				if (serverTs.HasValue)
+					m_CachedTimestampUtc = serverTs.Value;
+				else
+					m_CachedTimestampUtc = DateTime.UtcNow.ToUnixTimestampInt();
+
+				InitCheats();
+
+				if (Cheat.Value)
+				{
+					m_CachedTimestampUtc += DayCheat.Value * 86400 + HourCheat.Value * 3600 + MinuteCheat.Value * 60;
+				}
+
+				m_CachedTimestampLocal = m_CachedTimestampUtc + (int)TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalSeconds;
 			}
-			return timestamp;
+			return utcTime ? m_CachedTimestampUtc : m_CachedTimestampLocal;
 		}
 
 		/// <summary>
