@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5]
+### Changed
+- **TimeHelper**: Optimized `GetNowTimestamp` for per-frame usage.
+
 ## [1.0.4]
 ### Changed
 - **HorizontalSnapScrollView**: Added auto-refresh support when `SnapScrollItem` active state changes, with improved validation logic to preserve focus.

@@ -351,13 +351,8 @@ namespace RCore
 		{
 			var utcNow = GetServerTimeUtc() ?? DateTime.UtcNow;
 			var date = utcTime ? utcNow : utcNow.ToLocalTime();
-			if (Cheat == null)
-			{
-				Cheat = new RPlayerPrefBool("TimeHelper.Cheat");
-				DayCheat = new RPlayerPrefInt("TimeHelper.DayCheat");
-				HourCheat = new RPlayerPrefInt("TimeHelper.HourCheat");
-				MinuteCheat = new RPlayerPrefInt("TimeHelper.MinuteCheat");
-			}
+			InitCheats();
+
 			if (Cheat.Value)
 			{
 				var daysOffset = DayCheat.Value;
@@ -373,12 +368,41 @@ namespace RCore
 			return date;
 		}
 
+		private static void InitCheats()
+		{
+			if (Cheat == null)
+			{
+				Cheat = new RPlayerPrefBool("TimeHelper.Cheat");
+				DayCheat = new RPlayerPrefInt("TimeHelper.DayCheat");
+				HourCheat = new RPlayerPrefInt("TimeHelper.HourCheat");
+				MinuteCheat = new RPlayerPrefInt("TimeHelper.MinuteCheat");
+			}
+		}
+
 		/// <summary>
 		/// Gets the current timestamp (UTC or Local) accounting for any active cheats.
+		/// optimized for performance to be called every frame
 		/// </summary>
 		public static int GetNowTimestamp(bool utcTime)
 		{
-			int timestamp = DateTimeToUnixTimestampInt(GetNow(utcTime));
+			int timestamp;
+			var serverTs = WebRequestHelper.GetServerTimestampUtc();
+			if (serverTs.HasValue)
+				timestamp = serverTs.Value;
+			else
+				timestamp = DateTime.UtcNow.ToUnixTimestampInt();
+
+			InitCheats();
+
+			if (Cheat.Value)
+			{
+				timestamp += DayCheat.Value * 86400 + HourCheat.Value * 3600 + MinuteCheat.Value * 60;
+			}
+
+			if (!utcTime)
+			{
+				timestamp += (int)TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalSeconds;
+			}
 			return timestamp;
 		}
 

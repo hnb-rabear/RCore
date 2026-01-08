@@ -34,6 +34,7 @@ namespace RCore
 		/// An action that is invoked whenever the online status changes.
 		/// </summary>
 		public static Action<bool> OnlineStatusChanged;
+		private static int m_ServerTimestamp;
 		private static bool m_RequestingServerTime;
 		private static float m_GetServerTimeAt;
 		private static DateTime m_ServerTime;
@@ -109,6 +110,7 @@ namespace RCore
 					var text = request.downloadHandler.text;
 					if (int.TryParse(text, out int timestamp))
 					{
+						m_ServerTimestamp = timestamp;
 						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
 						m_GetServerTimeAt = Time.unscaledTime;
 						m_ConnectionChecks--;
@@ -145,6 +147,7 @@ namespace RCore
 					if (jsonParse != null)
 					{
 						var timestamp = jsonParse.GetInt("unixtime");
+						m_ServerTimestamp = timestamp;
 						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
 						m_GetServerTimeAt = Time.unscaledTime;
 					}
@@ -161,6 +164,13 @@ namespace RCore
 		{
 			if (m_GetServerTimeAt > 0)
 				return m_ServerTime.AddSeconds(Time.unscaledTime - m_GetServerTimeAt);
+			return null;
+		}
+
+		public static int? GetServerTimestampUtc()
+		{
+			if (m_GetServerTimeAt > 0)
+				return m_ServerTimestamp + (int)(Time.unscaledTime - m_GetServerTimeAt);
 			return null;
 		}
 		
