@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.6]
+### Changed
+- **SpineAnimationHelper**: Moved to `Samples~` to support optional Spine dependency.
+
 ## [1.0.5]
 ### Changed
 - **TimeHelper**: Optimized `GetNowTimestamp` for per-frame usage.

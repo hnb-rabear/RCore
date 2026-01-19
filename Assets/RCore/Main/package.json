@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.main",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "displayName": "RCore.Main",
   "description": "RCore Main Package",
   "unity": "2022.3",
@@ -15,5 +15,12 @@
     "com.unity.addressables": "1.21.21",
 	"com.unity.textmeshpro": "3.0.9",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Spine Integration",
+      "description": "Helper class for Spine animation integration.",
+      "path": "Samples~/SpineIntegration"
+    }
+  ]
 }
