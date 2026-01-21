@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.7]
+### Changed
+- **PanelController**: Refactored animation transition to be configurable via `Configuration` settings, removing hardcoded paths.
+- **Examples**: Moved `RCore/Examples` to `Samples~/Examples` to reduce clutter and comply with UPM standards.
+
 ## [1.0.6]
 ### Changed
 - **SpineAnimationHelper**: Moved to `Samples~` to support optional Spine dependency.

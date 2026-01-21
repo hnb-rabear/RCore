@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.main",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "displayName": "RCore.Main",
   "description": "RCore Main Package",
   "unity": "2022.3",
@@ -21,6 +21,11 @@
       "displayName": "Spine Integration",
       "description": "Helper class for Spine animation integration.",
       "path": "Samples~/SpineIntegration"
+    },
+    {
+      "displayName": "General Examples",
+      "description": "General examples for RCore usage.",
+      "path": "Samples~/Examples"
     }
   ]
 }

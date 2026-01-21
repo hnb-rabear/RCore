@@ -133,6 +133,7 @@ namespace RCore
 		public List<Env> envs = new List<Env>();
 		/// <summary>The currently active environment being used by the editor.</summary>
 		public Env curEnv;
+		public RuntimeAnimatorController defaultPanelControllerAnimator;
 		
 		/// <summary>Static accessor for the key-value pairs.</summary>
 		public static SerializableDictionary<string, string> KeyValues => Instance.keyValues;

@@ -432,19 +432,20 @@ namespace RCore.UI
 					var animator = m_script.gameObject.GetOrAddComponent<Animator>();
 					if (animator.runtimeAnimatorController == null)
 					{
-						// GUID for a default animator controller.
-						//7d5f83b914c1a9b4ca7b5203f47e50c0 Open-ZoomOut, Close-ZoomIn
-						//aacc2936d5462ba48a06864252b2704e Open-ZoomIn, Close-ZoomOut
-						string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("7d5f83b914c1a9b4ca7b5203f47e50c0");
-						if (!string.IsNullOrEmpty(animatorCtrlPath))
+						if (Configuration.Instance.defaultPanelControllerAnimator != null)
+							animator.runtimeAnimatorController = Configuration.Instance.defaultPanelControllerAnimator;
+						else
 						{
-							var animatorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
-							if (animatorCtrl != null)
-							{
-								animator.runtimeAnimatorController = animatorCtrl;
-								animator.gameObject.GetOrAddComponent<CanvasGroup>();
-							}
+							// GUID for a default animator controller.
+							//7d5f83b914c1a9b4ca7b5203f47e50c0 Open-ZoomOut, Close-ZoomIn
+							//aacc2936d5462ba48a06864252b2704e Open-ZoomIn, Close-ZoomOut
+							string animatorCtrlPath = AssetDatabase.GUIDToAssetPath("7d5f83b914c1a9b4ca7b5203f47e50c0");
+							if (!string.IsNullOrEmpty(animatorCtrlPath))
+								animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(animatorCtrlPath);
 						}
+
+						if (animator.runtimeAnimatorController != null)
+							animator.gameObject.GetOrAddComponent<CanvasGroup>();
 					}
 					((PanelController)target).enableFXTransition = true;
 					EditorUtility.SetDirty(m_script);

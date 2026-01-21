@@ -71,6 +71,9 @@ MonoBehaviour:
     - name: FIREBASE_MESSAGING
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 0
+    - name: MAX
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 0
   - name: do_not_remove_1
     directives:
     - name: DEVELOPMENT
@@ -192,3 +195,23 @@ MonoBehaviour:
     - name: GPGS
       color: {r: 1, g: 1, b: 1, a: 1}
       enabled: 1
+    - name: FIREBASE_FIRESTORE
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: UNITY_NOTIFICATION
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: MAX
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_REMOTE_CONFIG
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: FIREBASE_MESSAGING
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+    - name: ADMOB
+      color: {r: 1, g: 1, b: 1, a: 1}
+      enabled: 1
+  defaultPanelControllerAnimator: {fileID: 9100000, guid: 7d5f83b914c1a9b4ca7b5203f47e50c0,
+    type: 2}
