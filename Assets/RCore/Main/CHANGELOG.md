@@ -4,6 +4,8 @@
 ### Changed
 - **PanelController**: Refactored animation transition to be configurable via `Configuration` settings, removing hardcoded paths.
 - **Examples**: Moved `RCore/Examples` to `Samples~/Examples` to reduce clutter and comply with UPM standards.
+### Added
+- **SamplesHelper**: Added editor tool to toggle `Samples~` folder visibility (requires `RCORE_DEV` define).
 
 ## [1.0.6]
 ### Changed
