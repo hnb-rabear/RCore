@@ -5,7 +5,7 @@ using UnityEngine;
 using Spine;
 using Spine.Unity;
 
-namespace Utilities.Common
+namespace RCore
 {
     public static class SpineAnimationHelper
     {

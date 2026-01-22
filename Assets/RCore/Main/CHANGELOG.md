@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.8]
+### Added
+- **AssetGUIDRegenerator**: Added a new editor tool (`Assets -> RCore -> Regenerate GUID`) to regenerate GUIDs for files and folders.
+
 ## [1.0.7]
 ### Changed
 - **PanelController**: Refactored animation transition to be configurable via `Configuration` settings, removing hardcoded paths.
