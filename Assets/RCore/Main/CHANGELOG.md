@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.9]
+### Changed
+- **NameGenerator**: Major refactor for performance and realism.
+    - Optimized memory usage by moving local arrays to static readonly fields.
+    - Updated name lists to use realistic names for all supported languages (EN, RU, CN, JP, KR, AR, VN, TH).
+
 ## [1.0.8]
 ### Added
 - **AssetGUIDRegenerator**: Added a new editor tool (`Assets -> RCore -> Regenerate GUID`) to regenerate GUIDs for files and folders.
