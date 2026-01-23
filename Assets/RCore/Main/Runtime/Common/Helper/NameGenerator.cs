@@ -282,7 +282,7 @@ namespace RCore
 			var chars = new List<char>(set);
 			chars.Sort();
 			string result = new string(chars.ToArray());
-			Debug.Log(result);
+			UnityEngine.Debug.Log(result);
 		}
 		private static string GenerateCyrillicDisplayName()
 		{
