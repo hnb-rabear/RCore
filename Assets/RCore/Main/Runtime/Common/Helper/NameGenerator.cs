@@ -249,6 +249,41 @@ namespace RCore
 					return "Latin";
 			}
 		}
+
+		public static void LogAllCharacters()
+		{
+			var allArrays = new List<string[]>
+			{
+				CyrillicFirst, CyrillicSecond,
+				ChineseFirst, ChineseSecond,
+				JapaneseFirst, JapaneseSecond,
+				KoreanFirst, KoreanSecond,
+				ArabicFirst, ArabicSecond,
+				VietnameseFirst, VietnameseSecond,
+				ThaiFirst, ThaiSecond,
+				LatinFirst, LatinSecond,
+				EnglishFirst, EnglishSecond,
+				StupidFirst, StupidSecond
+			};
+
+			var set = new HashSet<char>();
+			foreach (var array in allArrays)
+			{
+				foreach (var str in array)
+				{
+					foreach (var c in str)
+					{
+						if (!set.Contains(c))
+							set.Add(c);
+					}
+				}
+			}
+
+			var chars = new List<char>(set);
+			chars.Sort();
+			string result = new string(chars.ToArray());
+			Debug.Log(result);
+		}
 		private static string GenerateCyrillicDisplayName()
 		{
 			// First Name + Space + Last Name

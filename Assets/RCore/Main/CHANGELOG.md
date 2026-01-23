@@ -5,6 +5,7 @@
 - **NameGenerator**: Major refactor for performance and realism.
     - Optimized memory usage by moving local arrays to static readonly fields.
     - Updated name lists to use realistic names for all supported languages (EN, RU, CN, JP, KR, AR, VN, TH).
+    - Added `LogAllCharacters` utility to log all unique characters used in name arrays for font generation/localization checks.
 
 ## [1.0.8]
 ### Added
