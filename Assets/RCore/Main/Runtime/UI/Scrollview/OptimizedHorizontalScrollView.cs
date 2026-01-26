@@ -1,8 +1,9 @@
 ﻿/**
  * Author HNB-RaBear - 2017
  **/
-
+#if DOTWEEN
 using DG.Tweening;
+#endif
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;

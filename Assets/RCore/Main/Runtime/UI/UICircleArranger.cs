@@ -1,5 +1,7 @@
 using UnityEngine;
+#if DOTWEEN
 using DG.Tweening;
+#endif
 using System;
 using System.Collections;
 #if ODIN_INSPECTOR
@@ -234,6 +236,7 @@ namespace RCore.UI
 				pCallback?.Invoke();
 				return;
 			}
+#if DOTWEEN
 			for (var i = 0; i < m_targets.Count; i++)
 			{
 				int index = i;
@@ -276,7 +279,69 @@ namespace RCore.UI
 					.SetDelay(emitInterval * index)
 					.SetUpdate(true);
 			}
+#else
+			StartCoroutine(ArrangeFromCenterCoroutine(pCallback));
+#endif
 		}
+
+#if !DOTWEEN
+		private IEnumerator ArrangeFromCenterCoroutine(Action pCallback)
+		{
+			for (var i = 0; i < m_targets.Count; i++)
+			{
+				int index = i;
+				var target = m_targets[i];
+				float delay = emitInterval * index;
+				StartCoroutine(ArrangeOneTargetFromCenter(target, index, delay, index == m_targets.Count - 1 ? pCallback : null));
+			}
+			yield return null;
+		}
+
+		private IEnumerator ArrangeOneTargetFromCenter(RectTransform target, int index, float delay, Action pCallback)
+		{
+			if (delay > 0)
+				yield return new WaitForSeconds(delay);
+
+			if (m_newRotations[index] != Quaternion.identity)
+				target.rotation = m_newRotations[index];
+
+			target.localPosition = Vector3.zero;
+			target.localScale = Vector3.zero;
+
+			if (target.TryGetComponent(out ITweenItem item))
+				item.OnStart();
+
+			float elapsed = 0;
+			while (elapsed < tweenDuration)
+			{
+				elapsed += Time.deltaTime;
+				float lerp = elapsed / tweenDuration;
+
+				var pos = m_newPositions[index];
+				if (m_newPositions.Length > 0)
+					pos.x = Mathf.LerpUnclamped(0, m_newPositions[index].x, positionXOverMoveTime.Evaluate(lerp));
+				if (m_newPositions.Length > 0)
+					pos.y = Mathf.LerpUnclamped(0, m_newPositions[index].y, positionYOverMoveTime.Evaluate(lerp));
+				target.anchoredPosition = pos;
+
+				if (scaleOverLifeTime.keys.Length > 0)
+				{
+					var scale = Vector3.LerpUnclamped(Vector3.zero, Vector3.one, scaleOverLifeTime.Evaluate(lerp));
+					target.transform.localScale = scale;
+				}
+				yield return null;
+			}
+
+			// Finalize
+			var finalPos = m_newPositions[index];
+			target.anchoredPosition = finalPos;
+			target.localScale = Vector3.one;
+
+			pCallback?.Invoke();
+			if (target.TryGetComponent(out ITweenItem itemFinish))
+				itemFinish.OnFinish();
+		}
+#endif
 
 #if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
@@ -287,7 +352,7 @@ namespace RCore.UI
 		public void RefreshTargetPositionsWithTween()
 		{
 			CalculatePositions();
-
+#if DOTWEEN
 			for (var i = 0; i < m_targets.Count; i++)
 			{
 				int i1 = i;
@@ -306,6 +371,49 @@ namespace RCore.UI
 						target.anchoredPosition = Vector3.LerpUnclamped(targetPrePosition, m_newPositions[i1], lerp);
 					}).SetUpdate(true).SetId(GetInstanceID());
 			}
+#else
+			StopAllCoroutines();
+			StartCoroutine(RefreshTargetPositionsCoroutine());
+#endif
+		}
+		
+		private IEnumerator RefreshTargetPositionsCoroutine()
+		{
+			for (var i = 0; i < m_targets.Count; i++)
+			{
+				int index = i;
+				var target = m_targets[i];
+				StartCoroutine(RefreshOneTargetPosition(target, index));
+			}
+			yield return null;
+		}
+
+		private IEnumerator RefreshOneTargetPosition(RectTransform target, int index)
+		{
+			var targetPrePosition = target.anchoredPosition;
+			var startRotation = target.rotation;
+			float elapsed = 0;
+
+			while (elapsed < tweenDuration)
+			{
+				elapsed += Time.deltaTime;
+				float lerp = elapsed / tweenDuration;
+
+				if (index < m_newRotations.Length && m_newRotations[index] != Quaternion.identity)
+				{
+					var rotation = Quaternion.LerpUnclamped(startRotation, m_newRotations[index], lerp);
+					target.rotation = rotation;
+				}
+				if (index < m_newPositions.Length)
+					target.anchoredPosition = Vector3.LerpUnclamped(targetPrePosition, m_newPositions[index], lerp);
+
+				yield return null;
+			}
+
+			if (index < m_newRotations.Length && m_newRotations[index] != Quaternion.identity)
+				target.rotation = m_newRotations[index];
+			if (index < m_newPositions.Length)
+				target.anchoredPosition = m_newPositions[index];
 		}
 	}
 }
