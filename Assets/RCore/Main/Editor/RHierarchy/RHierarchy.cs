@@ -59,10 +59,6 @@ namespace RCore.Editor.RHierarchy
                         break;
                 }
             }
-
-            // Draw Left-aligned components (Icon)
-            if (RHierarchySettings.IsMonoBehaviourIconEnabled)
-                RMonoIcon.Draw(selectionRect, gameObject);
         }
     }
 
@@ -94,27 +90,58 @@ namespace RCore.Editor.RHierarchy
 
     public static class RMonoIcon
     {
-        public static void Draw(Rect selectionRect, GameObject gameObject)
+        private static Texture2D m_DefaultScriptIcon;
+        private static Texture2D DefaultScriptIcon
         {
-            // Find custom script
-            var components = gameObject.GetComponents<MonoBehaviour>();
-            bool hasScript = false;
-            foreach (var c in components)
+            get
             {
-                if (c == null) continue;
-                if (c.GetType().Assembly.GetName().Name != "UnityEngine" && !c.GetType().FullName.StartsWith("UnityEngine."))
-                {
-                    hasScript = true;
-                    break;
-                }
+                if (m_DefaultScriptIcon == null) m_DefaultScriptIcon = EditorGUIUtility.IconContent("cs Script Icon").image as Texture2D;
+                return m_DefaultScriptIcon;
             }
+        }
 
-            if (hasScript)
-            {
-                Rect iconRect = new Rect(selectionRect.x - 16, selectionRect.y, 16, 16);
-                var icon = EditorGUIUtility.IconContent("cs Script Icon");
-                GUI.DrawTexture(iconRect, icon.image);
-            }
+        public static bool IsDefaultIcon(Texture icon)
+        {
+            return icon == DefaultScriptIcon;
+        }
+
+        public static bool IsCustomScript(Component c)
+        {
+            if (c == null) return false;
+            return c.GetType().Assembly.GetName().Name != "UnityEngine" && !c.GetType().FullName.StartsWith("UnityEngine.");
+        }
+
+        public static void DrawIcon(Rect iconRect, MonoBehaviour script)
+        {
+            string name = script.GetType().Name;
+            if (string.IsNullOrEmpty(name)) return;
+
+            string letter = name.Substring(0, 1).ToUpper();
+
+            // Generate color based on name hash
+            int hash = name.GetHashCode();
+            float hue = Mathf.Abs(hash % 360) / 360f;
+            float sat = 0.4f + (Mathf.Abs((hash / 360) % 100) / 200f);
+            float val = 0.7f + (Mathf.Abs((hash / 720) % 100) / 500f);
+
+            Color bg = Color.HSVToRGB(hue, sat, val);
+            
+            // Draw Background
+            Rect bgRect = new Rect(iconRect.x + 2, iconRect.y + 2, iconRect.width - 4, iconRect.height - 4);
+            EditorGUI.DrawRect(bgRect, bg);
+
+            // Draw Text
+            GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+            style.fontSize = 10;
+            style.alignment = TextAnchor.MiddleCenter;
+            
+            // Contrast check for text color
+            float brightness = bg.r * 0.299f + bg.g * 0.587f + bg.b * 0.114f;
+            style.normal.textColor = brightness > 0.5f ? Color.black : Color.white;
+
+            // Offset slightly because label might be weird with small rects
+            Rect textRect = new Rect(iconRect.x, iconRect.y - 1, iconRect.width, iconRect.height);
+            GUI.Label(textRect, letter, style);
         }
     }
 
@@ -318,7 +345,15 @@ namespace RCore.Editor.RHierarchy
                 rect.width = iconSize;
                 
                 var content = EditorGUIUtility.ObjectContent(c, null);
-                if (content.image != null)
+                
+                // Interaction Area
+                bool mouseOver = rect.Contains(Event.current.mousePosition);
+                
+                if (c is MonoBehaviour mb && RMonoIcon.IsCustomScript(mb) && RMonoIcon.IsDefaultIcon(content.image))
+                {
+                    RMonoIcon.DrawIcon(rect, mb);
+                }
+                else if (content.image != null)
                 {
                     // Check if enabled
                     bool isEnabled = true;
@@ -333,33 +368,33 @@ namespace RCore.Editor.RHierarchy
                     GUI.DrawTexture(rect, content.image);
 
                     GUI.color = originalColor;
-                    
-                    // Interaction
-                    if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+                }
+                
+                // Interaction
+                if (Event.current.type == EventType.MouseDown && mouseOver)
+                {
+                    if (Event.current.button == 0) // Left click to toggle
                     {
-                        if (Event.current.button == 0) // Left click to toggle
-                        {
-                             if (c is Behaviour b)
-                             {
-                                 Undo.RecordObject(b, "Toggle Component");
-                                 b.enabled = !b.enabled;
-                                 EditorUtility.SetDirty(b);
-                             }
-                             else if (c is Renderer r)
-                             {
-                                 Undo.RecordObject(r, "Toggle Component");
-                                 r.enabled = !r.enabled;
-                                 EditorUtility.SetDirty(r);
-                             }
-                             else if (c is Collider col)
-                             {
-                                 Undo.RecordObject(col, "Toggle Component");
-                                 col.enabled = !col.enabled;
-                                 EditorUtility.SetDirty(col);
-                             }
-                        }
-                        Event.current.Use();
+                         if (c is Behaviour b)
+                         {
+                             Undo.RecordObject(b, "Toggle Component");
+                             b.enabled = !b.enabled;
+                             EditorUtility.SetDirty(b);
+                         }
+                         else if (c is Renderer r)
+                         {
+                             Undo.RecordObject(r, "Toggle Component");
+                             r.enabled = !r.enabled;
+                             EditorUtility.SetDirty(r);
+                         }
+                         else if (c is Collider col)
+                         {
+                             Undo.RecordObject(col, "Toggle Component");
+                             col.enabled = !col.enabled;
+                             EditorUtility.SetDirty(col);
+                         }
                     }
+                    Event.current.Use();
                 }
             }
             // Add spacing

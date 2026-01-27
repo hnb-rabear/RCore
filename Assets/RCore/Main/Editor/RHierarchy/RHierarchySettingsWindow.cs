@@ -22,7 +22,6 @@ namespace RCore.Editor.RHierarchy
             
             if (!RHierarchySettings.IsEnable) return;
 
-            RHierarchySettings.IsMonoBehaviourIconEnabled = EditorGUILayout.Toggle("MonoBehaviour Icon", RHierarchySettings.IsMonoBehaviourIconEnabled);
             RHierarchySettings.IsSeparatorEnabled = EditorGUILayout.Toggle("Separator", RHierarchySettings.IsSeparatorEnabled);
             RHierarchySettings.IsVisibilityEnabled = EditorGUILayout.Toggle("Visibility", RHierarchySettings.IsVisibilityEnabled);
             RHierarchySettings.IsTagEnabled = EditorGUILayout.Toggle("Tag", RHierarchySettings.IsTagEnabled);

@@ -8,12 +8,11 @@ namespace RCore.Editor.RHierarchy
     {
         // Toggles
         public static bool IsEnable { get { return EditorPrefs.GetBool("RHierarchy_Enable", true); } set { EditorPrefs.SetBool("RHierarchy_Enable", value); } }
-        public static bool IsMonoBehaviourIconEnabled { get { return EditorPrefs.GetBool("RHierarchy_MonoIcon", true); } set { EditorPrefs.SetBool("RHierarchy_MonoIcon", value); } }
         public static bool IsSeparatorEnabled { get { return EditorPrefs.GetBool("RHierarchy_Separator", true); } set { EditorPrefs.SetBool("RHierarchy_Separator", value); } }
         public static bool IsVisibilityEnabled { get { return EditorPrefs.GetBool("RHierarchy_Visibility", true); } set { EditorPrefs.SetBool("RHierarchy_Visibility", value); } }
-        public static bool IsTagEnabled { get { return EditorPrefs.GetBool("RHierarchy_Tag", true); } set { EditorPrefs.SetBool("RHierarchy_Tag", value); } }
-        public static bool IsLayerEnabled { get { return EditorPrefs.GetBool("RHierarchy_Layer", true); } set { EditorPrefs.SetBool("RHierarchy_Layer", value); } }
-        public static bool IsStaticEnabled { get { return EditorPrefs.GetBool("RHierarchy_Static", true); } set { EditorPrefs.SetBool("RHierarchy_Static", value); } }
+        public static bool IsTagEnabled { get { return EditorPrefs.GetBool("RHierarchy_Tag", false); } set { EditorPrefs.SetBool("RHierarchy_Tag", value); } }
+        public static bool IsLayerEnabled { get { return EditorPrefs.GetBool("RHierarchy_Layer", false); } set { EditorPrefs.SetBool("RHierarchy_Layer", value); } }
+        public static bool IsStaticEnabled { get { return EditorPrefs.GetBool("RHierarchy_Static", false); } set { EditorPrefs.SetBool("RHierarchy_Static", value); } }
         public static bool IsChildrenCountEnabled { get { return EditorPrefs.GetBool("RHierarchy_ChildCount", true); } set { EditorPrefs.SetBool("RHierarchy_ChildCount", value); } }
         public static bool IsComponentsEnabled { get { return EditorPrefs.GetBool("RHierarchy_Components", true); } set { EditorPrefs.SetBool("RHierarchy_Components", value); } }
         public static bool IsVerticesEnabled { get { return EditorPrefs.GetBool("RHierarchy_Vertices", false); } set { EditorPrefs.SetBool("RHierarchy_Vertices", value); } }
