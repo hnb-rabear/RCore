@@ -16,6 +16,7 @@ namespace RCore.Editor.Tool
 			public string label; // Optional: description of what this group represents
 		}
 
+		public bool enabled = true;
 		public List<GroupColorRule> rules = new()
 		{
 			new GroupColorRule() { prefix = "In", color = Color.green, label = "InstallTime" },

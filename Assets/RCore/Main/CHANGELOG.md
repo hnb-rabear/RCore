@@ -14,6 +14,9 @@
         - appearance settings (colors, shading, separator lines).
         - Global enable/disable toggle.
 
+### Changed
+- **AddressableAssetsGroupsColorizer**: Replaced "Toggle Group Colorizer" menu item with a boolean field `enabled` in `AddressableAssetsGroupsColorizerSettings`.
+
 ## [1.0.9]
 ### Changed
 - **NameGenerator**: Major refactor for performance and realism.

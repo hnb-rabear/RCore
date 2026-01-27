@@ -17,30 +17,14 @@ namespace RCore.Editor.Tool
 	[InitializeOnLoad]
 	public class AddressableAssetsGroupsColorizer
 	{
-		private const string MENU_ITEM = "Addressable/Toggle Groups Colorizer";
-		private const string SETTINGS = "Addressable/Groups Colorizer Settings";
+		private const string SETTINGS = "Addressable Groups Colorizer";
 		
 		private static Dictionary<string, Color> m_Colors;
 		private static Dictionary<string, Color> m_Directories;
 		private static HashSet<string> m_IgnoreGuids;
-		private static REditorPrefBool m_Active;
 		private static Dictionary<string, string> m_PathCache = new Dictionary<string, string>();
 
 		private static AddressableAssetsGroupsColorizerSettings m_Settings;
-
-		[MenuItem(RMenu.R_TOOLS + MENU_ITEM, priority = RMenu.GROUP_12 + 1)]
-		private static void ToggleActive()
-		{
-			Init(); // Reinitialize when toggled
-			m_Active.Value = !m_Active.Value;
-		}
-
-		[MenuItem(RMenu.R_TOOLS + MENU_ITEM, true)]
-		private static bool ToggleActiveValidate()
-		{
-			Menu.SetChecked(RMenu.R_TOOLS + MENU_ITEM, m_Active.Value);
-			return true;
-		}
 		
 		[MenuItem(RMenu.R_TOOLS + SETTINGS, priority = RMenu.GROUP_12 + 2)]
 		private static void OpenSettings()
@@ -80,7 +64,6 @@ namespace RCore.Editor.Tool
 
 		private static void Init()
 		{
-			m_Active = new REditorPrefBool(nameof(AddressableAssetsGroupsColorizer), true);
 			m_IgnoreGuids = new HashSet<string>();
 			m_Colors = new Dictionary<string, Color>();
 			m_Directories = new Dictionary<string, Color>();
@@ -114,7 +97,7 @@ namespace RCore.Editor.Tool
 
 		private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
 		{
-			if (!m_Active.Value || string.IsNullOrEmpty(guid) || Event.current.type != EventType.Repaint || m_IgnoreGuids.Contains(guid))
+			if (m_Settings == null || !m_Settings.enabled || string.IsNullOrEmpty(guid) || Event.current.type != EventType.Repaint || m_IgnoreGuids.Contains(guid))
 				return;
 
 			DrawColorMark(guid, selectionRect);
