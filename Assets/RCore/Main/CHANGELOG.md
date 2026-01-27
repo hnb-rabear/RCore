@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0]
+### Added
+- **RHierarchy**: Added a lightweight hierarchy enhancer tool
+    - Features:
+        - **Visibility**: Quick toggle for GameObject active state.
+        - **Static**: specific "S" indicator; click to toggle static flags.
+        - **Components**: Icons for attached scripts and components (with enable/disable toggle).
+        - **Info**: Displays vertices count and children count.
+        - **Tag & Layer**: Display and edit tags and layers directly in the hierarchy.
+    - **Customization**:
+        - Fully reorderable component display.
+        - appearance settings (colors, shading, separator lines).
+        - Global enable/disable toggle.
+
 ## [1.0.9]
 ### Changed
 - **NameGenerator**: Major refactor for performance and realism.
