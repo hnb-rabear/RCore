@@ -43,7 +43,11 @@ namespace RCore.UI
 		private void Validate()
 		{
 			if (m_rectTransform == null) m_rectTransform = transform as RectTransform;
-			if (GetComponentInParent<ScreenSafeArea>() == null) return;
+			if (GetComponentInParent<ScreenSafeArea>() == null)
+			{
+				Debug.LogError($"{gameObject.name}: IgnoreScreenSafe requires a ScreenSafeArea component in a parent GameObject.");
+				return;
+			}
 			if (m_canvas == null) m_canvas = GetComponentInParent<Canvas>();
 			if (m_canvas == null) return;
 
