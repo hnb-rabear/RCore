@@ -126,6 +126,11 @@ namespace RCore.Editor.RHierarchy
 
             Color bg = Color.HSVToRGB(hue, sat, val);
             
+            if (!script.enabled)
+            {
+                bg.a = 0.4f;
+            }
+            
             // Draw Background
             Rect bgRect = new Rect(iconRect.x + 2, iconRect.y + 2, iconRect.width - 4, iconRect.height - 4);
             EditorGUI.DrawRect(bgRect, bg);
@@ -138,6 +143,13 @@ namespace RCore.Editor.RHierarchy
             // Contrast check for text color
             float brightness = bg.r * 0.299f + bg.g * 0.587f + bg.b * 0.114f;
             style.normal.textColor = brightness > 0.5f ? Color.black : Color.white;
+
+            if (!script.enabled)
+            {
+                var c = style.normal.textColor;
+                c.a = 0.5f;
+                style.normal.textColor = c;
+            }
 
             // Offset slightly because label might be weird with small rects
             Rect textRect = new Rect(iconRect.x, iconRect.y - 1, iconRect.width, iconRect.height);

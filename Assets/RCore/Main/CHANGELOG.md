@@ -6,7 +6,7 @@
     - Features:
         - **Visibility**: Quick toggle for GameObject active state.
         - **Static**: specific "S" indicator; click to toggle static flags.
-        - **Components**: Icons for attached scripts and components (with enable/disable toggle).
+        - **Components**: Icons for attached scripts and components (with enable/disable toggle). Deactivated components are visually grayed out.
         - **Info**: Displays vertices count and children count.
         - **Tag & Layer**: Display and edit tags and layers directly in the hierarchy.
     - **Customization**:
