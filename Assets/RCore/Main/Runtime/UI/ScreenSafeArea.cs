@@ -17,7 +17,7 @@ namespace RCore.UI
 	public class ScreenSafeArea : MonoBehaviour
 	{
 		public static Action OnOffsetChanged;
-		public Canvas canvas;
+		private Canvas m_canvas;
 		public RectTransform[] safeRects;
 		[FormerlySerializedAs("fixedTop")]
 		public bool fullTop;
@@ -72,6 +72,9 @@ namespace RCore.UI
 		/// </summary>
 		private void CheckSafeArea()
 		{
+			if (m_canvas == null)
+				m_canvas = GetComponentInParent<Canvas>();
+
 			var safeArea = Screen.safeArea;
 			safeArea.height -= topBannerOffset;
 			if (fullTop)
@@ -86,14 +89,17 @@ namespace RCore.UI
 			var anchorMin = safeArea.position;
 			var anchorMax = safeArea.position + safeArea.size;
 
-			var sizeDelta = ((RectTransform)canvas.transform).sizeDelta;
-			sizeDelta.y = -bottomBannerOffset;
-			((RectTransform)canvas.transform).sizeDelta = sizeDelta;
-			var position = ((RectTransform)canvas.transform).anchoredPosition;
-			position.y = bottomBannerOffset / 2;
-			((RectTransform)canvas.transform).anchoredPosition = position;
+			if (m_canvas == null)
+				return;
 
-			var pixelRect = canvas.pixelRect;
+			var sizeDelta = ((RectTransform)m_canvas.transform).sizeDelta;
+			sizeDelta.y = -bottomBannerOffset;
+			((RectTransform)m_canvas.transform).sizeDelta = sizeDelta;
+			var position = ((RectTransform)m_canvas.transform).anchoredPosition;
+			position.y = bottomBannerOffset / 2;
+			((RectTransform)m_canvas.transform).anchoredPosition = position;
+
+			var pixelRect = m_canvas.pixelRect;
 			anchorMin.x /= pixelRect.width;
 			anchorMin.y /= pixelRect.height;
 			anchorMax.x /= pixelRect.width;
