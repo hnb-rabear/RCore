@@ -71,9 +71,7 @@ namespace RCore.SheetX.Editor
 #if ASSETS_STORE
 		[MenuItem("Window/" + MENU)]
 #else
-		public const int GROUP_14 = 140;
-
-		[MenuItem("RCore/Tools/" + MENU, priority = GROUP_14)]
+		[MenuItem("RCore/" + MENU, priority = 24)]
 #endif
 		/// <summary>
 		/// Opens the SheetX editor window.

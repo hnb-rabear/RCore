@@ -5,7 +5,7 @@ namespace RCore.Editor.RHierarchy
 {
     public class RHierarchySettingsWindow : EditorWindow
     {
-        [MenuItem("RCore/Tools/RHierarchy Settings")]
+        [MenuItem("RCore/RHierarchy Settings", priority = RMenu.GROUP_2 + 6)]
         public static void ShowWindow()
         {
             GetWindow<RHierarchySettingsWindow>("RHierarchy Settings");

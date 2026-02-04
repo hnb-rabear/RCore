@@ -342,9 +342,9 @@ namespace RCore.Editor.RHierarchy
         {
             var components = gameObject.GetComponents<Component>();
             List<Component> toDraw = new List<Component>();
-            foreach(var c in components)
+            for (int i = 0; i < components.Length; i++)
             {
-                if (c == null) continue;
+                var c = components[i];
                 if (c is Transform) continue;
                 toDraw.Add(c);
             }
@@ -355,17 +355,40 @@ namespace RCore.Editor.RHierarchy
             {
                 rect.x -= iconSize;
                 rect.width = iconSize;
+
+                if (c == null)
+                {
+                    // Draw Missing Script Icon
+                    var content = EditorGUIUtility.IconContent("console.warnicon.sml");
+                    if (content == null || content.image == null) content = new GUIContent("?");
+                    
+                    Color originalColor = GUI.color;
+                    GUI.color = Color.red;
+                    
+                    GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+                    style.fontSize = 10;
+                    style.alignment = TextAnchor.MiddleCenter;
+                    style.normal.textColor = Color.red;
+
+                    if (content.image != null)
+                         GUI.DrawTexture(rect, content.image);
+                    else
+                         GUI.Label(rect, "?", style);
+                    
+                    GUI.color = originalColor;
+                    continue;
+                }
                 
-                var content = EditorGUIUtility.ObjectContent(c, null);
+                var componentContent = EditorGUIUtility.ObjectContent(c, null);
                 
                 // Interaction Area
                 bool mouseOver = rect.Contains(Event.current.mousePosition);
                 
-                if (c is MonoBehaviour mb && RMonoIcon.IsCustomScript(mb) && RMonoIcon.IsDefaultIcon(content.image))
+                if (c is MonoBehaviour mb && RMonoIcon.IsCustomScript(mb) && RMonoIcon.IsDefaultIcon(componentContent.image))
                 {
                     RMonoIcon.DrawIcon(rect, mb);
                 }
-                else if (content.image != null)
+                else if (componentContent.image != null)
                 {
                     // Check if enabled
                     bool isEnabled = true;
@@ -377,7 +400,7 @@ namespace RCore.Editor.RHierarchy
                     Color originalColor = GUI.color;
                     if (!isEnabled) GUI.color = new Color(1, 1, 1, 0.5f);
 
-                    GUI.DrawTexture(rect, content.image);
+                    GUI.DrawTexture(rect, componentContent.image);
 
                     GUI.color = originalColor;
                 }

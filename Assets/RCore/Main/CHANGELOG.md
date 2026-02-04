@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.1]
+### Added
+- **Asset Cleaner**: A toolset to optimize project assets by finding unused files and tracing dependencies.
+    - **Project Cleaner**: Identifies unused assets, showing folder statistics and unused size. Added smart filtering (hides empty types), live count/size per type, and selectable paths.
+    - **Reference Finder**: Traces incoming references with history navigation. Added **Deep Search** mode to find indirect references (Addressables, wrappers) by scanning file contents.
+    - **Performance**: Optimized via persistent dependency caching. "Scan Project" now auto-calculates type stats.
+    - **UX**: "Ping" button to locate assets. Separated "Red Overlay" and "Show Size" settings; overlays now auto-hide when the tool window is closed.
+
+### Changed
+- **RHierarchy**: Added detection and `[?]` icon for missing scripts on GameObjects.
+
 ## [1.1.0]
 ### Added
 - **RHierarchy**: Added a lightweight hierarchy enhancer tool
