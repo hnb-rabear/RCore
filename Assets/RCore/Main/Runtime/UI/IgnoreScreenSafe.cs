@@ -1,8 +1,8 @@
-﻿#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
+﻿/**
+ * Author HNB-RaBear - 2021
+ **/
+
 using RCore.Inspector;
-using System;
 using UnityEngine;
 
 namespace RCore.UI
@@ -35,11 +35,8 @@ namespace RCore.UI
 			Validate();
 		}
 
-#if ODIN_INSPECTOR
-		[Button]
-#else
+		[ContextMenu("Validate")]
 		[InspectorButton]
-#endif
 		private void Validate()
 		{
 			if (m_rectTransform == null) m_rectTransform = transform as RectTransform;
@@ -61,7 +58,7 @@ namespace RCore.UI
 			// Convert pixels to local space units (Canvas Scaler units)
 			// Assuming Screen Space - Overlay or Camera where scaleFactor applies uniformly
 			float scaleFactor = m_canvas.scaleFactor;
-			
+
 			// Avoid division by zero
 			if (scaleFactor == 0) scaleFactor = 1f;
 
