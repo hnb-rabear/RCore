@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.2]
+### Changed
+- **Asset Cleaner**: Major performance optimization.
+    - Implemented high-performance Rect-based rendering and lightweight labels, achieving zero-overhead scrolling even with thousands of assets.
+    - Added pagination (50 items/page) and caching for asset icons/sizes.
+    - Applied optimization to both "Cleaner" and "Reference Finder" tabs.
+    - Removed default settings for ignore paths.
+    - Simplified UI by removing redundant navigation buttons in Reference Finder.
+    - **Deep Search**: Optimized with Parallel Processing (multi-threaded scanning) for significantly faster result.
+    - **Configuration**: Added `Deep Search Extensions` setting to allow configuring which file types to scan.
+    - **Reference Finder**:
+        - **Detail View**: Added foldout to show exact property usage (e.g. `MeshRenderer.m_Materials`).
+        - **Scene Inspection**: Added support for inspecting references in unopened scenes via "Load Additively" button.
+        - **Smart Filtering**: Automatically hides internal Prefab linkages (`CorrespondingSourceObject`) to reduce noise.
+        - **Replacement**: Added inline object field to instantly replace references.
+        - **Fixes**: Improved reference detection for Texture/Sprite mismatches and Sub-Assets.
+
 ## [1.1.1]
 ### Added
 - **Asset Cleaner**: A toolset to optimize project assets by finding unused files and tracing dependencies.

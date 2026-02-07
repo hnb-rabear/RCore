@@ -67,7 +67,8 @@ namespace RCore.Editor.AssetCleaner
         {
             ReferenceCache.Clear();
             var allAssets = AssetDatabase.GetAllAssetPaths();
-            var projectAssets = allAssets.Where(p => p.StartsWith("Assets/")).ToArray();
+            // Include ProjectSettings to find references like App Icon, Splash Screen, etc.
+            var projectAssets = allAssets.Where(p => p.StartsWith("Assets/") || p.StartsWith("ProjectSettings/")).ToArray();
             int index = 0;
             int total = projectAssets.Length;
 
@@ -215,44 +216,54 @@ namespace RCore.Editor.AssetCleaner
 
         public static List<string> FindReferencesByGuid(string guid)
         {
-            var references = new List<string>();
+            var references = new System.Collections.Concurrent.ConcurrentBag<string>();
             var allAssets = AssetDatabase.GetAllAssetPaths();
             
             // Files that can store text/guid references
-            // We ignore binary files like textures, audio, etc. unless they are meta files (but usually we check the asset itself)
-            // Actually, we check the text representation of assets: .prefab, .unity, .asset, .mat, .controller, .overrideController, .anim
-            var textExtensions = new HashSet<string> { ".prefab", ".unity", ".asset", ".mat", ".controller", ".overrideController", ".anim", ".json", ".txt" };
+            // Use configurable extensions from settings
+            var textExtensions = new HashSet<string>(RAssetCleanerSettings.Instance.deepSearchExtensions.Select(e => e.ToLower()));
 
-            int index = 0;
-            int total = allAssets.Length;
-
+            // Filter on Main Thread
+            var candidatePaths = new List<string>();
             foreach (var path in allAssets)
             {
-                if (index % 100 == 0)
-                    EditorUtility.DisplayProgressBar("Deep Search", $"Scanning content: {Path.GetFileName(path)}", (float)index / total);
-                index++;
-
                 if (AssetDatabase.IsValidFolder(path)) continue;
-
                 string ext = Path.GetExtension(path).ToLower();
-                if (!textExtensions.Contains(ext)) continue;
-
-                // Read file content and check if it contains the GUID
-                try
+                if (textExtensions.Contains(ext))
                 {
-                    string content = File.ReadAllText(path);
-                    if (content.Contains(guid))
-                    {
-                        references.Add(path);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"Could not read file {path}: {e.Message}");
+                    candidatePaths.Add(path);
                 }
             }
-            EditorUtility.ClearProgressBar();
-            return references;
+            
+            // Parallel Scan
+            EditorUtility.DisplayProgressBar("Deep Search", $"Scanning {candidatePaths.Count} text assets...", 0f);
+            
+            try
+            {
+                // Use Parallel.ForEach to utilize all CPU cores
+                // Note: File.ReadAllText is thread-safe for reading.
+                System.Threading.Tasks.Parallel.ForEach(candidatePaths, path => 
+                {
+                    try
+                    {
+                        string content = File.ReadAllText(path);
+                        if (content.Contains(guid))
+                        {
+                            references.Add(path);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore read errors (e.g. file locked)
+                    }
+                });
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+            
+            return references.ToList();
         }
     }
 }

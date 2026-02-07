@@ -36,13 +36,12 @@ namespace RCore.Editor.AssetCleaner
             }
         }
         
-        public List<string> ignorePaths = new List<string>()
+        public List<string> ignorePaths = new List<string>();
+        
+        public List<string> deepSearchExtensions = new List<string>()
         {
-            "Assets/RCore",
-            "Assets/Plugins",
-            "Assets/Resources",
-            "Assets/Editor",
-            "ProjectSettings"
+            ".prefab", ".unity", ".asset", ".mat", ".controller", 
+            ".overrideController", ".anim", ".json", ".txt"
         };
         
         public Color unusedColor = new Color(1f, 0.3f, 0.3f, 1f);
