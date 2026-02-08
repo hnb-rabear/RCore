@@ -196,6 +196,15 @@ namespace RCore.Editor.AssetCleaner
 		private void OnEnable()
 		{
 			IsOpen = true;
+			// Load cache
+			var cached = RAssetCleaner.LoadCache();
+			if (cached != null)
+			{
+				m_unusedAssets = cached;
+				m_scanned = true;
+				CalculateTypeStats();
+			}
+			
 			// Load history?
 			Selection.selectionChanged += OnSelectionChange;
 			
@@ -258,15 +267,27 @@ namespace RCore.Editor.AssetCleaner
 
 		private void DrawCleanerTab()
 		{
-			GUILayout.Label("Project Cleaner", EditorStyles.boldLabel);
-
+			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button("Scan Project", GUILayout.Height(30)))
 			{
 				m_unusedAssets = RAssetCleaner.FindUnusedAssets(RAssetCleanerSettings.Instance.ignorePaths);
+				RAssetCleaner.SaveCache(m_unusedAssets);
 				CalculateTypeStats();
 				m_currentPage = 0; // Reset to first page
 				m_scanned = true;
 			}
+			if (GUILayout.Button("Reload", GUILayout.Width(70), GUILayout.Height(30)))
+			{
+				var cached = RAssetCleaner.LoadCache();
+				if (cached != null)
+				{
+					m_unusedAssets = cached;
+					m_scanned = true;
+					CalculateTypeStats();
+					m_currentPage = 0;
+				}
+			}
+			EditorGUILayout.EndHorizontal();
 
 			if (m_scanned)
 			{
@@ -284,52 +305,73 @@ namespace RCore.Editor.AssetCleaner
 				
 				var (startIndex, endIndex) = GetPageRange();
 
-				// Build cache for current page if needed (only once per page change)
+				// Build cache for current page if needed
 				if (m_cachedPage != m_currentPage)
 				{
 					BuildPageCache(startIndex, endIndex);
 					m_cachedPage = m_currentPage;
 				}
+				
+				// Header
+				EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+				GUILayout.Label("", GUILayout.Width(20)); // Icon space
+				GUILayout.Label("Path", GUILayout.ExpandWidth(true));
+				GUILayout.Label("Size", GUILayout.Width(60));
+				GUILayout.Label("Action", GUILayout.Width(60));
+				EditorGUILayout.EndHorizontal();
 
 				m_scrollPos = GUILayout.BeginScrollView(m_scrollPos);
 
-				float rowHeight = 20f;
+				float rowHeight = 24f;
 				int count = endIndex - startIndex;
 				
-				// Reserve space for all items (single layout call)
 				Rect listRect = GUILayoutUtility.GetRect(0, count * rowHeight, GUILayout.ExpandWidth(true));
 				
 				if (Event.current.type == EventType.Repaint)
 				{
-					// Draw background for list area? Optional.
+					// Draw background for list area if needed
 				}
 
-				// Draw loop with minimal overhead
 				for (int i = 0; i < count; i++)
 				{
-					if (i >= m_pageCacheList.Count) break; // Should not happen
+					if (i >= m_pageCacheList.Count) break;
 					
 					var item = m_pageCacheList[i];
-					
-					// Calculate rows relative to listRect
 					float y = listRect.y + i * rowHeight;
+					Rect rowRect = new Rect(listRect.x, y, listRect.width, rowHeight);
 					
-					// Inline rect calculations for speed
-					Rect iconRect = new Rect(listRect.x, y, 20, 20);
-					Rect pathRect = new Rect(listRect.x + 25, y, listRect.width - 135, 20); // Dynamic width
-					Rect sizeRect = new Rect(pathRect.xMax + 5, y, 60, 20);
-					Rect btnRect = new Rect(sizeRect.xMax + 5, y, 45, 20);
+					// Zebra Striping
+					if (i % 2 == 0) 
+						EditorGUI.DrawRect(rowRect, new Color(0, 0, 0, 0.1f));
+					
+					// Columns
+					Rect iconRect = new Rect(rowRect.x, y + 2, 20, 20);
+					Rect pathRect = new Rect(rowRect.x + 25, y + 2, rowRect.width - 25 - 130, 20); 
+					Rect sizeRect = new Rect(rowRect.width - 125, y + 2, 60, 20);
+					Rect btnRect = new Rect(rowRect.width - 60, y + 2, 55, 20);
 
-					// Pure GUI calls - fastest possible rendering
 					if (item.icon != null) GUI.Label(iconRect, item.icon);
-					GUI.Label(pathRect, item.path); // Non-interactive label is much faster than TextField
+					GUI.Label(pathRect, item.path);
 					GUI.Label(sizeRect, item.sizeStr);
 
-					if (GUI.Button(btnRect, "Ping"))
+					if (GUI.Button(btnRect, "Del")) // Shortened for space
+					{
+						if (EditorUtility.DisplayDialog("Delete Asset", $"Are you sure you want to delete {item.path}?", "Delete", "Cancel"))
+						{
+							AssetDatabase.DeleteAsset(item.path);
+							m_unusedAssets.RemoveAll(x => x == item.path);
+							CalculateTypeStats();
+							BuildPageCache(startIndex, endIndex);
+						}
+					}
+					
+					// Click to Ping (Selection)
+					if (Event.current.type == EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
 					{
 						var obj = AssetDatabase.LoadAssetAtPath<Object>(item.path);
 						Selection.activeObject = obj;
 						EditorGUIUtility.PingObject(obj);
+						Event.current.Use();
 					}
 				}
 				
@@ -343,8 +385,30 @@ namespace RCore.Editor.AssetCleaner
 
 		private void DrawReferenceFinderTab()
 		{
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("Scan Project", GUILayout.Height(30)))
+			{
+				m_unusedAssets = RAssetCleaner.FindUnusedAssets(RAssetCleanerSettings.Instance.ignorePaths);
+				RAssetCleaner.SaveCache(m_unusedAssets);
+				CalculateTypeStats();
+				m_currentPage = 0; // Reset to first page
+				m_scanned = true;
+			}
+			if (GUILayout.Button("Reload", GUILayout.Width(70), GUILayout.Height(30)))
+			{
+				var cached = RAssetCleaner.LoadCache();
+				if (cached != null)
+				{
+					m_unusedAssets = cached;
+					m_scanned = true;
+					CalculateTypeStats();
+					m_currentPage = 0;
+				}
+			}
+			EditorGUILayout.EndHorizontal();
+			
 			GUILayout.Label("Find References", EditorStyles.boldLabel);
-
+			
 			EditorGUILayout.BeginHorizontal();
 			EditorGUI.BeginChangeCheck();
 			m_selectedAsset = EditorGUILayout.ObjectField("Asset", m_selectedAsset, typeof(Object), false);
@@ -366,6 +430,7 @@ namespace RCore.Editor.AssetCleaner
 					FindReferences();
 				}
 			}
+
 			EditorGUILayout.EndHorizontal();
 
 
@@ -374,7 +439,17 @@ namespace RCore.Editor.AssetCleaner
 
 			if (m_selectedAsset != null)
 			{
+				GUILayout.Space(5);
 				GUILayout.Label($"Used by {m_referencingAssets.Count} assets:");
+				GUILayout.Space(5);
+
+				// Header
+				EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+				GUILayout.Label("", GUILayout.Width(25)); // Foldout
+				GUILayout.Label("", GUILayout.Width(20)); // Icon
+				GUILayout.Label("Referencing Asset", GUILayout.ExpandWidth(true));
+				GUILayout.Label("Action", GUILayout.Width(60));
+				EditorGUILayout.EndHorizontal();
 
 				m_refScrollPos = GUILayout.BeginScrollView(m_refScrollPos);
 				
@@ -385,35 +460,42 @@ namespace RCore.Editor.AssetCleaner
 					
 					if (asset == null) continue;
 
-					EditorGUILayout.BeginHorizontal();
+					// Main Row
+					Rect rowRect = EditorGUILayout.GetControlRect(false, 20);
 					
+					// Zebra Striping
+					if (i % 2 == 0) EditorGUI.DrawRect(rowRect, new Color(0, 0, 0, 0.1f));
+
 					// Foldout
 					if (!m_foldoutStates.ContainsKey(refPath)) m_foldoutStates[refPath] = false;
-					bool folded = m_foldoutStates[refPath];
+					bool isExpanded = m_foldoutStates[refPath];
 					
-					// Icon & Path
-					var icon = AssetDatabase.GetCachedIcon(refPath);
-					GUILayout.Label(icon, GUILayout.Width(20), GUILayout.Height(20));
-					if (GUILayout.Button(folded ? "▼" : "▶", GUILayout.Width(25)))
+					Rect foldoutRect = new Rect(rowRect.x, rowRect.y, 25, rowRect.height);
+					Rect iconRect = new Rect(rowRect.x + 25, rowRect.y, 20, 20);
+					Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 65, rowRect.height);
+					Rect btnRect = new Rect(rowRect.width - 60, rowRect.y, 55, 18);
+
+					if (GUI.Button(foldoutRect, isExpanded ? "▼" : "▶", EditorStyles.label))
 					{
-						m_foldoutStates[refPath] = !folded;
-						if (!folded && !m_usageDetails.ContainsKey(refPath))
+						m_foldoutStates[refPath] = !isExpanded;
+						if (!isExpanded && !m_usageDetails.ContainsKey(refPath))
 						{
-							// Lazy load details
 							m_usageDetails[refPath] = FindUsageDetails(refPath, m_selectedAsset);
 						}
 					}
-					EditorGUILayout.LabelField(refPath);
+
+					var icon = AssetDatabase.GetCachedIcon(refPath);
+					if (icon != null) GUI.Label(iconRect, icon);
+					GUI.Label(pathRect, refPath);
 					
-					if (GUILayout.Button("Ping", GUILayout.Width(45)))
+					if (GUI.Button(btnRect, "Select"))
 					{
 						Selection.activeObject = asset;
 						EditorGUIUtility.PingObject(asset);
 					}
-					EditorGUILayout.EndHorizontal();
 					
 					// Draw Details
-					if (m_foldoutStates[refPath] && m_usageDetails.ContainsKey(refPath))
+					if (isExpanded && m_usageDetails.ContainsKey(refPath))
 					{
 						var details = m_usageDetails[refPath];
 						if (details.Count == 0)
@@ -427,18 +509,17 @@ namespace RCore.Editor.AssetCleaner
 									if (GUILayout.Button("Load Scene to Inspect (Additive)", GUILayout.Height(30)))
 									{
 										UnityEditor.SceneManagement.EditorSceneManager.OpenScene(refPath, UnityEditor.SceneManagement.OpenSceneMode.Additive);
-										// Refresh details now that it's loaded
 										m_usageDetails[refPath] = FindUsageDetails(refPath, m_selectedAsset);
 									}
 								}
 								else
 								{
-									EditorGUILayout.HelpBox("Could not find direct property reference. It might be in a strictly serialized list or hidden.", MessageType.Info);
+									EditorGUILayout.HelpBox("Could not find direct property reference.", MessageType.Info);
 								}
 							}
 							else
 							{
-								EditorGUILayout.HelpBox("Could not find direct property reference. It might be in a strictly serialized list or hidden.", MessageType.Info);
+								EditorGUILayout.HelpBox("Could not find direct property reference.", MessageType.Info);
 							}
 						}
 						else
@@ -446,14 +527,13 @@ namespace RCore.Editor.AssetCleaner
 							foreach (var detail in details)
 							{
 								EditorGUILayout.BeginHorizontal();
-								GUILayout.Space(30);
+								GUILayout.Space(50); // Indent
 								GUILayout.Label($"{detail.hostObject.GetType().Name}.{detail.propertyDisplayName}", GUILayout.Width(200));
 								
 								// Ensure serialized object is valid
 								if (detail.serializedObject != null && detail.serializedObject.targetObject != null)
 								{
 									detail.serializedObject.Update();
-									// Use PropertyField to handle types (Sprite vs Texture) automatically
 									EditorGUILayout.PropertyField(detail.property, GUIContent.none);
 									detail.serializedObject.ApplyModifiedProperties();
 								}
@@ -699,20 +779,44 @@ namespace RCore.Editor.AssetCleaner
             }
         }
 
-		private void CalculateTypeStats()
+	private void CalculateTypeStats()
+	{
+		m_typeStats.Clear();
+		int total = m_unusedAssets.Count;
+		
+		// Show progress bar for large datasets
+		bool showProgress = total > 1000;
+		int index = 0;
+		
+		foreach (var path in m_unusedAssets)
 		{
-			m_typeStats.Clear();
-			foreach (var path in m_unusedAssets)
+			if (showProgress && index % 500 == 0)
 			{
-				var type = GetAssetType(path);
-				if (!m_typeStats.ContainsKey(type))
-					m_typeStats[type] = (0, 0);
-				
-				var (count, size) = m_typeStats[type];
-				m_typeStats[type] = (count + 1, size + RAssetCleaner.GetAssetSize(path));
+				if (EditorUtility.DisplayCancelableProgressBar("Calculating Type Statistics", 
+					$"Processing {index}/{total} assets...", (float)index / total))
+				{
+					// User cancelled
+					EditorUtility.ClearProgressBar();
+					m_typeStats.Clear();
+					return;
+				}
 			}
-			ApplyFilter();
+			
+			var type = GetAssetType(path);
+			if (!m_typeStats.ContainsKey(type))
+				m_typeStats[type] = (0, 0);
+			
+			var (count, size) = m_typeStats[type];
+			// GetAssetSize now uses cache, so this is fast
+			m_typeStats[type] = (count + 1, size + RAssetCleaner.GetAssetSize(path));
+			index++;
 		}
+		
+		if (showProgress)
+			EditorUtility.ClearProgressBar();
+			
+		ApplyFilter();
+	}
 
 		private void ApplyFilter()
 		{
@@ -762,6 +866,7 @@ namespace RCore.Editor.AssetCleaner
 			{
 				m_itemsPerPage = pageSizeOptions[newIndex];
 				m_currentPage = 0; // Reset to first page when changing page size
+		m_cachedPage = -1;
 			}
 			
 			EditorGUILayout.EndHorizontal();
@@ -810,28 +915,35 @@ namespace RCore.Editor.AssetCleaner
 			EditorGUILayout.EndHorizontal();
 		}
 		
-		private void BuildPageCache(int startIndex, int endIndex)
-		{
-			m_pageCacheList.Clear();
-			
-			// Pre-allocate to avoid resizing
-			if (m_pageCacheList.Capacity < (endIndex - startIndex))
-				m_pageCacheList.Capacity = (endIndex - startIndex);
+	private void BuildPageCache(int startIndex, int endIndex)
+	{
+		m_pageCacheList.Clear();
+		
+		// Pre-allocate to avoid resizing
+		int capacity = endIndex - startIndex;
+		if (m_pageCacheList.Capacity < capacity)
+			m_pageCacheList.Capacity = capacity;
 
-			for (int i = startIndex; i < endIndex; i++)
+		// Batch process all items for the current page
+		for (int i = startIndex; i < endIndex; i++)
+		{
+			var path = m_filteredAssets[i];
+			
+			// All these operations are now optimized:
+			// - GetCachedIcon is Unity's cached lookup
+			// - GetAssetSize uses our SizeCache
+			// - FormatBytes is lightweight
+			var icon = AssetDatabase.GetCachedIcon(path);
+			var size = RAssetCleaner.GetAssetSize(path); // Uses cache
+			var formattedSize = EditorUtility.FormatBytes(size);
+			
+			m_pageCacheList.Add(new CacheItem 
 			{
-				var path = m_filteredAssets[i];
-				var icon = AssetDatabase.GetCachedIcon(path);
-				var size = RAssetCleaner.GetAssetSize(path);
-				var formattedSize = EditorUtility.FormatBytes(size);
-				
-				m_pageCacheList.Add(new CacheItem 
-				{
-					icon = icon,
-					path = path,
-					sizeStr = formattedSize
-				});
-			}
+				icon = icon,
+				path = path,
+				sizeStr = formattedSize
+			});
 		}
+	}
 	}
 }

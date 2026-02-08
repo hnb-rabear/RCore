@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.1.3]
+### Added
+- **UI Enhancements**:
+  - Implemented zebra striping for better readability in both Cleaner and Reference Finder tabs.
+  - Added header rows with columns (Icon, Path, Size, Action).
+  - Added "Delete" button to quickly remove unused assets directly from the list.
+  - Added "Reload" button to manually refresh cache from disk.
+- **Persistence**:
+  - Auto-save: Scan results are automatically saved to `Library/RAssetCleanerCache.json`.
+  - Auto-load: Results are restored when opening the window or after recompilation.
+- **Performance**:
+  - Optimized Type Statistics calculation with progress bar and cancellation support.
+  - Implemented `SizeCache` to reduce disk I/O during scans.
+  - Batched operations in list rendering to improve scrolling performance with large datasets.
+
+### Changed
+- **Reference Finder**:
+  - Aligned UI style with the Cleaner tab.
+  - "Scan Project" button now calls `FindUnusedAssets` to ensure full cache consistency and saves the result.
+
+### Fixed
+- **Pagination**: Fixed an issue where changing "Items per Page" did not refresh the list view.
+
 ## [1.1.2]
 ### Changed
 - **Asset Cleaner**: Major performance optimization.

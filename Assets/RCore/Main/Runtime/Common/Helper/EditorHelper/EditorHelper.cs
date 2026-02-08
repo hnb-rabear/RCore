@@ -175,6 +175,30 @@ namespace RCore.Editor
 
 		public static float[] ArrayField(float[] values, string label, bool showHorizontal = true, int labelWidth = 80, int valueWidth = 0) => EditorGui.ArrayField(values, label, showHorizontal, labelWidth, valueWidth);
 
+		public static void TimeField(DateTime timeStart, Action<DateTime> onTimeChanged)
+		{
+			EditorGUILayout.BeginHorizontal("box");
+			{
+				EditorGUILayout.BeginVertical();
+				{
+					LabelField(timeStart.ToString("dd/MM/yyyy HH:mm:ss"), 200);
+					EditorGUILayout.BeginHorizontal();
+					{
+						if (Button("Date", 40)) onTimeChanged(DateTime.UtcNow.Date);
+						if (Button("Now", 40)) onTimeChanged(DateTime.UtcNow);
+						if (Button("Pick", 40))
+						{
+							var picker = DateTimePickerWindow.ShowWindow(timeStart, true);
+							picker.onQuit += onTimeChanged;
+						}
+					}
+					EditorGUILayout.EndHorizontal();
+				}
+				EditorGUILayout.EndVertical();
+			}
+			EditorGUILayout.EndHorizontal();
+		}
+		
 #endregion
 
 		//========================================
@@ -185,7 +209,7 @@ namespace RCore.Editor
 
 #endregion
 
-		//========================================
+		//========================================                
 
 #region EditorBuildUtil
 
