@@ -49,10 +49,9 @@ namespace RCore.UI
 			if (m_canvas == null) return;
 
 			var safeArea = Screen.safeArea;
-			var resolution = Screen.currentResolution;
 
 			// Calculate safe area offsets in pixels
-			float topUnsafePixels = resolution.height - safeArea.yMax;
+			float topUnsafePixels = Screen.height - safeArea.yMax;
 			float bottomUnsafePixels = safeArea.y;
 
 			// Convert pixels to local space units (Canvas Scaler units)
