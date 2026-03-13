@@ -124,7 +124,7 @@ namespace RCore
 						{
 							m_ServerTimestamp = timestamp;
 							m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
-							m_GetServerTimeAt = Time.unscaledTime;
+							m_GetServerTimeAt = Time.realtimeSinceStartup;
 							m_ConnectionChecks--;
 						}
 					}
@@ -172,7 +172,7 @@ namespace RCore
 							var timestamp = jsonParse.GetInt("unixtime");
 							m_ServerTimestamp = timestamp;
 							m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
-							m_GetServerTimeAt = Time.unscaledTime;
+							m_GetServerTimeAt = Time.realtimeSinceStartup;
 						}
 					}
 				}
@@ -195,14 +195,14 @@ namespace RCore
 		public static DateTime? GetServerTimeUtc()
 		{
 			if (m_GetServerTimeAt > 0)
-				return m_ServerTime.AddSeconds(Time.unscaledTime - m_GetServerTimeAt);
+				return m_ServerTime.AddSeconds(Time.realtimeSinceStartup - m_GetServerTimeAt);
 			return null;
 		}
 
 		public static int? GetServerTimestampUtc()
 		{
 			if (m_GetServerTimeAt > 0)
-				return m_ServerTimestamp + (int)(Time.unscaledTime - m_GetServerTimeAt);
+				return m_ServerTimestamp + (int)(Time.realtimeSinceStartup - m_GetServerTimeAt);
 			return null;
 		}
 		
