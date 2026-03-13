@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Author HNB-RaBear - 2018
  **/
 
@@ -25,7 +25,7 @@ namespace RCore
 	{
 		public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		private static StringBuilder m_TimeBuilder = new StringBuilder();
-		private static float m_LastRefreshTime;
+		private static float m_LastRefreshTime = -1;
 		private static int m_CachedTimestampUtc;
 		private static int m_CachedTimestampLocal;
 		private static bool m_HasInternet;
@@ -381,6 +381,11 @@ namespace RCore
 				MinuteCheat = new RPlayerPrefInt("TimeHelper.MinuteCheat");
 			}
 		}
+		
+		public static void ResetCache()
+		{
+			m_LastRefreshTime = -1f;
+		}
 
 		/// <summary>
 		/// Gets the current timestamp (UTC or Local) accounting for any active cheats.
@@ -388,9 +393,9 @@ namespace RCore
 		/// </summary>
 		public static int GetNowTimestamp(bool utcTime)
 		{
-			if (Time.unscaledTime - m_LastRefreshTime >= 1f)
+			if (Time.realtimeSinceStartup - m_LastRefreshTime >= 1f)
 			{
-				m_LastRefreshTime = Time.unscaledTime;
+				m_LastRefreshTime = Time.realtimeSinceStartup;
 
 				var serverTs = WebRequestHelper.GetServerTimestampUtc();
 				if (serverTs.HasValue)

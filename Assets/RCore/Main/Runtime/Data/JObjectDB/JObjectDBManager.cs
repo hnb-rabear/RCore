@@ -91,6 +91,7 @@ namespace RCore.Data.JObject
 				return;
 
 			m_pauseState = pause ? 0 : 1;
+			TimeHelper.ResetCache();
 			int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 			int offlineSeconds = pause ? 0 : GetOfflineSeconds();
 

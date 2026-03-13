@@ -385,6 +385,12 @@ namespace RCore.UI
 		/// <param name="panel">The panel to push.</param>
 		protected virtual void PushPanelToTop(PanelController panel)
 		{
+			if (panel == null)
+			{
+				Log("Panel is null");
+				return;
+			}
+
 			if (TopPanel == panel && TopPanel.Displayed)
 				return;
 

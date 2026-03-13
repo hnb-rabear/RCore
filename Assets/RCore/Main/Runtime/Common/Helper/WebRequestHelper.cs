@@ -68,19 +68,29 @@ namespace RCore
 			if (m_RequestingIpInfo || !string.IsNullOrEmpty(ipInfo.ip))
 				return;
 				
-			const string uri = "https://ipinfo.io/json";
-			using var w = UnityWebRequest.Get(uri);
 			m_RequestingIpInfo = true;
-			await w.SendWebRequest();
-			m_RequestingIpInfo = false;
-			bool requestSuccess = w.result == UnityWebRequest.Result.Success;
-			if (!requestSuccess)
-				Debug.LogError(w.error);
-			else
+			try
 			{
-				SetOnlineStatus(true);
-				ipInfo = JsonUtility.FromJson<IPInfo>(w.downloadHandler.text);
-				m_ConnectionChecks--;
+				const string uri = "https://ipinfo.io/json";
+				using var w = UnityWebRequest.Get(uri);
+				await w.SendWebRequest();
+				bool requestSuccess = w.result == UnityWebRequest.Result.Success;
+				if (!requestSuccess)
+					Debug.LogError(w.error);
+				else
+				{
+					SetOnlineStatus(true);
+					ipInfo = JsonUtility.FromJson<IPInfo>(w.downloadHandler.text);
+					m_ConnectionChecks--;
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"RequestIpInfo failed: {ex.Message}");
+			}
+			finally
+			{
+				m_RequestingIpInfo = false;
 			}
 		}
 
@@ -100,22 +110,33 @@ namespace RCore
 				return;
 				
 			m_RequestingServerTime = true;
-			var request = await UnityWebRequest.Get(FC_TIME_API).SendWebRequest();
-			m_RequestingServerTime = false;
-			if (request.result == UnityWebRequest.Result.Success)
+			try
 			{
-				if (request.responseCode == 200)
+				using var request = UnityWebRequest.Get(FC_TIME_API);
+				await request.SendWebRequest();
+				if (request.result == UnityWebRequest.Result.Success)
 				{
-					SetOnlineStatus(true);
-					var text = request.downloadHandler.text;
-					if (int.TryParse(text, out int timestamp))
+					if (request.responseCode == 200)
 					{
-						m_ServerTimestamp = timestamp;
-						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
-						m_GetServerTimeAt = Time.unscaledTime;
-						m_ConnectionChecks--;
+						SetOnlineStatus(true);
+						var text = request.downloadHandler.text;
+						if (int.TryParse(text, out int timestamp))
+						{
+							m_ServerTimestamp = timestamp;
+							m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
+							m_GetServerTimeAt = Time.unscaledTime;
+							m_ConnectionChecks--;
+						}
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"RequestFCTime failed: {ex.Message}");
+			}
+			finally
+			{
+				m_RequestingServerTime = false;
 			}
 		}
 		
@@ -134,24 +155,35 @@ namespace RCore
 				return;
 				
 			m_RequestingServerTime = true;
-			var request = await UnityWebRequest.Get(WORLD_TIME_API).SendWebRequest();
-			m_RequestingServerTime = false;
-			if (request.result == UnityWebRequest.Result.Success)
+			try
 			{
-				if (request.responseCode == 200)
+				using var request = UnityWebRequest.Get(WORLD_TIME_API);
+				await request.SendWebRequest();
+				if (request.result == UnityWebRequest.Result.Success)
 				{
-					SetOnlineStatus(true);
-
-					var text = request.downloadHandler.text;
-					var jsonParse = JSON.Parse(text);
-					if (jsonParse != null)
+					if (request.responseCode == 200)
 					{
-						var timestamp = jsonParse.GetInt("unixtime");
-						m_ServerTimestamp = timestamp;
-						m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
-						m_GetServerTimeAt = Time.unscaledTime;
+						SetOnlineStatus(true);
+
+						var text = request.downloadHandler.text;
+						var jsonParse = JSON.Parse(text);
+						if (jsonParse != null)
+						{
+							var timestamp = jsonParse.GetInt("unixtime");
+							m_ServerTimestamp = timestamp;
+							m_ServerTime = TimeHelper.UnixTimestampToDateTime(timestamp);
+							m_GetServerTimeAt = Time.unscaledTime;
+						}
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"RequestUtcTime failed: {ex.Message}");
+			}
+			finally
+			{
+				m_RequestingServerTime = false;
 			}
 		}
 		

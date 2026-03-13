@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.4]
+### Fixed
+- **TimeHelper**: Replaced `Time.unscaledTime` with `Time.realtimeSinceStartup` in `GetNowTimestamp` to ensure the cached timestamp refreshes correctly after the app is suspended/resumed. Added `ResetCache()` method to force an immediate timestamp refresh.
+- **WebRequestHelper**: Improved error handling in `RequestUtcTime` with proper try-catch-finally to prevent silent failures and ensure `m_RequestingServerTime` flag is always reset.
+- **JObjectDBManager**: Added `TimeHelper.ResetCache()` call on app resume (`OnApplicationPause`) so the real-time clock is re-synced immediately when users return to the app.
+- **PanelStack**: Added null check in `PushPanelToTop` to prevent `NullReferenceException` when a null panel is pushed.
+
+### Changed
+- **IJObjectHandler**: Changed `OnRemoteConfigFetched` from `abstract` to a default interface method for simpler implementation.
+
 ## [1.1.3]
 ### Added
 - **UI Enhancements**:

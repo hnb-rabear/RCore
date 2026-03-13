@@ -44,7 +44,7 @@ namespace RCore.Data.JObject
 		/// A callback method that is invoked when new remote configuration values have been fetched.
 		/// Implementing classes must provide logic to handle and apply these new settings.
 		/// </summary>
-		public abstract void OnRemoteConfigFetched();
+		public void OnRemoteConfigFetched();
 		
 		/// <summary>
 		/// Triggers the save mechanism for the object, persisting its current state.
