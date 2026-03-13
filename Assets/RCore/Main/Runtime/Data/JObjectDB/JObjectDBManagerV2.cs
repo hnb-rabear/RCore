@@ -90,6 +90,7 @@ namespace RCore.Data.JObject
 				return;
 
 			m_pauseState = pause ? 0 : 1;
+			TimeHelper.ResetCache();
 			m_dataCollection.OnPause(pause);
 
 			if (pause && m_saveOnPause && m_enableAutoSave)
