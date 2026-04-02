@@ -26,8 +26,10 @@ namespace RCore
 		public int limitNumber;
 		/// <summary>The default number of objects to create when a new pool is initialized.</summary>
 		private int m_initialNumber;
-		/// <summary>A lookup dictionary that maps a clone's instance ID to its original prefab's instance ID. This provides a fast way to find the correct pool for a given object.</summary>
-		private Dictionary<int, int> m_idOfAllClones = new Dictionary<int, int>(); //Keep tracking the clone instance id and its prefab instance id
+		/// <summary>A lookup dictionary that maps a clone to its pool. This provides a fast way to release objects without native calls.</summary>
+		private Dictionary<T, CustomPool<T>> m_cloneToPoolMap = new Dictionary<T, CustomPool<T>>();
+		/// <summary>A lookup dictionary that maps a prefab to its pool for extremely fast Get calls.</summary>
+		private Dictionary<T, CustomPool<T>> m_prefabToPoolMap = new Dictionary<T, CustomPool<T>>();
 
 		/// <summary>
 		/// Initializes a new instance of the PoolsContainer class with a pre-existing container transform.
@@ -63,12 +65,21 @@ namespace RCore
 		{
 			if (pPrefab == null)
 				return null;
-			int prefabInstanceId = pPrefab.gameObject.GetInstanceID();
-			if (poolDict.TryGetValue(prefabInstanceId, out var prefabPool))
+				
+			if (m_prefabToPoolMap.TryGetValue(pPrefab, out var prefabPool))
 				return prefabPool;
+
+			int prefabInstanceId = pPrefab.gameObject.GetInstanceID();
+			if (poolDict.TryGetValue(prefabInstanceId, out prefabPool))
+			{
+				m_prefabToPoolMap.Add(pPrefab, prefabPool);
+				return prefabPool;
+			}
+				
 			var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
 			pool.limitNumber = limitNumber;
 			poolDict.Add(prefabInstanceId, pool);
+			m_prefabToPoolMap.Add(pPrefab, pool);
 			return pool;
 		}
 
@@ -105,8 +116,8 @@ namespace RCore
 			var pool = Get(prefab);
 			var clone = pool.Spawn(position, pIsWorldPosition);
 			//Keep the trace of clone
-			if (!m_idOfAllClones.ContainsKey(clone.gameObject.GetInstanceID()))
-				m_idOfAllClones.Add(clone.gameObject.GetInstanceID(), prefab.gameObject.GetInstanceID());
+			if (!m_cloneToPoolMap.ContainsKey(clone))
+				m_cloneToPoolMap.Add(clone, pool);
 			return clone;
 		}
 
@@ -121,8 +132,8 @@ namespace RCore
 			var pool = Get(prefab);
 			var clone = pool.Spawn(transform);
 			//Keep the trace of clone
-			if (!m_idOfAllClones.ContainsKey(clone.gameObject.GetInstanceID()))
-				m_idOfAllClones.Add(clone.gameObject.GetInstanceID(), prefab.gameObject.GetInstanceID());
+			if (!m_cloneToPoolMap.ContainsKey(clone))
+				m_cloneToPoolMap.Add(clone, pool);
 			return clone;
 		}
 
@@ -138,6 +149,8 @@ namespace RCore
 				var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
 				pool.limitNumber = limitNumber;
 				poolDict.Add(pPrefab.gameObject.GetInstanceID(), pool);
+				if (!m_prefabToPoolMap.ContainsKey(pPrefab))
+					m_prefabToPoolMap.Add(pPrefab, pool);
 			}
 			else
 				Debug.Log($"Pool Prefab {pPrefab.name} has already existed!");
@@ -151,7 +164,11 @@ namespace RCore
 		public void Add(CustomPool<T> pPool)
 		{
 			if (!poolDict.ContainsKey(pPool.Prefab.gameObject.GetInstanceID()))
+			{
 				poolDict.Add(pPool.Prefab.gameObject.GetInstanceID(), pPool);
+				if (!m_prefabToPoolMap.ContainsKey(pPool.Prefab))
+					m_prefabToPoolMap.Add(pPool.Prefab, pPool);
+			}
 			else
 			{
 				var pool = poolDict[pPool.Prefab.gameObject.GetInstanceID()];
@@ -200,13 +217,13 @@ namespace RCore
 		/// <param name="pObj">The object instance to release.</param>
 		public void Release(T pObj)
 		{
-			if (m_idOfAllClones.ContainsKey(pObj.gameObject.GetInstanceID()))
-				Release(m_idOfAllClones[pObj.gameObject.GetInstanceID()], pObj);
+			if (m_cloneToPoolMap.TryGetValue(pObj, out var pool))
+				pool.Release(pObj);
 			else
 			{
 				// Fallback: If not tracked, search all pools (less efficient).
-				foreach (var pool in poolDict)
-					pool.Value.Release(pObj);
+				foreach (var p in poolDict)
+					p.Value.Release(pObj);
 			}
 		}
 

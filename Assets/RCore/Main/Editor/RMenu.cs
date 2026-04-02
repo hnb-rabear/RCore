@@ -1,4 +1,4 @@
-﻿/***
+/***
  * Author HNB-RaBear - 2019
  **/
 
@@ -80,15 +80,15 @@ namespace RCore.Editor
 		[MenuItem("RCore/Scenes Navigator " + CTRL + "_" + ALT + "_k", priority = GROUP_2 + 2)]
 		private static void OpenScenesNavigator()
 		{
-			ScenesNavigatorWindow.ShowWindow();
+			RCoreHubWindow.OpenAndFocusTool("Scenes Navigator");
 		}
 
 		[MenuItem("RCore/Asset Shortcuts " + CTRL + "_" + ALT + "_l", priority = GROUP_2 + 2)]
 		private static void OpenAssetShortcuts()
 		{
-			AssetShortcutsWindow.ShowWindow();
+			RCoreHubWindow.OpenAndFocusTool("Asset Shortcuts");
 		}
-		
+
 		//==========================================================
 
 		[MenuItem("RCore/Clear PlayerPrefs", priority = GROUP_6 + 1)]
@@ -147,29 +147,6 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem(R_TOOLS + "Tools Collection " + CTRL + "_" + ALT + "_/", priority = GROUP_10 + 1)]
-		private static void OpenToolsCollectionWindow()
-		{
-			ToolsCollectionWindow.ShowWindow();
-		}
-
-		[MenuItem(R_TOOLS + "Screenshot Taker", priority = GROUP_10 + 2)]
-		public static void OpenScreenshotTaker()
-		{
-			ScreenshotTaker.ShowWindow();
-		}
-
-		[MenuItem(R_TOOLS + "Find Component Reference", priority = GROUP_10 + 3)]
-		public static void OpenFindComponentReferenceWindow()
-		{
-			FindComponentReferenceWindow.ShowWindow();
-		}
-
-		[MenuItem(R_TOOLS + "Find Objects", priority = GROUP_10 + 4)]
-		public static void OpenObjectsFinderWindow()
-		{
-			ObjectsFinderWindow.ShowWindow();
-		}
 
 		[MenuItem(R_TOOLS + "Find And Replace Assets", priority = GROUP_10 + 5)]
 		public static void OpenSearchAndReplaceAssetWindow()
@@ -182,7 +159,13 @@ namespace RCore.Editor
 		{
 			DateTimePickerWindow.ShowWindow(DateTime.Now);
 		}
-		
+
+		[MenuItem(R_TOOLS + "Push to Asana", priority = GROUP_10 + 7)]
+		public static void OpenAsanaPushTool()
+		{
+			AsanaPushTool.ShowWindow();
+		}
+
 		//==============================================
 
 		[MenuItem(GAMEOBJECT_R + "Group GameObjects", priority = GROUP_0 + 1)]

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Author HNB-RaBear - 2018
  **/
 
@@ -196,12 +196,25 @@ namespace RCore
             }
 
             int count = m_InactiveList.Count;
+            while (count > 0 && m_InactiveList[count - 1] == null)
+            {
+                m_InactiveList.RemoveAt(count - 1);
+                count--;
+            }
+
             // If auto-relocate is on and we're out of items, check for any active objects that were manually deactivated.
             if (m_AutoRelocate && count == 0)
             {
                 RelocateInactive(out bool relocated);
                 if (relocated)
+                {
                     count = m_InactiveList.Count;
+                    while (count > 0 && m_InactiveList[count - 1] == null)
+                    {
+                        m_InactiveList.RemoveAt(count - 1);
+                        count--;
+                    }
+                }
             }
 
             // If an inactive object is available, reuse it.
@@ -329,17 +342,17 @@ namespace RCore
         /// Deactivates an object and returns it to the inactive pool, finding it by its GameObject.
         /// </summary>
         /// <param name="pObj">The GameObject of the instance to release.</param>
-        public void Release(GameObject pObj)
-        {
-            for (int i = 0; i < m_ActiveList.Count; i++)
-            {
-                if (m_ActiveList[i].gameObject.GetInstanceID() == pObj.GetInstanceID())
-                {
-                    Active(m_ActiveList[i], false, i);
-                    return;
-                }
-            }
-        }
+		public void Release(GameObject pObj)
+		{
+			for (int i = 0; i < m_ActiveList.Count; i++)
+			{
+				if (m_ActiveList[i].gameObject == pObj)
+				{
+					Active(m_ActiveList[i], false, i);
+					return;
+				}
+			}
+		}
         
         /// <summary>
         /// Releases an object back to the pool after a specified delay, finding it by its GameObject.
@@ -376,17 +389,22 @@ namespace RCore
         /// <summary>
         /// Releases all currently active objects back to the pool.
         /// </summary>
-        public void ReleaseAll()
-        {
-            int count = m_ActiveList.Count;
-            for (int i = 0; i < count; i++)
-            {
-                var item = m_ActiveList[i];
-                m_InactiveList.Add(item);
-                item.gameObject.SetActive(false);
-            }
-            m_ActiveList.Clear();
-        }
+		public void ReleaseAll()
+		{
+			int count = m_ActiveList.Count;
+			if (count == 0) return;
+
+			if (m_InactiveList.Capacity < m_InactiveList.Count + count)
+				m_InactiveList.Capacity = m_InactiveList.Count + count;
+				
+			for (int i = 0; i < count; i++)
+			{
+				var item = m_ActiveList[i];
+				item.gameObject.SetActive(false);
+			}
+			m_InactiveList.AddRange(m_ActiveList);
+			m_ActiveList.Clear();
+		}
 
         /// <summary>
         /// Destroys all objects managed by this pool (both active and inactive) and clears the lists.
@@ -498,11 +516,18 @@ namespace RCore
             relocated = false;
             int count = m_ActiveList.Count;
             for (int i = count - 1; i >= 0; i--)
+            {
+                if (m_ActiveList[i] == null)
+                {
+                    m_ActiveList.RemoveAt(i);
+                    continue;
+                }
                 if (!m_ActiveList[i].gameObject.activeSelf)
                 {
                     Active(m_ActiveList[i], false, i);
                     relocated = true;
                 }
+            }
         }
 
         /// <summary>Sets or changes the parent transform for this pool.</summary>

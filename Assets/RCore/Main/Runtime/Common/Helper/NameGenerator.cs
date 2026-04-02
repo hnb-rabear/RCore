@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,7 +27,7 @@ namespace RCore
 		private static readonly string[] ChineseFirst =
 		{
 			"李", "王", "张", "刘", "陈", "杨", "赵", "黄", "周", "吴",
-			"徐", "孙", "hu", "朱", "高", "林", "何", "郭", "马", "罗",
+			"徐", "孙", "胡", "朱", "高", "林", "何", "郭", "马", "罗",
 			"梁", "宋", "郑", "谢", "韩", "唐", "冯", "于", "董", "萧",
 			"程", "曹", "袁", "邓", "许", "傅", "沈", "曾", "彭", "吕",
 			"苏", "卢", "蒋", "蔡", "贾", "丁", "魏", "薛", "叶", "阎",
@@ -39,9 +38,9 @@ namespace RCore
 			"伟", "芳", "娜", "敏", "静", "强", "磊", "军", "洋", "勇",
 			"艳", "杰", "娟", "涛", "明", "超", "秀", "霞", "平", "刚",
 			"桂", "英", "华", "玲", "红", "玉", "兰", "珍", "莉", "云",
-			"飞", "鹏", "强", "浩", "波", "良", "辉", "健", "铭", "凯",
+			"飞", "鹏", "浩", "波", "良", "辉", "健", "铭", "凯", "宇",
 			"文", "博", "思", "诗", "雅", "婷", "涵", "梦", "琪", "悦",
-			"宇", "航", "天", "昊", "然", "轩", "辰", "逸", "泽", "阳"
+			"航", "天", "昊", "然", "轩", "辰", "逸", "泽", "阳", "晨"
 		};
 
 		private static readonly string[] JapaneseFirst =
@@ -55,9 +54,9 @@ namespace RCore
 		private static readonly string[] JapaneseSecond =
 		{
 			"翔太", "拓海", "健太", "大輝", "優斗", "大輔", "和也", "達也", "直人", "哲也",
-			"陽 一", "健", "誠", "剛", "修", "陸", "翼", "駿", "勇樹", "大樹",
-			"美咲", "愛", "優奈", "陽菜", "美優", "七海", "未来", "花", "葵", "結 衣",
-			"彩", "優", "真 由", "香 織", "千 尋", "理 恵", "亜 美", "麻 衣", "恵", "由 美",
+			"陽一", "健", "誠", "剛", "修", "陸", "翼", "駿", "勇樹", "大樹",
+			"美咲", "愛", "優奈", "陽菜", "美優", "七海", "未来", "花", "葵", "結衣",
+			"彩", "優", "真由", "香織", "千尋", "理恵", "亜美", "麻衣", "恵", "由美",
 			"太郎", "次郎", "三郎", "健太郎", "慎之介", "龍之介", "光", "宏", "博", "隆"
 		};
 
@@ -65,9 +64,9 @@ namespace RCore
 		{
 			"김", "이", "박", "최", "정", "강", "조", "윤", "장", "임",
 			"한", "오", "서", "신", "권", "황", "안", "송", "류", "전",
-			"홍", "고", "문", "양", "손", "배", "조", "백", "허", "유",
-			"남", "심", "노", "정", "하", "곽", "성", "차", "주", "우",
-			"구", "신", "임", "나", "전", "민", "유", "진", "지", "엄"
+			"홍", "고", "문", "양", "손", "배", "백", "허", "유", "남",
+			"심", "노", "하", "곽", "성", "차", "주", "우", "구", "나",
+			"민", "진", "지", "엄", "원", "천", "방", "공", "반", "위"
 		};
 		private static readonly string[] KoreanSecond =
 		{
@@ -81,7 +80,7 @@ namespace RCore
 		private static readonly string[] ArabicFirst =
 		{
 			"محمد", "أحمد", "علي", "عمر", "إبراهيم", "يوسف", "حسن", "حسين", "عبدالله", "خالد",
-			"فهد", "سلمان", "فيصل", "سعود", "راشد", "سعيد", "عبدالرحمن", "صالح", "ماجد", "نايف",
+			"فهد", "سلمان", "فيصل", "راشد", "سعيد", "عبدالرحمن", "صالح", "ماجد", "نايف",
 			"سلطان", "تركي", "بدر", "وليد", "محمود", "مصطفى", "طارق", "كريم", "زياد", "ياسر",
 			"أمير", "حمزة", "بلال", "عماد", "مهدي", "مازن", "سامي", "هيثم", "رامي", "باسل",
 			"فاطمة", "مريم", "سارة", "نورة", "عائشة", "زينب", "ريم", "ليلى", "أمل", "منى"
@@ -89,10 +88,10 @@ namespace RCore
 		private static readonly string[] ArabicSecond =
 		{
 			"الغامدي", "القحطاني", "الدوسري", "العتيبي", "الشهري", "الزهراني", "العنزي", "المالكي", "المطيري", "الحربي",
-			"الشمراني", "الأسمري", "القرني", "السبيعي", "اليامي", "الخالدي", "باوزير", "المهندس", "النججار", "الحداد",
-			"الشيخ", "السيد", "الحسن", "حسين", "علي", "عثمان", "بكر", "عمر", "صالح", "إبراهيم",
-			"خليفة", "سليمان", "يونس", "يعقوب", "إسماعيل", "موسى", "عيسى", "داود", "نوح", "ادم",
-			"المصري", "الشامي", "العراق", "اليمن", "الكويت", "عمان", "قطر", "بحرين", "سعود", "فيصل"
+			"الشمراني", "الأسمري", "القرني", "السبيعي", "اليامي", "الخالدي", "المهندس", "النجار", "الحداد", "الشيخ",
+			"السيد", "الحسن", "عثمان", "بكر", "إبراهيم", "سليمان", "يونس", "يعقوب", "إسماعيل", "موسى",
+			"الكندي", "الجابري", "الفارسي", "الرشيد", "السعدي", "الحجي", "البلوشي", "العمري", "الصالح", "الراشد",
+			"الجاسم", "الزيد", "المنصور", "الفهد", "الراجحي", "الربيعي", "الشريف", "العلي", "المحمد", "الأحمد"
 		};
 
 		private static readonly string[] VietnameseFirst =
@@ -105,11 +104,11 @@ namespace RCore
 		};
 		private static readonly string[] VietnameseSecond =
 		{
-			"Anh", "Minh", "Tuan", "Duc", "Duy", "Hoang", "Long", "Nam", "Phuc", "Quan",
+			"Anh", "Minh", "Tuan", "Duc", "Duy", "Cuong", "Long", "Nam", "Phuc", "Quan",
 			"Son", "Thang", "Thanh", "Thien", "Toan", "Trung", "Viet", "Vinh", "Hai", "Hung",
-			"Huy", "Khai", "Khanh", "Khoa", "Kien", "Lam", "Linh", "Luan", "Nhan", "Nhat",
+			"Huy", "Khai", "Khanh", "Khoa", "Kien", "Giang", "Linh", "Luan", "Nhan", "Nhat",
 			"Phi", "Phong", "Phu", "Quoc", "Tan", "Thai", "Thinh", "Tien", "Tin", "Tri",
-			"Trong", "Truong", "Tung", "Vy", "Yen", "Hoa", "Lan", "Mai", "Ngoc", "Phuong"
+			"Trong", "Truong", "Tung", "Vy", "Yen", "Hoa", "Lan", "Kiet", "Ngoc", "Phuong"
 		};
 
 		private static readonly string[] ThaiFirst =
@@ -122,37 +121,33 @@ namespace RCore
 		};
 		private static readonly string[] ThaiSecond =
 		{
-			"แสนดี", "รักไทย", "ใจดี", "มีสุข", "เจริญ", "สวัสดิ์", "วงศ์", "ศรีสุข", "ทอง", "แก้ว",
-			"ณ อยุธยา", "รัตนพร", "วงษ์สุวรรณ", "จันทร์โอชา", "ชินวัตร", "เวชชาชีวะ", "หลีกภัย", "ศิลปอาชา", "ชุณหะวัณ", "สุนทรเวช",
-			"กิตติขจร", "ปราโมช", "ภิรมย์ภักดี", "จิราธิวัฒน์", "เจียรวนนท์", "สิริวัฒนภักดี", "อยู่วิทยา", "ศรีวัฒนประภา", "รักศรีอักษร", "ล่ำซำ",
-			"โสภณพนิช", "โพธิรัตนางกูร", "กาญจนพาสน์", "พรประภา", "โอสถานุเคราะห์", "ว่องกุศลกิจ", "รัตนรักษ์", "เจียรวนนท์", "เหมรัชต", "วิไลลักษณ์"
+			"แสงทอง", "ทองดี", "สุขใจ", "ชูใจ", "ทองคำ", "มีดี", "สุขสันต์", "รุ่งเรือง", "เจริญสุข", "ศรีสมบูรณ์",
+			"ใจดี", "รักไทย", "มีสุข", "เจริญ", "สวัสดิ์", "ศรีสุข", "ทองแก้ว", "สีทอง", "พรหมมา", "บุญมี",
+			"ทองสุข", "บุญช่วย", "ศรีวิไล", "ใจงาม", "ดีมาก", "สุขเกษม", "เพชรดี", "ทองใส", "แก้วใส", "ศรีทอง",
+			"พงษ์ไพร", "วงษ์ทอง", "สุริยา", "จันทร์ทอง", "ดาวทอง", "ฟ้าทอง", "นาคทอง", "พลทอง", "ศิลาทอง", "สมใจ",
+			"บุญเรือง", "ทองเรือง", "สุขเรือง", "แสงเรือง", "ดีเรือง", "พรเรือง", "ทองพูน", "สุขพูน", "ดีพูน", "บุญพูน"
 		};
 
 		private static readonly string[] LatinFirst =
 		{
-			"Luca", "Gino", "Brio", "Hugo", "Nico", "Paco", "Tino", "Rico", "Leo", "Tito",
+			"Luca", "Gino", "Brio", "Hugo", "Nico", "Paco", "Tino", "Rico", "Leon", "Tito",
 			"Milo", "Dino", "Vito", "Lino", "Enzo", "Ciro", "Filo", "Remo", "Elio", "Simo",
 			"Javi", "Beni", "Davi", "Ludo", "Reno", "Caro", "Gabe", "Juli", "Talo", "Ramo",
-			"Manu", "Jano", "Miro", "Pipo", "Teo", "Ugo", "Tano", "Otto", "Raul", "Emil",
+			"Manu", "Jano", "Miro", "Pipo", "Theo", "Iago", "Tano", "Otto", "Raul", "Emil",
 			"Alba", "Cleo", "Lila", "Mila", "Rita", "Tara", "Vera", "Zara", "Luna", "Nina",
 			"Rosa", "Ines", "Aida", "Luci", "Gala", "Maia", "Noel", "Cira", "Leta", "Vina",
-			"Juno", "Zeno", "Orla", "Nilo", "Vina", "Arlo", "Iker", "Omar", "Pere", "Quim",
-			"Saul", "Uri", "Xavi", "Yago", "Zeno", "Biel", "Gus", "Ivo", "Max", "Ned",
-			"Oto", "Rex", "Sil", "Tom", "Ugo", "Val", "Wil", "Xan", "Yan", "Zac"
+			"Juno", "Zeno", "Orla", "Nilo", "Arlo", "Iker", "Omar", "Pere", "Quim", "Saul",
+			"Urie", "Xavi", "Yago", "Biel", "Gust", "Ivor", "Maxi", "Nedo", "Otho", "Rexo"
 		};
 		private static readonly string[] LatinSecond =
 		{
-			"Vas", "Rui", "San", "Leo", "Paz", "Sol", "Mar", "Lux", "Cruz", "Fel",
-			"Tiz", "Jul", "Hugo", "Luca", "Dino", "Enzo", "Rico", "Milo", "Otto", "Nico",
-			"Raul", "Ugo", "Tito", "Beni", "Ciro", "Reno", "Tano", "Remo", "Gino", "Javi",
-			"Lino", "Simo", "Talo", "Manu", "Davi", "Jano", "Miro", "Pipo", "Teo", "Elio",
-			"Ludo", "Gabe", "Juli", "Ramo", "Caro", "Biel", "Filo", "Tito", "Zeno", "Hugo",
-			"Lino", "Otto", "Reno", "Sil", "Max", "Ned", "Oto", "Rex", "Sil",
-			"Tom", "Ugo", "Val", "Wil", "Xan", "Yan", "Zac", "Ivo", "Gus", "Saul", "Uri",
-			"Xavi",
-			"Yago", "Zeno", "Biel", "Gus", "Ivo", "Max", "Ned", "Oto", "Rex", "Sil",
-			"Tom", "Ugo", "Val", "Wil", "Xan", "Yan", "Zac", "Iker", "Omar", "Pere",
-			"Quim", "Arlo", "Orla", "Nilo", "Vina", "Juno", "Cira", "Leta", "Vina", "Maia"
+			"Silva", "Santos", "Costa", "Oliveira", "Ferreira", "Alves", "Lima", "Pereira", "Rodrigues", "Gomes",
+			"Garcia", "Lopez", "Martinez", "Sanchez", "Gonzalez", "Diaz", "Hernandez", "Torres", "Ramirez", "Flores",
+			"Romano", "Ferrari", "Rossi", "Esposito", "Bianchi", "Colombo", "Marchetti", "Ricci", "Greco", "Conti",
+			"Meier", "Muller", "Schmidt", "Weber", "Fischer", "Klein", "Wolf", "Neumann", "Schwarz", "Ludwig",
+			"Dubois", "Leroy", "Bernard", "Moreau", "Simon", "Michel", "Laurent", "Lefebvre", "Petit", "Roux",
+			"Janssen", "Peters", "Visser", "Bogaert", "Claes", "Maes", "Peeters", "Smit", "Bakker", "Meijer",
+			"Nowak", "Kowalski", "Wisniewski", "Wojcik", "Kowalczyk", "Kaminski", "Lewandowski", "Zielinski", "Szymanski", "Duda"
 		};
 
 		private static readonly string[] EnglishFirst =
@@ -165,91 +160,83 @@ namespace RCore
 		};
 		private static readonly string[] EnglishSecond =
 		{
-			"Zap", "Fizz", "Boom", "Buzz", "Bop", "Jinx", "Zork", "Wiz", "Twix", "Dash",
-			"Zed", "Moo", "Pug", "Duke", "Rex", "Max", "Taz", "Biff", "Plop", "Fuzz",
-			"Quip", "Chomp", "Flip", "Dork", "Zig", "Chop", "Vex", "Bonk", "Skip", "Honk",
-			"Gulp", "Funk", "Bash", "Munch", "Jolt", "Twist", "Boop", "Snip", "Womp", "Zonk",
-			"Riff", "Thud", "Boing", "Splish", "Blip", "Slap", "Tonk", "Twitch", "Splat", "Clap"
+			"Smith", "Jones", "Williams", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson",
+			"Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Garcia", "Robinson", "Clark", "Lewis",
+			"Walker", "Hall", "Allen", "Young", "King", "Wright", "Hill", "Scott", "Green", "Baker",
+			"Adams", "Nelson", "Carter", "Mitchell", "Roberts", "Turner", "Phillips", "Evans", "Collins", "Edwards",
+			"Stewart", "Morris", "Murphy", "Cook", "Rogers", "Reed", "Bailey", "Bell", "Cooper", "Ward"
 		};
 
 #endregion
 
 		public static string GenerateDisplayName(string countryCode)
 		{
-			if (Random.value < 0.2f)
-				return GenerateStupidName();
 			string characterSet = GetCharacterSet(countryCode);
+
+			// StupidName only for Latin/English — applying English nonsense names to
+			// CJK/Arabic/Cyrillic leaderboards breaks cultural immersion
+			bool canBeStupid = characterSet == "Latin" || characterSet == "English";
+			if (canBeStupid && Random.value < 0.2f)
+				return GenerateStupidName();
+
+			// CJK scripts always use two-part names — a bare surname (1 char) looks like a rendering error
+			bool isCJK = characterSet == "Chinese" || characterSet == "Japanese" || characterSet == "Korean";
+			bool twoWords = isCJK || Random.value >= 0.33f;
+
 			switch (characterSet)
 			{
-				case "Cyrillic": return GenerateCyrillicDisplayName();
-				case "Chinese": return GenerateChineseDisplayName();
-				case "Japanese": return GenerateJapaneseDisplayName();
-				case "Korean": return GenerateKoreanDisplayName();
-				case "Arabic": return GenerateArabicDisplayName();
-				case "Vietnamese": return GenerateVietnameseDisplayName();
-				case "Thai": return GenerateThailandDisplayName();
-				case "English": return GenerateEnglishDisplayName();
-				default: return GenerateLatinDisplayName(); // Default to Latin
+				case "Cyrillic":   return GenerateCyrillicDisplayName(twoWords);
+				case "Chinese":    return GenerateChineseDisplayName(twoWords);
+				case "Japanese":   return GenerateJapaneseDisplayName(twoWords);
+				case "Korean":     return GenerateKoreanDisplayName(twoWords);
+				case "Arabic":     return GenerateArabicDisplayName(twoWords);
+				case "Vietnamese": return GenerateVietnameseDisplayName(twoWords);
+				case "Thai":       return GenerateThailandDisplayName(twoWords);
+				case "English":    return GenerateEnglishDisplayName(twoWords);
+				default:           return GenerateLatinDisplayName(twoWords);
 			}
 		}
+
 		public static string GetCharacterSet(string countryCode)
 		{
 			if (string.IsNullOrEmpty(countryCode))
 				return "English";
 			switch (countryCode.ToUpper())
 			{
-				case "RU":
-				case "BY":
-				case "BG":
-				case "UA":
-				case "RS":
-				case "MK":
-				case "KZ":
-				case "KG":
-				case "MN":
+				case "RU": case "BY": case "BG": case "UA":
+				case "RS": case "MK": case "KZ": case "KG": case "MN":
 					return "Cyrillic";
-				case "CN":
-				case "HK":
-				case "TW":
-				case "SG":
+				case "CN": case "HK": case "TW": case "SG":
 					return "Chinese";
 				case "JP":
 					return "Japanese";
 				case "KR":
 					return "Korean";
-				case "SA":
-				case "AE":
-				case "EG":
-				case "IQ":
-				case "SY":
-				case "JO":
-				case "LB":
-				case "OM":
-				case "QA":
-				case "KW":
-				case "DZ":
-				case "LY":
+				case "SA": case "AE": case "EG": case "IQ":
+				case "SY": case "JO": case "LB": case "OM":
+				case "QA": case "KW": case "DZ": case "LY":
 					return "Arabic";
 				case "VN":
 					return "Vietnamese";
 				case "TH":
 					return "Thai";
-				case "US":
-				case "GB":
-				case "CA":
-				case "AU":
-				case "NZ":
-				case "IE":
-				case "PH":
-				case "ZA":
-				case "NG":
-				case "IN":
+				case "US": case "GB": case "CA": case "AU":
+				case "NZ": case "IE": case "PH": case "ZA":
+				case "NG": case "IN":
 					return "English";
+				// Extended Latin-script markets
+				case "BR": case "PT": case "ES": case "MX":
+				case "AR": case "CO": case "CL": case "PE":
+				case "IT": case "FR": case "DE": case "PL":
+				case "NL": case "BE": case "AT": case "CH":
+				case "SE": case "NO": case "DK": case "FI":
+					return "Latin";
 				default:
 					return "Latin";
 			}
 		}
 
+#if UNITY_EDITOR
 		public static void LogAllCharacters()
 		{
 			var allArrays = new List<string[]>
@@ -268,109 +255,111 @@ namespace RCore
 
 			var set = new HashSet<char>();
 			foreach (var array in allArrays)
-			{
 				foreach (var str in array)
-				{
 					foreach (var c in str)
-					{
 						if (!set.Contains(c))
 							set.Add(c);
-					}
-				}
-			}
 
 			var chars = new List<char>(set);
 			chars.Sort();
-			string result = new string(chars.ToArray());
-			UnityEngine.Debug.Log(result);
+			UnityEngine.Debug.Log(new string(chars.ToArray()));
 		}
-		private static string GenerateCyrillicDisplayName()
+#endif
+
+		private static string GenerateCyrillicDisplayName(bool twoWords)
 		{
-			// First Name + Space + Last Name
-			return CyrillicFirst[Random.Range(0, CyrillicFirst.Length)] + " " + CyrillicSecond[Random.Range(0, CyrillicSecond.Length)];
+			string first = CyrillicFirst[Random.Range(0, CyrillicFirst.Length)];
+			return twoWords ? first + " " + CyrillicSecond[Random.Range(0, CyrillicSecond.Length)] : first;
 		}
-		private static string GenerateChineseDisplayName()
+		private static string GenerateChineseDisplayName(bool twoWords)
 		{
-			// Surname + Given Name (No Space)
-			return ChineseFirst[Random.Range(0, ChineseFirst.Length)] + ChineseSecond[Random.Range(0, ChineseSecond.Length)];
+			string first = ChineseFirst[Random.Range(0, ChineseFirst.Length)];
+			return twoWords ? first + ChineseSecond[Random.Range(0, ChineseSecond.Length)] : first;
 		}
-		private static string GenerateJapaneseDisplayName()
+		private static string GenerateJapaneseDisplayName(bool twoWords)
 		{
-			// Surname + Given Name (No Space)
-			return JapaneseFirst[Random.Range(0, JapaneseFirst.Length)] + JapaneseSecond[Random.Range(0, JapaneseSecond.Length)];
+			string first = JapaneseFirst[Random.Range(0, JapaneseFirst.Length)];
+			return twoWords ? first + JapaneseSecond[Random.Range(0, JapaneseSecond.Length)] : first;
 		}
-		private static string GenerateKoreanDisplayName()
+		private static string GenerateKoreanDisplayName(bool twoWords)
 		{
-			// Surname + Given Name (No Space)
-			return KoreanFirst[Random.Range(0, KoreanFirst.Length)] + KoreanSecond[Random.Range(0, KoreanSecond.Length)];
+			string first = KoreanFirst[Random.Range(0, KoreanFirst.Length)];
+			return twoWords ? first + KoreanSecond[Random.Range(0, KoreanSecond.Length)] : first;
 		}
-		private static string GenerateArabicDisplayName()
+		private static string GenerateArabicDisplayName(bool twoWords)
 		{
-			// First Name + Space + Last Name
-			return ArabicFirst[Random.Range(0, ArabicFirst.Length)] + " " + ArabicSecond[Random.Range(0, ArabicSecond.Length)];
+			string first = ArabicFirst[Random.Range(0, ArabicFirst.Length)];
+			return twoWords ? first + " " + ArabicSecond[Random.Range(0, ArabicSecond.Length)] : first;
 		}
-		private static string GenerateVietnameseDisplayName()
+		private static string GenerateVietnameseDisplayName(bool twoWords)
 		{
-			// Surname + Space + Given Name
-			return VietnameseFirst[Random.Range(0, VietnameseFirst.Length)] + " " + VietnameseSecond[Random.Range(0, VietnameseSecond.Length)];
+			string first = VietnameseFirst[Random.Range(0, VietnameseFirst.Length)];
+			var text = twoWords ? first + " " + VietnameseSecond[Random.Range(0, VietnameseSecond.Length)] : first;
+			return text;
 		}
-		private static string GenerateThailandDisplayName()
+		private static string GenerateThailandDisplayName(bool twoWords)
 		{
-			return ThaiFirst[Random.Range(0, ThaiFirst.Length)] + " " + ThaiSecond[Random.Range(0, ThaiSecond.Length)];
+			string first = ThaiFirst[Random.Range(0, ThaiFirst.Length)];
+			return twoWords ? first + " " + ThaiSecond[Random.Range(0, ThaiSecond.Length)] : first;
 		}
-		private static string GenerateLatinDisplayName()
+		private static string GenerateLatinDisplayName(bool twoWords)
 		{
-			return LatinFirst[Random.Range(0, LatinFirst.Length)] + " " + LatinSecond[Random.Range(0, LatinSecond.Length)];
+			string first = LatinFirst[Random.Range(0, LatinFirst.Length)];
+			return twoWords ? first + " " + LatinSecond[Random.Range(0, LatinSecond.Length)] : first;
 		}
-		private static string GenerateEnglishDisplayName()
+		private static string GenerateEnglishDisplayName(bool twoWords)
 		{
-			return EnglishFirst[Random.Range(0, EnglishFirst.Length)] + " " + EnglishSecond[Random.Range(0, EnglishSecond.Length)];
+			string first = EnglishFirst[Random.Range(0, EnglishFirst.Length)];
+			return twoWords ? first + " " + EnglishSecond[Random.Range(0, EnglishSecond.Length)] : first;
 		}
-		#region Stupid Name Arrays
+
+#region Stupid Name Arrays
+
 		private static readonly string[] StupidFirst =
 		{
 			"Big", "Lil", "Fat", "Wet", "Dry", "Hot", "Raw", "Pro", "Noob",
-			"Red", "Blue", "Odd", "Wild", "Loud", "Lewd", "Nude", "Sexy", "Kinky",
-			"Dirty", "High", "Thick", "Deep", "Tight", "Loose", "Sticky", "Creamy",
-			"Juicy", "Salty", "Spicy", "Naked", "Naughty", "Chubby", "Hairy", "Bald",
-			"Lazy", "Crazy", "Easy", "Hard", "Soft", "Pink", "Dark", "Holy", "Mega"
+			"Red", "Blue", "Odd", "Wild", "Loud",
+			"High", "Thick", "Deep", "Tight", "Sticky",
+			"Juicy", "Salty", "Spicy", "Chubby", "Hairy", "Bald",
+			"Lazy", "Crazy", "Easy", "Hard", "Soft", "Pink", "Dark", "Holy", "Mega",
+			"Tiny", "Jumpy", "Fluffy", "Rusty", "Grumpy", "Sneaky", "Bumpy", "Zappy"
 		};
 		private static readonly string[] StupidSecond =
 		{
 			"Boi", "Girl", "Man", "Dude", "Dad", "Mom", "Bro", "Sis", "Cat", "Dog",
-			"Rat", "Bat", "Pig", "Cow", "Ass", "Butt", "Toe", "Lip", "Egg", "Pie",
-			"Bun", "Gun", "God", "Bot", "Simp", "Chad", "Wife", "Bear", "Duck", "Fox",
+			"Rat", "Bat", "Pig", "Cow", "Toe", "Egg", "Pie",
+			"Bun", "Gun", "God", "Bot", "Simp", "Chad", "Bear", "Duck", "Fox",
 			"Wolf", "Lion", "Fish", "Crab", "Worm", "Fly", "Bee", "King", "Lord",
-			"Boss", "Chief", "Thug", "Goon", "Cop", "Doc", "Hole", "Pole", "Bone", "Ball"
+			"Boss", "Chief", "Thug", "Goon", "Cop", "Doc",
+			"Nerd", "Geek", "Monk", "Chef", "Elf", "Orc", "Pug", "Frog", "Slug", "Snail"
 		};
-		#endregion
+
+#endregion
 
 		private static string GenerateStupidName()
 		{
 			if (Random.value < 0.2f)
 				return $"Player{Random.Range(1000, 100000)}";
-			
+
 			string first = StupidFirst[Random.Range(0, StupidFirst.Length)];
 			string second = StupidSecond[Random.Range(0, StupidSecond.Length)];
 			string name = $"{first}{second}";
 
 			float decorationRoll = Random.value;
 			if (decorationRoll < 0.1f)
-				name = $"xX_{name}_Xx";
-			else if (decorationRoll < 0.2f)
 				name = $"_{name}_";
-			else if (decorationRoll < 0.3f)
+			else if (decorationRoll < 0.2f)
 				name = name.ToLower();
-			else if (decorationRoll < 0.4f)
+			else if (decorationRoll < 0.3f)
 				name = name.ToUpper();
-			else if (decorationRoll < 0.5f)
+			else if (decorationRoll < 0.4f)
 				name = $"Itz{name}";
-			else if (decorationRoll < 0.6f)
+			else if (decorationRoll < 0.5f)
 				name = $"iAm{name}";
 
 			if (Random.value < 0.3f)
 				name += Random.Range(0, 1000).ToString();
-				
+
 			return name;
 		}
 	}
