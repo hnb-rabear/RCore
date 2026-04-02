@@ -100,50 +100,7 @@ namespace RCore.Editor
 
 		//==========================================================
 
-		[MenuItem(R_EXPLORER + "DataPath Folder", false, GROUP_8 + 1)]
-		private static void OpenDataPathFolder()
-		{
-			string path = Application.dataPath;
-			var psi = new ProcessStartInfo(path);
-			Process.Start(psi);
-		}
 
-		[MenuItem(R_EXPLORER + "StreamingAssets Folder", false, GROUP_8 + 2)]
-		private static void OpenStreamingAssetsFolder()
-		{
-			string path = Application.streamingAssetsPath;
-			if (!Directory.Exists(path))
-			{
-				Directory.CreateDirectory(path);
-				AssetDatabase.Refresh();
-			}
-			var psi = new ProcessStartInfo(path);
-			Process.Start(psi);
-		}
-
-		[MenuItem(R_EXPLORER + "PersistentData Folder", false, GROUP_8 + 3)]
-		private static void OpenPersistentDataFolder()
-		{
-			string path = Application.persistentDataPath;
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
-			var psi = new ProcessStartInfo(path);
-			Process.Start(psi);
-		}
-
-		[MenuItem(R_EXPLORER + "UnityEditor Folder", false, GROUP_8 + 4)]
-		private static void OpenUnityEditorFolder()
-		{
-			string path = EditorApplication.applicationPath.Substring(0, EditorApplication.applicationPath.LastIndexOf("/"));
-			var psi = new ProcessStartInfo(path);
-			Process.Start(psi);
-		}
-
-		[MenuItem(R_EXPLORER + "Editor Icon Dictionary", false, GROUP_8 + 5)]
-		public static void OpenEditorIconsWindow()
-		{
-			EditorIconsWindow.ShowWindow();
-		}
 
 		//==========================================================
 

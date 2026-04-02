@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.5]
+### Added
+- **Core Hub**: Centralized, modular, icon-driven hub (`Ctrl+Alt+/`) encompassing legacy utilities (Scenes Navigator, Tools Collection, Asset Shortcuts, etc.) and categorized by purpose (Mesh, General, Navigation).
+- **Asana Task Sync**: Built-in tool to automatically push markdown task lists to Asana as hierarchical subtasks.
+- **OptimizedVerticalScrollView**: Added smooth scroll animation support powered by DOTween (`ScrollToIndex`, `ScrollToTop`, `ScrollToBot`).
+
+### Changed
+- **NameGenerator**: Cultural auto-localization updates to ensure immersion. Enforced two-part names for Asian regions to prevent display errors and restricted humorous placeholder names strictly to English and Latin language regions.
+- **OptimizedVerticalScrollView**: Enhanced performance by caching `Vector3` array allocations for viewport and item corner geometry calculations to prevent GC spikes during rapid scrolling.
+- **CustomPool**: Stabilized batch release operations by rigorously clearing null remnants and optimizing list capacity augmentations in `ReleaseAll()`.
+- **Legacy Editor Tools**: Migrated older developer windows into the new generalized `RCoreHubWindow` to consolidate the UX and reduce menu strip clutter.
+
 ## [1.1.4]
 ### Fixed
 - **TimeHelper**: Replaced `Time.unscaledTime` with `Time.realtimeSinceStartup` in `GetNowTimestamp` to ensure the cached timestamp refreshes correctly after the app is suspended/resumed. Added `ResetCache()` method to force an immediate timestamp refresh.

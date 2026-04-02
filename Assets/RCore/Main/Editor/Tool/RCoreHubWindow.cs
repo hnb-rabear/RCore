@@ -325,7 +325,7 @@ namespace RCore.Editor.Tool
             if (tool.IsQuickAction)
             {
                 GUILayout.Space(5);
-                GUILayout.BeginVertical("helpBox");
+                GUILayout.BeginVertical();
                 try
                 {
                     tool.DrawCard();

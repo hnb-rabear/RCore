@@ -91,7 +91,7 @@ Foundational attribute and modifier system for RPG-style games.
 *   **`DebugDrawHelper`** — Editor-only Handles API tools for drawing wireframes, grids, text, and move paths.
 *   **`JsonHelper`** — Wrapper for Unity's `JsonUtility` to handle arrays and lists.
 *   **`MathHelper`** — Angle calculations, geometric checks, grid calculations (standard/isometric), curve generation, number conversions.
-*   **`NameGenerator`** — Procedural display name generation with 10 cultural patterns (Cyrillic, Chinese, Japanese, Korean, Arabic, Vietnamese, Thai, Latin, English, comedic) and country-code-based auto-selection.
+*   **`NameGenerator`** — Procedural display name generation with 10 cultural patterns (Cyrillic, Chinese, Japanese, Korean, Arabic, Vietnamese, Thai, Latin, English, comedic). Supports country-code-based auto-selection, localized structural rules (e.g., forced two-part names for Asian regions), and strict region-based restrictions for comedic names to preserve immersion.
 *   **`RUtil`** — Randomization (weighted, min-distance), string manipulation, GC/memory logging, screen safe area utilities.
 *   **`TimeHelper`** — Time formatting, server time sync, UTC/local conversion, cheat/offset handling, calendar calculations.
 *   **`TrajectoryHelper`** — Physics trajectory calculations for projectiles.
@@ -121,7 +121,7 @@ Wrappers simplifying Unity's Addressable Assets system with loading state tracki
 *   **`AddressableHelper`**, **`AssetBundleRef`**, **`AssetBundleWrap`**, **`AssetRef`**, **`ComponentRef`**
 
 ### Pool System
-*   **`CustomPool<T>`** — Generic pool managing a single prefab type with pre-warming, auto-relocate, and instance limits.
+*   **`CustomPool<T>`** — Generic pool managing a single prefab type with pre-warming, auto-relocate, instance limits, and highly optimized, null-safe bulk release routines.
 *   **`PoolsContainer<T>`** — A "pool of pools" factory with optimized per-object origin tracking for instant release.
 
 ### Timer System
@@ -149,7 +149,7 @@ Stack-based UI navigation framework.
 ### UI Components
 *   **`JustButton` / `SimpleTMPButton`** — Enhanced buttons with scale-bounce, greyscaling, and TMP label support.
 *   **`JustToggle` / `CustomToggleGroup`** — Toggle system with tween-based transitions and animated group highlighting.
-*   **`OptimizedScrollView`** — Virtualized scroll views (vertical with grid, horizontal) for large datasets.
+*   **`OptimizedScrollView`** — Virtualized scroll views (vertical with grid, horizontal) for large datasets with cached geometry allocations and smooth, DOTween-powered scroll animations.
 *   **`HorizontalSnapScrollView`** — Carousel-like scroll view where items snap to center position.
 *   **`ScrollRectEx`** — Nested scroll rect handler.
 *   **`ProgressBar`** — Multipurpose bar with fill, countdown, and percentage modes. Configurable fill direction and min/max ratios.
@@ -200,9 +200,10 @@ Custom attributes for enhancing the Unity Inspector:
 ## Editor Tools
 
 ### Essential Windows
-*   **Tools Collection** (`Ctrl+Alt+/`) — Centralized hub for all RCore tools.
-*   **Scenes Navigator** (`Ctrl+Alt+K`) — Quick scene switching.
-*   **Asset Shortcuts** (`Ctrl+Alt+L`) — Bookmark frequently used assets.
+*   **RCore Hub** (`Ctrl+Alt+/`) — Modern, icon-driven centralized modular hub for accessing all RCore utilities and development tools categorized by purpose.
+*   **Scenes Navigator** (`Ctrl+Alt+K`) — Quick scene switching (Available via RCore Hub).
+*   **Asset Shortcuts** (`Ctrl+Alt+L`) — Bookmark frequently used assets (Available via RCore Hub).
+*   **Asana Push Tool** — Parse markdown tasklists and seamlessly sync them to Asana as hierarchical subtasks.
 *   **Editor Icons Viewer** — Browse built-in Unity editor icons.
 
 ### Asset Cleaner
