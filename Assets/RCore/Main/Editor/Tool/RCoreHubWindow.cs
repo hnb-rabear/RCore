@@ -123,6 +123,7 @@ namespace RCore.Editor.Tool
             {
                 kvp.Value.Sort((a, b) =>
                 {
+                    if (a.Name == b.Name) return 0;
                     if (a.Name == "Scenes Navigator") return -1;
                     if (b.Name == "Scenes Navigator") return 1;
                     return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
