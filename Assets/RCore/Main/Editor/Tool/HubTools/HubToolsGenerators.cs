@@ -9,7 +9,7 @@ namespace RCore.Editor.Tool
 	public class GenerateAnimationsPackScriptTool : RCoreHubTool
 	{
 		public override string Name => "Animations Pack Script";
-		public override string Category => "Generators";
+		public override string Category => "Archived";
 		public override string Description => "Scan a folder containing FBX animations to auto-generate a C# Animation Pack script.";
 		public override bool IsQuickAction => false;
 
@@ -175,40 +175,7 @@ namespace RCore.Editor.Tool
 		}
 	}
 
-	public class GenerateJsonFileListTool : RCoreHubTool
-	{
-		public override string Name => "JSON File List";
-		public override string Category => "Generators";
-		public override string Description => "Extract filenames of the currently selected files and export them to a JSON file.";
-		public override bool IsQuickAction => true;
 
-		public override void DrawCard()
-		{
-			if (Selection.objects == null || Selection.objects.Length == 0)
-			{
-				GUILayout.Label("Select any files in Project window");
-				return;
-			}
-
-			if (EditorHelper.ButtonColor("Generate JSON from Selection", Color.cyan))
-			{
-				var fileNames = new List<string>();
-				string folderPath = "";
-				foreach (var t in Selection.objects)
-				{
-					var path = AssetDatabase.GetAssetPath(t);
-					if (string.IsNullOrEmpty(path)) continue;
-					var fileName = Path.GetFileName(path);
-					fileNames.Add(fileName);
-					if (string.IsNullOrEmpty(folderPath))
-						folderPath = Path.GetDirectoryName(path);
-				}
-				
-				var json = JsonHelper.ToJson(fileNames);
-				EditorHelper.SaveFilePanel(folderPath, "all_files", json, "json");
-			}
-		}
-	}
 
 	public class GeneratorScreenshotTool : RCoreHubTool
 	{

@@ -111,11 +111,22 @@ namespace RCore.Editor.Tool
                 m_categories.Remove("Navigate");
                 m_categories.Insert(0, "Navigate");
             }
+            // Ensure "Archived" comes last if it exists
+            if (m_categories.Contains("Archived"))
+            {
+                m_categories.Remove("Archived");
+                m_categories.Add("Archived");
+            }
 
             // Sort Tools inside categories
             foreach (var kvp in m_toolsByCategory)
             {
-                kvp.Value.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+                kvp.Value.Sort((a, b) =>
+                {
+                    if (a.Name == "Scenes Navigator") return -1;
+                    if (b.Name == "Scenes Navigator") return 1;
+                    return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                });
             }
 
             // Restore previous state
@@ -228,17 +239,19 @@ namespace RCore.Editor.Tool
         private void DrawFocusedToolSpace()
         {
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(new GUIContent("←", "Back to Minimap"), GUILayout.Width(35), GUILayout.Height(22)))
-            {
-                m_focusedTool = null;
-                GUI.FocusControl(null);
-                return;
-            }
+            bool isBackClicked = GUILayout.Button(new GUIContent("←", "Back to Minimap"), GUILayout.Width(35), GUILayout.Height(22));
 
             GUILayout.Space(20);
             GUILayout.Label(m_focusedTool.Name, EditorStyles.boldLabel);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+
+            if (isBackClicked)
+            {
+                m_focusedTool = null;
+                GUI.FocusControl(null);
+                return;
+            }
 
             EditorHelper.Separator();
             GUILayout.Space(10);

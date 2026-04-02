@@ -3,6 +3,30 @@ using UnityEngine;
 
 namespace RCore.Editor.Tool
 {
+	public class FindByGuidTool : RCoreHubTool
+	{
+		public override string Name => "Find By GUID";
+		public override string Category => "Search";
+		public override string Description => "Enter a GUID string to instantly locate the corresponding Asset file in the project.";
+		public override bool IsQuickAction => true;
+
+		private string m_Guid;
+		private Object m_FoundObject;
+
+		public override void DrawCard()
+		{
+			m_Guid = EditorHelper.TextField(m_Guid, "GUID");
+			EditorHelper.ObjectField<Object>(m_FoundObject, "Object");
+			
+			if (!string.IsNullOrEmpty(m_Guid) && EditorHelper.ButtonColor("Find Object", Color.cyan))
+			{
+				string path = AssetDatabase.GUIDToAssetPath(m_Guid);
+				if (!string.IsNullOrEmpty(path))
+					m_FoundObject = AssetDatabase.LoadAssetAtPath<Object>(path);
+			}
+		}
+	}
+
 	public class SearchComponentReferenceTool : RCoreHubTool
 	{
 		public override string Name => "Component Reference Finder";

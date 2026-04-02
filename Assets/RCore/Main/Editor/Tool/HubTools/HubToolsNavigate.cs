@@ -222,56 +222,7 @@ namespace RCore.Editor.Tool
 		}
 	}
 
-	public class FindByGuidTool : RCoreHubTool
-	{
-		public override string Name => "Find By GUID";
-		public override string Category => "Navigate";
-		public override string Description => "Enter a GUID string to instantly locate the corresponding Asset file in the project.";
-		public override bool IsQuickAction => true;
 
-		private string m_Guid;
-		private Object m_FoundObject;
 
-		public override void DrawCard()
-		{
-			m_Guid = EditorHelper.TextField(m_Guid, "GUID");
-			EditorHelper.ObjectField<Object>(m_FoundObject, "Object");
-			
-			if (!string.IsNullOrEmpty(m_Guid) && EditorHelper.ButtonColor("Find Object", Color.cyan))
-			{
-				string path = AssetDatabase.GUIDToAssetPath(m_Guid);
-				if (!string.IsNullOrEmpty(path))
-					m_FoundObject = AssetDatabase.LoadAssetAtPath<Object>(path);
-			}
-		}
-	}
 
-	public class ReplaceGameObjectsTool : RCoreHubTool
-	{
-		public override string Name => "Replace GameObjects";
-		public override string Category => "Navigate";
-		public override string Description => "Batch-replace selected GameObjects with a random Prefab from the provided array.";
-		public override bool IsQuickAction => false;
-
-		private List<GameObject> m_ReplaceableGameObjects = new List<GameObject>();
-		private List<GameObject> m_Prefabs = new List<GameObject>();
-
-		public override void DrawFocusMode()
-		{
-			if (m_ReplaceableGameObjects == null || m_ReplaceableGameObjects.Count == 0)
-				EditorGUILayout.HelpBox("Use Drag & Drop to populate the list of Replaceable Objects from Scene", MessageType.Info);
-
-			EditorHelper.ListObjects("Replaceable Objects (Targets)", ref m_ReplaceableGameObjects, null, false);
-			EditorHelper.ListObjects("Prefabs (Sources)", ref m_Prefabs, null, false);
-
-			GUILayout.Space(10);
-			if (GUILayout.Button("Execute Replace", GUILayout.Height(40)))
-			{
-				if (m_Prefabs.Count > 0 && m_ReplaceableGameObjects.Count > 0)
-					EditorHelper.ReplaceGameObjectsInScene(ref m_ReplaceableGameObjects, m_Prefabs);
-				else
-					EditorUtility.DisplayDialog("Error", "Need both targets and prefabs", "OK");
-			}
-		}
-	}
 }
