@@ -166,11 +166,18 @@ namespace RCore.Data.JObject
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
+			
 			if (data.lastActive > 0)
 			{
 				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 				offlineSeconds = utcNowTimestamp - data.lastActive;
 			}
+
+			if (offlineSeconds <= 0)
+			{
+				UnityEngine.Debug.LogError("Offline seconds:" + offlineSeconds);
+			}
+			
 			return Mathf.Max(0, offlineSeconds);
 		}
 	}

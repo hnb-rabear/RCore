@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.6]
+### Added
+- **JObjectDB Editor — Deep Search**: Search now recursively scans the entire JToken tree instead of only root-level field names. Matched paths are highlighted in yellow; all ancestor nodes are auto-expanded to reveal results.
+- **JObjectDB Editor — Auto-backup on Play**: Subscribes to `EditorApplication.playModeStateChanged` and automatically creates a timestamped backup to `Saves/` before entering Play mode. Rotates to keep the latest 5 auto-backups.
+- **JObjectDB Editor — Collection Presets**: Save and load named snapshots of the entire database to `Saves/Presets/`. Preset panel in the left column supports Save, Load, and Delete operations. Presets are stored as plain JObjectDB JSON (no metadata wrapper).
+- **JObjectDB Editor — Diff / Compare**: Compare the active collection against any saved JSON file. Added/changed/removed fields are highlighted in green/orange/red respectively; parent nodes display a diff indicator when any descendant has changed. Diff state uses precomputed `HashSet` for O(1) per-node lookup.
+
+### Changed
+- **JObjectDB Editor — Persist UI State**: Selected collection, left-panel width, and expanded tree nodes are now persisted across sessions via `EditorPrefs` (keys prefixed `JObjectDB_`). State is saved on `OnDisable` and restored on `OnEnable`.
+- **JObjectDB Editor — Import button**: Icon updated from Reload to Download (`Download-Available`) for clearer affordance; opens file picker defaulting to the `Saves/` directory and supports both wrapped export format (with device/version metadata) and raw JObjectDB dictionary format.
+
 ## [1.1.5]
 ### Added
 - **Core Hub**: Centralized, modular, icon-driven hub (`Ctrl+Alt+/`) encompassing legacy utilities (Scenes Navigator, Tools Collection, Asset Shortcuts, etc.) and categorized by purpose (Mesh, General, Navigation).
