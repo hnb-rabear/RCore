@@ -1,137 +1,110 @@
 ---
 name: writing-plans
-description: "Write comprehensive implementation plans with bite-sized tasks. Use after brainstorming to create detailed step-by-step plans before coding."
+description: Use when planning implementation of a feature, refactoring, or multi-step change — creates bite-sized tasks with exact file paths, code, and verification steps
 ---
 
 # Writing Plans
 
+> Adapted from [superpowers:writing-plans](https://github.com/obra/superpowers)
+
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for the codebase. Document everything they need to know: which files to touch for each task, complete code, how to verify it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context. Document everything: which files to touch, exact code, how to verify. Plans are bite-sized tasks (2-5 minutes each).
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+## Principles
 
-**Save plans to:** `implementation_plan.md` artifact (following Antigravity's standard artifact format)
+- **DRY** — Don't Repeat Yourself
+- **YAGNI** — You Aren't Gonna Need It
+- **Frequent commits** — Commit after each logical step
 
-## Scope Check
+## Save Plans To
 
-If the spec covers multiple independent subsystems, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+```
+.agents/memory/plans/YYYY-MM-DD-<feature-name>.md
+```
 
-## File Structure
+## Plan Document Header
 
-Before defining tasks, map out which files will be created or modified and what each one is responsible for.
-
-- Design units with clear boundaries and well-defined interfaces
-- Prefer smaller, focused files over large ones that do too much
-- Files that change together should live together
-- **In this Unity project, follow established patterns:**
-  - API client methods → `Packages/com.zego.game-server/Scripts/Core/GameClientApi.*.cs`
-  - Server wrappers → `Packages/com.zego.game-server/Scripts/Simple/GameServer.*.cs`
-  - Data models → `Assets/_LiveOps/Scripts/Data/Models/`
-  - UI components → `Assets/_LiveOps/Scripts/UI/`
-  - Config → `Assets/_LiveOps/Scripts/Config/`
-
-## Bite-Sized Task Granularity
-
-**Each step is one action (2-5 minutes):**
-- "Add the data model class" — step
-- "Add the API client method" — step
-- "Add the server wrapper" — step
-- "Add the UI component" — step
-- "Verify compilation" — step
-- "Commit" — step
-
-## Plan Document Format
-
-Every plan MUST use the standard `implementation_plan.md` format:
+Every plan MUST start with:
 
 ```markdown
-# [Goal Description]
+# [Feature Name] Implementation Plan
 
-Brief description of the problem and what the change accomplishes.
+**Goal:** [One sentence — what this builds]
 
-## User Review Required
+**Package:** [Which package this affects — e.g. RCore Main, Services/Ads, Sub]
 
-Document anything that requires user review (breaking changes, design decisions).
+**Architecture:** [2-3 sentences about approach]
 
-## Proposed Changes
+**Files affected:**
+- Create: `Assets/RCore/<Package>/Runtime/exact/path.cs`
+- Modify: `Assets/RCore/<Package>/Editor/exact/path.cs`
 
-### [Component Name]
-
-#### [MODIFY/NEW/DELETE] [file basename](file:///absolute/path/to/file)
-
-Description of changes to this file.
-
-## Verification Plan
-
-### How to verify
-- Exact steps to verify the changes work
+---
 ```
 
 ## Task Structure
+
+Each task should be self-contained:
 
 ````markdown
 ### Task N: [Component Name]
 
 **Files:**
-- Create: `exact/path/to/file.cs`
-- Modify: `exact/path/to/existing.cs`
+- Create: `Assets/RCore/Main/Runtime/UI/NewComponent.cs`
+- Modify: `Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectModelCollection.cs`
 
-- [ ] **Step 1: Add the data model**
+**Step 1: Create the data model**
 
 ```csharp
-public class ExampleData
+[Serializable]
+public class NewData : JObjectData
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
+    public int value;
 }
 ```
 
-- [ ] **Step 2: Add API client method**
+**Step 2: Create the ScriptableObject model**
 
 ```csharp
-public async Task<ExampleData> GetExample(string id)
+public class NewModel : JObjectModel<NewData>
 {
-    var response = await SendRequest("GET", $"/api/example/{id}");
-    return JsonUtility.FromJson<ExampleData>(response);
+    protected override void OnPostLoad(bool pIsNewSave) { }
 }
 ```
 
-- [ ] **Step 3: Verify compilation**
-
-Build the project in Unity and check for errors.
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add -A
-git commit -m "feat: add example API integration"
-```
+**Verify:**
+1. Enter Play Mode — no console errors
+2. Open JObjectDB Editor — new model data appears
+3. Modify value → exit Play Mode → re-enter → value persists
 ````
 
-## Unity/Goods-Jam Specific Guidelines
+## Scope Check
 
-When writing plans for this project:
+If the feature spans multiple independent subsystems, break into separate plans. Each plan should produce working, testable software on its own.
 
-1. **Follow package separation**: Shared server code → `com.zego.game-server`, game-specific → `Assets/_LiveOps/`
-2. **Check existing workflows**: Look at `.agents/workflows/` for API integration patterns already documented
-3. **Data model conventions**: Follow existing patterns in `Data/Models/` — serializable classes, proper field attributes
-4. **UI conventions**: Follow existing Popup/Panel/View patterns, use TweenFX for animations
-5. **Editor tooling**: Add test entries to `GameServerTesterWindow` when adding new API endpoints
-6. **No unit tests** (unless project adds a test framework): Instead, plan manual verification steps and Editor test window entries
+## RCore Package Structure
 
-## Remember
+This project contains multiple Unity packages. Always specify which package is affected:
 
-- Exact file paths always
-- Complete code in plan (not "add validation")
-- Exact verification steps
-- DRY, YAGNI, frequent commits
-- Follow existing project patterns — don't invent new conventions
+| Package | Path | Content |
+|---------|------|---------|
+| **RCore Main** | `Assets/RCore/Main/` | Core systems, UI, data, helpers, editor tools |
+| **Ads** | `Assets/RCore/Services/Ads/` | Ad provider integrations |
+| **Firebase** | `Assets/RCore/Services/Firebase/` | Firebase services |
+| **Game Services** | `Assets/RCore/Services/GameServices/` | Cloud Save, In-App Review/Update |
+| **IAP** | `Assets/RCore/Services/IAP/` | In-App Purchases |
+| **Notification** | `Assets/RCore/Services/Notification/` | Local notifications |
+| **Sub** | `Assets/RCore/Sub/` | Supplementary utilities |
 
-## Execution Handoff
+Each package has its own `Runtime/`, `Editor/`, `CHANGELOG.md`, and `package.json`.
 
-After saving the plan:
+## RCore Conventions
 
-**"Plan complete and saved to `implementation_plan.md`. Ready to execute?"**
-
-Wait for user approval before beginning implementation.
+- **Runtime code** → `<Package>/Runtime/` — organized by system (Data, UI, Common)
+- **Editor code** → `<Package>/Editor/` — mirrors Runtime structure
+- **Samples** → `<Package>/Samples~/` — demonstrates patterns for users (hidden in UPM)
+- **Data models**: `JObjectData` for serializable data, `JObjectModel<T>` for business logic
+- **UI panels**: Extend `PanelController`, push via `PanelStack` methods
+- **Inspector attributes**: Custom drawers in `Editor/`, attributes in `Runtime/`
+- **Dependencies**: Use `[Inject]` for cross-model wiring, register in `ModelCollection.Load()`
