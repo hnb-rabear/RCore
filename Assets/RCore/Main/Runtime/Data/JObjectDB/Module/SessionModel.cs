@@ -4,16 +4,41 @@ using UnityEngine;
 namespace RCore.Data.JObject
 {
 	/// <summary>
+	/// Abstraction over session model capabilities needed by other models.
+	/// Implemented by <see cref="SessionModel"/>.
+	/// </summary>
+	public interface ISessionModel
+	{
+		int Days { get; }
+		float ActiveTime { get; }
+		int LastActive { get; }
+		int DaysStreak { get; }
+		int SessionsTotal { get; }
+		int SessionsDaily { get; }
+		int SessionsWeekly { get; }
+		int SessionsMonthly { get; }
+	}
+
+	/// <summary>
 	/// A ScriptableObject-based model that encapsulates all the business logic for managing `SessionData`.
 	/// It implements the application lifecycle callbacks (`OnPostLoad`, `OnUpdate`, etc.) to update session metrics
 	/// like playtime, daily streaks, and various session counters.
 	/// </summary>
-	public class SessionModel : JObjectModel<SessionData>
+	public class SessionModel : JObjectModel<SessionData>, ISessionModel
 	{
 		[Tooltip("A live countdown in seconds until the next calendar day begins.")]
 		public float secondsTillNextDay;
 		[Tooltip("A live countdown in seconds until the next week begins (typically Monday).")]
 		public float secondsTillNextWeek;
+
+		int ISessionModel.Days => data.days;
+		float ISessionModel.ActiveTime => data.activeTime;
+		int ISessionModel.LastActive => data.lastActive;
+		int ISessionModel.DaysStreak => data.daysStreak;
+		int ISessionModel.SessionsTotal => data.SessionsTotal;
+		int ISessionModel.SessionsDaily => data.SessionsDaily;
+		int ISessionModel.SessionsWeekly => data.SessionsWeekly;
+		int ISessionModel.SessionsMonthly => data.SessionsMonthly;
 
 		/// <summary>
 		/// Initializes the model. This method is called by the `JObjectModelCollection` during the data loading process.
@@ -32,14 +57,14 @@ namespace RCore.Data.JObject
 			// If this is the user's first-ever session, record the timestamp.
 			if (data.firstActive == 0)
 				data.firstActive = utcNowTimestamp;
-			
+
 			var lastActive = TimeHelper.UnixTimestampToDateTime(data.lastActive).ToLocalTime();
 			var now = TimeHelper.UnixTimestampToDateTime(utcNowTimestamp).ToLocalTime();
-			
+
 			// If the user has been away for more than a full day, reset their daily streak.
 			if ((now.Date - lastActive.Date).TotalDays > 1)
 				data.daysStreak = 0;
-			
+
 			// If the calendar day has changed since the last session.
 			if (lastActive.Date != now.Date)
 			{
@@ -53,13 +78,13 @@ namespace RCore.Data.JObject
 			// If the calendar month has changed.
 			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
 				data.SessionsMonthly = 0;
-			
+
 			// Increment all session counters for this new session.
 			data.SessionsTotal++;
 			data.SessionsDaily++;
 			data.SessionsWeekly++;
 			data.SessionsMonthly++;
-			
+
 			// Calculate the time remaining until the next day.
 			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
 		}
@@ -72,6 +97,9 @@ namespace RCore.Data.JObject
 			if (!pause) // On Resume
 			{
 				CheckNewDay();
+			}
+			else
+			{
 				data.lastActive = utcNowTimestamp;
 			}
 		}
@@ -101,13 +129,13 @@ namespace RCore.Data.JObject
 		public override void OnPreSave(int utcNowTimestamp)
 		{
 			data.lastActive = utcNowTimestamp;
-			
+
 			// Construct a version string that includes the version code on Android for more precise tracking.
-			#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
 			string curVersion = $"{Application.version}.{RUtil.GetVersionCode()}";
-			#else
+#else
 			string curVersion = Application.version;
-			#endif
+#endif
 
 			// Record the install version if it hasn't been set yet.
 			if (string.IsNullOrEmpty(data.installVersion))
@@ -130,19 +158,19 @@ namespace RCore.Data.JObject
 		{
 			var lastActive = TimeHelper.UnixTimestampToDateTime(data.lastActive).ToLocalTime();
 			var now = TimeHelper.GetNow(false);
-			
+
 			if ((now.Date - lastActive.Date).TotalDays > 1)
 				data.daysStreak = 0;
-				
+
 			if (lastActive.Year != now.Year || TimeHelper.GetCurrentWeekNumber(lastActive) != TimeHelper.GetCurrentWeekNumber(now))
 				data.SessionsWeekly = 1;
-				
+
 			if (lastActive.Year != now.Year || lastActive.Month != now.Month)
 				data.SessionsMonthly = 1;
-				
+
 			if (lastActive.Date != now.Date)
 				AddOneDay();
-				
+
 			secondsTillNextDay = (float)(now.Date.AddDays(1) - now).TotalSeconds;
 			secondsTillNextWeek = (float)TimeHelper.GetSecondsTillDayOfWeek(DayOfWeek.Monday, now);
 		}
@@ -166,7 +194,7 @@ namespace RCore.Data.JObject
 		public virtual int GetOfflineSeconds()
 		{
 			int offlineSeconds = 0;
-			
+
 			if (data.lastActive > 0)
 			{
 				int utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
@@ -177,7 +205,7 @@ namespace RCore.Data.JObject
 			{
 				UnityEngine.Debug.LogError("Offline seconds:" + offlineSeconds);
 			}
-			
+
 			return Mathf.Max(0, offlineSeconds);
 		}
 	}

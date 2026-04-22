@@ -77,22 +77,22 @@ namespace RCore
 			"준호", "호진", "도현", "현준", "승우", "승현", "수민", "시윤", "진우", "재원"
 		};
 
-		private static readonly string[] ArabicFirst =
-		{
-			"محمد", "أحمد", "علي", "عمر", "إبراهيم", "يوسف", "حسن", "حسين", "عبدالله", "خالد",
-			"فهد", "سلمان", "فيصل", "راشد", "سعيد", "عبدالرحمن", "صالح", "ماجد", "نايف",
-			"سلطان", "تركي", "بدر", "وليد", "محمود", "مصطفى", "طارق", "كريم", "زياد", "ياسر",
-			"أمير", "حمزة", "بلال", "عماد", "مهدي", "مازن", "سامي", "هيثم", "رامي", "باسل",
-			"فاطمة", "مريم", "سارة", "نورة", "عائشة", "زينب", "ريم", "ليلى", "أمل", "منى"
-		};
-		private static readonly string[] ArabicSecond =
-		{
-			"الغامدي", "القحطاني", "الدوسري", "العتيبي", "الشهري", "الزهراني", "العنزي", "المالكي", "المطيري", "الحربي",
-			"الشمراني", "الأسمري", "القرني", "السبيعي", "اليامي", "الخالدي", "المهندس", "النجار", "الحداد", "الشيخ",
-			"السيد", "الحسن", "عثمان", "بكر", "إبراهيم", "سليمان", "يونس", "يعقوب", "إسماعيل", "موسى",
-			"الكندي", "الجابري", "الفارسي", "الرشيد", "السعدي", "الحجي", "البلوشي", "العمري", "الصالح", "الراشد",
-			"الجاسم", "الزيد", "المنصور", "الفهد", "الراجحي", "الربيعي", "الشريف", "العلي", "المحمد", "الأحمد"
-		};
+		// private static readonly string[] ArabicFirst =
+		// {
+		// 	"محمد", "أحمد", "علي", "عمر", "إبراهيم", "يوسف", "حسن", "حسين", "عبدالله", "خالد",
+		// 	"فهد", "سلمان", "فيصل", "راشد", "سعيد", "عبدالرحمن", "صالح", "ماجد", "نايف",
+		// 	"سلطان", "تركي", "بدر", "وليد", "محمود", "مصطفى", "طارق", "كريم", "زياد", "ياسر",
+		// 	"أمير", "حمزة", "بلال", "عماد", "مهدي", "مازن", "سامي", "هيثم", "رامي", "باسل",
+		// 	"فاطمة", "مريم", "سارة", "نورة", "عائشة", "زينب", "ريم", "ليلى", "أمل", "منى"
+		// };
+		// private static readonly string[] ArabicSecond =
+		// {
+		// 	"الغامدي", "القحطاني", "الدوسري", "العتيبي", "الشهري", "الزهراني", "العنزي", "المالكي", "المطيري", "الحربي",
+		// 	"الشمراني", "الأسمري", "القرني", "السبيعي", "اليامي", "الخالدي", "المهندس", "النجار", "الحداد", "الشيخ",
+		// 	"السيد", "الحسن", "عثمان", "بكر", "إبراهيم", "سليمان", "يونس", "يعقوب", "إسماعيل", "موسى",
+		// 	"الكندي", "الجابري", "الفارسي", "الرشيد", "السعدي", "الحجي", "البلوشي", "العمري", "الصالح", "الراشد",
+		// 	"الجاسم", "الزيد", "المنصور", "الفهد", "الراجحي", "الربيعي", "الشريف", "العلي", "المحمد", "الأحمد"
+		// };
 
 		private static readonly string[] VietnameseFirst =
 		{
@@ -189,9 +189,9 @@ namespace RCore
 				case "Chinese":    return GenerateChineseDisplayName(twoWords);
 				case "Japanese":   return GenerateJapaneseDisplayName(twoWords);
 				case "Korean":     return GenerateKoreanDisplayName(twoWords);
-				case "Arabic":     return GenerateArabicDisplayName(twoWords);
+				// case "Arabic":     return GenerateArabicDisplayName(twoWords);
 				case "Vietnamese": return GenerateVietnameseDisplayName(twoWords);
-				case "Thai":       return GenerateThailandDisplayName(twoWords);
+				// case "Thai":       return GenerateThailandDisplayName(twoWords);
 				case "English":    return GenerateEnglishDisplayName(twoWords);
 				default:           return GenerateLatinDisplayName(twoWords);
 			}
@@ -245,7 +245,7 @@ namespace RCore
 				ChineseFirst, ChineseSecond,
 				JapaneseFirst, JapaneseSecond,
 				KoreanFirst, KoreanSecond,
-				ArabicFirst, ArabicSecond,
+				// ArabicFirst, ArabicSecond,
 				VietnameseFirst, VietnameseSecond,
 				ThaiFirst, ThaiSecond,
 				LatinFirst, LatinSecond,
@@ -286,11 +286,11 @@ namespace RCore
 			string first = KoreanFirst[Random.Range(0, KoreanFirst.Length)];
 			return twoWords ? first + KoreanSecond[Random.Range(0, KoreanSecond.Length)] : first;
 		}
-		private static string GenerateArabicDisplayName(bool twoWords)
-		{
-			string first = ArabicFirst[Random.Range(0, ArabicFirst.Length)];
-			return twoWords ? first + " " + ArabicSecond[Random.Range(0, ArabicSecond.Length)] : first;
-		}
+		// private static string GenerateArabicDisplayName(bool twoWords)
+		// {
+		// 	string first = ArabicFirst[Random.Range(0, ArabicFirst.Length)];
+		// 	return twoWords ? first + " " + ArabicSecond[Random.Range(0, ArabicSecond.Length)] : first;
+		// }
 		private static string GenerateVietnameseDisplayName(bool twoWords)
 		{
 			string first = VietnameseFirst[Random.Range(0, VietnameseFirst.Length)];

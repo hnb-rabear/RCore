@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.7]
+### Added
+- **JObjectDB — Dependency Injection**: Introduced `[Inject]` attribute and reflection-based DI system in `JObjectModelCollection`. `InjectDependencies()` auto-wires model fields after creation; `Get<T>()` resolves models or their data by type/interface with O(1) cached lookups.
+- **JObjectDB — ISessionModel Interface**: Extracted `ISessionModel` interface from `SessionModel` to allow decoupled access to session metrics (days, streaks, counters) via the DI system.
+- **Unified Font Replacer**: Merged legacy `FontReplacer` and `TMPFontReplacer` into a single `UnifiedFontReplacer` editor window supporting both TMP and Legacy font replacement with folder-scoped project scanning and active scene replacement.
+- **PanelController — Session Show Count**: Added per-session popup display counter with static `GetSessionShowCount<T>()` API for frequency-based display logic.
+- **PanelRoot — Panel Lifecycle Events**: Added `onAnyPanelShow` and `onAnyPanelHide` action callbacks for global panel visibility tracking.
+
+### Changed
+- **EventDispatcher**: Replaced string-hash-based event keying (`GetStableHashCode`) with direct `System.Type` keys for type-safe, collision-free event dispatch.
+- **ScreenSafeArea / IgnoreScreenSafe**: Fixed coordinate mismatch in Unity Editor Device Simulator by detecting resolution discrepancies; replaced `Screen.currentResolution` and `canvas.pixelRect` with `Screen.width/height` for consistent anchor calculations. `IgnoreScreenSafe` now respects parent `fullTop`/`fullBottom` flags.
+- **TimeHelper**: Time-cheat offsets (day/hour/minute) now support negative values for backward time simulation.
+- **SessionModel**: Fixed `OnApplicationPause` to save `lastActive` timestamp on pause (not resume), preventing stale offline-time calculations.
+- **NameGenerator**: Disabled Arabic and Thai name generation to reduce build size for projects that don't embed those character sets.
+- **OptimizedVerticalScrollView**: Unified initial scroll positioning to always use `ScrollToIndex` for consistent behavior.
+- **JObjectDB Editor**: Improved field rendering with inline array display, configurable key-column width, and streamlined copy/paste JSON editing.
+- **PanelController.Lock**: Changed to `virtual` to allow override in subclasses.
+
 ## [1.1.6]
 ### Added
 - **JObjectDB Editor — Deep Search**: Search now recursively scans the entire JToken tree instead of only root-level field names. Matched paths are highlighted in yellow; all ancestor nodes are auto-expanded to reveal results.

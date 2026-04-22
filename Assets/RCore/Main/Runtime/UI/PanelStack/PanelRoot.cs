@@ -22,6 +22,9 @@ namespace RCore.UI
 	{
 		[Tooltip("A button that acts as a background dimmer. When clicked, it typically triggers the back action on the top panel.")]
 		[SerializeField] protected Button m_dimmerOverlay;
+		
+		public Action<PanelController> onAnyPanelShow;
+		public Action<PanelController> onAnyPanelHide;
 
 		/// <summary>
 		/// A queue for panels waiting to be displayed.
@@ -71,6 +74,8 @@ namespace RCore.UI
 				PushPanelInQueue();
 			else
 				ToggleDimmerOverlay();
+			
+			onAnyPanelHide?.Invoke(pPanel);
 		}
 
 
@@ -84,6 +89,8 @@ namespace RCore.UI
 			base.OnAnyChildShow(pPanel);
 
 			ToggleDimmerOverlay();
+			
+			onAnyPanelShow?.Invoke(pPanel);
 		}
 
 		/// <summary>

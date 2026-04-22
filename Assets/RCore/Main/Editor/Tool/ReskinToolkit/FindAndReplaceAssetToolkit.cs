@@ -14,6 +14,7 @@ namespace RCore.Editor.Tool
 		public SpriteSheetCutter spriteSheetCutter;
 		public ImagePropertyFixer imagePropertyFixer;
 		public ObjectReplacer objectReplacer;
+		public UnifiedFontReplacer fontReplacer;
 
 		public static FindAndReplaceAssetToolkit Load()
 		{

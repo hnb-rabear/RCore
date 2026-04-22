@@ -4,6 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 #if UNITY_EDITOR
 using RCore.Editor;
@@ -28,17 +31,19 @@ namespace RCore.Data.JObject
 		/// An internal list of all data models managed by this collection.
 		/// </summary>
 		protected List<IJObjectModel> m_models = new();
+		private Dictionary<Type, object> m_resolveCache = new();
+		private static readonly object s_notFound = new();
+		private static readonly Dictionary<Type, FieldInfo[]> s_injectFieldCache = new();
 		
 		/// <summary>
 		/// Initializes the data system. This method is the primary entry point, responsible for
-		/// creating and setting up all the game's data models via the `CreateModel` method.
+		/// creating and setting up all the game's data models via the <see cref="CreateModel{TData}"/> method.
 		/// </summary>
 		public virtual void Load()
 		{
 			m_models = new List<IJObjectModel>();
+			m_resolveCache.Clear();
 
-			// Example of creating and registering the session model.
-			// Add other CreateModel calls here for all other data models.
 			CreateModel(session, "SessionData");
 		}
 		
@@ -78,6 +83,7 @@ namespace RCore.Data.JObject
 				if (keyValuePairs.TryGetValue(model.Data.key, out string value))
 					model.Data.Load(value);
 
+			m_resolveCache.Clear();
 			PostLoad();
 		}
 		
@@ -107,6 +113,7 @@ namespace RCore.Data.JObject
 				}
 			}
 
+			m_resolveCache.Clear();
 			PostLoad();
 		}
 		
@@ -118,7 +125,7 @@ namespace RCore.Data.JObject
 		{
 			var data = new Dictionary<string, object>();
 			foreach (var model in m_models)
-				data.Add(model.Data.key, model.Data);
+				data.Add(model.Key, model.Data);
 			return data;
 		}
 
@@ -150,6 +157,8 @@ namespace RCore.Data.JObject
 		/// </summary>
 		public virtual void PostLoad()
 		{
+			InjectDependencies();
+
 			int offlineSeconds = session.GetOfflineSeconds();
 			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 			foreach (var handler in m_models)
@@ -181,6 +190,7 @@ namespace RCore.Data.JObject
 			@ref.data = JObjectDB.CreateCollection(key, defaultVal);
 			@ref.key = key;
 			@ref.Init();
+			@ref.data.key = key;
 			m_models.Add(@ref);
 		}
 		
@@ -191,10 +201,91 @@ namespace RCore.Data.JObject
 		{
 			if (string.IsNullOrEmpty(@ref.key))
 				@ref.key = typeof(TData).Name;
-				
+
 			@ref.data = JObjectDB.CreateCollection(@ref.key, defaultVal);
 			@ref.Init();
+			@ref.data.key = @ref.key;
 			m_models.Add(@ref);
+		}
+		
+		/// <summary>
+		/// Resolves a registered model or its underlying data object by type or interface.
+		/// Searches models first, then their <see cref="IJObjectModel.Data"/> objects.
+		/// </summary>
+		/// <typeparam name="T">The type or interface to resolve.</typeparam>
+		/// <returns>The first matching instance, or <c>null</c> if not found.</returns>
+		public T Get<T>() where T : class
+		{
+			if (m_models == null) return null;
+			return Resolve(typeof(T)) as T;
+		}
+		
+		/// <summary>
+		/// Scans all registered models for fields marked with <see cref="InjectAttribute"/> and
+		/// resolves them from the registered model collection.
+		/// Call this after all <see cref="CreateModel{TData}"/> calls are complete.
+		/// </summary>
+		protected void InjectDependencies()
+		{
+			foreach (var model in m_models)
+			{
+				var fields = GetInjectFields(model.GetType());
+
+				foreach (var field in fields)
+				{
+					var resolved = Resolve(field.FieldType);
+
+					if (resolved != null)
+						field.SetValue(model, resolved);
+					else
+						Debug.LogWarning($"[Inject] Could not resolve {field.FieldType.Name} for {model.GetType().Name}.{field.Name}");
+				}
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static FieldInfo[] GetInjectFields(Type type)
+		{
+			if (!s_injectFieldCache.TryGetValue(type, out var fields))
+			{
+				fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+					.Where(f => f.GetCustomAttribute<InjectAttribute>() != null)
+					.ToArray();
+				s_injectFieldCache[type] = fields;
+			}
+			return fields;
+		}
+		
+		/// <summary>
+		/// Core resolution logic shared by <see cref="Get{T}"/> and <see cref="InjectDependencies"/>.
+		/// Searches registered models first, then their <see cref="IJObjectModel.Data"/> objects.
+		/// Results are cached, including misses.
+		/// </summary>
+		private object Resolve(Type type)
+		{
+			if (m_resolveCache.TryGetValue(type, out var cached))
+				return cached == s_notFound ? null : cached;
+
+			foreach (var candidate in m_models)
+			{
+				if (type.IsInstanceOfType(candidate))
+				{
+					m_resolveCache[type] = candidate;
+					return candidate;
+				}
+			}
+
+			foreach (var candidate in m_models)
+			{
+				if (type.IsInstanceOfType(candidate.Data))
+				{
+					m_resolveCache[type] = candidate.Data;
+					return candidate.Data;
+				}
+			}
+
+			m_resolveCache[type] = s_notFound;
+			return null;
 		}
 	}
 

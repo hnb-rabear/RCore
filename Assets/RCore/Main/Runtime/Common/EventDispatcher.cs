@@ -36,7 +36,7 @@ namespace RCore
 		/// The key is a hash of the event type's name, and the value is a multicast delegate
 		/// containing all listeners for that event type.
 		/// </summary>
-		private static Dictionary<int, EventDelegate> delegates = new Dictionary<int, EventDelegate>();
+		private static Dictionary<Type, EventDelegate> delegates = new Dictionary<Type, EventDelegate>();
 
 		/// <summary>
 		/// A lookup dictionary to map a listener's generic delegate to its internal, non-generic counterpart.
@@ -60,16 +60,16 @@ namespace RCore
 			EventDelegate internalDelegate = e => del((T)e);
 			delegateLookup[del] = internalDelegate;
 
-			int id = RUtil.GetStableHashCode(typeof(T).Name);
-			if (delegates.TryGetValue(id, out EventDelegate tempDel))
+			var key = typeof(T);
+			if (delegates.TryGetValue(key, out EventDelegate tempDel))
 			{
 				// If a delegate for this event type already exists, add the new listener to its invocation list.
-				delegates[id] = tempDel += internalDelegate;
+				delegates[key] = tempDel += internalDelegate;
 			}
 			else
 			{
 				// Otherwise, create a new entry for this event type.
-				delegates[id] = internalDelegate;
+				delegates[key] = internalDelegate;
 			}
 		}
 
@@ -83,18 +83,18 @@ namespace RCore
 		{
 			if (delegateLookup.TryGetValue(del, out EventDelegate internalDelegate))
 			{
-				int id = RUtil.GetStableHashCode(typeof(T).Name);
-				if (delegates.TryGetValue(id, out EventDelegate tempDel))
+				var key = typeof(T);
+				if (delegates.TryGetValue(key, out EventDelegate tempDel))
 				{
 					tempDel -= internalDelegate;
 					if (tempDel == null)
 					{
 						// If there are no listeners left for this event type, remove the entry to save memory.
-						delegates.Remove(id);
+						delegates.Remove(key);
 					}
 					else
 					{
-						delegates[id] = tempDel;
+						delegates[key] = tempDel;
 					}
 				}
 
@@ -115,11 +115,11 @@ namespace RCore
 		/// <param name="e">The event object to be raised.</param>
 		public static void Raise(BaseEvent e)
 		{
-			int id = RUtil.GetStableHashCode(e.GetType().Name);
+			var eventType = e.GetType();
 #if UNITY_EDITOR
-			Debug.Log("Raise event " + e.GetType().Name);
+			Debug.Log("Raise event " + eventType.Name);
 #endif
-			if (delegates.TryGetValue(id, out EventDelegate del))
+			if (delegates.TryGetValue(eventType, out EventDelegate del))
 			{
 				del.Invoke(e);
 			}

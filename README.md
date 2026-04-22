@@ -41,7 +41,7 @@ Add packages via Unity Package Manager → "Add package from git URL...":
 *   **`SfxSource`** — Per-GameObject SFX component with two modes: Managed (via `AudioManager` pool) or Standalone (direct `AudioSource` control). Supports looping, pitch randomization, and random clip selection.
 
 ### Event System
-**`EventDispatcher`** — A static, type-safe publish-subscribe event system for decoupled communication. Supports global event raising (`Raise`), listener management (`AddListener`/`RemoveListener`), and event debouncing via UniTask.
+**`EventDispatcher`** — A static, type-safe publish-subscribe event system for decoupled communication using `System.Type` keys for collision-free dispatch. Supports global event raising (`Raise`), listener management (`AddListener`/`RemoveListener`), and event debouncing via UniTask.
 
 ### Module Factory System
 An attribute-based system for dynamic module discovery and lifecycle management.
@@ -62,8 +62,21 @@ A layered, JSON-based persistence system using `PlayerPrefs` as its backend.
 *   **`JObjectDB`** — Core persistence engine for serializing/deserializing data to `PlayerPrefs`.
 *   **`JObjectData`** — Abstract base class for serializable data structures.
 *   **`JObjectModel`** — `ScriptableObject` encapsulating data and business logic with lifecycle callbacks (`OnUpdate`, `OnPause`, `OnPostLoad`).
-*   **`JObjectModelCollection`** — Root aggregator orchestrating all `JObjectModel` lifecycles.
+*   **`JObjectModelCollection`** — Root aggregator orchestrating all `JObjectModel` lifecycles. Includes a built-in dependency injection system and type resolver with O(1) cached lookups.
 *   **`JObjectDBManagerV2`** — `MonoBehaviour` bridging Unity's app lifecycle with auto-save on pause/quit.
+*   **`InjectAttribute`** — Marks fields for automatic dependency injection. Resolved during `PostLoad()` from registered models and their data objects. Supports both interfaces and concrete types.
+*   **`ISessionModel`** — Interface abstraction over `SessionModel` for decoupled access to session metrics (days, streaks, session counters).
+
+#### Dependency Injection
+Models can declare dependencies on other models or interfaces using the `[Inject]` attribute. Dependencies are resolved automatically after all models are registered:
+```csharp
+public class RewardModel : JObjectModel<RewardData>
+{
+    [Inject] private ISessionModel m_session;      // Interface injection
+    [Inject] private InventoryModel m_inventory;   // Concrete type injection
+}
+```
+Resolution is handled by `JObjectModelCollection.InjectDependencies()`, which scans all registered models, resolves `[Inject]` fields from the model list (searching models first, then their `.Data` objects), and caches results for O(1) subsequent access. Use `Get<T>()` for manual resolution.
 
 ### KeyValueDB System
 A simpler key-value persistence alternative for settings, flags, and counters.
@@ -142,9 +155,9 @@ Wrappers simplifying Unity's Addressable Assets system with loading state tracki
 
 ### Panel System
 Stack-based UI navigation framework.
-*   **`PanelController`** — Base class for individual UI views with `Show`/`Hide` lifecycle and transition animations.
+*   **`PanelController`** — Base class for individual UI views with `Show`/`Hide` lifecycle, transition animations, and per-session show count tracking (`SessionShowCount`, `GetSessionShowCount<T>()`).
 *   **`PanelStack`** — Core stack-based navigation with push/pop and presentation strategies (OnTop, Replacement).
-*   **`PanelRoot`** — Singleton entry point with event-driven panel requests, global queue, and background dimmer.
+*   **`PanelRoot`** — Singleton entry point with event-driven panel requests, global queue, background dimmer, and `onAnyPanelShow`/`onAnyPanelHide` callbacks for global panel visibility tracking.
 
 ### UI Components
 *   **`JustButton` / `SimpleTMPButton`** — Enhanced buttons with scale-bounce, greyscaling, and TMP label support.
@@ -156,7 +169,7 @@ Stack-based UI navigation framework.
 *   **`UICircleArranger`** — Circular layout with multi-circle support and tween animations.
 *   **`HoledLayerMask`** — Tutorial spotlight system creating a "hole" in an overlay mask to highlight target UI elements.
 *   **`ImageWithText` / `ImageWithTextTMP`** — Compound Image+Text components with auto-resize.
-*   **`ScreenSafeArea` / `IgnoreScreenSafe`** — Notch/safe area handling utilities.
+*   **`ScreenSafeArea` / `IgnoreScreenSafe`** — Notch/safe area handling utilities with Device Simulator compatibility and `fullTop`/`fullBottom` edge control.
 *   **`Joystick` / `JoystickArea`** — Virtual joystick input components with configurable radius and drag callbacks.
 *   **`Alignment Layouts`** — Custom layout components: `HorizontalAlignment`, `VerticalAlignment`, `TableAlignment` with UI and non-UI variants for flexible child arrangement.
 
@@ -185,6 +198,7 @@ Custom attributes for enhancing the Unity Inspector:
 | `[ExposeScriptableObject]` | Inline SO editing in parent Inspector |
 | `[FolderPath]` | Folder picker dialog for string fields |
 | `[Highlight]` | Color-highlight important fields |
+| `[Inject]` | Auto-resolve cross-model dependencies in JObjectDB |
 | `[InspectorButton]` | Render methods as clickable buttons |
 | `[ReadOnly]` | Visible but non-editable fields |
 | `[Separator]` | Horizontal divider with optional title |
@@ -213,7 +227,7 @@ Identifies and removes unused assets by analyzing project dependency graphs. Fea
 Enhances the Hierarchy window with configurable overlays: visibility toggle, component icons, vertex/triangle counts, children count, tag/layer display, static flag, and alternating row colors.
 
 ### Other Tools
-*   **Reskin Toolkit** — Batch find-and-replace for assets, fonts, sprites, and objects.
+*   **Reskin Toolkit** — Batch find-and-replace for assets, sprites, and objects. Includes **Unified Font Replacer** supporting both TMP and Legacy font replacement with folder-scoped project scanning and active scene replacement.
 *   **Asset GUID Regenerator** — Regenerate GUIDs to resolve conflicts.
 *   **Find and Replace Assets** — Batch replace asset references across the project.
 *   **Find Component Reference** — Search for component usage in prefabs/scenes.

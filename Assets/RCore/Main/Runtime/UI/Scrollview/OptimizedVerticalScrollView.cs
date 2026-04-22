@@ -242,10 +242,7 @@ namespace RCore.UI
 
 			// Deactivate original prefab and set initial scroll position.
 			prefab.gameObject.SetActive(false);
-			if (startIndex <= 0)
-				container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewport.rect.size.y * 0.5f) + new Vector3(0, m_cellSizeY, 0);
-			else
-				ScrollToIndex(startIndex);
+			ScrollToIndex(Mathf.Max(0, startIndex));
 #if DOTWEEN
 			TryFirePendingAnimRequest();
 #endif

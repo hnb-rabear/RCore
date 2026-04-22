@@ -4,6 +4,9 @@
 
 using RCore.Inspector;
 using UnityEngine;
+#if UNITY_EDITOR
+using Screen = UnityEngine.Device.Screen;
+#endif
 
 namespace RCore.UI
 {
@@ -13,6 +16,7 @@ namespace RCore.UI
 		private Vector2 m_originalOffsetMax;
 		private RectTransform m_rectTransform;
 		private Canvas m_canvas;
+		private ScreenSafeArea m_screenSafeArea;
 
 		private void Start()
 		{
@@ -20,6 +24,7 @@ namespace RCore.UI
 			m_originalOffsetMin = m_rectTransform.offsetMin;
 			m_originalOffsetMax = m_rectTransform.offsetMax;
 			m_canvas = GetComponentInParent<Canvas>();
+			m_screenSafeArea = GetComponentInParent<ScreenSafeArea>();
 
 			ScreenSafeArea.OnOffsetChanged += OnOffsetChanged;
 			Validate();
@@ -40,7 +45,8 @@ namespace RCore.UI
 		private void Validate()
 		{
 			if (m_rectTransform == null) m_rectTransform = transform as RectTransform;
-			if (GetComponentInParent<ScreenSafeArea>() == null)
+			if (m_screenSafeArea == null) m_screenSafeArea = GetComponentInParent<ScreenSafeArea>();
+			if (m_screenSafeArea == null)
 			{
 				Debug.LogError($"{gameObject.name}: IgnoreScreenSafe requires a ScreenSafeArea component in a parent GameObject.");
 				return;
@@ -50,9 +56,21 @@ namespace RCore.UI
 
 			var safeArea = Screen.safeArea;
 
+			// In Unity Editor with Device Simulator, Screen.safeArea uses simulated device
+			// resolution while Screen.height uses Game view resolution. Skip adjustment.
+			if (safeArea.x + safeArea.width > Screen.width * 1.01f
+				|| safeArea.y + safeArea.height > Screen.height * 1.01f)
+			{
+				m_rectTransform.offsetMin = m_originalOffsetMin;
+				m_rectTransform.offsetMax = m_originalOffsetMax;
+				return;
+			}
+
 			// Calculate safe area offsets in pixels
-			float topUnsafePixels = Screen.height - safeArea.yMax;
-			float bottomUnsafePixels = safeArea.y;
+			// If the parent ScreenSafeArea ignores an edge (fullTop/fullBottom),
+			// it didn't apply that inset, so we must not counteract it.
+			float topUnsafePixels = m_screenSafeArea.fullTop ? 0f : Screen.height - safeArea.yMax;
+			float bottomUnsafePixels = m_screenSafeArea.fullBottom ? 0f : safeArea.y;
 
 			// Convert pixels to local space units (Canvas Scaler units)
 			// Assuming Screen Space - Overlay or Camera where scaleFactor applies uniformly

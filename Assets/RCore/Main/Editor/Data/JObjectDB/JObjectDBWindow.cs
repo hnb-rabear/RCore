@@ -24,6 +24,8 @@ namespace RCore.Editor.Data.JObject
 	/// </summary>
 	public class JObjectDBWindow : EditorWindow
 	{
+		private enum SearchMode { Key, Value }
+
 		//==========================================================================
 		// Constants
 		//==========================================================================
@@ -78,6 +80,7 @@ namespace RCore.Editor.Data.JObject
 		private string m_searchQuery = "";
 		private string m_appliedSearchQuery = "";
 		private double m_searchLastTypedTime;
+		private SearchMode m_searchMode = SearchMode.Key;
 		private HashSet<string> m_searchMatchedPaths;           // exact paths that match search query
 		private HashSet<string> m_searchAncestorPaths;          // parent paths to auto-expand/show
 
@@ -329,6 +332,15 @@ namespace RCore.Editor.Data.JObject
 				}
 			}
 
+			// Search mode toggle
+			EditorGUI.BeginChangeCheck();
+			m_searchMode = (SearchMode)EditorGUILayout.EnumPopup(m_searchMode, EditorStyles.toolbarDropDown, GUILayout.Width(55));
+			if (EditorGUI.EndChangeCheck() && !string.IsNullOrEmpty(m_appliedSearchQuery))
+			{
+				RebuildSearchCache();
+				Repaint();
+			}
+
 			GUILayout.FlexibleSpace();
 
 			// Action buttons with icons
@@ -351,6 +363,10 @@ namespace RCore.Editor.Data.JObject
 					ImportFromFile(path);
 			}
 
+			if (GUILayout.Button(new GUIContent(" Paste", m_iconImport?.image), EditorStyles.toolbarButton, GUILayout.Width(65)))
+				ImportFromClipboard();
+
+			var prevBgColor = GUI.backgroundColor;
 			GUI.backgroundColor = new Color(1f, 0.4f, 0.4f);
 			if (GUILayout.Button(new GUIContent(" Delete", m_iconDelete?.image), EditorStyles.toolbarButton, GUILayout.Width(65)))
 			{
@@ -360,7 +376,7 @@ namespace RCore.Editor.Data.JObject
 					RefreshData();
 				}
 			}
-			GUI.backgroundColor = Color.white;
+			GUI.backgroundColor = prevBgColor;
 
 			EditorGUILayout.EndHorizontal();
 		}
@@ -476,10 +492,11 @@ namespace RCore.Editor.Data.JObject
 
 			if (m_dirtyKeys.Contains(m_selectedKey))
 			{
+				var prevBgColor = GUI.backgroundColor;
 				GUI.backgroundColor = COLOR_DIRTY;
 				if (GUILayout.Button(new GUIContent(" Apply", m_iconApply?.image), GUILayout.Width(75)))
 					SaveCollection(m_selectedKey);
-				GUI.backgroundColor = Color.white;
+				GUI.backgroundColor = prevBgColor;
 			}
 
 			if (GUILayout.Button(new GUIContent(" Copy JSON", m_iconCopy?.image), GUILayout.Width(95)))
@@ -492,10 +509,11 @@ namespace RCore.Editor.Data.JObject
 			// Diff toggle
 			if (m_diffEnabled)
 			{
+				var prevBgColor = GUI.backgroundColor;
 				GUI.backgroundColor = COLOR_DIFF_CHANGED;
 				if (GUILayout.Button("Clear Diff", GUILayout.Width(75)))
 					ClearDiff();
-				GUI.backgroundColor = Color.white;
+				GUI.backgroundColor = prevBgColor;
 			}
 			else
 			{
@@ -667,6 +685,7 @@ namespace RCore.Editor.Data.JObject
 				if (!m_arrayPages.TryGetValue(pageKey, out int currentPage))
 					currentPage = 0;
 					
+				int prevIndent = EditorGUI.indentLevel;
 				EditorGUI.indentLevel = depth + 1;
 				EditorGUILayout.BeginHorizontal();
 				GUILayout.Space(depth * INDENT_WIDTH);
@@ -691,7 +710,7 @@ namespace RCore.Editor.Data.JObject
 				GUI.enabled = true;
 
 				EditorGUILayout.EndHorizontal();
-				EditorGUI.indentLevel = 0;
+				EditorGUI.indentLevel = prevIndent;
 			}
 		}
 
@@ -760,7 +779,7 @@ namespace RCore.Editor.Data.JObject
 			var token = property?.Value ?? directToken;
 			if (token == null) return;
 
-				// Get full-width rect for this row
+			// Get full-width rect for this row
 			float indent = depth * INDENT_WIDTH;
 			float labelWidth = Mathf.Max(120, 200 - indent);
 			bool isArrayElement = parentArray != null && arrayIndex >= 0;
@@ -802,45 +821,43 @@ namespace RCore.Editor.Data.JObject
 					GUI.contentColor = COLOR_INT;
 					long intVal = token.Value<long>();
 					long newIntVal = EditorGUI.LongField(valueRect, intVal);
-					if (EditorGUI.EndChangeCheck())
-						newValue = new JValue(newIntVal);
+					newValue = new JValue(newIntVal);
 					break;
 
 				case JTokenType.Float:
 					GUI.contentColor = COLOR_FLOAT;
 					double floatVal = token.Value<double>();
 					double newFloatVal = EditorGUI.DoubleField(valueRect, floatVal);
-					if (EditorGUI.EndChangeCheck())
-						newValue = new JValue(newFloatVal);
+					newValue = new JValue(newFloatVal);
 					break;
 
 				case JTokenType.String:
 					GUI.contentColor = COLOR_STRING;
 					string strVal = token.Value<string>() ?? "";
 					string newStrVal = EditorGUI.TextField(valueRect, strVal);
-					if (EditorGUI.EndChangeCheck())
-						newValue = new JValue(newStrVal);
+					newValue = new JValue(newStrVal);
 					break;
 
 				case JTokenType.Boolean:
 					GUI.contentColor = COLOR_BOOL;
 					bool boolVal = token.Value<bool>();
 					bool newBoolVal = EditorGUI.Toggle(valueRect, boolVal);
-					if (EditorGUI.EndChangeCheck())
-						newValue = new JValue(newBoolVal);
+					newValue = new JValue(newBoolVal);
 					break;
 
 				case JTokenType.Null:
 					GUI.contentColor = COLOR_NULL;
 					EditorGUI.LabelField(valueRect, "(null)");
-					EditorGUI.EndChangeCheck();
 					break;
 
 				default:
 					EditorGUI.LabelField(valueRect, token.ToString());
-					EditorGUI.EndChangeCheck();
 					break;
 			}
+
+			bool changed = EditorGUI.EndChangeCheck();
+			if (!changed)
+				newValue = null;
 
 			GUI.contentColor = prevColor;
 
@@ -861,6 +878,7 @@ namespace RCore.Editor.Data.JObject
 			// Delete button for array elements
 			if (isArrayElement)
 			{
+				var prevBgColor = GUI.backgroundColor;
 				GUI.backgroundColor = new Color(1f, 0.4f, 0.4f);
 				if (GUI.Button(deleteRect, "✕"))
 				{
@@ -868,7 +886,7 @@ namespace RCore.Editor.Data.JObject
 					MarkDirty(collectionKey);
 					GUIUtility.ExitGUI(); // Prevent layout errors after modifying collection
 				}
-				GUI.backgroundColor = Color.white;
+				GUI.backgroundColor = prevBgColor;
 			}
 
 			// Timestamp display
@@ -966,7 +984,7 @@ namespace RCore.Editor.Data.JObject
 		}
 
 		/// <summary>
-		/// Recursively walks the JToken tree, collecting paths whose field names match the query.
+		/// Recursively walks the JToken tree, collecting paths whose field names or values match the query.
 		/// Also collects all ancestor paths so they can be shown/auto-expanded.
 		/// </summary>
 		private void SearchRecursive(JToken token, string path, string query)
@@ -976,11 +994,21 @@ namespace RCore.Editor.Data.JObject
 				foreach (var prop in ((NJObject)token).Properties())
 				{
 					string fieldPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
-					if (prop.Name.ToLowerInvariant().Contains(query))
+
+					if (m_searchMode == SearchMode.Key)
+					{
+						if (prop.Name.ToLowerInvariant().Contains(query))
+						{
+							m_searchMatchedPaths.Add(fieldPath);
+							AddAncestorPaths(fieldPath);
+						}
+					}
+					else if (IsLeafValueMatch(prop.Value, query))
 					{
 						m_searchMatchedPaths.Add(fieldPath);
 						AddAncestorPaths(fieldPath);
 					}
+
 					SearchRecursive(prop.Value, fieldPath, query);
 				}
 			}
@@ -990,9 +1018,27 @@ namespace RCore.Editor.Data.JObject
 				for (int i = 0; i < arr.Count; i++)
 				{
 					string elementPath = $"{path}[{i}]";
+
+					if (m_searchMode == SearchMode.Value && IsLeafValueMatch(arr[i], query))
+					{
+						m_searchMatchedPaths.Add(elementPath);
+						AddAncestorPaths(elementPath);
+					}
+
 					SearchRecursive(arr[i], elementPath, query);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Returns true if the token is a leaf (non-container) and its string representation contains the query.
+		/// </summary>
+		private static bool IsLeafValueMatch(JToken token, string query)
+		{
+			if (token.Type == JTokenType.Object || token.Type == JTokenType.Array)
+				return false;
+			string valueStr = token.Type == JTokenType.Null ? "null" : token.ToString();
+			return valueStr.ToLowerInvariant().Contains(query);
 		}
 
 		private void AddAncestorPaths(string path)
@@ -1177,6 +1223,7 @@ namespace RCore.Editor.Data.JObject
 					}
 				}
 
+				var prevBgColor = GUI.backgroundColor;
 				GUI.backgroundColor = new Color(1f, 0.4f, 0.4f);
 				if (GUILayout.Button("✕", GUILayout.Width(24), GUILayout.Height(20)))
 				{
@@ -1192,7 +1239,7 @@ namespace RCore.Editor.Data.JObject
 						}
 					}
 				}
-				GUI.backgroundColor = Color.white;
+				GUI.backgroundColor = prevBgColor;
 				EditorGUILayout.EndHorizontal();
 			}
 			else
@@ -1429,11 +1476,36 @@ namespace RCore.Editor.Data.JObject
 				return;
 			}
 
+			ImportContent(content, Path.GetFileName(filePath));
+		}
+
+		/// <summary>
+		/// Imports save data from the system clipboard.
+		/// </summary>
+		private void ImportFromClipboard()
+		{
+			string content = EditorGUIUtility.systemCopyBuffer;
+
+			if (string.IsNullOrEmpty(content))
+			{
+				EditorUtility.DisplayDialog("Import Error", "Clipboard is empty.", "OK");
+				return;
+			}
+
+			ImportContent(content, "Clipboard");
+		}
+
+		/// <summary>
+		/// Core import logic shared by file and clipboard import.
+		/// Detects wrapped/raw format, confirms with user, and handles Play mode safely.
+		/// </summary>
+		private void ImportContent(string content, string sourceName)
+		{
 			// Detect format and extract raw data
 			string jsonData;
 			try
 			{
-				jsonData = ExtractAndConfirmImport(content, filePath);
+				jsonData = ExtractAndConfirmImport(content, sourceName);
 			}
 			catch (Exception ex)
 			{
@@ -1460,17 +1532,17 @@ namespace RCore.Editor.Data.JObject
 			else
 			{
 				JObjectDB.Import(jsonData);
-				SetStatus($"✓ Imported from {Path.GetFileName(filePath)}");
+				SetStatus($"✓ Imported from {sourceName}");
 			}
 
 			RefreshData();
 		}
 
 		/// <summary>
-		/// Parses file content, detects wrapped vs raw format, shows metadata confirmation if wrapped.
+		/// Parses content, detects wrapped vs raw format, shows metadata confirmation if wrapped.
 		/// Returns the raw JObjectDB JSON data string, or null if user cancels.
 		/// </summary>
-		private string ExtractAndConfirmImport(string content, string filePath)
+		private string ExtractAndConfirmImport(string content, string sourceName)
 		{
 			var parsed = NJObject.Parse(content);
 
@@ -1488,7 +1560,7 @@ namespace RCore.Editor.Data.JObject
 				                 + $"App Version: {appVersion}\n"
 				                 + $"Export Time: {exportTime}\n"
 				                 + $"Collections: {collectionCount}\n"
-				                 + $"\nFile: {Path.GetFileName(filePath)}";
+				                 + $"\nSource: {sourceName}";
 
 				if (!EditorUtility.DisplayDialog("Import Save Data", message, "Import", "Cancel"))
 					return null;

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 #if UNITY_EDITOR
 using RCore.Editor;
 using UnityEditor;
@@ -55,6 +56,8 @@ namespace RCore.UI
 		/// Note: There should be at most one locked child panel at any given time.
 		/// </summary>
 		private bool m_locked;
+
+		private static readonly Dictionary<string, int> s_sessionShowCounts = new();
 
 		private CanvasGroup m_canvasGroup;
 		private static readonly int m_AnimClose = Animator.StringToHash("close");
@@ -235,6 +238,9 @@ namespace RCore.UI
 		{
 			m_isShowing = true;
 
+			string key = SessionShowCountKey;
+			s_sessionShowCounts[key] = s_sessionShowCounts.GetValueOrDefault(key, 0) + 1;
+
 			onWillShow?.Invoke();
 
 			BeforeShowing();
@@ -368,7 +374,7 @@ namespace RCore.UI
 		/// Locks or unlocks the panel, preventing it from being popped.
 		/// </summary>
 		/// <param name="pLock">True to lock, false to unlock.</param>
-		public void Lock(bool pLock)
+		public virtual void Lock(bool pLock)
 		{
 			m_locked = pLock;
 		}
@@ -406,6 +412,22 @@ namespace RCore.UI
 		public bool Contains<T>(T panel) where T : PanelController
 		{
 			return panelStack.Contains(panel);
+		}
+
+		private string SessionShowCountKey => $"{GetType().FullName}:{gameObject.name}";
+
+		public int SessionShowCount => s_sessionShowCounts.GetValueOrDefault(SessionShowCountKey, 0);
+
+		public static int GetSessionShowCount<T>(string name = null) where T : PanelController
+		{
+			if (name != null)
+				return s_sessionShowCounts.GetValueOrDefault($"{typeof(T).FullName}:{name}", 0);
+			string prefix = typeof(T).FullName;
+			int total = 0;
+			foreach (var kvp in s_sessionShowCounts)
+				if (kvp.Key == prefix || kvp.Key.StartsWith(prefix + ":"))
+					total += kvp.Value;
+			return total;
 		}
 
 		//======================================================

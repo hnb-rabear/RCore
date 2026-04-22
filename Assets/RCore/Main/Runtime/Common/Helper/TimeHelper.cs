@@ -361,12 +361,9 @@ namespace RCore
 				var daysOffset = DayCheat.Value;
 				var hourOffset = HourCheat.Value;
 				var minuteCheat = MinuteCheat.Value;
-				if (daysOffset > 0)
-					date = date.AddDays(daysOffset);
-				if (hourOffset > 0)
-					date = date.AddHours(hourOffset);
-				if (minuteCheat > 0)
-					date = date.AddMinutes(minuteCheat);
+				date = date.AddDays(daysOffset);
+				date = date.AddHours(hourOffset);
+				date = date.AddMinutes(minuteCheat);
 			}
 			return date;
 		}
@@ -381,7 +378,7 @@ namespace RCore
 				MinuteCheat = new RPlayerPrefInt("TimeHelper.MinuteCheat");
 			}
 		}
-		
+
 		public static void ResetCache()
 		{
 			m_LastRefreshTime = -1f;
@@ -398,10 +395,15 @@ namespace RCore
 				m_LastRefreshTime = Time.realtimeSinceStartup;
 
 				var serverTs = WebRequestHelper.GetServerTimestampUtc();
+
 				if (serverTs.HasValue)
+				{
 					m_CachedTimestampUtc = serverTs.Value;
+				}
 				else
+				{
 					m_CachedTimestampUtc = DateTime.UtcNow.ToUnixTimestampInt();
+				}
 
 				InitCheats();
 
@@ -412,6 +414,7 @@ namespace RCore
 
 				m_CachedTimestampLocal = m_CachedTimestampUtc + (int)TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalSeconds;
 			}
+
 			return utcTime ? m_CachedTimestampUtc : m_CachedTimestampLocal;
 		}
 

@@ -1,10 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using RCore.Data.JObject;
-using UnityEngine;
 
 namespace RCore.Example.Data.JObject
 {
+	/// <summary>
+	/// A simple model with no cross-model dependencies.
+	/// Other models can inject this via [Inject] InventoryModel.
+	/// </summary>
 	public class InventoryModel : JObjectModel<InventoryData<InvItemData>>
 	{
 		public override void Init() { }

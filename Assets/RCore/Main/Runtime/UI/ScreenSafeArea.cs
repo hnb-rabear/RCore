@@ -7,6 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+#if UNITY_EDITOR
+using Screen = UnityEngine.Device.Screen;
+#endif
 
 namespace RCore.UI
 {
@@ -45,10 +48,10 @@ namespace RCore.UI
 		public void Log()
 		{
 			var safeArea = Screen.safeArea;
-			var sWidth = Screen.currentResolution.width;
-			var sHeight = Screen.currentResolution.height;
-			var oWidthTop = (Screen.currentResolution.width - safeArea.width - safeArea.x) / 2f;
-			var oHeightTop = (Screen.currentResolution.height - safeArea.height - safeArea.y) / 2f;
+			var sWidth = Screen.width;
+			var sHeight = Screen.height;
+			var oWidthTop = (Screen.width - safeArea.width - safeArea.x) / 2f;
+			var oHeightTop = (Screen.height - safeArea.height - safeArea.y) / 2f;
 			var oWidthBot = -safeArea.x / 2f;
 			var oHeightBot = -safeArea.y / 2f;
 			UnityEngine.Debug.Log($"Screen size: (width:{sWidth}, height:{sHeight})"
@@ -76,14 +79,23 @@ namespace RCore.UI
 				m_canvas = GetComponentInParent<Canvas>();
 
 			var safeArea = Screen.safeArea;
+
+			// In Unity Editor with Device Simulator, Screen.safeArea uses simulated device
+			// resolution while Screen.width/height uses Game view resolution — different
+			// coordinate spaces cause broken anchors. Detect and skip safe area adjustment.
+			bool coordMismatch = safeArea.x + safeArea.width > Screen.width * 1.01f
+				|| safeArea.y + safeArea.height > Screen.height * 1.01f;
+			if (coordMismatch)
+				safeArea = new Rect(0, 0, Screen.width, Screen.height);
+
 			safeArea.height -= topBannerOffset;
 			if (fullTop)
 			{
-				safeArea.height = Screen.currentResolution.height - Screen.safeArea.y;
+				safeArea.height = Screen.height - safeArea.y;
 			}
 			if (fullBottom)
 			{
-				safeArea.height += Screen.safeArea.y;
+				safeArea.height += safeArea.y;
 				safeArea.y = 0;
 			}
 			var anchorMin = safeArea.position;
@@ -99,11 +111,10 @@ namespace RCore.UI
 			position.y = bottomBannerOffset / 2;
 			((RectTransform)m_canvas.transform).anchoredPosition = position;
 
-			var pixelRect = m_canvas.pixelRect;
-			anchorMin.x /= pixelRect.width;
-			anchorMin.y /= pixelRect.height;
-			anchorMax.x /= pixelRect.width;
-			anchorMax.y /= pixelRect.height;
+			anchorMin.x /= Screen.width;
+			anchorMin.y /= Screen.height;
+			anchorMax.x /= Screen.width;
+			anchorMax.y /= Screen.height;
 
 			foreach (var rect in safeRects)
 			{

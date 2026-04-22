@@ -17,6 +17,7 @@ namespace RCore.Data.JObject
 		/// Gets the raw, serializable data object associated with this model.
 		/// </summary>
 		public JObjectData Data { get; }
+		public string Key { get; }
 	}
 
 	/// <summary>
@@ -36,6 +37,7 @@ namespace RCore.Data.JObject
 		/// Provides access to the underlying data object through the IJObjectModel interface.
 		/// </summary>
 		public JObjectData Data => data;
+		public string Key => key;
 		
 		/// <summary>
 		/// Called to initialize the model and its data. This is typically where you would create or load the data object.
@@ -72,6 +74,10 @@ namespace RCore.Data.JObject
 		/// </summary>
 		public void Save()
 		{
+			// Sync key from model (serialized field) to data (non-serialized property)
+			// to guard against Unity domain reload clearing the property.
+			if (string.IsNullOrEmpty(data.key) && !string.IsNullOrEmpty(key))
+				data.key = key;
 			data.Save();
 		}
 		

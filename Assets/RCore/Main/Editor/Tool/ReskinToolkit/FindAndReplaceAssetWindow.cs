@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 
 namespace RCore.Editor.Tool
@@ -21,7 +21,7 @@ namespace RCore.Editor.Tool
 		{
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 			m_findAndReplaceAssetToolkit ??= FindAndReplaceAssetToolkit.Load();
-			m_tab = EditorHelper.Tabs(nameof(FindAndReplaceAssetWindow), "Replace Sprite", "Cut Sprite Sheet", "Update Image Property", "Replace Object");
+			m_tab = EditorHelper.Tabs(nameof(FindAndReplaceAssetWindow), "Replace Sprite", "Cut Sprite Sheet", "Update Image Property", "Replace Object", "Replace Font");
 			GUILayout.BeginVertical("box");
 			switch (m_tab)
 			{
@@ -36,6 +36,9 @@ namespace RCore.Editor.Tool
 					break;
 				case "Replace Object":
 					m_findAndReplaceAssetToolkit.objectReplacer.Draw();
+					break;
+				case "Replace Font":
+					m_findAndReplaceAssetToolkit.fontReplacer.Draw();
 					break;
 			}
 			GUILayout.EndVertical();
