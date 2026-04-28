@@ -83,10 +83,11 @@ namespace RCore.Data.JObject
 				if (keyValuePairs.TryGetValue(model.Data.key, out string value))
 					model.Data.Load(value);
 
-			m_resolveCache.Clear();
+			// m_resolveCache is intentionally NOT cleared here: InjectDependencies() has already
+			// run once after Load() and field references are set on model instances directly.
 			PostLoad();
 		}
-		
+
 		/// <summary>
 		/// Imports game data from a dictionary of objects. This is useful for integrating with systems
 		/// that provide data in a pre-parsed format.
@@ -113,10 +114,11 @@ namespace RCore.Data.JObject
 				}
 			}
 
-			m_resolveCache.Clear();
+			// m_resolveCache is intentionally NOT cleared here: InjectDependencies() has already
+			// run once after Load() and field references are set on model instances directly.
 			PostLoad();
 		}
-		
+
 		/// <summary>
 		/// Exports all managed data into a dictionary.
 		/// </summary>
@@ -154,11 +156,10 @@ namespace RCore.Data.JObject
 		
 		/// <summary>
 		/// Propagates the post-load event to all registered models, allowing them to calculate offline progress.
+		/// <para>Note: <see cref="InjectDependencies"/> must be called before this method.</para>
 		/// </summary>
 		public virtual void PostLoad()
 		{
-			InjectDependencies();
-
 			int offlineSeconds = session.GetOfflineSeconds();
 			var utcNowTimestamp = TimeHelper.GetNowTimestamp(true);
 			foreach (var handler in m_models)
@@ -225,8 +226,9 @@ namespace RCore.Data.JObject
 		/// resolves them from the registered model collection.
 		/// Call this after all <see cref="CreateModel{TData}"/> calls are complete.
 		/// </summary>
-		protected void InjectDependencies()
+		public void InjectDependencies()
 		{
+			if (m_models == null) return;
 			foreach (var model in m_models)
 			{
 				var fields = GetInjectFields(model.GetType());
@@ -238,7 +240,11 @@ namespace RCore.Data.JObject
 					if (resolved != null)
 						field.SetValue(model, resolved);
 					else
-						Debug.LogWarning($"[Inject] Could not resolve {field.FieldType.Name} for {model.GetType().Name}.{field.Name}");
+						throw new InvalidOperationException(
+							$"[Inject] Cannot resolve '{field.FieldType.Name}' for '{model.GetType().Name}.{field.Name}'. " +
+							$"Register it via CreateModel() in Load() before PostLoad() is called. " +
+							$"Currently registered: {string.Join(", ", m_models.Select(m => m.GetType().Name))}"
+						);
 				}
 			}
 		}

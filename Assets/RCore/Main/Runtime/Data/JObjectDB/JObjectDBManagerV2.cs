@@ -119,8 +119,9 @@ namespace RCore.Data.JObject
 		//============================================================================
 
 		/// <summary>
-		/// Initializes the data manager. It loads all data collections via the `m_dataCollection`
-		/// and then triggers the post-load logic (e.g., calculating offline progress).
+		/// Initializes the data manager. It loads all data collections via the `m_dataCollection`,
+		/// injects any cross-model dependencies, and then triggers the post-load logic
+		/// (e.g., calculating offline progress).
 		/// </summary>
 		public virtual void Init()
 		{
@@ -128,6 +129,7 @@ namespace RCore.Data.JObject
 				return;
 
 			m_dataCollection.Load();
+			m_dataCollection.InjectDependencies();
 			m_dataCollection.PostLoad();
 			m_initialized = true;
 			onInitialized?.Invoke();
