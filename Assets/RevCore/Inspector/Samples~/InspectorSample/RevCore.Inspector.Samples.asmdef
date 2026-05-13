@@ -1,0 +1,16 @@
+{
+  "name": "RevCore.Inspector.Samples",
+  "rootNamespace": "RevCore.Samples",
+  "references": [
+    "RevCore.Inspector.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

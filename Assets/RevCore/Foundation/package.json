@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.foundation",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Foundation",
   "description": "Core contracts, event bus, logging, result types, and utility helpers for the RevCore framework.",
   "unity": "2022.3",
@@ -11,5 +11,17 @@
     "url": "https://github.com/hnb-rabear"
   },
   "keywords": ["framework", "foundation", "events", "utility"],
-  "dependencies": {}
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Event Bus Sample",
+      "description": "Example EventBus publisher and subscriber usage.",
+      "path": "Samples~/EventBusSample"
+    },
+    {
+      "displayName": "Service Locator Sample",
+      "description": "Example ServiceLocator registration and resolution usage.",
+      "path": "Samples~/ServiceLocatorSample"
+    }
+  ]
 }

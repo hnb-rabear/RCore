@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.pool",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Pool",
   "description": "Reusable Component and GameObject pooling for the RevCore framework.",
   "unity": "2022.3",
@@ -12,7 +12,14 @@
   },
   "keywords": ["pool", "object-pool", "framework", "performance"],
   "dependencies": {
-    "com.rabear.revcore.foundation": "0.1.0",
-    "com.rabear.revcore.timer": "0.1.0"
-  }
+    "com.rabear.revcore.foundation": "1.0.0",
+    "com.rabear.revcore.timer": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Pool Sample",
+      "description": "Example ComponentPool and GameObjectPool usage.",
+      "path": "Samples~/PoolSample"
+    }
+  ]
 }

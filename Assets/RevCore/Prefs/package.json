@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.prefs",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Prefs",
   "description": "Typed PlayerPrefs and EditorPrefs wrappers for the RevCore framework.",
   "unity": "2022.3",
@@ -12,6 +12,13 @@
   },
   "keywords": ["prefs", "playerprefs", "editorprefs", "framework"],
   "dependencies": {
-    "com.rabear.revcore.foundation": "0.1.0"
-  }
+    "com.rabear.revcore.foundation": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Prefs Sample",
+      "description": "Example typed PlayerPrefs and EditorPrefs usage.",
+      "path": "Samples~/PrefsSample"
+    }
+  ]
 }

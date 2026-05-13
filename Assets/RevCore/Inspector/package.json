@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.inspector",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Inspector",
   "description": "Attribute-based inspector decorations and custom editors for Unity.",
   "unity": "2022.3",
@@ -11,5 +11,12 @@
     "url": "https://github.com/hnb-rabear"
   },
   "keywords": ["inspector", "attributes", "editor", "drawers"],
-  "dependencies": {}
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Inspector Sample",
+      "description": "Example components for RevCore inspector attributes.",
+      "path": "Samples~/InspectorSample"
+    }
+  ]
 }

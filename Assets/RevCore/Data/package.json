@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.data",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Data",
   "description": "JObjectDB V2 data persistence system for RevCore — typed ScriptableObject models, PlayerPrefs backend, dependency injection.",
   "unity": "2022.3",
@@ -12,10 +12,17 @@
   },
   "keywords": ["data", "persistence", "playerprefs", "framework"],
   "dependencies": {
-    "com.rabear.revcore.foundation": "0.1.0",
-    "com.rabear.revcore.timer": "0.1.0",
-    "com.rabear.revcore.prefs": "0.1.0",
-    "com.rabear.revcore.inspector": "0.1.0",
+    "com.rabear.revcore.foundation": "1.0.0",
+    "com.rabear.revcore.timer": "1.0.0",
+    "com.rabear.revcore.prefs": "1.0.0",
+    "com.rabear.revcore.inspector": "1.0.0",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Data Sample",
+      "description": "Example RevCore data model and repository usage.",
+      "path": "Samples~/DataSample"
+    }
+  ]
 }

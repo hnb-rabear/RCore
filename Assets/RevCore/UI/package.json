@@ -4,13 +4,23 @@
   "displayName": "RevCore.UI",
   "description": "Runtime UI components and helpers for RevCore.",
   "unity": "2022.3",
+  "documentationUrl": "https://github.com/hnb-rabear/RCore",
   "author": {
     "name": "HNB RaBear",
     "email": "nbhung71711@gmail.com",
     "url": "https://github.com/hnb-rabear"
   },
+  "keywords": ["ui", "panel", "button", "scrollview", "framework"],
   "dependencies": {
     "com.rabear.revcore.foundation": "1.0.0",
-    "com.rabear.revcore.inspector": "1.0.0"
-  }
+    "com.rabear.revcore.inspector": "1.0.0",
+    "com.unity.textmeshpro": "3.0.6"
+  },
+  "samples": [
+    {
+      "displayName": "UI Sample",
+      "description": "Example UI panel and optimized scroll item usage.",
+      "path": "Samples~/UISample"
+    }
+  ]
 }

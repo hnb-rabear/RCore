@@ -1,0 +1,17 @@
+{
+  "name": "RevCore.Audio.Samples",
+  "rootNamespace": "RevCore.Samples",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Audio.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -1,0 +1,16 @@
+{
+  "name": "RevCore.Pool.Samples",
+  "rootNamespace": "RevCore.Samples",
+  "references": [
+    "RevCore.Pool.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

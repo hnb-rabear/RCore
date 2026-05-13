@@ -1,14 +1,14 @@
 {
   "name": "RevCore.UI.Tests",
-  "rootNamespace": "RevCore.UI.Tests",
+  "rootNamespace": "RevCore.Tests",
   "references": [
     "RevCore.UI.Runtime",
     "RevCore.Foundation.Runtime",
-    "RevCore.Inspector.Runtime"
+    "RevCore.Inspector.Runtime",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
   ],
-  "includePlatforms": [
-    "Editor"
-  ],
+  "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": true,

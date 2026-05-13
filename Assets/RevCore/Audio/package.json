@@ -10,9 +10,17 @@
     "email": "nbhung71711@gmail.com",
     "url": "https://github.com/hnb-rabear"
   },
+  "keywords": ["audio", "music", "sfx", "framework"],
   "dependencies": {
     "com.rabear.revcore.foundation": "1.0.0",
     "com.rabear.revcore.inspector": "1.0.0",
     "com.rabear.revcore.prefs": "1.0.0"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Audio Sample",
+      "description": "Example AudioManager and AudioCollection usage.",
+      "path": "Samples~/AudioSample"
+    }
+  ]
 }

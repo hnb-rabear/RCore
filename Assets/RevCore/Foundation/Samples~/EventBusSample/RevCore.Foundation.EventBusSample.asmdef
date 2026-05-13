@@ -1,0 +1,16 @@
+{
+  "name": "RevCore.Foundation.EventBusSample",
+  "rootNamespace": "RevCore.Samples",
+  "references": [
+    "RevCore.Foundation.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

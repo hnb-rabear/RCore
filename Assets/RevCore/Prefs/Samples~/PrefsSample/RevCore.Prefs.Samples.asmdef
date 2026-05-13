@@ -1,0 +1,17 @@
+{
+  "name": "RevCore.Prefs.Samples",
+  "rootNamespace": "RevCore.Samples",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Prefs.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

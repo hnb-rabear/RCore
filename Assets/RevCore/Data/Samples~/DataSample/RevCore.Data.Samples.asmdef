@@ -1,0 +1,18 @@
+{
+  "name": "RevCore.Data.Samples",
+  "rootNamespace": "RevCore.Samples",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Inspector.Runtime",
+    "RevCore.Data.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.timer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Timer",
   "description": "Manual and Unity-driven timer scheduling for the RevCore framework.",
   "unity": "2022.3",
@@ -12,6 +12,13 @@
   },
   "keywords": ["timer", "scheduler", "countdown", "framework"],
   "dependencies": {
-    "com.rabear.revcore.foundation": "0.1.0"
-  }
+    "com.rabear.revcore.foundation": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Timer Sample",
+      "description": "Example TimerScheduler and countdown usage.",
+      "path": "Samples~/TimerSample"
+    }
+  ]
 }

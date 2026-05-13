@@ -3,7 +3,9 @@
   "rootNamespace": "RevCore.Tests",
   "references": [
     "RevCore.Foundation.Runtime",
-    "RevCore.Audio.Runtime"
+    "RevCore.Audio.Runtime",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

@@ -2,7 +2,7 @@
 
 All notable changes to this package.
 
-## [0.1.0] — 2026-05-13
+## [1.0.0] — 2026-05-13
 
 ### Added
 - `JObjectDB` static registry with `CreateCollection`, `Save`, `Reload`, `Delete`, `DeleteAll`, `Import`, `Backup`, `Restore`
