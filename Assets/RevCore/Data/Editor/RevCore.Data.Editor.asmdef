@@ -1,0 +1,17 @@
+{
+  "name": "RevCore.Data.Editor",
+  "rootNamespace": "RevCore.Editor",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Data.Runtime"
+  ],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

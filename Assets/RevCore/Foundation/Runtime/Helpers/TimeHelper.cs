@@ -109,6 +109,10 @@ namespace RevCore
 			var calendar = CultureInfo.InvariantCulture.Calendar;
 			return calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
 		}
+
+		public static DateTime GetNow(bool utc) => utc ? DateTime.UtcNow : DateTime.Now;
+		public static int GetNowTimestamp(bool utc) => DateTimeToUnixTimestampInt(GetNow(utc));
+		public static double GetSecondsTillDayOfWeek(DayOfWeek day, DateTime from) => (GetStartTimeOfNextWeekDay(from, day) - from).TotalSeconds;
 	}
 
 	public static class TimeExtension

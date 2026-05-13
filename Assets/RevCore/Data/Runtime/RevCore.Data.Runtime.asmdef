@@ -1,0 +1,19 @@
+{
+  "name": "RevCore.Data.Runtime",
+  "rootNamespace": "RevCore",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Timer.Runtime",
+    "RevCore.Prefs.Runtime",
+    "RevCore.Inspector.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

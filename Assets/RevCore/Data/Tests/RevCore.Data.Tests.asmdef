@@ -1,0 +1,21 @@
+{
+  "name": "RevCore.Data.Tests",
+  "rootNamespace": "RevCore.Tests",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Timer.Runtime",
+    "RevCore.Prefs.Runtime",
+    "RevCore.Data.Runtime",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
