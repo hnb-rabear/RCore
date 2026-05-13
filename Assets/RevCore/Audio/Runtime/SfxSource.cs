@@ -38,14 +38,24 @@ namespace RevCore
         {
             if (m_initialized)
                 return;
-            if (AudioManager.Instance == null)
+
+            var audioManager = AudioManager.Instance;
+            if (audioManager == null)
             {
                 Debug.LogError("AudioManager instance not found. SfxSource cannot function.");
                 return;
             }
+
+            if (audioManager.audioCollection == null)
+            {
+                Debug.LogError("AudioManager AudioCollection not found. SfxSource cannot function.");
+                return;
+            }
+
+            mClips ??= Array.Empty<string>();
             m_indexes = new int[mClips.Length];
             for (int i = 0; i < mClips.Length; i++)
-                AudioManager.Instance.audioCollection.GetSFXClip(mClips[i], out m_indexes[i]);
+                audioManager.audioCollection.GetSFXClip(mClips[i], out m_indexes[i]);
             m_initialized = true;
         }
 
@@ -54,7 +64,7 @@ namespace RevCore
 
         public void SetUp(string[] clips, bool isLoop)
         {
-            mClips = clips;
+            mClips = clips ?? Array.Empty<string>();
             mIsLoop = isLoop;
             m_initialized = false;
             Init();
@@ -69,6 +79,12 @@ namespace RevCore
             }
 
             var audioManager = AudioManager.Instance;
+            if (audioManager == null || audioManager.audioCollection == null)
+            {
+                Debug.LogWarning("SfxSource cannot play because AudioManager or AudioCollection is missing.", this);
+                return;
+            }
+
             if (!audioManager.EnabledSFX)
                 return;
 
@@ -83,6 +99,9 @@ namespace RevCore
                 else
                 {
                     var clip = audioManager.audioCollection.GetSFXClip(index);
+                    if (clip == null)
+                        return;
+
                     m_AudioSource.volume = audioManager.SFXVolume * audioManager.MasterVolume * m_Vol;
                     m_AudioSource.loop = mIsLoop;
                     m_AudioSource.clip = clip;

@@ -23,6 +23,12 @@ Audio management for Unity — clip repository, SFX pooling, music playback with
 4. Play: `AudioManager.Instance.PlaySFX("clip_name")` or `AudioManager.Instance.PlayMusicById(0)`
 5. UI SFX via events: `Events.Publish(new UISfxTriggeredEvent("button_click"))`
 
+## Runtime Safety
+
+AudioManager initializes required AudioSources at runtime when added dynamically instead of prepared by editor validation. Missing AudioCollection or missing clips are treated as no-op playback requests.
+
+AudioCollection lookup methods return null or empty arrays when clip arrays are unassigned.
+
 ## Dependencies
 
 - RevCore.Foundation (Events, Log)

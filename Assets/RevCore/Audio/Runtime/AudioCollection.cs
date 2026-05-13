@@ -30,13 +30,16 @@ namespace RevCore
 
         public AudioClip GetMusicClip(int index)
         {
-            if (index >= 0 && index < musicClips.Length)
+            if (musicClips != null && index >= 0 && index < musicClips.Length)
                 return musicClips[index];
             return null;
         }
 
         public AudioClip GetMusicClip(string key)
         {
+            if (string.IsNullOrEmpty(key) || musicClips == null)
+                return null;
+
             for (int i = 0; i < musicClips.Length; i++)
                 if (musicClips[i] != null && musicClips[i].name.Equals(key, System.StringComparison.OrdinalIgnoreCase))
                     return musicClips[i];
@@ -46,6 +49,9 @@ namespace RevCore
         public AudioClip GetMusicClip(string key, ref int index)
         {
             index = -1;
+            if (string.IsNullOrEmpty(key) || musicClips == null)
+                return null;
+
             for (int i = 0; i < musicClips.Length; i++)
             {
                 if (musicClips[i] != null && musicClips[i].name.Equals(key, System.StringComparison.OrdinalIgnoreCase))
@@ -59,13 +65,16 @@ namespace RevCore
 
         public AudioClip GetSFXClip(int index)
         {
-            if (index >= 0 && index < sfxClips.Length)
+            if (sfxClips != null && index >= 0 && index < sfxClips.Length)
                 return sfxClips[index];
             return null;
         }
 
         public AudioClip GetSFXClip(string name)
         {
+            if (string.IsNullOrEmpty(name) || sfxClips == null)
+                return null;
+
             for (int i = 0; i < sfxClips.Length; i++)
                 if (sfxClips[i] != null && sfxClips[i].name.Equals(name, System.StringComparison.OrdinalIgnoreCase))
                     return sfxClips[i];
@@ -75,6 +84,9 @@ namespace RevCore
         public AudioClip GetSFXClip(string key, out int index)
         {
             index = -1;
+            if (string.IsNullOrEmpty(key) || sfxClips == null)
+                return null;
+
             for (int i = 0; i < sfxClips.Length; i++)
             {
                 if (sfxClips[i] != null && sfxClips[i].name.Equals(key, System.StringComparison.OrdinalIgnoreCase))
@@ -88,6 +100,9 @@ namespace RevCore
 
         public string[] GetSFXNames()
         {
+            if (sfxClips == null)
+                return System.Array.Empty<string>();
+
             var names = new string[sfxClips.Length];
             for (int i = 0; i < sfxClips.Length; i++)
                 if (sfxClips[i] != null)
@@ -98,7 +113,10 @@ namespace RevCore
 #if ADDRESSABLES
         public async Task LoadABSfx(int index)
         {
-            if (index < 0 || index >= abSfxClips.Length || sfxClips[index] != null)
+            if (abSfxClips == null || index < 0 || index >= abSfxClips.Length)
+                return;
+            sfxClips ??= new AudioClip[abSfxClips.Length];
+            if (index >= sfxClips.Length || sfxClips[index] != null)
                 return;
             var asset = abSfxClips[index];
             if (asset != null && !string.IsNullOrEmpty(asset.AssetGUID))
@@ -112,19 +130,23 @@ namespace RevCore
 
         public void UnloadABSfx(int index)
         {
-            if (index < 0 || index >= abSfxClips.Length)
+            if (abSfxClips == null || index < 0 || index >= abSfxClips.Length)
                 return;
             var ab = abSfxClips[index];
             if (ab != null && ab.IsValid())
             {
-                sfxClips[index] = null;
+                if (sfxClips != null && index < sfxClips.Length)
+                    sfxClips[index] = null;
                 ab.ReleaseAsset();
             }
         }
 
         public async Task LoadABMusic(int index)
         {
-            if (index < 0 || index >= abMusicClips.Length || musicClips[index] != null)
+            if (abMusicClips == null || index < 0 || index >= abMusicClips.Length)
+                return;
+            musicClips ??= new AudioClip[abMusicClips.Length];
+            if (index >= musicClips.Length || musicClips[index] != null)
                 return;
             var ab = abMusicClips[index];
             if (ab != null && !string.IsNullOrEmpty(ab.AssetGUID))
@@ -138,12 +160,13 @@ namespace RevCore
 
         public void UnloadABMusic(int index)
         {
-            if (index < 0 || index >= abMusicClips.Length)
+            if (abMusicClips == null || index < 0 || index >= abMusicClips.Length)
                 return;
             var ab = abMusicClips[index];
             if (ab != null && ab.IsValid())
             {
-                musicClips[index] = null;
+                if (musicClips != null && index < musicClips.Length)
+                    musicClips[index] = null;
                 ab.ReleaseAsset();
             }
         }

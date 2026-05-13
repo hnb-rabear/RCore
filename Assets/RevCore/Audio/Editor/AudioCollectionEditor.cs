@@ -18,6 +18,11 @@ namespace RevCore.Editor
         private void OnEnable()
         {
             m_collection = target as AudioCollection;
+            if (m_collection != null)
+            {
+                m_collection.musicClips ??= Array.Empty<AudioClip>();
+                m_collection.sfxClips ??= Array.Empty<AudioClip>();
+            }
         }
 
         public override void OnInspectorGUI()
@@ -34,13 +39,22 @@ namespace RevCore.Editor
 
             if (GUILayout.Button("Sort clips"))
             {
-                m_collection.musicClips = m_collection.musicClips.OrderBy(x => x.name).ToArray();
-                m_collection.sfxClips = m_collection.sfxClips.OrderBy(x => x.name).ToArray();
+                m_collection.musicClips = (m_collection.musicClips ?? Array.Empty<AudioClip>())
+                    .Where(x => x != null)
+                    .OrderBy(x => x.name)
+                    .ToArray();
+                m_collection.sfxClips = (m_collection.sfxClips ?? Array.Empty<AudioClip>())
+                    .Where(x => x != null)
+                    .OrderBy(x => x.name)
+                    .ToArray();
                 Debug.Log("Audio clips sorted alphabetically.");
             }
 
             if (GUILayout.Button("Generate"))
             {
+                m_collection.musicClips ??= Array.Empty<AudioClip>();
+                m_collection.sfxClips ??= Array.Empty<AudioClip>();
+
                 if (!string.IsNullOrEmpty(m_collection.generator.inputMusicsFolder))
                 {
                     string musicPath = m_collection.generator.inputMusicsFolder;
@@ -174,17 +188,19 @@ public static class SfxIDs
 
         private static string GenerateIntKeys(AudioClip[] clips)
         {
-            var parts = new string[clips.Length];
-            for (int i = 0; i < clips.Length; i++)
-                parts[i] = $"{SanitizeName(clips[i].name)} = {i}";
+            var validClips = (clips ?? Array.Empty<AudioClip>()).Where(c => c != null).ToArray();
+            var parts = new string[validClips.Length];
+            for (int i = 0; i < validClips.Length; i++)
+                parts[i] = $"{SanitizeName(validClips[i].name)} = {i}";
             return string.Join(",\n        ", parts);
         }
 
         private static string GenerateStringKeys(AudioClip[] clips)
         {
-            var parts = new string[clips.Length];
-            for (int i = 0; i < clips.Length; i++)
-                parts[i] = $"\"{SanitizeName(clips[i].name)}\"";
+            var validClips = (clips ?? Array.Empty<AudioClip>()).Where(c => c != null).ToArray();
+            var parts = new string[validClips.Length];
+            for (int i = 0; i < validClips.Length; i++)
+                parts[i] = $"\"{SanitizeName(validClips[i].name)}\"";
             return string.Join(",\n        ", parts);
         }
 

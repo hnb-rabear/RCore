@@ -22,6 +22,9 @@ namespace RevCore
         private void OnDestroy()
         {
             Events.Unsubscribe<UISfxTriggeredEvent>(OnSfxTriggered);
+
+            if (s_instance == this)
+                s_instance = null;
         }
 
         private void OnSfxTriggered(UISfxTriggeredEvent e)

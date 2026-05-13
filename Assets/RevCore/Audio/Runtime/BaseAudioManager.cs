@@ -37,13 +37,70 @@ namespace RevCore
 
         protected virtual void Start()
         {
-            m_musicSource.volume = m_masterVolume * m_musicVolume;
-            m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
-            foreach (var sound in m_sfxSources)
-                sound.volume = m_masterVolume * m_sfxVolume;
+            EnsureAudioSources();
+            SetMusicSourceVolume();
+            SetSfxSourcesVolume();
         }
 
         #region Common
+
+        private void EnsureAudioSources()
+        {
+            m_sfxSources ??= new List<AudioSource>();
+
+            if (m_musicSource == null)
+            {
+                var obj = new GameObject("Music");
+                obj.transform.SetParent(transform);
+                m_musicSource = obj.AddComponent<AudioSource>();
+            }
+
+            if (m_sfxSourceUnlimited == null)
+            {
+                var obj = new GameObject("Sfx");
+                obj.transform.SetParent(transform);
+                m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
+            }
+
+            ConfigureAudioSource(m_musicSource, true);
+            ConfigureAudioSource(m_sfxSourceUnlimited, false);
+
+            for (int i = m_sfxSources.Count - 1; i >= 0; i--)
+            {
+                if (m_sfxSources[i] == null)
+                    m_sfxSources.RemoveAt(i);
+                else
+                    ConfigureAudioSource(m_sfxSources[i], false);
+            }
+        }
+
+        private static void ConfigureAudioSource(AudioSource source, bool loop)
+        {
+            if (source == null)
+                return;
+
+            source.loop = loop;
+            source.playOnAwake = false;
+        }
+
+        private void SetMusicSourceVolume()
+        {
+            if (m_musicSource != null)
+                m_musicSource.volume = m_masterVolume * m_musicVolume;
+        }
+
+        private void SetSfxSourcesVolume()
+        {
+            if (m_sfxSourceUnlimited != null)
+                m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+
+            if (m_sfxSources == null)
+                return;
+
+            foreach (var source in m_sfxSources)
+                if (source != null)
+                    source.volume = m_masterVolume * m_sfxVolume;
+        }
 
         public void SetMasterVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
@@ -56,13 +113,13 @@ namespace RevCore
                 return;
             }
 
+            EnsureAudioSources();
+
             if (fadeDuration <= 0)
             {
                 m_masterVolume = value;
-                m_musicSource.volume = m_masterVolume * m_musicVolume;
-                m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
-                foreach (var source in m_sfxSources)
-                    source.volume = m_masterVolume * m_sfxVolume;
+                SetMusicSourceVolume();
+                SetSfxSourcesVolume();
                 onComplete?.Invoke();
             }
             else
@@ -75,10 +132,8 @@ namespace RevCore
                     .OnUpdate(() =>
                     {
                         m_masterVolume = Mathf.Lerp(fromVal, value, lerp);
-                        m_musicSource.volume = m_masterVolume * m_musicVolume;
-                        m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
-                        foreach (var source in m_sfxSources)
-                            source.volume = m_masterVolume * m_sfxVolume;
+                        SetMusicSourceVolume();
+                        SetSfxSourcesVolume();
                     })
                     .OnComplete(() => onComplete?.Invoke());
 #else
@@ -86,10 +141,8 @@ namespace RevCore
                     t =>
                     {
                         m_masterVolume = Mathf.Lerp(fromVal, value, t);
-                        m_musicSource.volume = m_masterVolume * m_musicVolume;
-                        m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
-                        foreach (var source in m_sfxSources)
-                            source.volume = m_masterVolume * m_sfxVolume;
+                        SetMusicSourceVolume();
+                        SetSfxSourcesVolume();
                     }, () => onComplete?.Invoke()));
 #endif
             }
@@ -97,6 +150,8 @@ namespace RevCore
 
         private AudioSource CreateSfxAudioSource()
         {
+            EnsureAudioSources();
+
             if (m_sfxSources.Count == 0)
             {
                 for (int i = 0; i < 3; i++)
@@ -139,6 +194,7 @@ namespace RevCore
         public void EnableMusic(bool value)
         {
             m_enabledMusic = value;
+            EnsureAudioSources();
             m_musicSource.mute = !value;
         }
 
@@ -147,10 +203,12 @@ namespace RevCore
 #if DOTWEEN
             m_musicTweener.Kill();
 #endif
+            EnsureAudioSources();
+
             if (!m_enabledMusic || value == m_musicVolume)
             {
                 m_musicVolume = value;
-                m_musicSource.volume = m_masterVolume * m_musicVolume;
+                SetMusicSourceVolume();
                 onComplete?.Invoke();
                 return;
             }
@@ -158,7 +216,7 @@ namespace RevCore
             if (fadeDuration <= 0)
             {
                 m_musicVolume = value;
-                m_musicSource.volume = m_masterVolume * m_musicVolume;
+                SetMusicSourceVolume();
                 onComplete?.Invoke();
             }
             else
@@ -171,14 +229,14 @@ namespace RevCore
                     .OnUpdate(() =>
                     {
                         m_musicVolume = Mathf.Lerp(fromVal, value, lerp);
-                        m_musicSource.volume = m_masterVolume * m_musicVolume;
+                        SetMusicSourceVolume();
                     })
                     .OnComplete(() => onComplete?.Invoke());
 #else
                 StartCoroutine(LerpCoroutine(fadeDuration, t =>
                 {
                     m_musicVolume = Mathf.Lerp(fromVal, value, t);
-                    m_musicSource.volume = m_masterVolume * m_musicVolume;
+                    SetMusicSourceVolume();
                 }, () => onComplete?.Invoke()));
 #endif
             }
@@ -188,13 +246,15 @@ namespace RevCore
         {
             SetMusicVolume(0, fadeDuration, () =>
             {
-                m_musicSource.Stop();
+                if (m_musicSource != null)
+                    m_musicSource.Stop();
                 onComplete?.Invoke();
             });
         }
 
         public void PlayMusic(float fadeDuration = 0, float volume = 1f)
         {
+            EnsureAudioSources();
             if (!m_musicSource.isPlaying)
                 m_musicSource.Play();
             SetMusicVolume(volume, fadeDuration);
@@ -205,6 +265,7 @@ namespace RevCore
             if (clip == null)
                 return;
 
+            EnsureAudioSources();
             bool play = !(m_musicSource.clip == clip && m_musicSource.isPlaying);
             m_musicSource.clip = clip;
             m_musicSource.loop = loop;
@@ -233,6 +294,8 @@ namespace RevCore
                 yield break;
             }
 
+            EnsureAudioSources();
+
             int index = 0;
             for (int i = 0; i < clips.Length; i++)
                 if (clips[i] == m_musicSource.clip)
@@ -243,10 +306,15 @@ namespace RevCore
 
             while (true)
             {
-                bool play = true;
                 var clip = clips[index];
-                if (m_musicSource.clip == clip && m_musicSource.isPlaying)
-                    play = false;
+                if (clip == null)
+                {
+                    index = (index + 1) % clips.Length;
+                    yield return null;
+                    continue;
+                }
+
+                bool play = !(m_musicSource.clip == clip && m_musicSource.isPlaying);
 
                 if (play)
                 {
@@ -265,22 +333,31 @@ namespace RevCore
             }
         }
 
-        public bool IsPlayingMusic() => m_musicSource.isPlaying;
+        public bool IsPlayingMusic() => m_musicSource != null && m_musicSource.isPlaying;
 
         public void PlayMusic(string fileName, bool loop = false, float fadeDuration = 0)
         {
+            if (audioCollection == null)
+                return;
+
             var clip = audioCollection.GetMusicClip(fileName);
             PlayMusic(clip, loop, fadeDuration);
         }
 
         public void PlayMusicById(int id, bool loop = false, float fadeDuration = 0, float volume = 1f)
         {
+            if (audioCollection == null)
+                return;
+
             var clip = audioCollection.GetMusicClip(id);
             PlayMusic(clip, loop, fadeDuration, volume);
         }
 
         public void PlayMusicByIds(int[] ids, float fadeDuration = 0, float volume = 1f)
         {
+            if (audioCollection == null || ids == null || ids.Length == 0)
+                return;
+
             var clips = new AudioClip[ids.Length];
             for (int i = 0; i < ids.Length; i++)
                 clips[i] = audioCollection.GetMusicClip(ids[i]);
@@ -294,8 +371,10 @@ namespace RevCore
         public void EnableSFX(bool value)
         {
             m_enabledSfx = value;
+            EnsureAudioSources();
             foreach (var s in m_sfxSources)
-                s.mute = !value;
+                if (s != null)
+                    s.mute = !value;
             m_sfxSourceUnlimited.mute = !value;
         }
 
@@ -310,12 +389,12 @@ namespace RevCore
                 return;
             }
 
+            EnsureAudioSources();
+
             if (fadeDuration <= 0)
             {
                 m_sfxVolume = value;
-                m_sfxSourceUnlimited.volume = m_masterVolume * value;
-                foreach (var sound in m_sfxSources)
-                    sound.volume = m_masterVolume * value;
+                SetSfxSourcesVolume();
                 onComplete?.Invoke();
             }
             else
@@ -328,18 +407,14 @@ namespace RevCore
                     .OnUpdate(() =>
                     {
                         m_sfxVolume = Mathf.Lerp(fromVal, value, lerp);
-                        m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
-                        foreach (var sound in m_sfxSources)
-                            sound.volume = m_masterVolume * m_sfxVolume;
+                        SetSfxSourcesVolume();
                     })
                     .OnComplete(() => onComplete?.Invoke());
 #else
                 StartCoroutine(LerpCoroutine(fadeDuration, t =>
                 {
                     m_sfxVolume = Mathf.Lerp(fromVal, value, t);
-                    m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
-                    foreach (var sound in m_sfxSources)
-                        sound.volume = m_masterVolume * m_sfxVolume;
+                    SetSfxSourcesVolume();
                 }, () => onComplete?.Invoke()));
 #endif
             }
@@ -350,16 +425,19 @@ namespace RevCore
             if (clip == null)
                 return;
 
+            if (m_sfxSources == null)
+                return;
+
             for (int i = 0; i < m_sfxSources.Count; i++)
             {
-                if (m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == clip.GetInstanceID())
+                if (m_sfxSources[i] != null && m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == clip.GetInstanceID())
                 {
                     m_sfxSources[i].Stop();
                     m_sfxSources[i].clip = null;
                 }
             }
 
-            if (m_sfxSourceUnlimited.clip == clip)
+            if (m_sfxSourceUnlimited != null && m_sfxSourceUnlimited.clip == clip)
             {
                 m_sfxSourceUnlimited.Stop();
                 m_sfxSourceUnlimited.clip = null;
@@ -368,19 +446,31 @@ namespace RevCore
 
         public void StopSFXs()
         {
-            for (int i = 0; i < m_sfxSources.Count; i++)
+            if (m_sfxSources != null)
             {
-                m_sfxSources[i].Stop();
-                m_sfxSources[i].clip = null;
+                for (int i = 0; i < m_sfxSources.Count; i++)
+                {
+                    if (m_sfxSources[i] != null)
+                    {
+                        m_sfxSources[i].Stop();
+                        m_sfxSources[i].clip = null;
+                    }
+                }
             }
-            m_sfxSourceUnlimited.Stop();
-            m_sfxSourceUnlimited.clip = null;
+
+            if (m_sfxSourceUnlimited != null)
+            {
+                m_sfxSourceUnlimited.Stop();
+                m_sfxSourceUnlimited.clip = null;
+            }
         }
 
         private AudioSource GetSFXSource(AudioClip clip, int limitNumber, bool loop)
         {
             try
             {
+                EnsureAudioSources();
+
                 if (limitNumber > 0 || loop)
                 {
                     if (!loop)
@@ -388,15 +478,19 @@ namespace RevCore
                         int countSameClips = 0;
                         for (int i = m_sfxSources.Count - 1; i >= 0; i--)
                         {
-                            if (m_sfxSources[i].isPlaying && m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == clip.GetInstanceID())
+                            var source = m_sfxSources[i];
+                            if (source == null)
+                                continue;
+
+                            if (source.isPlaying && source.clip != null && source.clip.GetInstanceID() == clip.GetInstanceID())
                                 countSameClips++;
-                            else if (!m_sfxSources[i].isPlaying)
-                                m_sfxSources[i].clip = null;
+                            else if (!source.isPlaying)
+                                source.clip = null;
                         }
                         if (countSameClips < limitNumber)
                         {
                             for (int i = m_sfxSources.Count - 1; i >= 0; i--)
-                                if (m_sfxSources[i].clip == null)
+                                if (m_sfxSources[i] != null && m_sfxSources[i].clip == null)
                                     return m_sfxSources[i];
                             return CreateSfxAudioSource();
                         }
@@ -404,10 +498,16 @@ namespace RevCore
                     else
                     {
                         for (int i = m_sfxSources.Count - 1; i >= 0; i--)
-                            if (m_sfxSources[i].clip == null
-                                || !m_sfxSources[i].isPlaying
-                                || m_sfxSources[i].clip.GetInstanceID() == clip.GetInstanceID())
-                                return m_sfxSources[i];
+                        {
+                            var source = m_sfxSources[i];
+                            if (source == null)
+                                continue;
+
+                            if (source.clip == null
+                                || !source.isPlaying
+                                || source.clip.GetInstanceID() == clip.GetInstanceID())
+                                return source;
+                        }
                     }
                 }
                 else
@@ -450,20 +550,27 @@ namespace RevCore
 
         public AudioSource PlaySFX(string fileName, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1)
         {
-            if (!m_enabledSfx) return null;
+            if (!m_enabledSfx || audioCollection == null)
+                return null;
+
             var clip = audioCollection.GetSFXClip(fileName);
             return PlaySFX(clip, limitNumber, loop, pitchRandomMultiplier);
         }
 
         public AudioSource PlaySFX(int index, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1)
         {
-            if (!m_enabledSfx) return null;
+            if (!m_enabledSfx || audioCollection == null)
+                return null;
+
             var clip = audioCollection.GetSFXClip(index);
             return PlaySFX(clip, limitNumber, loop, pitchRandomMultiplier);
         }
 
         public void StopSFX(int index)
         {
+            if (audioCollection == null)
+                return;
+
             var clip = audioCollection.GetSFXClip(index);
             StopSFX(clip);
         }

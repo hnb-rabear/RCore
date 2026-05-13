@@ -94,5 +94,42 @@ namespace RevCore.Tests
             Assert.AreEqual("sfx_0", names[0]);
             Assert.AreEqual("sfx_2", names[2]);
         }
+
+        [Test]
+        public void GetSFXClip_NullArray_ReturnsNull()
+        {
+            var col = ScriptableObject.CreateInstance<AudioCollection>();
+            col.sfxClips = null;
+
+            Assert.IsNull(col.GetSFXClip(0));
+            Assert.IsNull(col.GetSFXClip("any"));
+            col.GetSFXClip("any", out int index);
+            Assert.AreEqual(-1, index);
+        }
+
+        [Test]
+        public void GetMusicClip_NullArray_ReturnsNull()
+        {
+            var col = ScriptableObject.CreateInstance<AudioCollection>();
+            col.musicClips = null;
+
+            Assert.IsNull(col.GetMusicClip(0));
+            Assert.IsNull(col.GetMusicClip("any"));
+            int index = 42;
+            Assert.IsNull(col.GetMusicClip("any", ref index));
+            Assert.AreEqual(-1, index);
+        }
+
+        [Test]
+        public void GetSFXNames_NullArray_ReturnsEmptyArray()
+        {
+            var col = ScriptableObject.CreateInstance<AudioCollection>();
+            col.sfxClips = null;
+
+            var names = col.GetSFXNames();
+
+            Assert.IsNotNull(names);
+            Assert.AreEqual(0, names.Length);
+        }
     }
 }
