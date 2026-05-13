@@ -1,0 +1,17 @@
+{
+  "name": "RevCore.Pool.Runtime",
+  "rootNamespace": "RevCore",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Timer.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

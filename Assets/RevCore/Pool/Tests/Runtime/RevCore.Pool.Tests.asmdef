@@ -1,0 +1,24 @@
+{
+  "name": "RevCore.Pool.Tests",
+  "rootNamespace": "RevCore.Tests",
+  "references": [
+    "RevCore.Pool.Runtime",
+    "RevCore.Foundation.Runtime",
+    "RevCore.Timer.Runtime",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
