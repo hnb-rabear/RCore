@@ -4,9 +4,7 @@
   "references": [
     "RevCore.UI.Runtime",
     "RevCore.Foundation.Runtime",
-    "RevCore.Inspector.Runtime",
-    "RevCore.Timer.Runtime",
-    "RevCore.Pool.Runtime"
+    "RevCore.Inspector.Runtime"
   ],
   "includePlatforms": [
     "Editor"

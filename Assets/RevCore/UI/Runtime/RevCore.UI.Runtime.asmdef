@@ -4,8 +4,6 @@
   "references": [
     "RevCore.Foundation.Runtime",
     "RevCore.Inspector.Runtime",
-    "RevCore.Timer.Runtime",
-    "RevCore.Pool.Runtime",
     "Unity.TextMeshPro"
   ],
   "includePlatforms": [],

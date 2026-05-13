@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -158,7 +157,7 @@ namespace RevCore.UI
 
         private void PushPanelHandler(PushPanelEvent e)
         {
-            if (e.rootType != GetType().FullName)
+            if (e.rootType != GetType())
                 return;
             if (e.panel != null)
             {
@@ -175,20 +174,10 @@ namespace RevCore.UI
                         break;
                 }
             }
-            else if (!string.IsNullOrEmpty(e.panelType))
+            else if (e.panelType != null)
             {
-                var fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                object panelInstance = null;
-                foreach (var field in fields)
-                {
-                    if (field.FieldType.FullName == e.panelType)
-                    {
-                        panelInstance = field.GetValue(this);
-                        break;
-                    }
-                }
-
-                if (panelInstance is PanelController panelController)
+                var panelController = OnResolvePanelByType(e.panelType);
+                if (panelController != null)
                 {
                     switch (e.pushMode)
                     {
@@ -204,18 +193,23 @@ namespace RevCore.UI
                     }
                 }
                 else
-                    Debug.LogError($"Property or field of type {e.panelType} not found in {GetType().Name}.");
+                    Debug.LogError($"Panel of type {e.panelType.Name} not resolved by {GetType().Name}.");
             }
         }
 
         private void RequestPanelHandler(RequestPanelEvent e)
         {
-            if (e.rootType != GetType().FullName)
+            if (e.rootType != GetType())
                 return;
             e.panel = OnReceivedPanelRequest(e.panelType, e.value);
         }
 
-        protected abstract PanelController OnReceivedPanelRequest(string panelTypeFullName, object value);
+        protected virtual PanelController OnResolvePanelByType(Type panelType)
+        {
+            return null;
+        }
+
+        protected abstract PanelController OnReceivedPanelRequest(Type panelType, object value);
 
         public static T PushOuterPanel<T>(Type root, T pPanel, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true) where T : PanelController
         {
@@ -241,15 +235,15 @@ namespace RevCore.UI
 
     internal class PushPanelEvent : IEvent
     {
-        public string rootType;
-        public string panelType;
+        public Type rootType;
+        public Type panelType;
         public PanelController panel;
         public PanelStack.PushMode pushMode;
         public bool keepCurrentAndReplace;
 
         public PushPanelEvent(Type root, PanelController pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
         {
-            rootType = root.FullName;
+            rootType = root;
             panel = pPanel;
             pushMode = pPushMode;
             keepCurrentAndReplace = pKeepCurrentAndReplace;
@@ -257,8 +251,8 @@ namespace RevCore.UI
 
         public PushPanelEvent(Type root, Type pPanel, PanelStack.PushMode pPushMode = PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true)
         {
-            rootType = root.FullName;
-            panelType = pPanel.FullName;
+            rootType = root;
+            panelType = pPanel;
             pushMode = pPushMode;
             keepCurrentAndReplace = pKeepCurrentAndReplace;
         }
@@ -266,15 +260,15 @@ namespace RevCore.UI
 
     internal class RequestPanelEvent : IEvent
     {
-        public string rootType;
-        public string panelType;
+        public Type rootType;
+        public Type panelType;
         public object value;
         public PanelController panel;
 
         public RequestPanelEvent(Type root, Type pPanel, object pValue = null)
         {
-            rootType = root.FullName;
-            panelType = pPanel.FullName;
+            rootType = root;
+            panelType = pPanel;
             value = pValue;
         }
     }

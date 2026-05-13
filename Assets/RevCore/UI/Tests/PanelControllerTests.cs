@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -60,7 +61,7 @@ namespace RevCore.UI.Tests
 
         private class TestPanelRoot : PanelRoot
         {
-            protected override PanelController OnReceivedPanelRequest(string panelTypeFullName, object value)
+            protected override PanelController OnReceivedPanelRequest(Type panelType, object value)
             {
                 return null;
             }

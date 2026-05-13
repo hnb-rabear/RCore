@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace RevCore.UI.Samples
@@ -6,9 +7,9 @@ namespace RevCore.UI.Samples
     {
         [SerializeField] private PanelController samplePanel;
 
-        protected override PanelController OnReceivedPanelRequest(string panelTypeFullName, object value)
+        protected override PanelController OnReceivedPanelRequest(Type panelType, object value)
         {
-            return null;
+            return panelType == samplePanel.GetType() ? samplePanel : null;
         }
 
         public void ShowSamplePanel()

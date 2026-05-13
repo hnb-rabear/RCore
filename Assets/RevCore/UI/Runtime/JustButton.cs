@@ -11,9 +11,8 @@ namespace RevCore.UI
     [AddComponentMenu("RevCore/UI/JustButton")]
     public class JustButton : Button
     {
-        private static Material s_greyMat;
-
         [SerializeField] protected Image m_img;
+        [SerializeField] protected Material m_greyscaleMaterial;
 
         public bool scaleBounceEffect = true;
         public PerfectRatio perfectRatio = PerfectRatio.Height;
@@ -102,8 +101,6 @@ namespace RevCore.UI
             if (m_initialed)
                 return;
 
-            if (s_greyMat == null)
-                s_greyMat = Resources.Load<Material>("Greyscale");
             m_initialScale = transform.localScale;
             SetEnable(interactable);
             m_initialed = true;
@@ -196,9 +193,7 @@ namespace RevCore.UI
 
         public Material GetGreyMat()
         {
-            if (s_greyMat == null)
-                s_greyMat = Resources.Load<Material>("Greyscale");
-            return s_greyMat;
+            return m_greyscaleMaterial;
         }
 
         public void EnableGrey(bool value)
@@ -225,8 +220,8 @@ namespace RevCore.UI
         {
             if (Img != null)
             {
-                if (s_greyMat != null)
-                    Img.material = value || !greyscaleEffect ? null : s_greyMat;
+                if (m_greyscaleMaterial != null)
+                    Img.material = value || !greyscaleEffect ? null : m_greyscaleMaterial;
 
                 if (imgOnOffSwap)
                     Img.sprite = value ? imgOn : imgOff;
