@@ -1,0 +1,26 @@
+{
+  "name": "RevCore.UI.Tests",
+  "rootNamespace": "RevCore.UI.Tests",
+  "references": [
+    "RevCore.UI.Runtime",
+    "RevCore.Foundation.Runtime",
+    "RevCore.Inspector.Runtime",
+    "RevCore.Timer.Runtime",
+    "RevCore.Pool.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

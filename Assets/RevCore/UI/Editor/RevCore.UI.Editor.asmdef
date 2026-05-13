@@ -1,0 +1,21 @@
+{
+  "name": "RevCore.UI.Editor",
+  "rootNamespace": "RevCore.UI.Editor",
+  "references": [
+    "RevCore.UI.Runtime",
+    "RevCore.Foundation.Runtime",
+    "RevCore.Inspector.Editor",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

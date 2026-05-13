@@ -1,0 +1,26 @@
+{
+  "name": "RevCore.UI.Runtime",
+  "rootNamespace": "RevCore.UI",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Inspector.Runtime",
+    "RevCore.Timer.Runtime",
+    "RevCore.Pool.Runtime",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.demigiant.dotween",
+      "expression": "1.0.0",
+      "define": "DOTWEEN"
+    }
+  ],
+  "noEngineReferences": false
+}

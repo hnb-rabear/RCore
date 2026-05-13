@@ -48,5 +48,28 @@ namespace RevCore
 		public static Vector2 Sketch(this Image image, Vector2 preferredSize, bool preferNative = false) { if (image.sprite == null) return preferredSize; var native = image.sprite.NativeSize(); if (preferNative && native.x <= preferredSize.x && native.y <= preferredSize.y) return native; float ratio = Mathf.Min(preferredSize.x / native.x, preferredSize.y / native.y); return native * ratio; }
 		public static Vector2 SetNativeSize(this Image image, Vector2 maxSize) { var size = image.Sketch(maxSize); image.rectTransform.sizeDelta = size; return size; }
 		public static void PerfectRatio(this Image image) { if (image == null || image.sprite == null || image.type != Image.Type.Sliced) return; var native = image.sprite.NativeSize(); var size = image.rectTransform.sizeDelta; image.pixelsPerUnitMultiplier = size.x > 0 && size.x < native.x ? native.x / size.x : 1; }
+		public static bool IsPrefab(this GameObject target) => target.scene.name == null;
+
+		public static Vector2 SketchByWidth(this Image image, float preferredWidth, bool preferNative = false)
+		{
+			if (image.sprite == null) return new Vector2(preferredWidth, preferredWidth);
+			var native = image.sprite.NativeSize();
+			float coeff = preferredWidth / native.x;
+			float sizeY = native.y * coeff;
+			if (preferNative && preferredWidth > native.x) { preferredWidth = native.x; sizeY = native.y; }
+			image.rectTransform.sizeDelta = new Vector2(preferredWidth, sizeY);
+			return image.rectTransform.sizeDelta;
+		}
+
+		public static Vector2 SketchByHeight(this Image image, float preferredHeight, bool preferNative = false)
+		{
+			if (image.sprite == null) return new Vector2(preferredHeight, preferredHeight);
+			var native = image.sprite.NativeSize();
+			float coeff = preferredHeight / native.y;
+			float sizeX = native.x * coeff;
+			if (preferNative && preferredHeight > native.y) { sizeX = native.x; preferredHeight = native.y; }
+			image.rectTransform.sizeDelta = new Vector2(sizeX, preferredHeight);
+			return image.rectTransform.sizeDelta;
+		}
 	}
 }

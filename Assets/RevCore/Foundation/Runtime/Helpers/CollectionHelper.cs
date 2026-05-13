@@ -59,5 +59,7 @@ namespace RevCore
 		public static TKey RandomKey<TKey, TValue>(this Dictionary<TKey, TValue> source, TValue minVal) where TValue : IComparable<TValue> { var keys = source.Where(item => item.Value.CompareTo(minVal) < 0).Select(item => item.Key).ToList(); return keys.Count > 0 ? keys[Random.Range(0, keys.Count)] : default; }
 		public static void Shuffle<T>(this T[] array) { for (int n = array.Length; n > 1;) { n--; int k = UnityEngine.Random.Range(0, n + 1); (array[k], array[n]) = (array[n], array[k]); } }
 		public static void Shuffle<T>(this List<T> list) { for (int n = list.Count; n > 1;) { n--; int k = UnityEngine.Random.Range(0, n + 1); (list[k], list[n]) = (list[n], list[k]); } }
+		public static bool TryAdd<T>(this List<T> list, T item) { if (list.Contains(item)) return false; list.Add(item); return true; }
+		public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value) { if (dict.ContainsKey(key)) return false; dict.Add(key, value); return true; }
 	}
 }

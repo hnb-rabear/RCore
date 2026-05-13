@@ -1,0 +1,17 @@
+{
+  "name": "RevCore.UI.Samples",
+  "rootNamespace": "RevCore.UI.Samples",
+  "references": [
+    "RevCore.UI.Runtime",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

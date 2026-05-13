@@ -1,0 +1,15 @@
+using UnityEngine.UI;
+
+namespace RevCore.UI
+{
+	public class OptimizedScrollItemTest : OptimizedScrollItem
+	{
+		public Text mTxtIndex;
+
+		protected override void OnUpdateContent()
+		{
+			name = m_index.ToString();
+			mTxtIndex.text = m_index.ToString();
+		}
+	}
+}

@@ -93,6 +93,31 @@ namespace RevCore
 		public static Vector2 Center(this RectTransform rect) { var p = rect.pivot; return new Vector2(rect.anchoredPosition.x - rect.rect.width * p.x + rect.rect.width / 2f, rect.anchoredPosition.y - rect.rect.height * p.y + rect.rect.height / 2f); }
 		public static Bounds Bounds(this RectTransform rect) => new(rect.Center(), new Vector2(rect.rect.width, rect.rect.height));
 
+		public static Vector2 CovertAnchoredPosFromChildToParent(this RectTransform childRect, RectTransform parentRect)
+		{
+			float contentWidth = parentRect.rect.width;
+			float contentHeight = parentRect.rect.height;
+			var itemAnchoredPos = childRect.anchoredPosition;
+			var targetAnchored = parentRect.anchoredPosition;
+			targetAnchored.y = -itemAnchoredPos.y + (parentRect.pivot.y - 0.5f) * contentHeight;
+			targetAnchored.x = -itemAnchoredPos.x + (parentRect.pivot.x - 0.5f) * contentWidth;
+			targetAnchored.x -= contentWidth * (childRect.anchorMax.x - 0.5f);
+			targetAnchored.y -= contentHeight * (childRect.anchorMax.y - 0.5f);
+			return targetAnchored;
+		}
+
+		public static Vector2 CovertAnchoredPosFromChildToParent(Vector2 childAnchoredPos, Vector2 childAnchorMax, RectTransform parentRect)
+		{
+			float contentWidth = parentRect.rect.width;
+			float contentHeight = parentRect.rect.height;
+			var targetAnchored = parentRect.anchoredPosition;
+			targetAnchored.y = -childAnchoredPos.y + (parentRect.pivot.y - 0.5f) * contentHeight;
+			targetAnchored.x = -childAnchoredPos.x + (parentRect.pivot.x - 0.5f) * contentWidth;
+			targetAnchored.x -= contentWidth * (childAnchorMax.x - 0.5f);
+			targetAnchored.y -= contentHeight * (childAnchorMax.y - 0.5f);
+			return targetAnchored;
+		}
+
 		public static bool IsChildOfParent(this Transform item, Transform parent)
 		{
 			var current = item;
