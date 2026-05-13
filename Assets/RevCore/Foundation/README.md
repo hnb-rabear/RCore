@@ -1,6 +1,6 @@
 # RevCore.Foundation
 
-RevCore.Foundation is the zero-dependency base package for RevCore. It provides contracts, event bus, logging, result types, common delegates, helpers, BigNumber, and SerializableDictionary.
+RevCore.Foundation is the zero-dependency base package for RevCore. It provides contracts, event bus, service locator, logging, result types, common delegates, helpers, BigNumber, and SerializableDictionary.
 
 ## Install
 
@@ -84,6 +84,10 @@ public Result<int> GetLevel(string id)
 
 `IRevLogger` abstracts logging. `RevLog` is default Unity `Debug` wrapper with log levels and tags.
 
+### ServiceLocator
+
+`IServiceLocator` is a type-keyed service registry. Use instance `ServiceLocator` for scoped containers. Use static `Services` for a global registry. No reflection, no string keys, no lifecycle management.
+
 ### Result
 
 `Result` and `Result<T>` represent success/failure without throwing exceptions for expected failures.
@@ -113,6 +117,17 @@ Helpers are curated from RCore and kept dependency-free. Foundation helpers cove
 | `IEventBus.Clear()` | Remove all listeners |
 | `IEventBus.Clear<T>()` | Remove listeners for one event type |
 | `Events.Global` | Shared global event bus |
+
+### Services
+
+| API | Purpose |
+|---|---|
+| `IServiceLocator` | Type-keyed service registry contract |
+| `ServiceLocator.Register<T>(T)` | Register or replace service by type |
+| `ServiceLocator.TryGet<T>(out T)` | Safely read service by type |
+| `ServiceLocator.Get<T>()` | Read service or throw when missing |
+| `ServiceLocator.Unregister<T>()` | Remove service by type |
+| `Services.Global` | Shared global service locator |
 
 ### Logging
 
