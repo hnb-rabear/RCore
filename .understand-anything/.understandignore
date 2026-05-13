@@ -1,0 +1,67 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+# --- From .gitignore (uncomment to exclude) ---
+
+# /[Ll]ibrary/
+# /[Tt]emp/
+# /[Oo]bj/
+# /[Bb]uild/
+# /[Bb]uilds/
+# /[Ll]ogs/
+# /[Mm]emoryCaptures/
+# Assets/QHierarchy/
+# Assets/QHierarchy.meta
+# Sirenix*
+# !/[Aa]ssets/**/*.meta
+# [Aa]ssets/Plugins/Editor/JetBrains*
+# .vs/
+# .gradle/
+# ExportedObj/
+# .consulo/
+# *.csproj
+# *.unityproj
+# *.sln
+# *.suo
+# *.tmp
+# *.user
+# *.userprefs
+# *.pidb
+# *.booproj
+# *.svd
+# *.pdb
+# *.mdb
+# *.opendb
+# *.VC.db
+# *.pidb.meta
+# *.pdb.meta
+# *.mdb.meta
+# sysinfo.txt
+# *.apk
+# Rubbish
+# crashlytics-build.properties
+
+# --- Scope: scan only RCore folders ---
+*
+!Assets/
+!Assets/RCore/
+!Assets/RCore/**
+!Assets/RCore.Archives/
+!Assets/RCore.Archives/**
+!Assets/RCore.LXLite/
+!Assets/RCore.LXLite/**
+!Assets/RCore.SheetX/
+!Assets/RCore.SheetX/**
+!Assets/SheetXExample/
+!Assets/SheetXExample/**
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# *.test.*
+# *.spec.*
+# *.snap
