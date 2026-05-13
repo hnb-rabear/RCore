@@ -26,14 +26,14 @@ namespace RevCore.Samples
         public void AddCoins(int amount)
         {
             data.coins += amount;
-            DispatchEvent(new CoinsChangedEvent { Amount = data.coins });
+            DispatchEvent(new CoinsChangedEvent(data.coins));
         }
     }
 
     public readonly struct CoinsChangedEvent : IEvent
     {
-        public readonly int Amount;
-        public CoinsChangedEvent(int amount) { Amount = amount; }
+        public int Amount { get; }
+        public CoinsChangedEvent(int amount) => Amount = amount;
     }
 
     // Example collection aggregator

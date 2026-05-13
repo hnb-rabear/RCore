@@ -27,7 +27,7 @@ namespace RevCore.Editor
 
             GUILayout.Space(5);
 
-            var rect = EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("JObject DB", EditorStyles.boldLabel);
 
             if (JObjectDB.collections.Count > 0 && GUILayout.Button("Save All Collections"))
