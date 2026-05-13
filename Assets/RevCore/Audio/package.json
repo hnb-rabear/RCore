@@ -1,0 +1,18 @@
+{
+  "name": "com.rabear.revcore.audio",
+  "version": "1.0.0",
+  "displayName": "RevCore.Audio",
+  "description": "Audio management — clip repository, SFX pooling, music playback, volume fading, optional Addressables and DOTween support",
+  "unity": "2022.3",
+  "documentationUrl": "https://github.com/hnb-rabear/RCore",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
+  "dependencies": {
+    "com.rabear.revcore.foundation": "1.0.0",
+    "com.rabear.revcore.inspector": "1.0.0",
+    "com.rabear.revcore.prefs": "1.0.0"
+  }
+}

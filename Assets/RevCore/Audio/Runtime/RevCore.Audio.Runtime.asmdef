@@ -1,0 +1,28 @@
+{
+  "name": "RevCore.Audio.Runtime",
+  "rootNamespace": "RevCore",
+  "references": [
+    "RevCore.Foundation.Runtime",
+    "RevCore.Inspector.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.unity.addressables",
+      "expression": "",
+      "define": "ADDRESSABLES"
+    },
+    {
+      "name": "com.demigiant.dotween",
+      "expression": "",
+      "define": "DOTWEEN"
+    }
+  ],
+  "noEngineReferences": false
+}
