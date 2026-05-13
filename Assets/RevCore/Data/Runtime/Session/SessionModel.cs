@@ -87,11 +87,7 @@ namespace RevCore
         public override void OnPreSave(int utcNowTimestamp)
         {
             data.lastActive = utcNowTimestamp;
-#if UNITY_ANDROID && !UNITY_EDITOR
-            string ver = $"{Application.version}.{SystemInfo.version}";
-#else
             string ver = Application.version;
-#endif
             if (string.IsNullOrEmpty(data.installVersion))
                 data.installVersion = ver;
             data.updateVersion = ver;

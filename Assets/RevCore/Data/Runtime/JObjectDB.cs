@@ -59,6 +59,24 @@ namespace RevCore
             return dict;
         }
 
+        public static Dictionary<string, object> GetAllDataObjects()
+        {
+            var dict = new Dictionary<string, object>();
+            if (collections.Count == 0)
+            {
+                foreach (string key in GetCollectionKeys())
+                {
+                    string json = PlayerPrefs.GetString(key);
+                    if (!string.IsNullOrEmpty(json))
+                        dict[key] = JsonConvert.DeserializeObject<object>(json);
+                }
+                return dict;
+            }
+            foreach (var pair in collections)
+                dict[pair.Key] = pair.Value;
+            return dict;
+        }
+
         public static string ToJson() => JsonConvert.SerializeObject(GetAllData());
 
         public static void Save()
