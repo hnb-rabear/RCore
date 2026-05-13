@@ -83,6 +83,7 @@ namespace RCore.Audio
         /// <returns>The matching AudioClip, or null if not found.</returns>
         public AudioClip GetMusicClip(string pKey, ref int pIndex)
         {
+            pIndex = -1;
             for (int i = 0; i < musicClips.Length; i++)
             {
                 if (musicClips[i] != null && musicClips[i].name.Equals(pKey, System.StringComparison.OrdinalIgnoreCase))

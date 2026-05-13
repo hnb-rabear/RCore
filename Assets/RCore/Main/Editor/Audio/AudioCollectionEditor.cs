@@ -147,7 +147,7 @@ namespace RCore.Editor.Audio
 					}
 
 					// --- Step 3: Write the file ---
-					string exportConfigPath = Application.dataPath + m_collection.generator.outputIDsFolder.Replace("Assets", "");
+					string exportConfigPath = Application.dataPath + "/" + m_collection.generator.outputIDsFolder.Replace("Assets/", "");
 					System.IO.File.WriteAllText(exportConfigPath + "/AudioIDs.cs", exportedContent);
 					Debug.Log($"AudioIDs.cs generated successfully at {exportConfigPath}");
 				}
@@ -226,7 +226,7 @@ namespace RCore.Editor.Audio
 			if (string.IsNullOrEmpty(content)) return "";
 
 			// Split the content into lines.
-			string[] lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+			string[] lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.None);
 
 			// Add a tab space to the beginning of each line.
 			for (int i = 0; i < lines.Length; i++)
