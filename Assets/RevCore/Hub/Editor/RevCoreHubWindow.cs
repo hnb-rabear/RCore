@@ -21,7 +21,7 @@ namespace RevCore.Hub.Editor
             new("Prefs", "Clear PlayerPrefs", "RevCore/Prefs/Clear PlayerPrefs"),
         };
 
-        private readonly HashSet<string> m_installedPackages = new();
+        private readonly Dictionary<string, string> m_installedPackages = new();
         private ListRequest m_listRequest;
         private Vector2 m_scroll;
 
@@ -46,7 +46,7 @@ namespace RevCore.Hub.Editor
             {
                 foreach (var package in m_listRequest.Result)
                     if (package.name.StartsWith("com.rabear.revcore."))
-                        m_installedPackages.Add(package.name);
+                        m_installedPackages[package.name] = package.version;
             }
 
             ScanLocalPackages();
@@ -87,10 +87,10 @@ namespace RevCore.Hub.Editor
 
         private void DrawPackage(string label, string packageName)
         {
-            bool installed = m_installedPackages.Contains(packageName);
+            bool installed = m_installedPackages.TryGetValue(packageName, out string version);
             EditorGUILayout.BeginHorizontal("box");
             EditorGUILayout.LabelField(label);
-            GUILayout.Label(installed ? "Installed" : "Not Installed", GUILayout.Width(90));
+            GUILayout.Label(installed ? $"Installed {version}" : "Not Installed", GUILayout.Width(120));
             EditorGUILayout.EndHorizontal();
         }
 
@@ -133,19 +133,25 @@ namespace RevCore.Hub.Editor
                     continue;
 
                 string json = File.ReadAllText(packageJson);
-                int nameStart = json.IndexOf("\"name\"");
-                if (nameStart < 0) continue;
-                int colonPos = json.IndexOf(':', nameStart);
-                if (colonPos < 0) continue;
-                int quoteStart = json.IndexOf('"', colonPos + 1);
-                if (quoteStart < 0) continue;
-                int quoteEnd = json.IndexOf('"', quoteStart + 1);
-                if (quoteEnd < 0) continue;
+                string packageName = ExtractJsonString(json, "name");
+                if (packageName == null || !packageName.StartsWith("com.rabear.revcore."))
+                    continue;
 
-                string packageName = json.Substring(quoteStart + 1, quoteEnd - quoteStart - 1);
-                if (packageName.StartsWith("com.rabear.revcore."))
-                    m_installedPackages.Add(packageName);
+                string version = ExtractJsonString(json, "version") ?? "?";
+                m_installedPackages[packageName] = version;
             }
+        }
+
+        private static string ExtractJsonString(string json, string propertyName)
+        {
+            int nameStart = json.IndexOf($"\"{propertyName}\"");
+            if (nameStart < 0) return null;
+            int colonPos = json.IndexOf(':', nameStart);
+            if (colonPos < 0) return null;
+            int quoteStart = json.IndexOf('"', colonPos + 1);
+            if (quoteStart < 0) return null;
+            int quoteEnd = json.IndexOf('"', quoteStart + 1);
+            return quoteEnd < 0 ? null : json.Substring(quoteStart + 1, quoteEnd - quoteStart - 1);
         }
 
         private readonly struct ToolEntry
