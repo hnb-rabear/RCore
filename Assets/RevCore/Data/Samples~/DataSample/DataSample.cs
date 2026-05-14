@@ -40,7 +40,7 @@ namespace RevCore.Samples
     [CreateAssetMenu(menuName = "RevCore/Samples/SampleCollection")]
     public class SampleCollection : JObjectModelCollection
     {
-        [RevCore.Inspector.CreateScriptableObject, RevCore.Inspector.AutoFill]
+        [CreateScriptableObject, AutoFill]
         public PlayerModel player;
 
         public override void Load()

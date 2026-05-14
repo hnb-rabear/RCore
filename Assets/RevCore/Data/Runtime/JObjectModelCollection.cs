@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
-using RevCore.Inspector;
 using UnityEngine;
 
 namespace RevCore

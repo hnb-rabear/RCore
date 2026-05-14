@@ -14,6 +14,7 @@
   "dependencies": {
     "com.rabear.revcore.foundation": "1.0.0",
     "com.rabear.revcore.inspector": "1.0.0",
+    "com.rabear.revcore.pool": "1.0.0",
     "com.unity.textmeshpro": "3.0.6"
   },
   "samples": [

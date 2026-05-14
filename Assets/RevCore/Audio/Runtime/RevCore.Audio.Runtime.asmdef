@@ -3,7 +3,9 @@
   "rootNamespace": "RevCore",
   "references": [
     "RevCore.Foundation.Runtime",
-    "RevCore.Inspector.Runtime"
+    "RevCore.Inspector.Runtime",
+    "Unity.Addressables",
+    "Unity.ResourceManager"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

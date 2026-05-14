@@ -1,5 +1,4 @@
 
-using RevCore.Inspector;
 using UnityEngine;
 using System.Collections;
 using System;

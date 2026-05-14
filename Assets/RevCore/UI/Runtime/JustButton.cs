@@ -29,6 +29,8 @@ namespace RevCore.UI
         private int m_perfectSpriteId;
         private Action m_inactionStateAction;
 
+        public RectTransform RectTransform => targetGraphic != null ? targetGraphic.rectTransform : transform as RectTransform;
+
         public Image Img
         {
             get
@@ -239,7 +241,7 @@ namespace RevCore.UI
             if (perfectRatio == PerfectRatio.Width)
             {
                 var nativeSize = m_img.sprite.NativeSize();
-                var rectSize = rectTransform.sizeDelta;
+                var rectSize = RectTransform.sizeDelta;
                 m_img.pixelsPerUnitMultiplier = rectSize.x > 0 && rectSize.x < nativeSize.x
                     ? nativeSize.x / rectSize.x
                     : 1;
@@ -248,7 +250,7 @@ namespace RevCore.UI
             else if (perfectRatio == PerfectRatio.Height)
             {
                 var nativeSize = m_img.sprite.NativeSize();
-                var rectSize = rectTransform.sizeDelta;
+                var rectSize = RectTransform.sizeDelta;
                 m_img.pixelsPerUnitMultiplier = rectSize.y > 0 && rectSize.y < nativeSize.y
                     ? nativeSize.y / rectSize.y
                     : 1;
