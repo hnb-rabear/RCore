@@ -1,0 +1,10 @@
+# .understandignore
+# Syntax: same as .gitignore
+#
+# Built-in defaults (always excluded): node_modules/, .git/, dist/, *.lock, *.min.js, etc.
+#
+# --- Exclude patterns ---
+
+# Samples~ (UPM hidden samples)
+# *.meta
+# Tests/
