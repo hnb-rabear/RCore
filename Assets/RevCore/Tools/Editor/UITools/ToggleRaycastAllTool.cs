@@ -7,7 +7,7 @@ namespace RevCore.Tools.Editor
     internal sealed class ToggleRaycastAllTool : RevCoreTool
     {
         public override string Name => "Toggle Raycast All";
-        public override string Category => "Utility";
+        public override string Category => "UI Tools";
         public override bool IsQuickAction => true;
 
         public override void OnGUI()
