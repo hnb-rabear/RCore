@@ -49,6 +49,7 @@ namespace RevCore.Hub.Editor
                         m_installedPackages.Add(package.name);
             }
 
+            ScanLocalPackages();
             m_listRequest = null;
             Repaint();
         }
