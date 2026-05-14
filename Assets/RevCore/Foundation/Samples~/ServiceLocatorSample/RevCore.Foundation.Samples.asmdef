@@ -1,6 +1,6 @@
 {
   "name": "RevCore.Foundation.Samples",
-  "rootNamespace": "RevCore.Foundation.Samples",
+  "rootNamespace": "RevCore.Samples",
   "references": [
     "RevCore.Foundation.Runtime"
   ],
