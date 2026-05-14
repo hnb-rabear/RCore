@@ -20,7 +20,7 @@ namespace RevCore.UI.Tests
         [TearDown]
         public void TearDown()
         {
-            Object.DestroyImmediate(m_gameObject);
+            UnityEngine.Object.DestroyImmediate(m_gameObject);
         }
 
         [Test]

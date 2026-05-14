@@ -19,8 +19,8 @@ namespace RevCore.Tests
         [TearDown]
         public void TearDown()
         {
-            Object.DestroyImmediate(m_prefab);
-            Object.DestroyImmediate(m_parent.gameObject);
+            UnityEngine.Object.DestroyImmediate(m_prefab);
+            UnityEngine.Object.DestroyImmediate(m_parent.gameObject);
         }
 
         [Test]

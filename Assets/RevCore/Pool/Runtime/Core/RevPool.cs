@@ -310,9 +310,9 @@ namespace RevCore
         private static void DestroyObject(GameObject gameObject)
         {
             if (Application.isPlaying)
-                Object.Destroy(gameObject);
+                UnityEngine.Object.Destroy(gameObject);
             else
-                Object.DestroyImmediate(gameObject);
+                UnityEngine.Object.DestroyImmediate(gameObject);
         }
     }
 }

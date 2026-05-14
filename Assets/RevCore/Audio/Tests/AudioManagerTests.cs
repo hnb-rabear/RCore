@@ -15,7 +15,7 @@ namespace RevCore.Tests
 
             Assert.AreSame(manager, AudioManager.Instance);
 
-            Object.DestroyImmediate(go);
+            UnityEngine.Object.DestroyImmediate(go);
 
             Assert.IsNull(AudioManager.Instance);
         }

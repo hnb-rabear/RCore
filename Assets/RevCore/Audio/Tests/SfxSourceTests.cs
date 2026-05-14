@@ -28,7 +28,7 @@ namespace RevCore.Tests
             }
             finally
             {
-                Object.DestroyImmediate(go);
+                UnityEngine.Object.DestroyImmediate(go);
             }
         }
 
@@ -47,7 +47,7 @@ namespace RevCore.Tests
             }
             finally
             {
-                Object.DestroyImmediate(go);
+                UnityEngine.Object.DestroyImmediate(go);
             }
         }
     }

@@ -22,7 +22,7 @@ namespace RevCore.UI.Tests
         public void TearDown()
         {
             Events.Clear();
-            Object.DestroyImmediate(m_rootObject);
+            UnityEngine.Object.DestroyImmediate(m_rootObject);
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace RevCore.UI.Tests
             PanelRoot.PushOuterPanel(typeof(OtherPanelRoot), panel);
 
             Assert.AreEqual(0, m_root.StackCount);
-            Object.DestroyImmediate(panelObj);
+            UnityEngine.Object.DestroyImmediate(panelObj);
         }
 
         [Test]
@@ -51,7 +51,7 @@ namespace RevCore.UI.Tests
 
             Assert.AreEqual(1, m_root.StackCount);
             Assert.AreSame(panel, m_root.TopPanel);
-            Object.DestroyImmediate(panelObj);
+            UnityEngine.Object.DestroyImmediate(panelObj);
         }
 
         [Test]

@@ -20,7 +20,7 @@ namespace RevCore.UI.Tests
         [TearDown]
         public void TearDown()
         {
-            Object.DestroyImmediate(m_gameObject);
+            UnityEngine.Object.DestroyImmediate(m_gameObject);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace RevCore.UI.Tests
             m_button.SetEnable(false);
 
             Assert.AreSame(mat, m_button.Img.material);
-            Object.DestroyImmediate(mat);
+            UnityEngine.Object.DestroyImmediate(mat);
         }
 
         private class TestJustButton : JustButton
