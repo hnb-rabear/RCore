@@ -1,13 +1,13 @@
 {
-  "name": "RevCore.Hub.Editor",
-  "rootNamespace": "RevCore.Hub.Editor",
+  "name": "RevCore.Tools.Editor",
+  "rootNamespace": "RevCore.Tools.Editor",
   "references": [],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,
   "precompiledReferences": [],
-  "autoReferenced": false,
+  "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
   "noEngineReferences": false
