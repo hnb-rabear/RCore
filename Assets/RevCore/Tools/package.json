@@ -1,0 +1,16 @@
+{
+  "name": "com.rabear.revcore.tools",
+  "version": "1.0.0",
+  "displayName": "RevCore Tools",
+  "description": "Standalone Unity Editor tools for RevCore projects.",
+  "unity": "2022.3",
+  "author": {
+    "name": "hnb-rabear"
+  },
+  "keywords": [
+    "revcore",
+    "unity",
+    "editor",
+    "tools"
+  ]
+}
