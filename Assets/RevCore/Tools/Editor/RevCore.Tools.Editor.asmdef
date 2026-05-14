@@ -1,7 +1,11 @@
 {
   "name": "RevCore.Tools.Editor",
   "rootNamespace": "RevCore.Tools.Editor",
-  "references": [],
+  "references": [
+    "Unity.Addressables",
+    "Unity.Addressables.Editor",
+    "Unity.ResourceManager"
+  ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
@@ -9,6 +13,12 @@
   "precompiledReferences": [],
   "autoReferenced": true,
   "defineConstraints": [],
-  "versionDefines": [],
+  "versionDefines": [
+    {
+      "name": "com.unity.addressables",
+      "expression": "",
+      "define": "ADDRESSABLES"
+    }
+  ],
   "noEngineReferences": false
 }
