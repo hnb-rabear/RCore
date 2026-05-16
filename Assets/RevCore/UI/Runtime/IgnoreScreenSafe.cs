@@ -5,6 +5,11 @@ using Screen = UnityEngine.Device.Screen;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Companion to <see cref="ScreenSafeArea"/>. Place on a child rect that should extend OUT past
+	/// the safe area (e.g. a full-bleed background) — its offsets compensate for the parent's safe
+	/// inset so the rect again touches the screen edges. Re-validates on banner offset changes.
+	/// </summary>
 	public class IgnoreScreenSafe : MonoBehaviour
 	{
 		private Vector2 m_originalOffsetMin;

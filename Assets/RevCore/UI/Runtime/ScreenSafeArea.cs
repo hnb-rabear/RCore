@@ -8,12 +8,22 @@ using Screen = UnityEngine.Device.Screen;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Anchors a set of <see cref="RectTransform"/>s to the device's reported safe area (avoiding
+	/// notches and home indicators). Also supports global top/bottom offsets for banner ads so the
+	/// game UI is automatically pushed inward when a banner is shown — registered instances
+	/// re-validate whenever offsets change.
+	/// </summary>
 	public class ScreenSafeArea : MonoBehaviour
 	{
+		/// <summary>Fired whenever the global banner offsets change so other systems can re-layout.</summary>
 		public static Action OnOffsetChanged;
 
+		/// <summary>Rects whose anchors are kept inside the device safe area.</summary>
 		public RectTransform[] safeRects;
+		/// <summary>When true, extends the safe area all the way to the screen top, ignoring the OS reported safe rect.</summary>
 		public bool fullTop;
+		/// <summary>When true, extends the safe area all the way to the screen bottom.</summary>
 		public bool fullBottom;
 
 		private Canvas m_canvas;
@@ -28,6 +38,7 @@ namespace RevCore.UI
 			CheckSafeArea();
 		}
 
+		/// <summary>Debug button — prints the current screen size, safe area, and offset metrics.</summary>
 		[InspectorButton]
 		public void Log()
 		{
@@ -109,10 +120,18 @@ namespace RevCore.UI
 		[InspectorButton]
 		private void TestBottomOffsetForBannerAd(int height) => SetBottomOffsetForBannerAd(height);
 
+		/// <summary>Global top banner offset in pixels. Set via <see cref="SetTopOffsetForBannerAd"/>.</summary>
 		public static float topBannerOffset;
+		/// <summary>Global bottom banner offset in pixels. Set via <see cref="SetBottomOffsetForBannerAd"/>.</summary>
 		public static float bottomBannerOffset;
+		/// <summary>Every active <see cref="ScreenSafeArea"/> registers here so banner-offset changes can reach all of them.</summary>
 		public static List<ScreenSafeArea> screenSafeAreas = new();
 
+		/// <summary>
+		/// Reserves <paramref name="bannerHeight"/> at the top of the screen for an ad banner. When
+		/// <paramref name="placeInSafeArea"/> is true the banner sits inside the safe area; otherwise
+		/// the offset accounts for any safe-area gap so the banner sits flush to the screen edge.
+		/// </summary>
 		public static void SetTopOffsetForBannerAd(float bannerHeight, bool placeInSafeArea = true)
 		{
 			float offset = 0;
@@ -129,6 +148,7 @@ namespace RevCore.UI
 			OnOffsetChanged?.Invoke();
 		}
 
+		/// <summary>Bottom-banner counterpart of <see cref="SetTopOffsetForBannerAd"/>.</summary>
 		public static void SetBottomOffsetForBannerAd(float bannerHeight, bool placeInSafeArea = true)
 		{
 			float offset = 0;

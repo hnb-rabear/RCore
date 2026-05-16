@@ -9,16 +9,29 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Virtualized vertical scroll view supporting multi-column grids (<see cref="totalCellOnRow"/> > 1)
+    /// and optional auto-sizing of the viewport between min/max bounds. With DOTWEEN, programmatic
+    /// scroll calls can animate over a duration scaled by the distance.
+    /// </summary>
     public class OptimizedVerticalScrollView : MonoBehaviour
     {
+        /// <summary>Invoked when the content set changes (Init / Expand / programmatic refresh).</summary>
         public Action onContentUpdated;
+        /// <summary>The underlying ScrollRect.</summary>
         public ScrollRect scrollView;
+        /// <summary>Content container whose height grows to the virtual total.</summary>
         public RectTransform container;
+        /// <summary>Prefab cloned for items.</summary>
         public OptimizedScrollItem prefab;
+        /// <summary>Total virtual item count.</summary>
         public int total = 1;
+        /// <summary>Vertical spacing between items.</summary>
         public float spacing;
+        /// <summary>Items per row. Set > 1 for grid layouts.</summary>
         public int totalCellOnRow = 1;
 
+        /// <summary>Shortcut to <c>scrollView.content</c>.</summary>
         public RectTransform content => scrollView.content;
 
         private int m_totalVisible;
@@ -35,16 +48,23 @@ namespace RevCore.UI
         private readonly Vector3[] m_viewportCorners = new Vector3[4];
         private readonly Vector3[] m_itemCorners = new Vector3[4];
 
+        /// <summary>When true, the viewport height clamps to the content height (within min/max bounds).</summary>
         [Separator("Advanced Settings")]
         public bool autoMatchHeight;
+        /// <summary>Minimum auto-matched viewport height.</summary>
         public float minViewHeight;
+        /// <summary>Maximum auto-matched viewport height. 0 = unlimited.</summary>
         public float maxViewHeight;
 
 #if DOTWEEN
+        /// <summary>Delay before <see cref="MoveItemToIndex"/> animation begins.</summary>
         [Separator("Animation")]
         public float animMoveDelay = 0.8f;
+        /// <summary>Per-item animation duration multiplier — total = items * this.</summary>
         public float animMoveDurationPerItem = 0.2f;
+        /// <summary>Floor on animation duration regardless of distance.</summary>
         public float animMoveMinDuration = 1.0f;
+        /// <summary>Ceiling on animation duration regardless of distance.</summary>
         public float animMoveMaxDuration = 5.0f;
 #endif
 
@@ -53,6 +73,7 @@ namespace RevCore.UI
             scrollView.onValueChanged.AddListener(ScrollBarChanged);
         }
 
+        /// <summary>Assigns a new prefab then forwards to <see cref="Init(int, bool, int)"/>.</summary>
         public void Init(OptimizedScrollItem itemPrefab, int totalItems, bool force, int startIndex)
         {
             prefab = itemPrefab;
@@ -69,6 +90,11 @@ namespace RevCore.UI
                 m_itemsScrolled[i].ManualUpdate();
         }
 
+        /// <summary>
+        /// (Re)builds the scroll view for <paramref name="totalItems"/> items, optionally starting at
+        /// <paramref name="startIndex"/>. Returns cleanly without crashing on <c>totalItems &lt;= 0</c>
+        /// (Phase 3 fix).
+        /// </summary>
         public void Init(int totalItems, bool force, int startIndex = 0)
         {
             if (totalItems == total && !force)
@@ -143,6 +169,7 @@ namespace RevCore.UI
 #endif
         }
 
+        /// <summary>Scrolls to the topmost item. <paramref name="tween"/> animates over a short duration (requires DOTWEEN).</summary>
         public void ScrollToTop(bool tween = false)
         {
             scrollView.StopMovement();
@@ -172,6 +199,7 @@ namespace RevCore.UI
                 scrollView.normalizedPosition = new Vector2(scrollView.normalizedPosition.x, 1);
         }
 
+        /// <summary>Scrolls to the bottommost item. <paramref name="tween"/> animates over a short duration (requires DOTWEEN).</summary>
         public void ScrollToBot(bool tween = false)
         {
             scrollView.StopMovement();
@@ -265,11 +293,18 @@ namespace RevCore.UI
             item.anchoredPosition3D = GetItemAnchoredPos(index);
         }
 
+        /// <summary>Returns the active item pool. Live view.</summary>
         public List<OptimizedScrollItem> GetListItem() => m_itemsScrolled;
 
 #if DOTWEEN
+        /// <summary>
+        /// Scrolls so item <paramref name="index"/> is visible. <paramref name="tween"/> animates the
+        /// transition; <paramref name="overrideDuration"/> overrides the auto-computed duration when
+        /// non-negative. <paramref name="ease"/> sets the easing curve (DOTWEEN only).
+        /// </summary>
         public void ScrollToIndex(int index, bool tween = false, Action onComplete = null, float overrideDuration = -1f, Ease ease = Ease.OutQuad)
 #else
+        /// <summary>Scrolls so item <paramref name="index"/> is visible. <paramref name="tween"/> animates the transition.</summary>
         public void ScrollToIndex(int index, bool tween = false, Action onComplete = null, float overrideDuration = -1f)
 #endif
         {
@@ -320,6 +355,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Coroutine that animates an item visually moving from index <paramref name="a"/> to <paramref name="b"/>. Used for re-order animations.</summary>
         public IEnumerator MoveItemToIndex(int a, int b)
         {
             if (a < 0 || a >= total || b < 0 || b >= total || a == b)
@@ -345,8 +381,11 @@ namespace RevCore.UI
         }
         private AnimRequest? m_pendingAnimRequest;
 
+        /// <summary>True while an <see cref="AnimateItemMove"/> tween is in flight.</summary>
         public bool IsAnimating => m_animCoroutine != null;
+        /// <summary>Fired when an <see cref="AnimateItemMove"/> tween begins.</summary>
         public event Action onAnimationStarted;
+        /// <summary>Fired when an <see cref="AnimateItemMove"/> tween completes (or is cancelled).</summary>
         public event Action onAnimationCompleted;
 
         private void SetItemAlphaForAnim(OptimizedScrollItem item, int index)
@@ -369,6 +408,12 @@ namespace RevCore.UI
                 SetItemAlphaForAnim(item, item.Index);
         }
 
+        /// <summary>
+        /// Animates a clone of the item at <paramref name="fromIndex"/> visually moving to
+        /// <paramref name="toIndex"/>'s position. The clone is destroyed on completion;
+        /// <paramref name="configureClone"/> lets you customize the clone (e.g. swap material)
+        /// before the tween starts. Requires DOTWEEN.
+        /// </summary>
         public void AnimateItemMove(int fromIndex, int toIndex, Action<GameObject> configureClone = null, Action onComplete = null)
         {
             if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= total || toIndex >= total)
@@ -381,6 +426,7 @@ namespace RevCore.UI
             m_animCoroutine = StartCoroutine(IEAnimateItemMove(fromIndex, toIndex, configureClone, onComplete));
         }
 
+        /// <summary>Like <see cref="AnimateItemMove"/> but defers if the scroll view is not yet active or the optimized count is 0. Useful for queued animations during scene transitions.</summary>
         public void QueueAnimateItemMove(int fromIndex, int toIndex, Action<GameObject> configureClone = null, Action onComplete = null)
         {
             if (m_optimizedTotal > 0 && gameObject.activeInHierarchy)
@@ -399,6 +445,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Cancels any in-flight item-move animation, destroys the clone, and restores all items' alpha.</summary>
         public void StopAnimateItemMove()
         {
             DOTween.Kill(ANIM_MOVE_TWEEN_ID);

@@ -10,12 +10,20 @@ using DG.Tweening;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Arranges immediate children in a vertical column with configurable spacing and alignment.
+	/// Supports DOTWEEN-driven animated reflow.
+	/// </summary>
 	public class VerticalAlignmentUI : MonoBehaviour, IAligned
 	{
+		/// <summary>Vertical alignment of the column inside the container.</summary>
 		public enum Alignment
 		{
+			/// <summary>Pin to the top edge.</summary>
 			Top,
+			/// <summary>Pin to the bottom edge.</summary>
 			Bottom,
+			/// <summary>Center within the container.</summary>
 			Center,
 		}
 
@@ -117,6 +125,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <inheritdoc />
 		public void Align()
 		{
 			Init();
@@ -133,6 +142,7 @@ namespace RevCore.UI
 			AlignByTweener(null);
 		}
 
+		/// <inheritdoc />
 		public void AlignByTweener(Action onFinish)
 		{
 			StartCoroutine(IEAlignByTweener(onFinish));

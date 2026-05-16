@@ -9,43 +9,71 @@ using DG.Tweening;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Arranges children in a grid (rows x columns), filling either row-major or column-major based
+	/// on <see cref="tableLayoutType"/>. Supports per-axis alignment, animated reflow, and optional
+	/// auto-resize of the container to fit the laid-out cells.
+	/// </summary>
 	public class TableAlignmentUI : MonoBehaviour, IAligned
 	{
+		/// <summary>Fill direction for the grid.</summary>
 		public enum TableLayoutType
 		{
+			/// <summary>Fill rows first, then wrap to next column.</summary>
 			Horizontal,
+			/// <summary>Fill columns first, then wrap to next row.</summary>
 			Vertical
 		}
 
+		/// <summary>Vertical alignment used when <see cref="tableLayoutType"/> is Vertical.</summary>
 		public enum AlignmentVertical
 		{
+			/// <summary>Anchor to top.</summary>
 			Top,
+			/// <summary>Anchor to bottom.</summary>
 			Bottom,
+			/// <summary>Center vertically.</summary>
 			Center,
 		}
 
+		/// <summary>Horizontal alignment used when <see cref="tableLayoutType"/> is Horizontal.</summary>
 		public enum AlignmentHorizontal
 		{
+			/// <summary>Anchor to left.</summary>
 			Left,
+			/// <summary>Anchor to right.</summary>
 			Right,
+			/// <summary>Center horizontally with default row offset.</summary>
 			Center,
+			/// <summary>Center horizontally, last row anchored to top.</summary>
 			CenterTop,
+			/// <summary>Center horizontally, last row anchored to bottom.</summary>
 			CenterBot,
 		}
 
+		/// <summary>Fill direction.</summary>
 		public TableLayoutType tableLayoutType;
+		/// <summary>Tween duration when calling <see cref="AlignByTweener"/>.</summary>
 		public float tweenTime = 0.25f;
+		/// <summary>Animation easing curve.</summary>
 		public AnimationCurve animCurve;
+		/// <summary>Horizontal spacing between columns.</summary>
 		public float columnDistance;
+		/// <summary>Vertical spacing between rows.</summary>
 		public float rowDistance;
 
+		/// <summary>Vertical alignment (Vertical layout mode).</summary>
 		[Header("Vertical Layout")]
 		public AlignmentVertical verticalLayout;
+		/// <summary>Max rows per column before wrapping (Vertical layout mode).</summary>
 		public int maxRow;
 
+		/// <summary>Horizontal alignment (Horizontal layout mode).</summary>
 		[Header("Horizontal Layout")]
 		public AlignmentHorizontal horizontalLayout;
+		/// <summary>Max columns per row before wrapping (Horizontal layout mode).</summary>
 		public int maxColumn;
+		/// <summary>When true, row index 0 is at the top and indices grow downward.</summary>
 		public bool reverseY = true;
 
 		[Header("Optional Config")]
@@ -91,6 +119,7 @@ namespace RevCore.UI
 				AutoResizeContent();
 		}
 
+		/// <summary>(Re)builds the internal child group cache. Call after changing the active children at runtime.</summary>
 		public void Init()
 		{
 			int totalRow = 0;
@@ -349,6 +378,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <inheritdoc />
 		public void Align()
 		{
 			Init();
@@ -365,6 +395,7 @@ namespace RevCore.UI
 				AutoResizeContent();
 		}
 
+		/// <summary>Resizes the host rect to fit the laid-out cells, honoring <c>m_AutoResizeContentX/Y</c> and <c>m_ContentSizeBonus</c>.</summary>
 		public void AutoResizeContent()
 		{
 			Vector2 childTopRight = default;
@@ -399,6 +430,7 @@ namespace RevCore.UI
 			((RectTransform)transform).sizeDelta = size;
 		}
 
+		/// <inheritdoc />
 		public void AlignByTweener(Action onFinish)
 		{
 			Init();

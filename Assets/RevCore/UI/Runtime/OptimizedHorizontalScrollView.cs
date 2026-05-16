@@ -7,17 +7,31 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Virtualized horizontal scroll view with explicit left/right border supports for visual edges
+    /// that should stay in the scroll area but not get virtualized. See <see cref="OptimizedScrollView"/>
+    /// for the shared lifecycle.
+    /// </summary>
     public class OptimizedHorizontalScrollView : MonoBehaviour
     {
+        /// <summary>The underlying ScrollRect.</summary>
         public ScrollRect scrollView;
+        /// <summary>Content container.</summary>
         public RectTransform container;
+        /// <summary>Visible viewport rect — used to compute how many items fit on screen.</summary>
         public RectTransform viewRect;
+        /// <summary>Prefab cloned for items.</summary>
         public OptimizedScrollItem prefab;
+        /// <summary>Total virtual item count.</summary>
         public int total = 1;
+        /// <summary>Horizontal spacing between items.</summary>
         public float spacing;
+        /// <summary>Optional left edge graphic that participates in layout sizing.</summary>
         public RectTransform borderLeft;
+        /// <summary>Optional right edge graphic that participates in layout sizing.</summary>
         public RectTransform borderRight;
 
+        /// <summary>Shortcut to <c>scrollView.content</c>.</summary>
         public RectTransform content => scrollView.content;
 
         private int m_totalBuffer = 2;
@@ -37,6 +51,7 @@ namespace RevCore.UI
             scrollView.horizontalScrollbar.onValueChanged.AddListener(ScrollBarChanged);
         }
 
+        /// <summary>Assigns a new prefab and (re)initializes for <paramref name="totalItems"/>. See <see cref="Init(int, bool)"/>.</summary>
         public void Init(OptimizedScrollItem itemPrefab, int totalItems, bool force)
         {
             prefab = itemPrefab;
@@ -49,6 +64,11 @@ namespace RevCore.UI
                 m_itemsScrolled[i].ManualUpdate();
         }
 
+        /// <summary>
+        /// (Re)builds the scroll view for <paramref name="totalItems"/>. Returns cleanly without
+        /// crashing on <c>totalItems &lt;= 0</c> (Phase 3 fix). Pass <paramref name="force"/> to rebuild
+        /// when the count hasn't changed.
+        /// </summary>
         public void Init(int totalItems, bool force)
         {
             if (total == totalItems && !force)
@@ -117,6 +137,7 @@ namespace RevCore.UI
             container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewRect.rect.size.x * 0.5f);
         }
 
+        /// <summary>Scrolls to the leftmost item. <paramref name="tween"/> animates over a short duration (requires DOTWEEN).</summary>
         public void ScrollToTop(bool tween = false)
         {
             scrollView.StopMovement();
@@ -140,6 +161,7 @@ namespace RevCore.UI
                 scrollView.horizontalScrollbar.value = 0;
         }
 
+        /// <summary>Scrolls to the rightmost item. <paramref name="tween"/> animates over a short duration (requires DOTWEEN).</summary>
         public void ScrollToBot(bool tween = false)
         {
             scrollView.StopMovement();
@@ -163,11 +185,13 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Forces a re-binding of visible items at the current scroll position.</summary>
         public void RefreshScrollBar()
         {
             ScrollBarChanged(scrollView.horizontalScrollbar.value);
         }
 
+        /// <summary>Recomputes visible item indices at <paramref name="normPos"/> (0..1). Wired to the horizontal scrollbar's onValueChanged.</summary>
         public void ScrollBarChanged(float normPos)
         {
             // Empty scroll view: nothing to layout. Silent no-op — an empty list is a
@@ -198,6 +222,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Grows the content size by <paramref name="totalSlot"/> additional items without rebuilding the existing pool.</summary>
         public void Expand(int totalSlot)
         {
             total += totalSlot;
@@ -227,11 +252,13 @@ namespace RevCore.UI
             item.anchoredPosition3D = m_startPos + m_offsetVec * (index * m_cellSizeX);
         }
 
+        /// <summary>Returns the active item pool. Live view, not a copy.</summary>
         public List<OptimizedScrollItem> GetListItem()
         {
             return m_itemsScrolled;
         }
 
+        /// <summary>Snaps the scrollbar value so <paramref name="index"/> lines up with the left edge of the viewport.</summary>
         public void ScrollToTarget(int index)
         {
             index = Mathf.Clamp(index, 0, total - 1);
@@ -249,6 +276,7 @@ namespace RevCore.UI
             container.anchoredPosition = new Vector2(x, container.anchoredPosition.y);
         }
 
+        /// <summary>Snaps the scrollbar value so <paramref name="index"/> is centered in the viewport.</summary>
         public void CenterChild(int index)
         {
             index = Mathf.Clamp(index, 0, total - 1);
@@ -265,6 +293,7 @@ namespace RevCore.UI
             container.anchoredPosition = new Vector2(x, container.anchoredPosition.y);
         }
 
+        /// <summary>Returns how many fully-visible cells fit in the viewport at the current viewport size.</summary>
         public int TotalFullCellVisible()
         {
             var rectZero = prefab.GetComponent<RectTransform>();

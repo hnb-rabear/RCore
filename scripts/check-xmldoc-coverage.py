@@ -69,6 +69,12 @@ def has_doc_above(lines: list[str], idx: int) -> bool:
         steps += 1
     return seen_summary
 
+INTERNAL_TYPE_RE = re.compile(
+    r"^\s*(?:\[[^\]]*\]\s*)*"
+    r"(?:internal|private|protected)\s+(?:static\s+|sealed\s+|abstract\s+|partial\s+|readonly\s+|unsafe\s+)*"
+    r"(?:class|struct|interface|enum|record|delegate)\s+\w+"
+)
+
 def scan_file(path: Path) -> list[Finding]:
     findings: list[Finding] = []
     try:
@@ -77,6 +83,12 @@ def scan_file(path: Path) -> list[Finding]:
         text = path.read_text(encoding="utf-8-sig", errors="ignore")
     lines = text.splitlines()
     in_block_comment = False
+    # Track whether we're currently inside an `internal` (or implicitly internal) type.
+    # Members of internal types are not part of the public API surface, even if they're declared public.
+    brace_depth = 0
+    # Each entry is the brace_depth INSIDE the internal type's body — we leave when brace_depth drops below it.
+    internal_body_depth: list[int] = []
+    pending_internal = False
     for i, raw in enumerate(lines):
         line = raw
         if in_block_comment:
@@ -87,18 +99,39 @@ def scan_file(path: Path) -> list[Finding]:
             if "*/" not in line:
                 in_block_comment = True
             continue
-        if "public" not in line:
-            continue
-        # skip obvious non-decls
-        stripped = line.strip()
-        if stripped.startswith("//") or stripped.startswith("///"):
-            continue
-        for pat in PATTERNS:
-            m = pat.match(line)
-            if m:
-                if not has_doc_above(lines, i):
-                    findings.append(Finding(path, i + 1, stripped[:120]))
-                break
+
+        # Update brace depth for this line, popping any closed internal scopes.
+        new_brace_depth = brace_depth + line.count("{") - line.count("}")
+        while internal_body_depth and new_brace_depth < internal_body_depth[-1]:
+            internal_body_depth.pop()
+
+        # If a previous line declared an internal type and we've just seen its opening brace,
+        # record the body depth and clear the pending flag.
+        if pending_internal and new_brace_depth > brace_depth:
+            internal_body_depth.append(new_brace_depth)
+            pending_internal = False
+
+        # Detect a new internal-type declaration on this line.
+        if INTERNAL_TYPE_RE.match(line):
+            # If the same line opens its body, record body depth immediately; else defer to next line.
+            if "{" in line and new_brace_depth > brace_depth:
+                internal_body_depth.append(new_brace_depth)
+            else:
+                pending_internal = True
+
+        skip_member = bool(internal_body_depth)
+
+        if "public" in line and not skip_member:
+            stripped = line.strip()
+            if not (stripped.startswith("//") or stripped.startswith("///")):
+                for pat in PATTERNS:
+                    m = pat.match(line)
+                    if m:
+                        if not has_doc_above(lines, i):
+                            findings.append(Finding(path, i + 1, stripped[:120]))
+                        break
+
+        brace_depth = new_brace_depth
     return findings
 
 def is_excluded(path: Path) -> bool:
@@ -133,19 +166,34 @@ def main() -> int:
         if is_excluded(cs):
             continue
         findings = scan_file(cs)
-        # Approximate "public count" by re-scanning: number of lines that match any PATTERN.
+        # Approximate "public count" by re-scanning: number of lines that match any PATTERN,
+        # excluding members inside internal types (which are not part of the public API surface).
         public_count = 0
         text_lines = cs.read_text(encoding="utf-8", errors="ignore").splitlines()
+        brace_depth = 0
+        internal_body_depth: list[int] = []
+        pending_internal = False
         for line in text_lines:
-            if "public" not in line:
-                continue
-            stripped = line.strip()
-            if stripped.startswith("//"):
-                continue
-            for pat in PATTERNS:
-                if pat.match(line):
-                    public_count += 1
-                    break
+            new_brace_depth = brace_depth + line.count("{") - line.count("}")
+            while internal_body_depth and new_brace_depth < internal_body_depth[-1]:
+                internal_body_depth.pop()
+            if pending_internal and new_brace_depth > brace_depth:
+                internal_body_depth.append(new_brace_depth)
+                pending_internal = False
+            if INTERNAL_TYPE_RE.match(line):
+                if "{" in line and new_brace_depth > brace_depth:
+                    internal_body_depth.append(new_brace_depth)
+                else:
+                    pending_internal = True
+            skip_member = bool(internal_body_depth)
+            if "public" in line and not skip_member:
+                stripped = line.strip()
+                if not stripped.startswith("//"):
+                    for pat in PATTERNS:
+                        if pat.match(line):
+                            public_count += 1
+                            break
+            brace_depth = new_brace_depth
         total_public += public_count
         total_undocumented += len(findings)
         if findings:

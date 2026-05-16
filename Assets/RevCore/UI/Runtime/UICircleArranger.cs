@@ -9,26 +9,48 @@ using System.Linq;
 
 namespace RevCore.UI
 {
+	/// <summary>Optional interface a child of a <see cref="UICircleArranger"/> can implement to receive start/finish callbacks during animated arrangement.</summary>
 	public interface ITweenItem
 	{
+		/// <summary>Called when the per-item tween starts.</summary>
 		void OnStart();
+		/// <summary>Called when the per-item tween completes.</summary>
 		void OnFinish();
 	}
 
+	/// <summary>
+	/// Arranges children on one or two concentric circles. Used for radial menus and "card fan" UI.
+	/// Provides three animation entry points: instant <c>Arrange</c>, edge-to-target sweep
+	/// (<see cref="ArrangeFromEdgeWithTween"/>), and center-to-target burst with curves
+	/// (<see cref="ArrangeFromCenterWithTween"/>).
+	/// </summary>
 	public class UICircleArranger : MonoBehaviour
 	{
+		/// <summary>Outer ring radius in local units.</summary>
 		public float radius = 500f;
+		/// <summary>Distance between the outer and inner rings.</summary>
 		public float radiusStep = 200f;
+		/// <summary>When true, each child rotates so its local Y axis points outward.</summary>
 		public bool enableRotation;
+		/// <summary>Tween duration in seconds.</summary>
 		public float tweenDuration = 0.4f;
+		/// <summary>Maximum angular gap between adjacent children (degrees).</summary>
 		[Range(0, 90)] public float maxDegreeBetween = 30;
+		/// <summary>Start angle in degrees (used when <see cref="centerOnTop"/> is false).</summary>
 		[Range(0, 360)] public float startDegree = 45;
+		/// <summary>Total arc covered by the children. 0 or 360 means full circle.</summary>
 		[Range(0, 360)] public float maxDegree = 90;
+		/// <summary>When true, layout is centered around the top (90°). Otherwise starts at <see cref="startDegree"/>.</summary>
 		public bool centerOnTop = true;
+		/// <summary>Stagger between consecutive item tweens (seconds).</summary>
 		public float emitInterval = 0.03f;
+		/// <summary>Curve evaluated 0..1 controlling each child's scale during the tween.</summary>
 		public AnimationCurve scaleOverLifeTime;
+		/// <summary>Curve evaluated 0..1 controlling X movement during the tween.</summary>
 		public AnimationCurve positionXOverMoveTime;
+		/// <summary>Curve evaluated 0..1 controlling Y movement during the tween.</summary>
 		public AnimationCurve positionYOverMoveTime;
+		/// <summary>Children excluded from arrangement (e.g. a center anchor).</summary>
 		public RectTransform[] exceptions;
 
 		private List<RectTransform> m_targets;
@@ -133,6 +155,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Animates items sweeping in from the edge of the layout. <paramref name="leftToRight"/> picks the direction.</summary>
 		public void ArrangeFromEdgeWithTween(bool leftToRight)
 		{
 			CalculatePositions();
@@ -186,6 +209,7 @@ namespace RevCore.UI
 		}
 
 
+		/// <summary>Animates items bursting outward from center using the position/scale curves. <paramref name="pCallback"/> fires when the last item finishes.</summary>
 		public void ArrangeFromCenterWithTween(Action pCallback)
 		{
 			CalculatePositions();
@@ -301,6 +325,7 @@ namespace RevCore.UI
 		}
 #endif
 
+		/// <summary>Animates items from their current positions to the freshly computed target positions. Use after the child set changes.</summary>
 		public void RefreshTargetPositionsWithTween()
 		{
 			CalculatePositions();

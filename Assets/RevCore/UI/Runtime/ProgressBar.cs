@@ -4,26 +4,47 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Progress / fill bar with optional rank and value text. Supports two fill modes: scaled
+	/// foreground rect (<see cref="fillByBarSize"/> = true) or <see cref="Image"/> fill amount.
+	/// Display modes: numeric (<c>value/max</c>), percentage (<see cref="isPercent"/>), or
+	/// countdown timer (<see cref="isTimeCountdown"/>).
+	/// </summary>
 	public class ProgressBar : MonoBehaviour
 	{
+		/// <summary>Axis the foreground bar grows along when <see cref="fillByBarSize"/> is enabled.</summary>
 		public enum FillDirection
 		{
+			/// <summary>Bar shrinks to the left.</summary>
 			Left,
+			/// <summary>Bar grows to the right (default).</summary>
 			Right,
+			/// <summary>Bar grows upward.</summary>
 			Top,
+			/// <summary>Bar shrinks downward.</summary>
 			Bottom
 		}
 
+		/// <summary>Background graphic.</summary>
 		public Image imgBackground;
+		/// <summary>Foreground (fill) graphic.</summary>
 		public Image imgProgressValue;
+		/// <summary>Optional value label.</summary>
 		public TextMeshProUGUI txtValue;
+		/// <summary>Optional rank label.</summary>
 		public TextMeshProUGUI txtRank;
+		/// <summary>When true, fills by resizing the foreground rect rather than animating <see cref="Image.fillAmount"/>.</summary>
 		public bool fillByBarSize;
+		/// <summary>Axis the foreground bar grows along. Used only when <see cref="fillByBarSize"/> is true.</summary>
 		[Tooltip("If fillByBarSize = true")] public FillDirection fillDirection;
+		/// <summary>Minimum displayed fill ratio (0..1). Lets you reserve a non-empty floor on the visual.</summary>
 		[Range(0, 1)] public float minFillRatio = 0f;
+		/// <summary>Maximum displayed fill ratio (0..1). Lets you cap the visual short of full.</summary>
 		[Range(0, 1)] public float maxFillRatio = 1f;
 		[SerializeField, Range(0f, 1f)] private float mFill;
+		/// <summary>When true, <see cref="txtValue"/> renders the remaining time using <see cref="TimeHelper.FormatHhMmSs"/>.</summary>
 		public bool isTimeCountdown;
+		/// <summary>When true, <see cref="txtValue"/> renders a percentage rather than <c>value/max</c>.</summary>
 		public bool isPercent;
 		[SerializeField] private float mWidthOffset;
 		[SerializeField] private float mHeightOffset;
@@ -34,6 +55,7 @@ namespace RevCore.UI
 		private Vector2 m_backgroundSize;
 		private RectTransform m_rectProgressValue;
 
+		/// <summary>Normalized fill (0..1). Setter applies the min/max-ratio mapping before drawing.</summary>
 		public virtual float FillAmount
 		{
 			get => mFill;
@@ -45,6 +67,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Current value. Updates <see cref="FillAmount"/> and refreshes the value label.</summary>
 		public virtual float Value
 		{
 			get => mValue;
@@ -60,6 +83,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Maximum value. Setting it recomputes the fill ratio.</summary>
 		public virtual float Max
 		{
 			get => mMax;
@@ -74,6 +98,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Optional rank value displayed in <see cref="txtRank"/>. Hidden when negative.</summary>
 		public virtual int Rank
 		{
 			get => m_rank;
@@ -89,6 +114,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Returns the bar's usable size (background size minus the inspector-defined width/height offsets).</summary>
 		public Vector2 BarSize() => new(imgBackground.rectTransform.rect.width - mWidthOffset, imgBackground.rectTransform.rect.height - mHeightOffset);
 
 		protected virtual void FillBar(float value)
@@ -115,6 +141,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Bulk active/inactive on every owned graphic (background, foreground, value, rank).</summary>
 		public virtual void Active(bool value)
 		{
 			imgBackground.gameObject.SetActive(value);
