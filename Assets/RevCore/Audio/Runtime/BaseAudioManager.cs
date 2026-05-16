@@ -104,7 +104,7 @@ namespace RevCore
         public void SetMasterVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
 #if DOTWEEN
-            m_masterTweener.Kill();
+            m_masterTweener?.Kill();
 #endif
             if (m_masterVolume == value)
             {
@@ -200,7 +200,7 @@ namespace RevCore
         public void SetMusicVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
 #if DOTWEEN
-            m_musicTweener.Kill();
+            m_musicTweener?.Kill();
 #endif
             EnsureAudioSources();
 
@@ -380,7 +380,7 @@ namespace RevCore
         public void SetSFXVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
 #if DOTWEEN
-            m_sfxTweener.Kill();
+            m_sfxTweener?.Kill();
 #endif
             if (value == m_sfxVolume)
             {
