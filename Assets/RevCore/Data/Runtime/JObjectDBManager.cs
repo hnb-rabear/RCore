@@ -40,7 +40,7 @@ namespace RevCore
             m_pauseState = pause ? 0 : 1;
             m_dataCollection.OnPause(pause);
             if (pause && m_saveOnPause && m_enableAutoSave)
-                Save(true);
+                SaveForced();
         }
 
         protected virtual void OnApplicationFocus(bool hasFocus) => OnApplicationPause(!hasFocus);
@@ -48,7 +48,7 @@ namespace RevCore
         protected virtual void OnApplicationQuit()
         {
             if (m_initialized && m_saveOnQuit && m_enableAutoSave)
-                Save(true);
+                SaveForced();
         }
 
         public virtual void Init()
@@ -82,6 +82,24 @@ namespace RevCore
                     m_saveCountdown = m_saveDelayCustom;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Saves immediately, bypassing the 200 ms throttle that <see cref="Save"/>(now: true)
+        /// applies. Intended for end-of-life events (application pause, quit) and any
+        /// caller that needs a guaranteed write before yielding control. No-op when
+        /// the manager has not been initialized.
+        /// </summary>
+        /// <returns><c>true</c> when the write was issued; <c>false</c> when the manager
+        /// was not yet initialized.</returns>
+        public virtual bool SaveForced()
+        {
+            if (!m_initialized) return false;
+            m_dataCollection.Save();
+            m_saveDelayCustom = 0;
+            m_saveCountdown = 0;
+            m_lastSave = Time.unscaledTime;
+            return true;
         }
 
         public void EnableAutoSave(bool value) => m_enableAutoSave = value;
