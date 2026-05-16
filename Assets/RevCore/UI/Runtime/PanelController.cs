@@ -167,6 +167,15 @@ namespace RevCore.UI
             if (transform.parent != ParentPanel.transform)
                 transform.SetParent(ParentPanel.transform);
 
+            // Activate the GameObject before starting the coroutine. Unity refuses
+            // StartCoroutine on inactive objects and logs an error otherwise; with panels
+            // typically beginning hidden, every Show() on a fresh panel hit that path and
+            // the transition never ran. SetActivePanel(true) inside IE_Show stays — it is
+            // idempotent for active GameObjects, so subclass overrides still see the
+            // activation hook at the same point in the transition lifecycle.
+            if (!gameObject.activeSelf)
+                gameObject.SetActive(true);
+
             m_transitionCoroutine = StartCoroutine(IE_Show(pOnDidShow));
         }
 
