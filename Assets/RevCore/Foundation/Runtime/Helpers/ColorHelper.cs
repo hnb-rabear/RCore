@@ -20,10 +20,33 @@ namespace RevCore
 
 	public static class ColorHelper
 	{
+		/// <summary>
+		/// Parses an HTML-style hex color string. Returns <see cref="Color.clear"/> on any failure
+		/// (invalid format, null, or empty input) without raising — a silent fallback retained for
+		/// backward compatibility. Prefer <see cref="TryHexToColor"/> in new code.
+		/// </summary>
 		public static Color HexToColor(string hex)
 		{
 			ColorUtility.TryParseHtmlString(hex, out var color);
 			return color;
+		}
+
+		/// <summary>
+		/// Tries to parse an HTML-style hex color string. Returns <c>true</c> on success and writes
+		/// the parsed color to <paramref name="color"/>; on failure returns <c>false</c> with
+		/// <paramref name="color"/> set to <see cref="Color.clear"/>.
+		/// </summary>
+		/// <param name="hex">Hex string in any form accepted by <see cref="ColorUtility.TryParseHtmlString"/>
+		/// (e.g. <c>#RRGGBB</c>, <c>#RRGGBBAA</c>, <c>red</c>). May be <c>null</c>.</param>
+		/// <param name="color">The parsed color when successful; otherwise <see cref="Color.clear"/>.</param>
+		public static bool TryHexToColor(string hex, out Color color)
+		{
+			if (string.IsNullOrEmpty(hex))
+			{
+				color = Color.clear;
+				return false;
+			}
+			return ColorUtility.TryParseHtmlString(hex, out color);
 		}
 	}
 }

@@ -1,1 +1,2 @@
 #nullable enable
+RevCore.ColorHelper.TryHexToColor(string hex, out UnityEngine.Color color) -> bool

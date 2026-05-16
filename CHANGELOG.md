@@ -6,6 +6,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
+- `ColorHelper.TryHexToColor(string, out Color)` — explicit-failure variant of `HexToColor`. Returns `false` and `Color.clear` on invalid/null/empty input. The existing `HexToColor` is unchanged.
 - Governance docs under `docs/contributing/`: API design guidelines, semver policy, deprecation policy, release checklist, public API guide.
 - GitHub Actions workflows: Unity test matrix (2022 LTS + Unity 6), lint, docs coverage, release drafter.
 - Issue templates (bug, feature, question) and PR template.
