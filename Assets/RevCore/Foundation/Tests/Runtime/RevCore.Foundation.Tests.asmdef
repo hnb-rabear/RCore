@@ -4,7 +4,8 @@
   "references": [
     "RevCore.Foundation.Runtime",
     "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "UnityEditor.TestRunner",
+    "Unity.PerformanceTesting"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
