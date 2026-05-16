@@ -25,8 +25,15 @@ namespace RevCore.Tests
 		public void Publish_100_listeners_10k_events()
 		{
 			var bus = new EventBus();
+			// Per-iteration `idx` capture forces a distinct closure instance per Subscribe call.
+			// Without it the compiler caches the static `_ => { }` delegate and Subscribe's
+			// dedup short-circuits all 100 calls down to 1 listener — quietly turning this
+			// into a 1-listener benchmark.
 			for (int i = 0; i < 100; i++)
-				bus.Subscribe<EvtA>(_ => { });
+			{
+				int idx = i;
+				bus.Subscribe<EvtA>(_ => { _ = idx; });
+			}
 
 			Measure.Method(() =>
 				{
@@ -47,11 +54,13 @@ namespace RevCore.Tests
 		public void ListenerCount_5_types_5_listeners_each_1k_lookups()
 		{
 			var bus = new EventBus();
-			for (int i = 0; i < 5; i++) bus.Subscribe<EvtA>(_ => { });
-			for (int i = 0; i < 5; i++) bus.Subscribe<EvtB>(_ => { });
-			for (int i = 0; i < 5; i++) bus.Subscribe<EvtC>(_ => { });
-			for (int i = 0; i < 5; i++) bus.Subscribe<EvtD>(_ => { });
-			for (int i = 0; i < 5; i++) bus.Subscribe<EvtE>(_ => { });
+			// Per-iteration `idx` capture forces a distinct delegate per Subscribe call — see
+			// Publish_100_listeners_10k_events above for the reason.
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtA>(_ => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtB>(_ => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtC>(_ => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtD>(_ => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtE>(_ => { _ = idx; }); }
 
 			Measure.Method(() =>
 				{
