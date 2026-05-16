@@ -11,7 +11,17 @@ namespace RevCore
     {
         private const string CollectionsKey = "JObjectDB";
 
+        /// <summary>
+        /// Direct access to the in-memory collection map. Public for backward compatibility only;
+        /// will become private in v1.0. Use <see cref="GetCollection"/>, <see cref="CreateCollection{T}"/>,
+        /// <see cref="GetCollectionKeys"/>, or <see cref="GetAllData"/> instead. Direct mutation of this
+        /// dictionary bypasses key persistence (<c>SaveCollectionKey</c>) and will silently lose data
+        /// on the next <see cref="Reload"/>.
+        /// </summary>
+        [Obsolete("Direct field access will be made private in v1.0. Use GetCollection, CreateCollection, GetCollectionKeys, or GetAllData instead.", error: false)]
         public static Dictionary<string, JObjectData> collections = new();
+
+#pragma warning disable CS0618 // Self-references to the obsolete field below are intentional during the deprecation window.
 
         public static JObjectData GetCollection(string key)
         {
@@ -187,5 +197,6 @@ namespace RevCore
             return Path.Combine(Application.persistentDataPath, name + ".json");
 #endif
         }
+#pragma warning restore CS0618
     }
 }

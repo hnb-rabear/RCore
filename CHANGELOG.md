@@ -4,6 +4,10 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Deprecated
+
+- `JObjectDB.collections` field marked `[Obsolete]` (Stage 1 per `DEPRECATION_POLICY.md`). Direct mutation of this static dictionary bypasses key persistence and is the source of "save file silently drops a collection after reload" reports. Use `GetCollection`, `CreateCollection`, `GetCollectionKeys`, or `GetAllData` instead. Field will be made private in v1.0.
+
 ### Fixed
 
 - `OptimizedScrollView.Initialize`, `OptimizedHorizontalScrollView.Init`, `OptimizedVerticalScrollView.Init` now early-return cleanly on `totalItems <= 0` (free items, zero out cached state, collapse container size). Previously they fell through to indexing `m_itemsScrolled[0]`, which crashed when the prefab list was empty. The empty-list state is a legitimate intermediate during async data loads and must not raise.
