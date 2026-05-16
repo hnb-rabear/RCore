@@ -62,3 +62,7 @@ Rubbish
 # Crashlytics generated file
 crashlytics-build.properties
 
+# Python bytecode (from scripts/ tooling)
+__pycache__/
+*.pyc
+
