@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -7,6 +9,9 @@ namespace RevCore.UI.Tests
     [TestFixture]
     public class PanelControllerTests
     {
+        private static readonly FieldInfo s_sessionShowCountsField = typeof(PanelController)
+            .GetField("s_sessionShowCounts", BindingFlags.NonPublic | BindingFlags.Static);
+
         private GameObject m_rootObject;
         private TestPanelRoot m_root;
         private GameObject m_panelObject;
@@ -15,6 +20,12 @@ namespace RevCore.UI.Tests
         [SetUp]
         public void SetUp()
         {
+            // PanelController.s_sessionShowCounts is a process-lifetime static dictionary.
+            // Earlier tests in this fixture push m_panel through Show(), which increments
+            // the counter; without resetting, SessionShowCount_starts_at_zero observes the
+            // leak. Reset via reflection — no test-only public API needed.
+            ((IDictionary)s_sessionShowCountsField.GetValue(null)).Clear();
+
             m_rootObject = new GameObject("panel-root-test");
             m_root = m_rootObject.AddComponent<TestPanelRoot>();
 

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace RevCore.UI.Tests
 {
@@ -77,6 +78,9 @@ namespace RevCore.UI.Tests
         [Test]
         public void OnResolvePanelByType_returns_null_by_default()
         {
+            // Base PanelRoot.OnResolvePanelByType returns null; PushPanelHandler then logs
+            // an error and skips the push. Pin both observable effects.
+            LogAssert.Expect(LogType.Error, "Panel of type TestPanel not resolved by TestPanelRoot.");
             PanelRoot.PushInternalPanel<PanelController>(typeof(TestPanelRoot), typeof(TestPanel));
 
             Assert.AreEqual(0, m_root.StackCount);
