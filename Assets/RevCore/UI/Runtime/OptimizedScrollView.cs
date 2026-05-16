@@ -52,6 +52,19 @@ namespace RevCore.UI
             if (totalItems == total && !force)
                 return;
 
+            if (totalItems <= 0)
+            {
+                if (m_itemsScrolled != null)
+                    m_itemsScrolled.Free(container);
+                m_itemsRect = new List<RectTransform>();
+                total = 0;
+                m_optimizedTotal = 0;
+                container.sizeDelta = Direction == ScrollDirection.Horizontal
+                    ? new Vector2(0, container.sizeDelta.y)
+                    : new Vector2(container.sizeDelta.x, 0);
+                return;
+            }
+
             m_itemsRect = new List<RectTransform>();
 
             if (m_itemsScrolled == null || m_itemsScrolled.Count == 0)

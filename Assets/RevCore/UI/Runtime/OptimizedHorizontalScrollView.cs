@@ -54,6 +54,17 @@ namespace RevCore.UI
             if (total == totalItems && !force)
                 return;
 
+            if (totalItems <= 0)
+            {
+                if (m_itemsScrolled != null)
+                    m_itemsScrolled.Free(container);
+                m_itemsRect = new List<RectTransform>();
+                total = 0;
+                m_optimizedTotal = 0;
+                container.sizeDelta = new Vector2(0, container.sizeDelta.y);
+                return;
+            }
+
             m_itemsRect = new List<RectTransform>();
 
             if (m_itemsScrolled == null || m_itemsScrolled.Count == 0)
@@ -159,11 +170,10 @@ namespace RevCore.UI
 
         public void ScrollBarChanged(float normPos)
         {
+            // Empty scroll view: nothing to layout. Silent no-op — an empty list is a
+            // legitimate state (especially during async data loads), not a bug.
             if (m_optimizedTotal == 0)
-            {
-                Debug.LogError("m_OptimizedTotal should not be Zero");
                 return;
-            }
 
             normPos += m_rightBarOffset * normPos;
             normPos -= m_leftBarOffset * (1 - normPos);

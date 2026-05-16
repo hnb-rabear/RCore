@@ -6,6 +6,8 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- `OptimizedScrollView.Initialize`, `OptimizedHorizontalScrollView.Init`, `OptimizedVerticalScrollView.Init` now early-return cleanly on `totalItems <= 0` (free items, zero out cached state, collapse container size). Previously they fell through to indexing `m_itemsScrolled[0]`, which crashed when the prefab list was empty. The empty-list state is a legitimate intermediate during async data loads and must not raise.
+- `OptimizedHorizontalScrollView.ScrollBarChanged` no longer logs an error when `m_optimizedTotal == 0` — that condition is the legitimate empty-scroll state, not a programming bug. The horizontal variant now matches the existing silent guards on `OptimizedScrollView` and `OptimizedVerticalScrollView`.
 - `BaseAudioManager.SetMasterVolume` / `SetMusicVolume` / `SetSFXVolume` now null-check the cached `Tweener` before calling `Kill()`. Calling these volume setters before any fade had ever started (e.g. on the very first frame, or after a domain reload that nulled the tween fields) would throw a `NullReferenceException` when DOTWEEN was enabled. Guarded with `?.Kill()`.
 
 ### Added
