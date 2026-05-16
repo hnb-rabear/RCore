@@ -7,12 +7,25 @@ using DG.Tweening;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Extended <see cref="ToggleGroup"/> that animates a shared "selector" background to the rect of
+    /// the active toggle — common in segmented controls and tab bars. With DOTWEEN, the move tweens
+    /// over <paramref name="tweenDuration"/>; otherwise snaps via a short coroutine.
+    /// </summary>
     public class CustomToggleGroup : ToggleGroup
     {
+        /// <summary>The selector graphic that follows the active toggle.</summary>
         public RectTransform dynamicBackground;
+        /// <summary>Match the selector's height to the active toggle's height.</summary>
         public bool resizeY = true;
+        /// <summary>Match the selector's width to the active toggle's width.</summary>
         public bool resizeX = true;
 
+        /// <summary>
+        /// Animates <see cref="dynamicBackground"/> to <paramref name="target"/>'s anchored position and
+        /// size. <paramref name="tweenDuration"/> = 0 (or out-of-play-mode) snaps; non-zero tweens
+        /// when DOTWEEN is available.
+        /// </summary>
         public void SetTarget(RectTransform target, float tweenDuration = 0)
         {
             if (dynamicBackground == null)
@@ -77,6 +90,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Bulk-sets <see cref="Selectable.interactable"/> on every toggle in the group.</summary>
         public void SetToggleInteractable(bool value)
         {
             foreach (var toggle in m_Toggles)

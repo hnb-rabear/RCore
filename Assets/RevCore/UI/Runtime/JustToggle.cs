@@ -11,58 +11,98 @@ using UnityEngine.UI;
 namespace RevCore.UI
 {
     [AddComponentMenu("RevCore/UI/JustToggle")]
+    /// <summary>
+    /// Extended Unity <see cref="Toggle"/> with tween-driven on/off state visuals: size, position,
+    /// color, and sprite swaps animated over <see cref="tweenTime"/> seconds (with DOTWEEN). Plays a
+    /// named SFX on toggle. Supports an "isLocked" state that swallows clicks and dispatches
+    /// <see cref="onClickOnLock"/> instead.
+    /// </summary>
     public class JustToggle : Toggle
     {
+        /// <summary>Authored size transition between on/off states for a target <see cref="RectTransform"/> or <see cref="UnityEngine.UI.LayoutElement"/>.</summary>
         [Serializable]
         public class SizeTransition
         {
+            /// <summary>Target rect transform to resize.</summary>
             public RectTransform target;
+            /// <summary>Optional layout element that animates instead (overrides direct rect resize).</summary>
             public LayoutElement layoutElement;
+            /// <summary>Size when the toggle is on.</summary>
             public Vector3 on;
+            /// <summary>Size when the toggle is off.</summary>
             public Vector3 off;
         }
 
+        /// <summary>Authored local-position transition between on/off states.</summary>
         [Serializable]
         public class PositionTransition
         {
+            /// <summary>Target rect transform to move.</summary>
             public RectTransform target;
+            /// <summary>Position when the toggle is on.</summary>
             public Vector3 on;
+            /// <summary>Position when the toggle is off.</summary>
             public Vector3 off;
         }
 
+        /// <summary>Authored color transition between on/off states.</summary>
         [Serializable]
         public class ColorTransition
         {
+            /// <summary>Target graphic to tint.</summary>
             public MaskableGraphic target;
+            /// <summary>Color when the toggle is on.</summary>
             public Color on;
+            /// <summary>Color when the toggle is off.</summary>
             public Color off;
         }
 
+        /// <summary>Authored sprite swap between on/off states. Snaps; no tween.</summary>
         [Serializable]
         public class SpriteTransition
         {
+            /// <summary>Image whose sprite is replaced.</summary>
             public Image target;
+            /// <summary>Sprite shown when the toggle is on.</summary>
             public Sprite on;
+            /// <summary>Sprite shown when the toggle is off.</summary>
             public Sprite off;
         }
 
+        /// <summary>Background image (typically the toggle frame). Optional.</summary>
         public Image imgBackground;
+        /// <summary>Label text (TMP). Optional.</summary>
         public TextMeshProUGUI txtLabel;
+        /// <summary>RectTransforms enabled while the toggle is on.</summary>
         public List<RectTransform> contentsActive;
+        /// <summary>RectTransforms enabled while the toggle is off.</summary>
         public List<RectTransform> contentsInactive;
+        /// <summary>SFX clip played when toggling on.</summary>
         public string sfxClip = "button";
+        /// <summary>SFX clip played when toggling off.</summary>
         public string sfxClipOff = "button";
+        /// <summary>Apply a scale-bounce effect on press.</summary>
         public bool scaleBounceEffect = true;
+        /// <summary>Animate the toggle's own size between <see cref="sizeActive"/> and <see cref="sizeInactive"/>.</summary>
         public bool enableSizeSwitch;
+        /// <summary>Toggle's own rect size when on (used with <see cref="enableSizeSwitch"/>).</summary>
         public Vector2 sizeActive;
+        /// <summary>Toggle's own rect size when off (used with <see cref="enableSizeSwitch"/>).</summary>
         public Vector2 sizeInactive;
+        /// <summary>Tween duration in seconds for size/position/color transitions.</summary>
         public float tweenTime = 0.3f;
+        /// <summary>List of size transitions to play on toggle.</summary>
         public SizeTransition[] sizeTransitions;
+        /// <summary>List of position transitions to play on toggle.</summary>
         public PositionTransition[] positionTransitions;
+        /// <summary>List of color transitions to play on toggle.</summary>
         public ColorTransition[] colorTransitions;
+        /// <summary>List of sprite swaps to apply on toggle (snap, no tween).</summary>
         public SpriteTransition[] spriteTransitions;
 
+        /// <summary>When true, clicks dispatch <see cref="onClickOnLock"/> and don't toggle the value.</summary>
         [ReadOnly] public bool isLocked;
+        /// <summary>Invoked when the toggle is clicked while <see cref="isLocked"/> is true. Useful for "unlock me" prompts.</summary>
         public Action onClickOnLock;
 
         private CustomToggleGroup m_customToggleGroup;
@@ -70,6 +110,7 @@ namespace RevCore.UI
         private Vector2 m_initialScale;
         private bool m_clicked;
 
+        /// <summary>Wraps <see cref="Toggle.isOn"/> with a setter that forces <c>onValueChanged</c> to fire even when bypassing the toggle's normal event suppression.</summary>
         public bool IsOn
         {
             get => isOn;
@@ -189,6 +230,7 @@ namespace RevCore.UI
             onValueChanged.RemoveListener(OnValueChanged);
         }
 
+        /// <inheritdoc />
         public override void OnPointerClick(PointerEventData eventData)
         {
             if (isLocked)
@@ -200,6 +242,7 @@ namespace RevCore.UI
             base.OnPointerClick(eventData);
         }
 
+        /// <inheritdoc />
         public override void OnPointerDown(PointerEventData eventData)
         {
             base.OnPointerDown(eventData);
@@ -221,6 +264,7 @@ namespace RevCore.UI
 #endif
         }
 
+        /// <inheritdoc />
         public override void OnPointerUp(PointerEventData eventData)
         {
             base.OnPointerUp(eventData);

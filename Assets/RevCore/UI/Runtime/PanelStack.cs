@@ -3,12 +3,26 @@ using UnityEngine;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Stack-based panel host. <see cref="PanelController"/> instances push and pop on this stack;
+    /// the top of the stack is the visible panel, the rest are hidden but in memory. Supports nested
+    /// stacks: a <see cref="PanelStack"/> can itself host child panels via <see cref="ParentPanel"/>.
+    /// </summary>
+    /// <remarks>
+    /// Caches instantiated panels two ways: regular panels are cached by prefab instance id (so the
+    /// same prefab maps to one runtime instance), while <see cref="PanelController.useOnce"/> panels
+    /// get a single dedicated cache slot, replaced on each <see cref="CreatePanel{T}"/> call.
+    /// </remarks>
     public abstract class PanelStack : MonoBehaviour
     {
+        /// <summary>How a new panel relates to the current top.</summary>
         public enum PushMode
         {
+            /// <summary>Layer the new panel above the current one (current stays in stack).</summary>
             OnTop,
+            /// <summary>Replace the current top — pops then pushes.</summary>
             Replacement,
+            /// <summary>Queue the panel for after the stack drains.</summary>
             Queued,
         }
 
@@ -16,9 +30,13 @@ namespace RevCore.UI
         private Dictionary<int, PanelController> m_cachedOnceUsePanels = new();
         private Dictionary<int, PanelController> m_createdPanels = new();
 
+        /// <summary>The enclosing stack, when this stack is nested inside a <see cref="PanelController"/>. <c>null</c> for the root.</summary>
         public PanelStack ParentPanel { get; private set; }
+
+        /// <summary>The panel currently at the top of the stack (the visible one), or <c>null</c> if the stack is empty.</summary>
         public virtual PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 
+        /// <summary>Index of this stack within its parent's stack — 0 for the bottom-most, parent's count for an unparented stack.</summary>
         public int Index
         {
             get
@@ -36,6 +54,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Z-order in the parent stack — top of stack returns 1, deeper panels return higher numbers.</summary>
         public int DisplayOrder
         {
             get
@@ -46,6 +65,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Number of panels currently in this stack.</summary>
         public int StackCount => panelStack?.Count ?? 0;
 
         protected virtual void Awake()
@@ -56,6 +76,12 @@ namespace RevCore.UI
                 ParentPanel = null;
         }
 
+        /// <summary>
+        /// Returns a runtime instance for <paramref name="pPanel"/>, instantiating from the prefab on
+        /// first request and caching for reuse. Reassigns <paramref name="pPanel"/> by reference to
+        /// the cached instance so callers don't have to maintain prefab vs instance distinction.
+        /// <see cref="PanelController.useOnce"/> panels are instantiated fresh on every call.
+        /// </summary>
         public T CreatePanel<T>(ref T pPanel) where T : PanelController
         {
             if (pPanel == null)
@@ -111,16 +137,22 @@ namespace RevCore.UI
             return pOriginal;
         }
 
+        /// <summary>Walks up the nested stacks to return the outermost <see cref="PanelStack"/>.</summary>
         public PanelStack GetRootPanel()
         {
             return ParentPanel != null ? ParentPanel.GetRootPanel() : this;
         }
 
+        /// <summary>Walks down through top panels to return the deepest visible <see cref="PanelStack"/>.</summary>
         public PanelStack GetHighestPanel()
         {
             return TopPanel != null ? TopPanel.GetHighestPanel() : this;
         }
 
+        /// <summary>
+        /// Pushes <paramref name="pPanel"/>, optionally keeping the current top in the stack
+        /// (<paramref name="keepCurrentInStack"/>). Returns the resolved instance.
+        /// </summary>
         public virtual T PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) where T : PanelController
         {
             var panel = CreatePanel(ref pPanel);
@@ -128,6 +160,11 @@ namespace RevCore.UI
             return panel;
         }
 
+        /// <summary>
+        /// Concrete-instance push (no prefab resolution). The current top is hidden first; when its
+        /// hide animation completes, the new panel is shown. <paramref name="instantPopAndPush"/>
+        /// controls whether the show happens immediately or after the hide.
+        /// </summary>
         public void PushPanel(PanelController panel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true)
         {
             if (panel == null)
@@ -258,6 +295,11 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>
+        /// Pushes <paramref name="pPanel"/> above the current top without hiding the current top
+        /// (overlay mode). When <paramref name="hidePusher"/> is true, the current top is hidden by
+        /// the parent stack instead.
+        /// </summary>
         public virtual T PushPanelToTop<T>(ref T pPanel, bool hidePusher = false) where T : PanelController
         {
             if (!hidePusher || ParentPanel == null)
@@ -286,12 +328,14 @@ namespace RevCore.UI
             OnAnyChildShow(panel);
         }
 
+        /// <summary>Clears the entire stack, then pushes <paramref name="panel"/>. Locked panels are preserved.</summary>
         public void PopAllThenPush(PanelController panel)
         {
             PopAllPanels();
             PushPanel(panel, false);
         }
 
+        /// <summary>Pops every panel except the bottom one. Locked panels are preserved in their original order.</summary>
         public void PopTillOneLeft()
         {
             var lockedPanels = new List<PanelController>();
@@ -321,6 +365,7 @@ namespace RevCore.UI
                 OnAnyChildHide(lastTopPanel);
         }
 
+        /// <summary>Pops panels off the top until — and including — <paramref name="panel"/> has been popped.</summary>
         public void PopTillNoPanel(PanelController panel)
         {
             if (!panelStack.Contains(panel))
@@ -360,6 +405,7 @@ namespace RevCore.UI
                 OnAnyChildHide(lastTopPanel);
         }
 
+        /// <summary>Pops panels off the top until <paramref name="panel"/> is at the top (does not pop <paramref name="panel"/> itself).</summary>
         public void PopTillPanel(PanelController panel)
         {
             if (!panelStack.Contains(panel))
@@ -402,6 +448,7 @@ namespace RevCore.UI
                 OnAnyChildHide(curTopPanel);
         }
 
+        /// <summary>Pops every panel off the stack. Locked panels remain (pushed back in their original order).</summary>
         public virtual void PopAllPanels()
         {
             var lockedPanels = new List<PanelController>();
@@ -425,6 +472,7 @@ namespace RevCore.UI
                 OnAnyChildHide(lastTopPanel);
         }
 
+        /// <summary>Recursive pop — pops the deepest nested top first, working back up to this stack.</summary>
         public void PopChildrenThenParent()
         {
             if (TopPanel == null)
