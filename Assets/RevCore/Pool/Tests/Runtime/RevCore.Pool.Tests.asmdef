@@ -9,7 +9,7 @@
     "UnityEditor.TestRunner",
     "Unity.PerformanceTesting"
   ],
-  "includePlatforms": [],
+  "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": true,

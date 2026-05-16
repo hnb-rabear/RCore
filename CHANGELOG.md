@@ -10,6 +10,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- All 8 RevCore test asmdef now set `"includePlatforms": ["Editor"]` so tests appear in the Test Runner **EditMode** tab instead of PlayMode. All tests are pure `[Test]` (no `[UnityTest]`), and benchmark tests use `Measure.Method` (no `Measure.Frames`), so EditMode is safe. Previously tests defaulted to PlayMode, leaving the CI `editmode` matrix job discovering zero RevCore tests.
 - `OptimizedScrollView.Initialize`, `OptimizedHorizontalScrollView.Init`, `OptimizedVerticalScrollView.Init` now early-return cleanly on `totalItems <= 0` (free items, zero out cached state, collapse container size). Previously they fell through to indexing `m_itemsScrolled[0]`, which crashed when the prefab list was empty. The empty-list state is a legitimate intermediate during async data loads and must not raise.
 - `OptimizedHorizontalScrollView.ScrollBarChanged` no longer logs an error when `m_optimizedTotal == 0` — that condition is the legitimate empty-scroll state, not a programming bug. The horizontal variant now matches the existing silent guards on `OptimizedScrollView` and `OptimizedVerticalScrollView`.
 - `BaseAudioManager.SetMasterVolume` / `SetMusicVolume` / `SetSFXVolume` now null-check the cached `Tweener` before calling `Kill()`. Calling these volume setters before any fade had ever started (e.g. on the very first frame, or after a domain reload that nulled the tween fields) would throw a `NullReferenceException` when DOTWEEN was enabled. Guarded with `?.Kill()`.
