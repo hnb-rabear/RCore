@@ -3,10 +3,16 @@ using System.Collections.Generic;
 
 namespace RevCore
 {
+	/// <summary>
+	/// Default in-memory implementation of <see cref="IEventBus"/>. Stores subscribers per event type
+	/// in a <see cref="Dictionary{TKey,TValue}"/> of multicast delegates. Main-thread only — synchronization
+	/// is the caller's responsibility if used from multiple threads.
+	/// </summary>
 	public sealed class EventBus : IEventBus
 	{
 		private readonly Dictionary<Type, Delegate> m_listeners = new();
 
+		/// <inheritdoc />
 		public int ListenerCount
 		{
 			get
@@ -19,6 +25,7 @@ namespace RevCore
 			}
 		}
 
+		/// <inheritdoc />
 		public void Subscribe<T>(Action<T> listener) where T : IEvent
 		{
 			var key = typeof(T);
@@ -35,6 +42,7 @@ namespace RevCore
 			}
 		}
 
+		/// <inheritdoc />
 		public void Unsubscribe<T>(Action<T> listener) where T : IEvent
 		{
 			var key = typeof(T);
@@ -48,17 +56,20 @@ namespace RevCore
 			}
 		}
 
+		/// <inheritdoc />
 		public void Publish<T>(T evt) where T : IEvent
 		{
 			if (m_listeners.TryGetValue(typeof(T), out var del))
 				((Action<T>)del).Invoke(evt);
 		}
 
+		/// <inheritdoc />
 		public void Clear()
 		{
 			m_listeners.Clear();
 		}
 
+		/// <inheritdoc />
 		public void Clear<T>() where T : IEvent
 		{
 			m_listeners.Remove(typeof(T));
