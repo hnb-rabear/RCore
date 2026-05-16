@@ -1,2 +1,3 @@
 #nullable enable
 RevCore.ColorHelper.TryHexToColor(string hex, out UnityEngine.Color color) -> bool
+RevCore.EventBus.ListenerCountFor<T>() -> int

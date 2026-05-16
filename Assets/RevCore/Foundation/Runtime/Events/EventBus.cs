@@ -63,5 +63,18 @@ namespace RevCore
 		{
 			m_listeners.Remove(typeof(T));
 		}
+
+		/// <summary>
+		/// Returns the number of subscribers for event type <typeparamref name="T"/>. O(1) plus
+		/// the cost of <see cref="Delegate.GetInvocationList"/> when there is at least one
+		/// listener. Prefer this over <see cref="ListenerCount"/> on hot paths that only care
+		/// about one event type.
+		/// </summary>
+		public int ListenerCountFor<T>() where T : IEvent
+		{
+			return m_listeners.TryGetValue(typeof(T), out var del) && del != null
+				? del.GetInvocationList().Length
+				: 0;
+		}
 	}
 }
