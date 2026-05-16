@@ -31,7 +31,7 @@ PATTERNS = [
                r"(class|struct|interface|enum|record|delegate)\s+(\w+)"),
     re.compile(r"^\s*public\s+(?:static\s+|virtual\s+|override\s+|abstract\s+|sealed\s+|async\s+|extern\s+|unsafe\s+|new\s+)*"
                r"(?!class\s|struct\s|interface\s|enum\s|record\s|delegate\s)"
-               r"[\w<>\[\],?\.\s]+?\s+(\w+)\s*\("),  # method
+               r"[\w<>\[\],?\.\s]+?\s+(\w+)\s*(?:<[^>]+>)?\s*\("),  # method (incl. generic)
     re.compile(r"^\s*public\s+(?:static\s+|virtual\s+|override\s+|abstract\s+|sealed\s+|new\s+)*"
                r"[\w<>\[\],?\.\s]+?\s+(\w+)\s*\{\s*(get|set)"),  # property
     re.compile(r"^\s*public\s+(?:static\s+|readonly\s+|const\s+)*"
