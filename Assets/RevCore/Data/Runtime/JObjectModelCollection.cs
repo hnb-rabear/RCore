@@ -8,8 +8,20 @@ using UnityEngine;
 
 namespace RevCore
 {
+    /// <summary>
+    /// Root container for a save profile's models. Subclass and use <see cref="CreateModel{TData}(JObjectModel{TData}, string, TData)"/>
+    /// from <see cref="Load"/> to register each model under a stable key. The collection drives
+    /// the load → init → inject → post-load → update → save lifecycle and is consumed by
+    /// <see cref="JObjectDBManager{T}"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Field-level <see cref="InjectAttribute"/> on registered models is satisfied automatically
+    /// by <see cref="InjectDependencies"/>; resolution is type-keyed against the registered models and
+    /// their data payloads, so subclassing <see cref="JObjectModel{T}"/> is enough to make it injectable.</para>
+    /// </remarks>
     public class JObjectModelCollection : ScriptableObject
     {
+        /// <summary>Built-in session model — tracks last-save timestamp and offline seconds.</summary>
         [CreateScriptableObject, AutoFill] public SessionModel session;
 
         protected List<IJObjectModel> m_models = new();
@@ -17,6 +29,10 @@ namespace RevCore
         private static readonly object s_notFound = new();
         private static readonly Dictionary<Type, FieldInfo[]> s_injectFieldCache = new();
 
+        /// <summary>
+        /// Registers every model in the collection. Override to call <see cref="CreateModel{TData}(JObjectModel{TData}, string, TData)"/>
+        /// for each of your models. The base implementation registers <see cref="session"/>.
+        /// </summary>
         public virtual void Load()
         {
             m_models = new List<IJObjectModel>();
@@ -24,6 +40,7 @@ namespace RevCore
             CreateModel(session, "SessionData");
         }
 
+        /// <summary>Pre-save hook on every model, then writes every model's data to PlayerPrefs and flushes.</summary>
         public virtual void Save()
         {
             if (m_models == null) return;
@@ -34,6 +51,7 @@ namespace RevCore
             PlayerPrefs.Save();
         }
 
+        /// <summary>Imports a JSON-serialized <c>key → json</c> map (the format produced by <see cref="JObjectDB.ToJson"/>) into every matching model.</summary>
         public virtual void Import(string jsonData)
         {
             if (m_models == null) return;
@@ -45,6 +63,7 @@ namespace RevCore
             PostLoad();
         }
 
+        /// <summary>Same as the string overload but accepts an already-parsed <c>key → object</c> map. Each value is reserialized to JSON before <c>Load</c>.</summary>
         public virtual void Import(Dictionary<string, object> data)
         {
             if (m_models == null) return;
@@ -59,6 +78,7 @@ namespace RevCore
             PostLoad();
         }
 
+        /// <summary>Returns a fresh <c>key → data</c> map covering every registered model. Useful for export / cloud sync.</summary>
         public Dictionary<string, object> GetData()
         {
             var dict = new Dictionary<string, object>();
@@ -68,12 +88,14 @@ namespace RevCore
             return dict;
         }
 
+        /// <summary>Forwards the per-frame tick to every registered model.</summary>
         public virtual void OnUpdate(float deltaTime)
         {
             if (m_models != null)
                 foreach (var m in m_models) m.OnUpdate(deltaTime);
         }
 
+        /// <summary>Forwards application pause/resume to every model. Computes offline seconds from the session model on resume.</summary>
         public virtual void OnPause(bool pause)
         {
             int ts = TimeHelper.GetNowTimestamp(true);
@@ -81,6 +103,7 @@ namespace RevCore
             foreach (var m in m_models) m.OnPause(pause, ts, offline);
         }
 
+        /// <summary>Calls <see cref="IJObjectModel.OnPostLoad"/> on every model. Invoke after <see cref="Load"/> + <see cref="InjectDependencies"/>.</summary>
         public virtual void PostLoad()
         {
             int offline = session.GetOfflineSeconds();
@@ -88,18 +111,25 @@ namespace RevCore
             foreach (var m in m_models) m.OnPostLoad(ts, offline);
         }
 
+        /// <summary>Forwards a remote-config refresh to every model.</summary>
         public void OnRemoteConfigFetched()
         {
             if (m_models != null)
                 foreach (var m in m_models) m.OnRemoteConfigFetched();
         }
 
+        /// <summary>Type-keyed lookup of a registered model or its data. Returns <c>null</c> on miss.</summary>
         public T Get<T>() where T : class
         {
             if (m_models == null) return null;
             return Resolve(typeof(T)) as T;
         }
 
+        /// <summary>
+        /// Resolves every <see cref="InjectAttribute"/>-decorated field on every registered model
+        /// by reflection. Throws <see cref="InvalidOperationException"/> if a dependency cannot
+        /// be resolved — error message lists the registered models for diagnosis.
+        /// </summary>
         public void InjectDependencies()
         {
             if (m_models == null) return;
