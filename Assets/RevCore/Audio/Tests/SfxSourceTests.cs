@@ -43,6 +43,10 @@ namespace RevCore.Tests
 
                 LogAssert.Expect(LogType.Error, "AudioManager instance not found. SfxSource cannot function.");
                 LogAssert.Expect(LogType.Warning, "SfxSource is not initialized yet.");
+                // EditMode Test Runner does not consistently fire MonoBehaviour.Awake on AddComponent,
+                // so Init never runs and the LogError never fires. Invoke Init by reflection like the
+                // sibling test does.
+                InvokeInit(source);
                 Assert.DoesNotThrow(() => source.PlaySFX());
             }
             finally
