@@ -32,7 +32,7 @@ namespace RevCore.Tests
 			for (int i = 0; i < 100; i++)
 			{
 				int idx = i;
-				bus.Subscribe<EvtA>(_ => { _ = idx; });
+				bus.Subscribe<EvtA>(e => { _ = idx; });
 			}
 
 			Measure.Method(() =>
@@ -56,11 +56,11 @@ namespace RevCore.Tests
 			var bus = new EventBus();
 			// Per-iteration `idx` capture forces a distinct delegate per Subscribe call — see
 			// Publish_100_listeners_10k_events above for the reason.
-			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtA>(_ => { _ = idx; }); }
-			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtB>(_ => { _ = idx; }); }
-			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtC>(_ => { _ = idx; }); }
-			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtD>(_ => { _ = idx; }); }
-			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtE>(_ => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtA>(e => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtB>(e => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtC>(e => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtD>(e => { _ = idx; }); }
+			for (int i = 0; i < 5; i++) { int idx = i; bus.Subscribe<EvtE>(e => { _ = idx; }); }
 
 			Measure.Method(() =>
 				{
