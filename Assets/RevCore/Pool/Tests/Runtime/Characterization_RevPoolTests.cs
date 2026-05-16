@@ -30,10 +30,13 @@ namespace RevCore.Tests
 		}
 
 		// PIN: when active count reaches LimitNumber, the next Spawn() evicts the OLDEST
-		// active item (index 0 of m_activeList), making room for the new one.
-		// Active count stays at the limit; total spawned never exceeds limit.
+		// active item (m_activeList[0]) — but because the eviction moves it to the inactive
+		// list and Spawn then immediately picks from inactive, the evicted item is REUSED
+		// as the new spawn. Net effect: caller's reference to the oldest is still on an
+		// active instance (now rotated to the back of m_activeList), no allocation
+		// happens, and ActiveCount stays at the cap.
 		[Test]
-		public void Spawn_at_limit_evicts_oldest_active()
+		public void Spawn_at_limit_evicts_oldest_and_reuses_it_as_new_spawn()
 		{
 			var pool = new RevPool<PoolObject>(m_prefab.GetComponent<PoolObject>(), 0, m_parent)
 			{
@@ -44,15 +47,15 @@ namespace RevCore.Tests
 			var second = pool.Spawn();
 			Assert.AreEqual(2, pool.ActiveCount);
 
-			// First object is the "oldest" — should be evicted by the third spawn.
 			var third = pool.Spawn();
 
 			Assert.AreEqual(2, pool.ActiveCount,
 				"Active count stays capped at LimitNumber after eviction.");
-			Assert.IsFalse(first.gameObject.activeSelf,
-				"Oldest (first) should now be inactive — evicted by the cap.");
+			Assert.AreSame(first, third,
+				"Evicted oldest is the only inactive item available, so Spawn reuses it (no allocation).");
+			Assert.IsTrue(first.gameObject.activeSelf,
+				"first/third is active again after being reused as the new spawn.");
 			Assert.IsTrue(second.gameObject.activeSelf, "Second remains active.");
-			Assert.IsTrue(third.gameObject.activeSelf, "Newly spawned item is active.");
 		}
 
 		// PIN: LimitNumber == 0 means "no cap" — Spawn never evicts.
