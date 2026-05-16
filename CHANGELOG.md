@@ -10,6 +10,9 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 - GitHub Actions workflows: Unity test matrix (2022 LTS + Unity 6), lint, docs coverage, release drafter.
 - Issue templates (bug, feature, question) and PR template.
 - Root `CHANGELOG.md`.
+- Phase 1 inventory artifacts: `docs/api-inventory.csv` (503 symbols), `docs/migration/rcore-to-revcore-api-map.{md,csv}`, `docs/gap-analysis.md` (250 RCore-only types catalogued).
+- Characterization tests pinning current behavior of `ColorHelper.HexToColor`, `EventBus.Publish`/`ListenerCount`, `RevPool` over-capacity eviction, `TimerScheduler.Cancel` (incl. the `id=0` matches-all-defaults sharp edge).
+- Tooling scripts: `scripts/extract-api-surface.py`, `scripts/build-migration-map.py`.
 
 ### Changed
 

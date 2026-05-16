@@ -1,0 +1,504 @@
+framework,module,file,kind,namespace,type,member,signature
+RCore,Audio,Assets/RCore/Main/Runtime/Audio/AudioCollection.cs,class,RCore.Audio,AudioCollection,,public class AudioCollection : ScriptableObject
+RCore,Audio,Assets/RCore/Main/Runtime/Audio/AudioCollection.cs,struct,RCore.Audio,ScriptGenerator,,public struct ScriptGenerator
+RCore,Audio,Assets/RCore/Main/Runtime/Audio/AudioManager.cs,class,RCore.Audio,AudioManager,,public class AudioManager : BaseAudioManager
+RCore,Audio,Assets/RCore/Main/Runtime/Audio/BaseAudioManager.cs,struct,RCore.Audio,UISfxTriggeredEvent,,public struct UISfxTriggeredEvent : BaseEvent
+RCore,Audio,Assets/RCore/Main/Runtime/Audio/BaseAudioManager.cs,class,RCore.Audio,BaseAudioManager,,public class BaseAudioManager : MonoBehaviour
+RCore,Audio,Assets/RCore/Main/Runtime/Audio/SfxSource.cs,class,RCore.Audio,SfxSource,,public class SfxSource : MonoBehaviour
+RCore,Common,Assets/RCore/Main/Runtime/Common/AnimEventListener.cs,class,RCore,AnimEventListener,,public class AnimEventListener : MonoBehaviour
+RCore,Common,Assets/RCore/Main/Runtime/Common/AssetsList.cs,class,RCore,AssetsList,,public class AssetsList<T> where T : Object
+RCore,Common/BigNumber,Assets/RCore/Main/Runtime/Common/BigNumber/BigNumberD.cs,class,RCore,BigNumberD,,public class BigNumberD : IComparable<BigNumberD>
+RCore,Common/BigNumber,Assets/RCore/Main/Runtime/Common/BigNumber/BigNumberF.cs,class,RCore,BigNumberF,,public class BigNumberF : IComparable<BigNumberF>
+RCore,Common/BigNumber,Assets/RCore/Main/Runtime/Common/BigNumber/BigNumberF.cs,class,RCore,BigNumberAlphaExtension,,public static class BigNumberAlphaExtension
+RCore,Common/BigNumber,Assets/RCore/Main/Runtime/Common/BigNumber/BigNumberHelper.cs,class,RCore,BigNumberHelper,,public static class BigNumberHelper
+RCore,Common/Debug,Assets/RCore/Main/Runtime/Common/Debug/Debug.cs,class,RCore,Debug,,public static class Debug
+RCore,Common/Debug,Assets/RCore/Main/Runtime/Common/Debug/DebugDraw.cs,class,RCore,DebugDraw,,public static class DebugDraw
+RCore,Common/Debug,Assets/RCore/Main/Runtime/Common/Debug/DebugDraw.cs,class,RCore,FOVInfo,,public class FOVInfo
+RCore,Common,Assets/RCore/Main/Runtime/Common/DontDestroyedGroup.cs,class,RCore,DontDestroyedGroup,,public class DontDestroyedGroup : MonoBehaviour
+RCore,Common,Assets/RCore/Main/Runtime/Common/ENV.cs,class,RCore,Env,,public static class Env
+RCore,Common,Assets/RCore/Main/Runtime/Common/Encryption.cs,interface,,IEncryption,,public interface IEncryption
+RCore,Common,Assets/RCore/Main/Runtime/Common/Encryption.cs,class,,Encryption,,public class Encryption : IEncryption
+RCore,Common,Assets/RCore/Main/Runtime/Common/EventDispatcher.cs,class,RCore,EventDispatcher,,public static class EventDispatcher
+RCore,Common,Assets/RCore/Main/Runtime/Common/EventDispatcher.cs,delegate,RCore,void,,public delegate void EventDelegate<T>(T e) where T : BaseEvent;
+RCore,Common,Assets/RCore/Main/Runtime/Common/EventDispatcher.cs,interface,RCore,BaseEvent,,public interface BaseEvent { }
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AddressableHelper.cs,class,RCore,AddressableUtil,,public static class AddressableUtil
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetBundleRef.cs,class,RCore,AssetBundleRef,,public class AssetBundleRef<M> where M : Object
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetBundleRef.cs,class,RCore,AssetBundleWithEnumKey,,"public class AssetBundleWithEnumKey<T, M> : AssetBundleRef<M> where T : Enum where M : Object"
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetBundleRef.cs,class,RCore,AssetBundleWith2EnumKeys,,"public class AssetBundleWith2EnumKeys<T1, T2, M> : AssetBundleRef<M>"
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetBundleRef.cs,class,RCore,AssetBundleWithIntKey,,public class AssetBundleWithIntKey<M> : AssetBundleRef<M> where M : Object
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetBundleWrap.cs,class,RCore,AssetBundleWrap,,public class AssetBundleWrap<T> where T : Component
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetRef.cs,class,RCore,AssetRef_SpriteAtlas,,public class AssetRef_SpriteAtlas : AssetReferenceT<SpriteAtlas>
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/AssetRef.cs,class,RCore,AssetRef_FontAsset,,public class AssetRef_FontAsset : AssetReferenceT<TMP_FontAsset>
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/ComponentRef.cs,class,RCore,ComponentRef,,public class ComponentRef<TComponent> : AssetReference where TComponent : Component
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/Addressable/ComponentRef.cs,class,RCore,ComponentRef_SpriteRenderer,,public class ComponentRef_SpriteRenderer : ComponentRef<SpriteRenderer>
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/CameraHelper.cs,class,RCore,CameraHelper,,public static class CameraHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/ColorHelper.cs,class,RCore,ColorExtension,,public static class ColorExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/ColorHelper.cs,class,RCore,ColorHelper,,public static class ColorHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/ComponentHelper.cs,class,RCore,ComponentHelper,,public static class ComponentHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/ComponentHelper.cs,class,RCore,ComponentExtension,,public static class ComponentExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/DebugDrawHelper.cs,class,RCore,DebugDrawHelper,,public static class DebugDrawHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/DateTimePickerWindow.cs,class,RCore.Editor,DateTimePickerWindow,,public class DateTimePickerWindow : EditorWindow
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorAssetUtil.cs,class,RCore.Editor,EditorAssetUtil,,public static class EditorAssetUtil
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorAssetUtil.cs,struct,RCore.Editor,SpriteInfo,,public struct SpriteInfo
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorBuildUtil.cs,class,RCore.Editor,EditorBuildUtil,,public static class EditorBuildUtil
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorComponentUtil.cs,class,RCore.Editor,EditorComponentUtil,,public static class EditorComponentUtil
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorDrawing.cs,class,RCore.Editor,EditorDrawing,,public static class EditorDrawing
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorFileUtil.cs,class,RCore.Editor,EditorFileUtil,,public static class EditorFileUtil
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiButton.cs,class,RCore.Editor,GuiButton,,public class GuiButton : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiColor.cs,class,RCore.Editor,GuiColor,,public class GuiColor : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiDropdownListEnum.cs,class,RCore.Editor,GuiDropdownListEnum,,public class GuiDropdownListEnum<T> : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiDropdownListInt.cs,class,RCore.Editor,GuiDropdownListInt,,public class GuiDropdownListInt : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiDropdownListString.cs,class,RCore.Editor,GuiDropdownListString,,public class GuiDropdownListString : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiFoldout.cs,class,RCore.Editor,GuiFoldout,,public class GuiFoldout : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiHeaderFoldout.cs,class,RCore.Editor,GuiHeaderFoldout,,public class GuiHeaderFoldout : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiInt.cs,class,RCore.Editor,GuiInt,,public class GuiInt : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiObject.cs,class,RCore.Editor,GuiObject,,public class GuiObject<T> : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiTabs.cs,class,RCore.Editor,GuiTabs,,public class GuiTabs : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiText.cs,class,RCore.Editor,GuiText,,public class GuiText : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/GuiToggle.cs,class,RCore.Editor,GuiToggle,,public class GuiToggle : IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui/IDraw.cs,interface,RCore.Editor,IDraw,,public interface IDraw
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorGui.cs,class,RCore.Editor,EditorGui,,public static class EditorGui
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorHelper.cs,class,RCore.Editor,EditorHelper,,public static class EditorHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorLayout.cs,class,RCore.Editor,EditorLayout,,public static class EditorLayout
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/EditorSerializedPropertyExtensions.cs,class,RCore.Editor,EditorSerializedPropertyExtensions,,public static class EditorSerializedPropertyExtensions
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/EditorHelper/GUIStyleHelper.cs,class,RCore.Editor,GUIStyleHelper,,public static class GUIStyleHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/JsonHelper.cs,class,RCore,JsonHelper,,public static class JsonHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/MathHelper.cs,class,RCore,MathHelper,,public static class MathHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/MathHelper.cs,class,RCore,MathExtension,,public static class MathExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/NameGenerator.cs,class,RCore,NameGenerator,,public static class NameGenerator
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,delegate,RCore,void,,public delegate void VoidDelegate();
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,delegate,RCore,void,,public delegate void IntDelegate(int value);
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,delegate,RCore,void,,public delegate void BoolDelegate(bool value);
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,delegate,RCore,void,,public delegate void FloatDelegate(float value);
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,delegate,RCore,bool,,public delegate bool ConditionalDelegate();
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,delegate,RCore,bool,,public delegate bool ConditionalDelegate<in T>(T pComponent) where T : Component;
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,class,RCore,RUtil,,public static class RUtil
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,class,RCore,RUtilExtension,,public static class RUtilExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/RUtil.cs,class,RCore,RandomExtension,,public static class RandomExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TimeHelper.cs,class,RCore,StringBuilderExtension,,public static class StringBuilderExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TimeHelper.cs,class,RCore,TimeHelper,,public class TimeHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TimeHelper.cs,class,RCore,TimeExtension,,public static class TimeExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TrajectoryHelper.cs,class,RCore,TrajectoryHelper,,public static class TrajectoryHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TrajectoryHelper.cs,class,RCore,ProjectileHelper,,public static class ProjectileHelper
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TransformHelper.cs,enum,RCore,AnchorType,,public enum AnchorType
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/TransformHelper.cs,class,RCore,TransformExtension,,public static class TransformExtension
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/WebRequestHelper.cs,struct,RCore,IPInfo,,public struct IPInfo
+RCore,Common/Helper,Assets/RCore/Main/Runtime/Common/Helper/WebRequestHelper.cs,class,RCore,WebRequestHelper,,public static class WebRequestHelper
+RCore,Common/Pool,Assets/RCore/Main/Runtime/Common/Pool/CustomPool.cs,class,RCore,CustomPool,,public class CustomPool<T> where T : Component
+RCore,Common/Pool,Assets/RCore/Main/Runtime/Common/Pool/PoolsContainer.cs,class,RCore,PoolsContainer,,public class PoolsContainer<T> where T : Component
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefContainer,,public static class REditorPrefContainer
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPref,,public abstract class REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefBool,,public class REditorPrefBool : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefInt,,public class REditorPrefInt : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefFloat,,public class REditorPrefFloat : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefDateTime,,public class REditorPrefDateTime : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefString,,public class REditorPrefString : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefList,,public class REditorPrefList<T> : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefDict,,"public class REditorPrefDict<TKey, TVal> : REditorPref"
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefObject,,public class REditorPrefObject<T> : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefSerializableObject,,public class REditorPrefSerializableObject<T> : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefEnum,,public class REditorPrefEnum<T> : REditorPref where T : System.Enum
+RCore,Common,Assets/RCore/Main/Runtime/Common/REditorPrefs.cs,class,RCore,REditorPrefVector,,public class REditorPrefVector : REditorPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RMenu.cs,class,RCore.Service,RMenu,,public static class RMenu
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefContainer,,public static class RPlayerPrefContainer
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPref,,public abstract class RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefBool,,public class RPlayerPrefBool : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefInt,,public class RPlayerPrefInt : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefFloat,,public class RPlayerPrefFloat : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefDateTime,,public class RPlayerPrefDateTime : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefString,,public class RPlayerPrefString : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefList,,public class RPlayerPrefList<T> : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefDict,,"public class RPlayerPrefDict<TKey, TVal> : RPlayerPref"
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefObject,,public class RPlayerPrefObject<T> : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RPlayerPrefs.cs,class,RCore,RPlayerPrefSerializableObject,,public class RPlayerPrefSerializableObject<T> : RPlayerPref
+RCore,Common,Assets/RCore/Main/Runtime/Common/RomanNumber.cs,class,RCore,Roman,,public static class Roman
+RCore,Common,Assets/RCore/Main/Runtime/Common/SceneLoader.cs,class,RCore,SceneLoader,,public class SceneLoader
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/SerializableDictionary.cs,class,RCore,SerializableDictionary,,"public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver"
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/SerializableDictionary.cs,class,RCore,SerializedDictionary,,"public class SerializedDictionary<TypeKey, TypeValue> : SerializableKeyValue<TypeKey, TypeValue>"
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/SerializableDictionaryDrawer.cs,class,RCore,SerializableDictionaryDrawer,,public class SerializableDictionaryDrawer : PropertyDrawer
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/SerializableKeyValue.cs,class,RCore,SerializableKeyValue,,"public class SerializableKeyValue<TKey, TValue>"
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/SerializableKeyValueDrawer.cs,class,RCore.Editor,SerializableKeyValueDrawer,,public class SerializableKeyValueDrawer : PropertyDrawer
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/Wrappers.cs,class,RCore,UnityObjectWrapper,,public class UnityObjectWrapper<T> where T : class
+RCore,Common/SerializableDictionary,Assets/RCore/Main/Runtime/Common/SerializableDictionary/Wrappers.cs,class,RCore,AssetReferenceWrapper,,public class AssetReferenceWrapper<T> where T : class
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimedAction.cs,class,RCore,TimedAction,,public class TimedAction
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEvents.cs,class,RCore,TimerEvents,,public class TimerEvents : MonoBehaviour
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsGlobal.cs,class,RCore,TimerEventsGlobal,,public class TimerEventsGlobal : TimerEvents
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsGroup.cs,class,RCore,CountdownEvent,,public class CountdownEvent
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsGroup.cs,class,RCore,ConditionEvent,,public class ConditionEvent
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsGroup.cs,class,RCore,DelayableEvent,,public class DelayableEvent
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsGroup.cs,class,RCore,CountdownEventsGroup,,public class CountdownEventsGroup
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsGroup.cs,class,RCore,ConditionEventsGroup,,public class ConditionEventsGroup
+RCore,Common/Timer,Assets/RCore/Main/Runtime/Common/Timer/TimerEventsInScene.cs,class,RCore,TimerEventsInScene,,public class TimerEventsInScene : TimerEvents
+RCore,Common/VFX,Assets/RCore/Main/Runtime/Common/VFX/CFX_Component.cs,class,RCore,CFX_Component,,public abstract class CFX_Component : MonoBehaviour
+RCore,Common/VFX,Assets/RCore/Main/Runtime/Common/VFX/CFX_ParticleComponent.cs,class,RCore,CFX_ParticleComponent,,public class CFX_ParticleComponent : CFX_Component
+RCore,Common/VFX,Assets/RCore/Main/Runtime/Common/VFX/CFX_ParticleComponent.cs,class,RCore,CFX_ParticleComponentEditor,,public class CFX_ParticleComponentEditor : UnityEditor.Editor
+RCore,Common,Assets/RCore/Main/Runtime/Common/Vector.cs,struct,RCore,RVector2,,public struct RVector2 : IEquatable<RVector2>
+RCore,Common,Assets/RCore/Main/Runtime/Common/Vector.cs,struct,RCore,RVector2Int,,public struct RVector2Int : IEquatable<RVector2Int>
+RCore,Common,Assets/RCore/Main/Runtime/Common/Vector.cs,struct,RCore,RVector3,,public struct RVector3 : IEquatable<RVector3>
+RCore,Common,Assets/RCore/Main/Runtime/Common/Vector.cs,struct,RCore,RVector3Int,,public struct RVector3Int : IEquatable<RVector3Int>
+RCore,Common,Assets/RCore/Main/Runtime/Common/Vector.cs,struct,RCore,RVector4,,public struct RVector4 : IEquatable<RVector4>
+RCore,Common,Assets/RCore/Main/Runtime/Common/YesNoNone.cs,enum,RCore,YesNoNone,,public enum YesNoNone
+RCore,Common,Assets/RCore/Main/Runtime/Common/YesNoNone.cs,enum,RCore,PerfectRatio,,public enum PerfectRatio
+RCore,Common,Assets/RCore/Main/Runtime/Common/YesNoNone.cs,enum,RCore,UIPivot,,public enum UIPivot
+RCore,Common,Assets/RCore/Main/Runtime/Common/YesNoNone.cs,enum,RCore,TapFeedback,,public enum TapFeedback
+RCore,Configuration.cs,Assets/RCore/Main/Runtime/Configuration.cs,class,RCore,Configuration,,public class Configuration : ScriptableObject
+RCore,Configuration.cs,Assets/RCore/Main/Runtime/Configuration.cs,class,RCore,Env,,public class Env
+RCore,Configuration.cs,Assets/RCore/Main/Runtime/Configuration.cs,class,RCore,Directive,,public class Directive
+RCore,Data/Common,Assets/RCore/Main/Runtime/Data/Common/BinaryDataSaver.cs,class,RCore.Data,BinaryDataSaver,,public static class BinaryDataSaver
+RCore,Data,Assets/RCore/Main/Runtime/Data/ConfigCollection.cs,class,RCore.Data,ConfigCollection,,public abstract class ConfigCollection : ScriptableObject
+RCore,Data,Assets/RCore/Main/Runtime/Data/ConfigCollection.cs,class,RCore.Data,ConfigCollectionEditor,,public class ConfigCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,Data,Assets/RCore/Main/Runtime/Data/ConfigCollection.cs,class,RCore.Data,ConfigCollectionEditor,,public class ConfigCollectionEditor : UnityEditor.Editor
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/IJObjectHandler.cs,interface,RCore.Data.JObject,IJObjectHandler,,public interface IJObjectHandler
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/InjectAttribute.cs,class,RCore.Data.JObject,InjectAttribute,,public class InjectAttribute : Attribute { }
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectDB.cs,class,RCore.Data.JObject,JObjectDB,,public static class JObjectDB
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectDBManager.cs,class,RCore.Data.JObject,JObjectDBManager,,public abstract class JObjectDBManager<T> : MonoBehaviour where T : JObjectDataCollection
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectDBManagerV2.cs,class,RCore.Data.JObject,JObjectDBManagerV2,,public abstract class JObjectDBManagerV2<T> : MonoBehaviour where T : JObjectModelCollection
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectData.cs,interface,RCore.Data.JObject,IJObjectData,,public interface IJObjectData
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectData.cs,class,RCore.Data.JObject,JObjectData,,public abstract class JObjectData : IJObjectData
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectDataCollection.cs,class,RCore.Data.JObject,JObjectDataCollection,,public class JObjectDataCollection : ScriptableObject
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectDataCollection.cs,class,RCore.Data.JObject,JObjectDataCollectionEditor,,public class JObjectDataCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectDataCollection.cs,class,RCore.Data.JObject,JObjectDataCollectionEditor,,public class JObjectDataCollectionEditor : UnityEditor.Editor
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectHandler.cs,class,RCore.Data.JObject,JObjectHandler,,public abstract class JObjectHandler<T> : IJObjectHandler where T : JObjectDataCollection
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectModel.cs,interface,RCore.Data.JObject,IJObjectModel,,public interface IJObjectModel : IJObjectHandler
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectModel.cs,class,RCore.Data.JObject,JObjectModel,,"public abstract class JObjectModel<T> : ScriptableObject, IJObjectModel where T : JObjectData"
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectModelCollection.cs,class,RCore.Data.JObject,JObjectModelCollection,,public partial class JObjectModelCollection : ScriptableObject
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectModelCollection.cs,class,RCore.Data.JObject,JObjectModelCollectionEditor,,public class JObjectModelCollectionEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/JObjectModelCollection.cs,class,RCore.Data.JObject,JObjectModelCollectionEditor,,public class JObjectModelCollectionEditor : UnityEditor.Editor
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/Module/SessionData.cs,class,RCore.Data.JObject,NewDayStartedEvent,,public class NewDayStartedEvent : BaseEvent { }
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/Module/SessionData.cs,class,RCore.Data.JObject,SessionData,,public class SessionData : JObjectData
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/Module/SessionDataHandler.cs,class,RCore.Data.JObject,SessionDataHandler,,public class SessionDataHandler : JObjectHandler<JObjectDataCollection>
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/Module/SessionModel.cs,interface,RCore.Data.JObject,ISessionModel,,public interface ISessionModel
+RCore,Data/JObjectDB,Assets/RCore/Main/Runtime/Data/JObjectDB/Module/SessionModel.cs,class,RCore.Data.JObject,SessionModel,,"public class SessionModel : JObjectModel<SessionData>, ISessionModel"
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/KeyValueCollection.cs,class,RCore.Data.KeyValue,KeyValueSS,,public class KeyValueSS : IComparable<KeyValueSS>
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/KeyValueCollection.cs,class,RCore.Data.KeyValue,KeyValueCollection,,public class KeyValueCollection
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/KeyValueDB.cs,class,RCore.Data.KeyValue,KeyValueDB,,public static class KeyValueDB
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/KeyValueDBManager.cs,class,RCore.Data.KeyValue,KeyValueDBManager,,public class KeyValueDBManager : MonoBehaviour
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/KeyValueDBManager.cs,class,RCore.Data.KeyValue,KeyValueDBManagerEditor,,public class KeyValueDBManagerEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/KeyValueDBManager.cs,class,RCore.Data.KeyValue,KeyValueDBManagerEditor,,public class KeyValueDBManagerEditor : UnityEditor.Editor
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Module/InventoryData.cs,class,RCore.Data.KeyValue,InvItemData,,public class InvItemData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Module/InventoryData.cs,class,RCore.Data.KeyValue,InventoryData,,public class InventoryData<T> : DataGroup where T : InvItemData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Module/InventoryRPGData.cs,class,RCore.Data.KeyValue,InvRPGItemData,,public class InvRPGItemData : InvItemData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Module/InventoryRPGData.cs,class,RCore.Data.KeyValue,InventoryRPGData,,public class InventoryRPGData : InventoryData<InvRPGItemData>
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/BigNumberData.cs,class,RCore.Data.KeyValue,BigNumberData,,public class BigNumberData : DataGroup
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/BoolData.cs,class,RCore.Data.KeyValue,BoolData,,public class BoolData : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/DataGroup.cs,class,RCore.Data.KeyValue,DataGroup,,public class DataGroup : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/DateTimeData.cs,class,RCore.Data.KeyValue,DateTimeData,,public class DateTimeData : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/FloatData.cs,class,RCore.Data.KeyValue,FloatData,,public class FloatData : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/FunData.cs,class,RCore.Data.KeyValue,FunData,,public abstract class FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/IntegerData.cs,class,RCore.Data.KeyValue,IntegerData,,public class IntegerData : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/ListData.cs,class,RCore.Data.KeyValue,ListData,,public class ListData<T> : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/LongData.cs,class,RCore.Data.KeyValue,LongData,,public class LongData : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/ObjectData.cs,class,RCore.Data.KeyValue,ObjectData,,public class ObjectData<T> : FunData where T : IComparable<T>
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/StringData.cs,class,RCore.Data.KeyValue,StringData,,public class StringData : FunData
+RCore,Data/KeyValueDB,Assets/RCore/Main/Runtime/Data/KeyValueDB/Type/TimedTaskData.cs,class,RCore.Data.KeyValue,TimedTaskData,,public class TimedTaskData : DataGroup
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Attribute.cs,class,RCore.RPGBase,AttributesCollection,,public class AttributesCollection<T> where T : Attribute
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Attribute.cs,class,RCore.RPGBase,Attribute,,public class Attribute
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Attribute.cs,class,RCore.RPGBase,AttributeParseExtenstion,,public static class AttributeParseExtenstion
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Mod.cs,class,RCore.RPGBase,Mod,,public class Mod : IComparable<Mod>
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Mod.cs,class,RCore.RPGBase,TimedMod,,public class TimedMod : Mod
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Mod.cs,class,RCore.RPGBase,LinkedMod,,public class LinkedMod : Mod
+RCore,Data/RPGBase,Assets/RCore/Main/Runtime/Data/RPGBase/Mod.cs,class,RCore.RPGBase,ModsContainer,,public class ModsContainer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/AutoFillAttribute.cs,class,RCore.Inspector,AutoFillAttribute,,public class AutoFillAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/AutoFillAttribute.cs,class,RCore.Inspector,AutoFillDrawer,,public class AutoFillDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/CommentAttribute.cs,class,RCore.Inspector,CommentAttribute,,public class CommentAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/CommentAttribute.cs,class,RCore.Inspector,CommentDecoratorDrawer,,public class CommentDecoratorDrawer : DecoratorDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/CreateScriptableObjectAttribute.cs,class,RCore.Inspector,CreateScriptableObjectAttribute,,public class CreateScriptableObjectAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/CreateScriptableObjectAttribute.cs,class,RCore.Inspector,CreateScriptableObjectDrawer,,public class CreateScriptableObjectDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/DisplayEnumAttribute.cs,class,RCore.Inspector,DisplayEnumAttribute,,public class DisplayEnumAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/DisplayEnumAttribute.cs,class,RCore.Inspector,DisplayEnumDrawer,,public class DisplayEnumDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/ExposeScriptableObjectAttribute.cs,class,RCore.Inspector,ExposeScriptableObjectAttribute,,public class ExposeScriptableObjectAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/ExposeScriptableObjectAttribute.cs,class,RCore.Inspector,ExposeScriptableObjectDrawer,,public class ExposeScriptableObjectDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/FolderPathAttribute.cs,class,RCore.Inspector,FolderPathAttribute,,public class FolderPathAttribute : PropertyAttribute { }
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/FolderPathAttribute.cs,class,RCore.Inspector,FolderPathPropertyDrawer,,public class FolderPathPropertyDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/HighlightAttribute.cs,class,RCore.Inspector,HighlightAttribute,,public class HighlightAttribute : PropertyAttribute { }
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/HighlightAttribute.cs,class,RCore.Inspector,HighlightPropertyDrawer,,public class HighlightPropertyDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/InspectorButtonAttribute.cs,class,RCore.Inspector,InspectorButtonAttribute,,public class InspectorButtonAttribute : PropertyAttribute { }
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/InspectorButtonAttribute.cs,class,RCore.Inspector,InspectorButton,,public class InspectorButton : UnityEditor.Editor
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/ReadOnlyAttribute.cs,class,RCore.Inspector,ReadOnlyAttribute,,public class ReadOnlyAttribute : PropertyAttribute { }
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/ReadOnlyAttribute.cs,class,RCore.Inspector,ReadOnlyPropertyDrawer,,public class ReadOnlyPropertyDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/SeparatorAttribute.cs,class,RCore.Inspector,SeparatorAttribute,,public class SeparatorAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/SeparatorAttribute.cs,class,RCore.Inspector,SeparatorDecoratorDrawer,,public class SeparatorDecoratorDrawer : DecoratorDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/ShowIfAttribute.cs,class,RCore.Inspector,ShowIfAttribute,,public class ShowIfAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/ShowIfAttribute.cs,class,RCore.Inspector,ShowIfDrawer,,public class ShowIfDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/SingleLayerAttribute.cs,class,RCore.Inspector,SingleLayerAttribute,,public class SingleLayerAttribute : PropertyAttribute { }
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/SingleLayerAttribute.cs,class,RCore.Inspector,SingleLayerPropertyDrawer,,public class SingleLayerPropertyDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/SpriteBoxAttribute.cs,class,RCore.Inspector,SpriteBoxAttribute,,public class SpriteBoxAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/SpriteBoxAttribute.cs,class,RCore.Inspector,SpriteBoxDrawer,,public class SpriteBoxDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/TMPFontMaterialsAttribute.cs,class,RCore.Inspector,TMPFontMaterialsAttribute,,public class TMPFontMaterialsAttribute : PropertyAttribute { }
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/TMPFontMaterialsAttribute.cs,class,RCore.Inspector,TMPFontMaterialsDrawer,,public class TMPFontMaterialsDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/TagSelectorAttribute.cs,class,RCore.Inspector,TagSelectorAttribute,,public class TagSelectorAttribute : PropertyAttribute
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/TagSelectorAttribute.cs,class,RCore.Inspector,TagSelectorPropertyDrawer,,public class TagSelectorPropertyDrawer : PropertyDrawer
+RCore,Inspector,Assets/RCore/Main/Runtime/Inspector/TimeStampAttribute.cs,class,RCore.Inspector,TimeStampAttribute,,public class TimeStampAttribute : PropertyAttribute
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/RNative.cs,class,RCore,RNative,,public static class RNative
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,enum,SimpleJSON,JSONNodeType,,public enum JSONNodeType
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,enum,SimpleJSON,JSONTextMode,,public enum JSONTextMode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONNodeExt,,public static class JSONNodeExt
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONNode,,public abstract partial class JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,struct,SimpleJSON,Enumerator,,public struct Enumerator
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,struct,SimpleJSON,ValueEnumerator,,public struct ValueEnumerator
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,struct,SimpleJSON,KeyEnumerator,,public struct KeyEnumerator
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,LinqEnumerator,,"public class LinqEnumerator : IEnumerator<KeyValuePair<string, JSONNode>>, IEnumerable<KeyValuePair<string, JSONNode>>"
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONArray,,public partial class JSONArray : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONObject,,public partial class JSONObject : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONString,,public partial class JSONString : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONNumber,,public partial class JSONNumber : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONBool,,public partial class JSONBool : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONNull,,public partial class JSONNull : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSONLazyCreator,,public partial class JSONLazyCreator : JSONNode
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/SimpleJson.cs,class,SimpleJSON,JSON,,public static class JSON
+RCore,Plugins,Assets/RCore/Main/Runtime/Plugins/UniClipboard.cs,class,,UniClipboard,,public class UniClipboard
+RCore,UI/Button,Assets/RCore/Main/Runtime/UI/Button/JustButton.cs,class,RCore.UI,JustButton,,public class JustButton : Button
+RCore,UI/Button,Assets/RCore/Main/Runtime/UI/Button/JustButton.cs,class,RCore.UI,JustButtonEditor,,public class JustButtonEditor : ButtonEditor
+RCore,UI/Button,Assets/RCore/Main/Runtime/UI/Button/SimpleButton.cs,class,RCore.UI,SimpleButton,,public class SimpleButton : JustButton
+RCore,UI/Button,Assets/RCore/Main/Runtime/UI/Button/SimpleButton.cs,class,RCore.UI,SimpleButtonEditor,,public class SimpleButtonEditor : JustButtonEditor
+RCore,UI/Button,Assets/RCore/Main/Runtime/UI/Button/SimpleTMPButton.cs,class,RCore.UI,SimpleTMPButton,,public class SimpleTMPButton : JustButton
+RCore,UI,Assets/RCore/Main/Runtime/UI/HoledLayerMask.cs,class,RCore.UI,HoledLayerMask,,public class HoledLayerMask : MonoBehaviour
+RCore,UI,Assets/RCore/Main/Runtime/UI/HoledLayerMask.cs,class,RCore.UI,HoledLayerMaskEditor,,public class HoledLayerMaskEditor : UnityEditor.Editor
+RCore,UI/HomePage,Assets/RCore/Main/Runtime/UI/HomePage/HorizontalSnapScrollView.cs,class,RCore.UI,HorizontalSnapScrollView,,"public class HorizontalSnapScrollView : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler"
+RCore,UI/HomePage,Assets/RCore/Main/Runtime/UI/HomePage/SnapScrollItem.cs,class,RCore.UI,SnapScrollItem,,public abstract class SnapScrollItem : MonoBehaviour
+RCore,UI,Assets/RCore/Main/Runtime/UI/IgnoreScreenSafe.cs,class,RCore.UI,IgnoreScreenSafe,,public class IgnoreScreenSafe : MonoBehaviour
+RCore,UI,Assets/RCore/Main/Runtime/UI/ImageWithText.cs,class,RCore.UI,ImageWithText,,public class ImageWithText : MonoBehaviour
+RCore,UI,Assets/RCore/Main/Runtime/UI/ImageWithTextTMP.cs,class,RCore.UI,ImageWithTextTMP,,public class ImageWithTextTMP : MonoBehaviour
+RCore,UI/Joystick,Assets/RCore/Main/Runtime/UI/Joystick/Joystick.cs,class,RCore.UI,Joystick,,"public class Joystick : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler"
+RCore,UI/Joystick,Assets/RCore/Main/Runtime/UI/Joystick/JoystickArea.cs,class,RCore.UI,JoystickArea,,"public class JoystickArea : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IBeginDragHandler, IDragHandler, IEndDragHandler"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/HorizontalAlignment.cs,class,RCore,HorizontalAlignment,,"public class HorizontalAlignment : MonoBehaviour, IAligned"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/HorizontalAlignment.cs,enum,RCore,Alignment,,public enum Alignment
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/HorizontalAlignmentUI.cs,class,RCore.UI,HorizontalAlignmentUI,,"public class HorizontalAlignmentUI : MonoBehaviour, IAligned"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/HorizontalAlignmentUI.cs,enum,RCore.UI,Alignment,,public enum Alignment
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/IAligned.cs,interface,RCore.UI,IAligned,,public interface IAligned
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignment.cs,class,RCore,TableAlignment,,"public class TableAlignment : MonoBehaviour, IAligned"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignment.cs,enum,RCore,TableLayoutType,,public enum TableLayoutType
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignment.cs,enum,RCore,Alignment,,public enum Alignment
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignmentUI.cs,class,RCore.UI,TableAlignmentUI,,"public class TableAlignmentUI : MonoBehaviour, IAligned"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignmentUI.cs,enum,RCore.UI,TableLayoutType,,public enum TableLayoutType
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignmentUI.cs,enum,RCore.UI,AlignmentVertical,,public enum AlignmentVertical
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/TableAlignmentUI.cs,enum,RCore.UI,AlignmentHorizontal,,public enum AlignmentHorizontal
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/VerticalAlignment.cs,class,RCore,VerticalAlignment,,"public class VerticalAlignment : MonoBehaviour, IAligned"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/VerticalAlignment.cs,enum,RCore,Alignment,,public enum Alignment
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/VerticalAlignmentUI.cs,class,RCore.UI,VerticalAlignmentUI,,"public class VerticalAlignmentUI : MonoBehaviour, IAligned"
+RCore,UI/Layout,Assets/RCore/Main/Runtime/UI/Layout/VerticalAlignmentUI.cs,enum,RCore.UI,Alignment,,public enum Alignment
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelController.cs,class,RCore.UI,PanelController,,public class PanelController : PanelStack
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelController.cs,class,RCore.UI,PanelControllerEditor,,public class PanelControllerEditor : PanelStackEditor
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelRoot.cs,class,RCore.UI,PanelRoot,,public abstract class PanelRoot : PanelStack
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelRoot.cs,class,RCore.UI,PanelRootEditor,,public class PanelRootEditor : PanelStackEditor { }
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelStack.cs,class,RCore.UI,PanelStack,,public abstract class PanelStack : MonoBehaviour
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelStack.cs,enum,RCore.UI,PushMode,,public enum PushMode
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelStack.cs,class,RCore.UI,PanelStackEditor,,public class PanelStackEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,UI/PanelStack,Assets/RCore/Main/Runtime/UI/PanelStack/PanelStack.cs,class,RCore.UI,PanelStackEditor,,public class PanelStackEditor : UnityEditor.Editor
+RCore,UI,Assets/RCore/Main/Runtime/UI/ProgressBar.cs,class,RCore.UI,ProgressBar,,public class ProgressBar : MonoBehaviour
+RCore,UI,Assets/RCore/Main/Runtime/UI/ProgressBar.cs,enum,RCore.UI,FillDirection,,public enum FillDirection
+RCore,UI,Assets/RCore/Main/Runtime/UI/ProgressBar.cs,class,RCore.UI,ProgressBarEditor,,public class ProgressBarEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,UI,Assets/RCore/Main/Runtime/UI/ProgressBar.cs,class,RCore.UI,ProgressBarEditor,,public class ProgressBarEditor : UnityEditor.Editor
+RCore,UI,Assets/RCore/Main/Runtime/UI/ScreenSafeArea.cs,class,RCore.UI,ScreenSafeArea,,public class ScreenSafeArea : MonoBehaviour
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedHorizontalScrollView.cs,class,RCore.UI,OptimizedHorizontalScrollView,,public class OptimizedHorizontalScrollView : MonoBehaviour
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedHorizontalScrollView.cs,class,RCore.UI,OptimizedHorizontalScrollViewEditor,,public class OptimizedHorizontalScrollViewEditor : Sirenix.OdinInspector.Editor.OdinEditor
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedHorizontalScrollView.cs,class,RCore.UI,OptimizedHorizontalScrollViewEditor,,public class OptimizedHorizontalScrollViewEditor : UnityEditor.Editor
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedScrollItem.cs,class,RCore.UI,OptimizedScrollItem,,public abstract class OptimizedScrollItem : MonoBehaviour
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedScrollItemTest.cs,class,RCore.UI,OptimizedScrollItemTest,,public class OptimizedScrollItemTest : OptimizedScrollItem
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedScrollView.cs,enum,RCore.UI,ScrollDirection,,public enum ScrollDirection
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedScrollView.cs,class,RCore.UI,OptimizedScrollView,,public class OptimizedScrollView : MonoBehaviour
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/OptimizedVerticalScrollView.cs,class,RCore.UI,OptimizedVerticalScrollView,,public class OptimizedVerticalScrollView : MonoBehaviour
+RCore,UI/Scrollview,Assets/RCore/Main/Runtime/UI/Scrollview/ScrollRectEx.cs,class,RCore.UI,ScrollRectEx,,public class ScrollRectEx : ScrollRect
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/CustomToggleGroup.cs,class,RCore.UI,CustomToggleGroup,,public class CustomToggleGroup : ToggleGroup
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/CustomToggleSlider.cs,class,RCore.UI,CustomToggleSlider,,public class CustomToggleSlider : Toggle
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/CustomToggleSlider.cs,class,RCore.UI,CustomToggleEditor,,public class CustomToggleEditor : UnityEditor.UI.ToggleEditor
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/JustToggle.cs,class,RCore.UI,JustToggle,,public class JustToggle : Toggle
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/JustToggle.cs,class,RCore.UI,SizeTransition,,public class SizeTransition
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/JustToggle.cs,class,RCore.UI,PositionTransition,,public class PositionTransition
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/JustToggle.cs,class,RCore.UI,ColorTransition,,public class ColorTransition
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/JustToggle.cs,class,RCore.UI,SpriteTransition,,public class SpriteTransition
+RCore,UI/Toggle,Assets/RCore/Main/Runtime/UI/Toggle/JustToggle.cs,class,RCore.UI,CustomToggleTabEditor,,public class CustomToggleTabEditor : UnityEditor.UI.ToggleEditor
+RCore,UI,Assets/RCore/Main/Runtime/UI/UICircleArranger.cs,interface,RCore.UI,ITweenItem,,public interface ITweenItem
+RCore,UI,Assets/RCore/Main/Runtime/UI/UICircleArranger.cs,class,RCore.UI,UICircleArranger,,public class UICircleArranger : MonoBehaviour
+RCore,Services/Ads,Assets/RCore/Services/Ads/AdmobProvider.cs,class,RCore.Service,AdMobProvider,,public class AdMobProvider : IAdProvider
+RCore,Services/Ads,Assets/RCore/Services/Ads/ApplovinProvider.cs,class,RCore.Service,ApplovinProvider,,public class ApplovinProvider : IAdProvider
+RCore,Services/Ads,Assets/RCore/Services/Ads/IAdProvider.cs,interface,RCore.Service,IAdProvider,,public interface IAdProvider
+RCore,Services/Ads,Assets/RCore/Services/Ads/IAdProvider.cs,interface,RCore.Service,IRewardedAdListener,,public interface IRewardedAdListener
+RCore,Services/Ads,Assets/RCore/Services/Ads/IAdProvider.cs,interface,RCore.Service,IInterstitialAdListener,,public interface IInterstitialAdListener
+RCore,Services/Ads,Assets/RCore/Services/Ads/IAdProvider.cs,interface,RCore.Service,IBannerAdListener,,public interface IBannerAdListener
+RCore,Services/Ads,Assets/RCore/Services/Ads/IronSourceProvider.cs,class,RCore.Service,IronSourceProvider,,public class IronSourceProvider : MonoBehaviour
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/ABConfigPropertyDrawer.cs,class,RCore.Service,ABConfigPropertyDrawer,,public class ABConfigPropertyDrawer : PropertyDrawer
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebase.cs,class,RCore.Service,RFirebase,,public static class RFirebase
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseAnalytics.cs,class,RCore.Service,RFirebaseAnalytics,,public static class RFirebaseAnalytics
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseAnalytics.cs,class,RCore.Service,AnalyticEvent,,public class AnalyticEvent
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseAuth.cs,class,RCore.Service,RFirebaseAuth,,public static class RFirebaseAuth
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseCrashlytcis.cs,class,RCore.Service,RFirebaseCrashlytics,,public static class RFirebaseCrashlytics
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseDatabase.cs,class,RCore.Service,RDatabaseReference,,public class RDatabaseReference
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseDatabase.cs,class,RCore.Service,RFirebaseDatabase,,public static class RFirebaseDatabase
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseFirestore.cs,class,RCore.Service,PlayerIdentityDoc,,public class PlayerIdentityDoc
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseFirestore.cs,class,RCore.Service,PlayerDataDoc,,public class PlayerDataDoc
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseFirestore.cs,class,RCore.Service,RFirebaseFirestore,,public static class RFirebaseFirestore
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseFirestore.cs,class,RCore.Service,PlayerIdentityDoc,,public class PlayerIdentityDoc
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseFirestore.cs,class,RCore.Service,PlayerDataDoc,,public class PlayerDataDoc
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseFirestore.cs,class,RCore.Service,RFirebaseFirestore,,public static class RFirebaseFirestore
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseRemote.cs,interface,RCore.Service,IRemoteConfig,,public interface IRemoteConfig
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseRemote.cs,class,RCore.Service,RFirebaseRemote,,public static class RFirebaseRemote
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseRemote.cs,class,RCore.Service,ABConfig,,public class ABConfig<T>
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseStorage.cs,class,RCore.Service,WaitForTaskStorage,,public class WaitForTaskStorage : CustomYieldInstruction
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseStorage.cs,class,RCore.Service,SavedFileDefinition,,public class SavedFileDefinition
+RCore,Services/Firebase,Assets/RCore/Services/Firebase/RFirebaseStorage.cs,class,RCore.Service,RFirebaseStorage,,public static class RFirebaseStorage
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.CloudSave.cs,class,RCore.Service,GameServices,,public static partial class GameServices
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.CloudSave.cs,delegate,RCore.Service,ConflictResolutionStrategy,,"public delegate ConflictResolutionStrategy SavedGameConflictResolver(ISavedGameMetadata baseVersion, byte[] baseVersionData, ISavedGameMetadata remoteVersion, b"
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.CloudSave.cs,interface,RCore.Service,ISavedGameMetadata,,public interface ISavedGameMetadata
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.CloudSave.cs,enum,RCore.Service,SelectUIStatus,,public enum SelectUIStatus
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.InAppReview.cs,class,RCore.Service,GameServices,,public static partial class GameServices
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.InAppUpdate.cs,class,RCore.Service,GameServices,,public static partial class GameServices
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.cs,enum,RCore.Service,AskFriendResolutionStatus,,public enum AskFriendResolutionStatus
+RCore,Services/GameServices,Assets/RCore/Services/GameServices/GameServices.cs,class,RCore.Service,GameServices,,public static partial class GameServices
+RCore,Services/IAP,Assets/RCore/Services/IAP/IAPManager.cs,class,RCore.Service,IAPManager,,"public partial class IAPManager : MonoBehaviour, IDetailedStoreListener"
+RCore,Services/Notification,Assets/RCore/Services/Notification/DefaultSerializer.cs,class,RCore.Service,DefaultSerializer,,public class DefaultSerializer : IPendingNotificationsSerializer
+RCore,Services/Notification,Assets/RCore/Services/Notification/GameNotification.cs,class,RCore.Service,GameNotification,,public class GameNotification
+RCore,Services/Notification,Assets/RCore/Services/Notification/IPendingNotificationsSerializer.cs,interface,RCore.Service,IPendingNotificationsSerializer,,public interface IPendingNotificationsSerializer
+RCore,Services/Notification,Assets/RCore/Services/Notification/NotificationsManager.cs,class,RCore.Service,NotificationsManager,,public class NotificationsManager : MonoBehaviour
+RCore,Services/Notification,Assets/RCore/Services/Notification/NotificationsManager.cs,enum,RCore.Service,OperatingMode,,public enum OperatingMode
+RCore,Services/Notification,Assets/RCore/Services/Notification/NotificationsPlatform.cs,class,RCore.Service,NotificationsPlatform,,public class NotificationsPlatform : IDisposable
+RCore,Services/Notification,Assets/RCore/Services/Notification/PendingNotification.cs,class,RCore.Service,PendingNotification,,public class PendingNotification
+RCore,UI,Assets/RCore/Sub/Runtime/UI/ContentRectSizeFilter.cs,class,RCore.UI,ContentRectSizeFilter,,public class ContentRectSizeFilter : MonoBehaviour
+RCore,UI/DragDrop,Assets/RCore/Sub/Runtime/UI/DragDrop/UIDragController.cs,class,RCore.UI,UIDragController,,public class UIDragController : MonoBehaviour
+RCore,UI/DragDrop,Assets/RCore/Sub/Runtime/UI/DragDrop/UIDragHandler.cs,class,RCore.UI,UIDragHandler,,"public class UIDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler"
+RCore,UI/DragDrop,Assets/RCore/Sub/Runtime/UI/DragDrop/UIDraggableItem.cs,class,RCore.UI,UIDraggableItem,,public class UIDraggableItem : MonoBehaviour
+RCore,UI/DragDrop,Assets/RCore/Sub/Runtime/UI/DragDrop/UIDraggableWorldItem.cs,class,RCore.UI,UIDraggableWorldItem,,public class UIDraggableWorldItem : UIDraggableItem
+RCore,UI,Assets/RCore/Sub/Runtime/UI/LeftSnapScrollView.cs,class,RCore.UI,LeftSnapScrollView,,"public class LeftSnapScrollView : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler"
+RCore,UI,Assets/RCore/Sub/Runtime/UI/MessageWithPointer.cs,enum,RCore.UI,PointerAlignment,,public enum PointerAlignment
+RCore,UI,Assets/RCore/Sub/Runtime/UI/MessageWithPointer.cs,class,RCore.UI,MessageWithPointer,,public class MessageWithPointer : MonoBehaviour
+RCore,UI,Assets/RCore/Sub/Runtime/UI/MessagesHUD.cs,class,RCore.UI,MessagesHUD,,public class MessagesHUD : MonoBehaviour
+RCore,UI,Assets/RCore/Sub/Runtime/UI/MessagesHUD.cs,class,RCore.UI,Message,,public class Message
+RCore,UI,Assets/RCore/Sub/Runtime/UI/MessagesHUD.cs,class,RCore.UI,Bubble,,public class Bubble : Message
+RCore,UI,Assets/RCore/Sub/Runtime/UI/MessagesHUD.cs,class,RCore.UI,Notification,,public class Notification : Message
+RCore,UI,Assets/RCore/Sub/Runtime/UI/ResolutionFixer.cs,class,RCore.UI,ResolutionFixer,,public class ResolutionFixer : MonoBehaviour
+RCore,UI,Assets/RCore/Sub/Runtime/UI/ResolutionFixer.cs,class,RCore.UI,CanvasResolutionFixerEditor,,public class CanvasResolutionFixerEditor : UnityEditor.Editor
+RCore,UI,Assets/RCore/Sub/Runtime/UI/UIGridScaler.cs,class,RCore.UI,UIGridScaler,,public class UIGridScaler : MonoBehaviour
+RCore,UI,Assets/RCore/Sub/Runtime/UI/UIGridScaler.cs,enum,RCore.UI,ScaleType,,public enum ScaleType
+RCore,UI,Assets/RCore/Sub/Runtime/UI/VerticalSnapScrollView.cs,class,RCore.UI,VerticalSnapScrollView,,"public class VerticalSnapScrollView : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler"
+RevCore,Audio,Assets/RevCore/Audio/Runtime/AudioCollection.cs,class,RevCore,AudioCollection,,public class AudioCollection : ScriptableObject
+RevCore,Audio,Assets/RevCore/Audio/Runtime/AudioCollection.cs,struct,RevCore,ScriptGenerator,,public struct ScriptGenerator
+RevCore,Audio,Assets/RevCore/Audio/Runtime/AudioManager.cs,class,RevCore,AudioManager,,public class AudioManager : BaseAudioManager
+RevCore,Audio,Assets/RevCore/Audio/Runtime/BaseAudioManager.cs,class,RevCore,BaseAudioManager,,public class BaseAudioManager : MonoBehaviour
+RevCore,Audio,Assets/RevCore/Audio/Runtime/SfxSource.cs,class,RevCore,SfxSource,,public class SfxSource : MonoBehaviour
+RevCore,Data,Assets/RevCore/Data/Runtime/IJObjectHandler.cs,interface,RevCore,IJObjectHandler,,public interface IJObjectHandler
+RevCore,Data,Assets/RevCore/Data/Runtime/IJObjectModel.cs,interface,RevCore,IJObjectModel,,public interface IJObjectModel : IJObjectHandler
+RevCore,Data,Assets/RevCore/Data/Runtime/InjectAttribute.cs,class,RevCore,InjectAttribute,,public sealed class InjectAttribute : Attribute { }
+RevCore,Data,Assets/RevCore/Data/Runtime/JObjectDB.cs,class,RevCore,JObjectDB,,public static class JObjectDB
+RevCore,Data,Assets/RevCore/Data/Runtime/JObjectDBManager.cs,class,RevCore,JObjectDBManager,,public abstract class JObjectDBManager<T> : MonoBehaviour where T : JObjectModelCollection
+RevCore,Data,Assets/RevCore/Data/Runtime/JObjectData.cs,interface,RevCore,IJObjectData,,public interface IJObjectData
+RevCore,Data,Assets/RevCore/Data/Runtime/JObjectData.cs,class,RevCore,JObjectData,,public abstract class JObjectData : IJObjectData
+RevCore,Data,Assets/RevCore/Data/Runtime/JObjectModel.cs,class,RevCore,JObjectModel,,"public abstract class JObjectModel<T> : ScriptableObject, IJObjectModel where T : JObjectData"
+RevCore,Data,Assets/RevCore/Data/Runtime/JObjectModelCollection.cs,class,RevCore,JObjectModelCollection,,public class JObjectModelCollection : ScriptableObject
+RevCore,Data,Assets/RevCore/Data/Runtime/Session/SessionData.cs,class,RevCore,SessionData,,public class SessionData : JObjectData
+RevCore,Data,Assets/RevCore/Data/Runtime/Session/SessionModel.cs,struct,RevCore,NewDayStartedEvent,,public readonly struct NewDayStartedEvent : IEvent { }
+RevCore,Data,Assets/RevCore/Data/Runtime/Session/SessionModel.cs,interface,RevCore,ISessionModel,,public interface ISessionModel
+RevCore,Data,Assets/RevCore/Data/Runtime/Session/SessionModel.cs,class,RevCore,SessionModel,,"public class SessionModel : JObjectModel<SessionData>, ISessionModel"
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Contracts/IEventBus.cs,interface,RevCore,IEventBus,,public interface IEventBus
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Contracts/ILogger.cs,interface,RevCore,IRevLogger,,public interface IRevLogger
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Contracts/ILogger.cs,class,RevCore,RevLoggerExtensions,,public static class RevLoggerExtensions
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Contracts/IServiceLocator.cs,interface,RevCore,IServiceLocator,,public interface IServiceLocator
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Delegates.cs,delegate,RevCore,void,,public delegate void VoidDelegate();
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Delegates.cs,delegate,RevCore,void,,public delegate void IntDelegate(int value);
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Delegates.cs,delegate,RevCore,void,,public delegate void BoolDelegate(bool value);
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Delegates.cs,delegate,RevCore,void,,public delegate void FloatDelegate(float value);
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Delegates.cs,delegate,RevCore,bool,,public delegate bool ConditionalDelegate();
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Events/EventBus.cs,class,RevCore,EventBus,,public sealed class EventBus : IEventBus
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Events/Events.cs,class,RevCore,Events,,public static class Events
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Events/IEvent.cs,interface,RevCore,IEvent,,public interface IEvent { }
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Events/UISfxTriggeredEvent.cs,struct,RevCore,UISfxTriggeredEvent,,public readonly struct UISfxTriggeredEvent : IEvent
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/CameraHelper.cs,class,RevCore,CameraExtension,,public static class CameraExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/CollectionHelper.cs,class,RevCore,CollectionHelper,,public static class CollectionHelper
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/CollectionHelper.cs,class,RevCore,CollectionExtension,,public static class CollectionExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/ColorHelper.cs,class,RevCore,ColorExtension,,public static class ColorExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/ColorHelper.cs,class,RevCore,ColorHelper,,public static class ColorHelper
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/ComponentHelper.cs,class,RevCore,ComponentExtension,,public static class ComponentExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/MathHelper.cs,class,RevCore,MathHelper,,public static class MathHelper
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/MathHelper.cs,class,RevCore,MathExtension,,public static class MathExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/StringHelper.cs,class,RevCore,StringHelper,,public static class StringHelper
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/StringHelper.cs,class,RevCore,StringExtension,,public static class StringExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/TimeHelper.cs,class,RevCore,TimeHelper,,public static class TimeHelper
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/TimeHelper.cs,class,RevCore,TimeExtension,,public static class TimeExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Helpers/TransformHelper.cs,class,RevCore,TransformExtension,,public static class TransformExtension
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Logging/LogLevel.cs,enum,RevCore,LogLevel,,public enum LogLevel
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Logging/RevLog.cs,class,RevCore,RevLog,,public sealed class RevLog : IRevLogger
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Logging/RevLog.cs,class,RevCore,Log,,public static class Log
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Results/Result.cs,struct,RevCore,Result,,public readonly struct Result
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Results/Result.cs,struct,RevCore,Result,,public readonly struct Result<T>
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Services/ServiceLocator.cs,class,RevCore,ServiceLocator,,public sealed class ServiceLocator : IServiceLocator
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Services/ServiceLocator.cs,class,RevCore,Services,,public static class Services
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Types/BigNumber.cs,struct,RevCore,BigNumber,,public readonly struct BigNumber : IComparable<BigNumber>
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Types/PerfectRatio.cs,enum,RevCore,PerfectRatio,,public enum PerfectRatio
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Types/SerializableDictionary.cs,class,RevCore,SerializableDictionary,,"public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver"
+RevCore,Foundation,Assets/RevCore/Foundation/Runtime/Types/SerializableDictionary.cs,class,RevCore,SerializedDictionary,,"public class SerializedDictionary<TKey, TValue>"
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/AutoFillAttribute.cs,class,RevCore,AutoFillAttribute,,public sealed class AutoFillAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/CommentAttribute.cs,class,RevCore,CommentAttribute,,public sealed class CommentAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/CreateScriptableObjectAttribute.cs,class,RevCore,CreateScriptableObjectAttribute,,public sealed class CreateScriptableObjectAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/DisplayEnumAttribute.cs,class,RevCore,DisplayEnumAttribute,,public sealed class DisplayEnumAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/ExposeScriptableObjectAttribute.cs,class,RevCore,ExposeScriptableObjectAttribute,,public sealed class ExposeScriptableObjectAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/FolderPathAttribute.cs,class,RevCore,FolderPathAttribute,,public sealed class FolderPathAttribute : PropertyAttribute { }
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/HighlightAttribute.cs,class,RevCore,HighlightAttribute,,public sealed class HighlightAttribute : PropertyAttribute { }
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/InspectorButtonAttribute.cs,class,RevCore,InspectorButtonAttribute,,public sealed class InspectorButtonAttribute : Attribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/ReadOnlyAttribute.cs,class,RevCore,ReadOnlyAttribute,,public sealed class ReadOnlyAttribute : PropertyAttribute { }
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/SeparatorAttribute.cs,class,RevCore,SeparatorAttribute,,public sealed class SeparatorAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/ShowIfAttribute.cs,class,RevCore,ShowIfAttribute,,public sealed class ShowIfAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/SingleLayerAttribute.cs,class,RevCore,SingleLayerAttribute,,public sealed class SingleLayerAttribute : PropertyAttribute { }
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/SpriteBoxAttribute.cs,class,RevCore,SpriteBoxAttribute,,public sealed class SpriteBoxAttribute : PropertyAttribute
+RevCore,Inspector,Assets/RevCore/Inspector/Runtime/Attributes/TagSelectorAttribute.cs,class,RevCore,TagSelectorAttribute,,public sealed class TagSelectorAttribute : PropertyAttribute
+RevCore,Pool,Assets/RevCore/Pool/Runtime/Contracts/IPool.cs,interface,RevCore,IPool,,public interface IPool<T> where T : Component
+RevCore,Pool,Assets/RevCore/Pool/Runtime/Contracts/IPoolContainer.cs,interface,RevCore,IPoolContainer,,public interface IPoolContainer<T> where T : Component
+RevCore,Pool,Assets/RevCore/Pool/Runtime/Core/PoolObject.cs,class,RevCore,PoolObject,,public class PoolObject : MonoBehaviour
+RevCore,Pool,Assets/RevCore/Pool/Runtime/Core/PoolsContainer.cs,class,RevCore,PoolsContainer,,public class PoolsContainer<T> : IPoolContainer<T> where T : Component
+RevCore,Pool,Assets/RevCore/Pool/Runtime/Core/RevPool.cs,class,RevCore,RevPool,,public class RevPool<T> : IPool<T> where T : Component
+RevCore,Pool,Assets/RevCore/Pool/Runtime/Helpers/PoolComponentExtensions.cs,class,RevCore,PoolComponentExtensions,,public static class PoolComponentExtensions
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/Contracts/IPref.cs,interface,RevCore,IPref,,public interface IPref
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/PlayerPrefs/PlayerPref.cs,class,RevCore,PlayerPref,,public abstract class PlayerPref : IPref
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/PlayerPrefs/PlayerPrefBool.cs,class,RevCore,PlayerPrefBool,,public class PlayerPrefBool : PlayerPref
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/PlayerPrefs/PlayerPrefContainer.cs,class,RevCore,PlayerPrefContainer,,public static class PlayerPrefContainer
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/PlayerPrefs/PlayerPrefFloat.cs,class,RevCore,PlayerPrefFloat,,public class PlayerPrefFloat : PlayerPref
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/PlayerPrefs/PlayerPrefInt.cs,class,RevCore,PlayerPrefInt,,public class PlayerPrefInt : PlayerPref
+RevCore,Prefs,Assets/RevCore/Prefs/Runtime/PlayerPrefs/PlayerPrefString.cs,class,RevCore,PlayerPrefString,,public class PlayerPrefString : PlayerPref
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Contracts/ITimerHandle.cs,interface,RevCore,ITimerHandle,,public interface ITimerHandle
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Contracts/ITimerScheduler.cs,interface,RevCore,ITimerScheduler,,public interface ITimerScheduler
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Core/TimedAction.cs,class,RevCore,TimedAction,,public sealed class TimedAction
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Core/TimerScheduler.cs,class,RevCore,TimerScheduler,,public sealed class TimerScheduler : ITimerScheduler
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Core/Timers.cs,class,RevCore,Timers,,public static class Timers
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Unity/GlobalTimers.cs,class,RevCore,GlobalTimers,,public sealed class GlobalTimers : TimerDriver
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Unity/SceneTimers.cs,class,RevCore,SceneTimers,,public sealed class SceneTimers : TimerDriver
+RevCore,Timer,Assets/RevCore/Timer/Runtime/Unity/TimerDriver.cs,class,RevCore,TimerDriver,,public class TimerDriver : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/CustomToggleGroup.cs,class,RevCore.UI,CustomToggleGroup,,public class CustomToggleGroup : ToggleGroup
+RevCore,UI,Assets/RevCore/UI/Runtime/CustomToggleSlider.cs,class,RevCore.UI,CustomToggleSlider,,public class CustomToggleSlider : Toggle
+RevCore,UI,Assets/RevCore/UI/Runtime/HoledLayerMask.cs,class,RevCore.UI,HoledLayerMask,,public class HoledLayerMask : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/HorizontalAlignmentUI.cs,class,RevCore.UI,HorizontalAlignmentUI,,"public class HorizontalAlignmentUI : MonoBehaviour, IAligned"
+RevCore,UI,Assets/RevCore/UI/Runtime/HorizontalAlignmentUI.cs,enum,RevCore.UI,Alignment,,public enum Alignment
+RevCore,UI,Assets/RevCore/UI/Runtime/HorizontalSnapScrollView.cs,class,RevCore.UI,HorizontalSnapScrollView,,"public class HorizontalSnapScrollView : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler"
+RevCore,UI,Assets/RevCore/UI/Runtime/IAligned.cs,interface,RevCore.UI,IAligned,,public interface IAligned
+RevCore,UI,Assets/RevCore/UI/Runtime/IgnoreScreenSafe.cs,class,RevCore.UI,IgnoreScreenSafe,,public class IgnoreScreenSafe : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/ImageWithText.cs,class,RevCore.UI,ImageWithText,,public class ImageWithText : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/ImageWithTextTMP.cs,class,RevCore.UI,ImageWithTextTMP,,public class ImageWithTextTMP : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/Joystick.cs,class,RevCore.UI,Joystick,,"public class Joystick : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler"
+RevCore,UI,Assets/RevCore/UI/Runtime/JoystickArea.cs,class,RevCore.UI,JoystickArea,,"public class JoystickArea : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IBeginDragHandler, IDragHandler, IEndDragHandler"
+RevCore,UI,Assets/RevCore/UI/Runtime/JustButton.cs,class,RevCore.UI,JustButton,,public class JustButton : Button
+RevCore,UI,Assets/RevCore/UI/Runtime/JustToggle.cs,class,RevCore.UI,JustToggle,,public class JustToggle : Toggle
+RevCore,UI,Assets/RevCore/UI/Runtime/JustToggle.cs,class,RevCore.UI,SizeTransition,,public class SizeTransition
+RevCore,UI,Assets/RevCore/UI/Runtime/JustToggle.cs,class,RevCore.UI,PositionTransition,,public class PositionTransition
+RevCore,UI,Assets/RevCore/UI/Runtime/JustToggle.cs,class,RevCore.UI,ColorTransition,,public class ColorTransition
+RevCore,UI,Assets/RevCore/UI/Runtime/JustToggle.cs,class,RevCore.UI,SpriteTransition,,public class SpriteTransition
+RevCore,UI,Assets/RevCore/UI/Runtime/OptimizedHorizontalScrollView.cs,class,RevCore.UI,OptimizedHorizontalScrollView,,public class OptimizedHorizontalScrollView : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/OptimizedScrollItem.cs,class,RevCore.UI,OptimizedScrollItem,,public abstract class OptimizedScrollItem : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/OptimizedScrollView.cs,enum,RevCore.UI,ScrollDirection,,public enum ScrollDirection
+RevCore,UI,Assets/RevCore/UI/Runtime/OptimizedScrollView.cs,class,RevCore.UI,OptimizedScrollView,,public class OptimizedScrollView : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/OptimizedVerticalScrollView.cs,class,RevCore.UI,OptimizedVerticalScrollView,,public class OptimizedVerticalScrollView : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/PanelController.cs,class,RevCore.UI,PanelController,,public class PanelController : PanelStack
+RevCore,UI,Assets/RevCore/UI/Runtime/PanelRoot.cs,class,RevCore.UI,PanelRoot,,public abstract class PanelRoot : PanelStack
+RevCore,UI,Assets/RevCore/UI/Runtime/PanelStack.cs,class,RevCore.UI,PanelStack,,public abstract class PanelStack : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/PanelStack.cs,enum,RevCore.UI,PushMode,,public enum PushMode
+RevCore,UI,Assets/RevCore/UI/Runtime/ProgressBar.cs,class,RevCore.UI,ProgressBar,,public class ProgressBar : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/ProgressBar.cs,enum,RevCore.UI,FillDirection,,public enum FillDirection
+RevCore,UI,Assets/RevCore/UI/Runtime/ScreenSafeArea.cs,class,RevCore.UI,ScreenSafeArea,,public class ScreenSafeArea : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/ScrollRectEx.cs,class,RevCore.UI,ScrollRectEx,,public class ScrollRectEx : ScrollRect
+RevCore,UI,Assets/RevCore/UI/Runtime/SimpleButton.cs,class,RevCore.UI,SimpleButton,,public class SimpleButton : JustButton
+RevCore,UI,Assets/RevCore/UI/Runtime/SimpleTMPButton.cs,class,RevCore.UI,SimpleTMPButton,,public class SimpleTMPButton : JustButton
+RevCore,UI,Assets/RevCore/UI/Runtime/SnapScrollItem.cs,class,RevCore.UI,SnapScrollItem,,public abstract class SnapScrollItem : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/TableAlignmentUI.cs,class,RevCore.UI,TableAlignmentUI,,"public class TableAlignmentUI : MonoBehaviour, IAligned"
+RevCore,UI,Assets/RevCore/UI/Runtime/TableAlignmentUI.cs,enum,RevCore.UI,TableLayoutType,,public enum TableLayoutType
+RevCore,UI,Assets/RevCore/UI/Runtime/TableAlignmentUI.cs,enum,RevCore.UI,AlignmentVertical,,public enum AlignmentVertical
+RevCore,UI,Assets/RevCore/UI/Runtime/TableAlignmentUI.cs,enum,RevCore.UI,AlignmentHorizontal,,public enum AlignmentHorizontal
+RevCore,UI,Assets/RevCore/UI/Runtime/UICircleArranger.cs,interface,RevCore.UI,ITweenItem,,public interface ITweenItem
+RevCore,UI,Assets/RevCore/UI/Runtime/UICircleArranger.cs,class,RevCore.UI,UICircleArranger,,public class UICircleArranger : MonoBehaviour
+RevCore,UI,Assets/RevCore/UI/Runtime/VerticalAlignmentUI.cs,class,RevCore.UI,VerticalAlignmentUI,,"public class VerticalAlignmentUI : MonoBehaviour, IAligned"
+RevCore,UI,Assets/RevCore/UI/Runtime/VerticalAlignmentUI.cs,enum,RevCore.UI,Alignment,,public enum Alignment
