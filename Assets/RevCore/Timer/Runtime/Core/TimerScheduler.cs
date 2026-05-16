@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 namespace RevCore
 {
+	/// <summary>
+	/// Default <see cref="ITimerScheduler"/> implementation. <see cref="Enqueue"/> is thread-safe;
+	/// every other entry point runs on the main thread only. Timers with the same non-zero id replace
+	/// each other on schedule (handy for "reset the timeout on each input").
+	/// </summary>
+	/// <remarks>
+	/// Phase 4 will rework <see cref="Cancel(int)"/> from O(n) linear scan to O(1) dictionary lookup;
+	/// the observable behavior (see <c>Characterization_TimerSchedulerTests.cs</c>) stays the same.
+	/// </remarks>
 	public sealed class TimerScheduler : ITimerScheduler
 	{
 		private readonly List<CountdownTimer> m_countdowns = new();
@@ -10,6 +19,7 @@ namespace RevCore
 		private readonly Queue<Action> m_queue = new();
 		private readonly object m_queueLock = new();
 
+		/// <inheritdoc />
 		public int ActiveCount
 		{
 			get
@@ -21,11 +31,13 @@ namespace RevCore
 			}
 		}
 
+		/// <inheritdoc />
 		public ITimerHandle WaitForSeconds(float seconds, Action onComplete, bool unscaledTime = false, int id = 0)
 		{
 			return WaitForSeconds(seconds, _ => onComplete?.Invoke(), unscaledTime, id);
 		}
 
+		/// <inheritdoc />
 		public ITimerHandle WaitForSeconds(float seconds, Action<float> onComplete, bool unscaledTime = false, int id = 0)
 		{
 			var handle = new TimerHandle(id, seconds > 0f ? seconds : 0f, RemoveHandle);
@@ -41,6 +53,7 @@ namespace RevCore
 			return handle;
 		}
 
+		/// <inheritdoc />
 		public ITimerHandle WaitForCondition(ConditionalDelegate condition, Action onComplete, int id = 0)
 		{
 			var handle = new TimerHandle(id, 0f, RemoveHandle);
@@ -49,11 +62,13 @@ namespace RevCore
 			return handle;
 		}
 
+		/// <inheritdoc />
 		public ITimerHandle Debounce<T>(T evt, float seconds) where T : IEvent
 		{
 			return WaitForSeconds(seconds, () => Events.Publish(evt), false, typeof(T).GetHashCode());
 		}
 
+		/// <inheritdoc />
 		public void Enqueue(Action action)
 		{
 			if (action == null)
@@ -65,6 +80,7 @@ namespace RevCore
 			}
 		}
 
+		/// <inheritdoc />
 		public void Tick(float deltaTime, float unscaledDeltaTime)
 		{
 			FlushQueue();
@@ -84,6 +100,7 @@ namespace RevCore
 			}
 		}
 
+		/// <inheritdoc />
 		public void Cancel(int id)
 		{
 			for (int i = m_countdowns.Count - 1; i >= 0; i--)
@@ -95,11 +112,13 @@ namespace RevCore
 					m_conditions[i].Handle.Cancel();
 		}
 
+		/// <inheritdoc />
 		public void Cancel(ITimerHandle handle)
 		{
 			handle?.Cancel();
 		}
 
+		/// <inheritdoc />
 		public void Clear()
 		{
 			m_countdowns.Clear();
