@@ -1,0 +1,40 @@
+# Default: auto-detect text, normalize line endings on commit.
+* text=auto
+
+# Reduce merge conflicts on Unity-regenerated metadata.
+*.meta merge=union
+
+# Force LF for shell scripts and YAML.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Force CRLF for Windows-specific files.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Treat C# as text with CRLF (Unity convention on Windows).
+*.cs text eol=crlf
+
+# Binary assets — never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.psd binary
+*.fbx binary
+*.obj binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.tga binary
+*.dds binary
+*.exr binary
+*.hdr binary
+*.unity binary
+*.prefab binary
+*.asset binary
+*.controller binary
+*.mat binary
+*.anim binary
+*.physicMaterial binary

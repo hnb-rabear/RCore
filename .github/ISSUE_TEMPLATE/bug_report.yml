@@ -1,0 +1,82 @@
+name: Bug report
+description: Something in RevCore behaves incorrectly.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing. Please fill out every section — incomplete reports get closed.
+
+  - type: input
+    id: revcore-version
+    attributes:
+      label: RevCore version
+      description: Tag or commit SHA you are on.
+      placeholder: v0.4.2 or abc1234
+    validations:
+      required: true
+
+  - type: dropdown
+    id: unity-version
+    attributes:
+      label: Unity version
+      options:
+        - "2022.3 LTS"
+        - "Unity 6"
+        - "Other (specify in description)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module
+      options:
+        - Audio
+        - Data
+        - Foundation
+        - Inspector
+        - Pool
+        - Prefs
+        - Timer
+        - Tools
+        - UI
+        - Multiple
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal repro. A scene + script that triggers the issue.
+      placeholder: |
+        1. Create empty scene
+        2. Add component X
+        3. Call method Y
+        4. Observe Z
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include error message, stack trace, screenshot if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Project size, platform target, anything else relevant.

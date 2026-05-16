@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag matches package.json versions
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "Tag version: $TAG"
+          mismatch=0
+          while IFS= read -r pkg; do
+            pkg_version=$(jq -r '.version' "$pkg")
+            if [[ "$pkg_version" != "$TAG" ]]; then
+              echo "::error file=$pkg::version $pkg_version != tag $TAG"
+              mismatch=1
+            fi
+          done < <(find Assets/RevCore -name "package.json" -not -path "*/Tests/*")
+          if [[ $mismatch -eq 1 ]]; then
+            exit 1
+          fi
+
+      - name: Publish GitHub Release
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          publish: true
+          tag: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
