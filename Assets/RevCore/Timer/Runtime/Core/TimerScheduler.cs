@@ -154,8 +154,13 @@ namespace RevCore
 				{
 					if (m_countdowns[i].Handle.Id == timer.Handle.Id)
 					{
-						m_countdowns[i].Handle.Cancel();
+						// Replace the slot BEFORE cancelling the old handle. Cancel() fires the
+						// RemoveHandle callback, which scans m_countdowns by handle reference. If
+						// we cancelled first, that callback would RemoveAt(i) and the next line's
+						// indexer assignment would throw ArgumentOutOfRangeException.
+						var oldHandle = m_countdowns[i].Handle;
 						m_countdowns[i] = timer;
+						oldHandle.Cancel();
 						return;
 					}
 				}
@@ -172,8 +177,10 @@ namespace RevCore
 				{
 					if (m_conditions[i].Handle.Id == timer.Handle.Id)
 					{
-						m_conditions[i].Handle.Cancel();
+						// Same re-entrancy guard as ReplaceCountdownIfNeeded above.
+						var oldHandle = m_conditions[i].Handle;
 						m_conditions[i] = timer;
+						oldHandle.Cancel();
 						return;
 					}
 				}
