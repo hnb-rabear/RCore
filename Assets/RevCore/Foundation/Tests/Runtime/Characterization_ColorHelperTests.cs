@@ -12,25 +12,24 @@ namespace RevCore.Tests
 {
 	public class Characterization_ColorHelperTests
 	{
-		// PIN: invalid input produces default(Color) silently.
-		// Phase 3 will add TryHexToColor; HexToColor's silent fallback stays for backward compat.
+		// PIN: invalid input is silently swallowed — HexToColor never throws. The exact RGBA on
+		// failure is whatever Unity's ColorUtility.TryParseHtmlString leaves in its out param; on
+		// Unity 2022.3 that is Color.white (1,1,1,1), NOT default(Color). Earlier notes assumed
+		// default(Color); the run-through against the live engine corrected that. New code wanting
+		// a stable failure value should use TryHexToColor, which enforces Color.clear.
 		[Test]
-		public void HexToColor_returns_default_Color_on_invalid_input()
+		public void HexToColor_returns_Color_white_on_invalid_input()
 		{
 			var c = ColorHelper.HexToColor("not-a-hex");
-			Assert.AreEqual(default(Color), c);
-			Assert.AreEqual(0f, c.r);
-			Assert.AreEqual(0f, c.g);
-			Assert.AreEqual(0f, c.b);
-			Assert.AreEqual(0f, c.a, "Alpha is 0 — distinguishable from valid black #000000FF, but easy to miss in callers.");
+			Assert.AreEqual(Color.white, c, "Unity 2022.3 leaves out param at Color.white on parse failure.");
 		}
 
-		// PIN: empty string also returns default(Color), not throwing.
+		// PIN: empty string follows the same silent-fail path as invalid input.
 		[Test]
-		public void HexToColor_returns_default_Color_on_empty_string()
+		public void HexToColor_returns_Color_white_on_empty_string()
 		{
 			var c = ColorHelper.HexToColor(string.Empty);
-			Assert.AreEqual(default(Color), c);
+			Assert.AreEqual(Color.white, c);
 		}
 
 		// PIN: null input is silently tolerated by ColorUtility.TryParseHtmlString.

@@ -46,9 +46,11 @@ namespace RevCore
 	public static class ColorHelper
 	{
 		/// <summary>
-		/// Parses an HTML-style hex color string. Returns <see cref="Color.clear"/> on any failure
-		/// (invalid format, null, or empty input) without raising — a silent fallback retained for
-		/// backward compatibility. Prefer <see cref="TryHexToColor"/> in new code.
+		/// Parses an HTML-style hex color string. On any failure (invalid format, null, or empty
+		/// input) returns whatever Unity's <see cref="ColorUtility.TryParseHtmlString"/> happens
+		/// to leave in its <c>out</c> parameter — observed as <see cref="Color.white"/> on Unity
+		/// 2022.3 — without raising. This silent fallback is retained for backward compatibility.
+		/// Prefer <see cref="TryHexToColor"/> in new code; it enforces a stable failure value.
 		/// </summary>
 		public static Color HexToColor(string hex)
 		{
@@ -71,7 +73,14 @@ namespace RevCore
 				color = Color.clear;
 				return false;
 			}
-			return ColorUtility.TryParseHtmlString(hex, out color);
+			if (!ColorUtility.TryParseHtmlString(hex, out color))
+			{
+				// Unity's TryParseHtmlString leaves its out param at Color.white on failure;
+				// enforce the documented Color.clear contract here.
+				color = Color.clear;
+				return false;
+			}
+			return true;
 		}
 	}
 }
