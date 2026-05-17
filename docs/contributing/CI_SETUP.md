@@ -1,18 +1,21 @@
 # CI setup
 
-The repo runs four CI workflows out of the box (no setup needed):
+The repo has exactly one CI workflow:
 
-- `lint.yml` — EditorConfig + YAML + Markdown lint on every PR.
-- `docs-coverage.yml` — runs `scripts/check-xmldoc-coverage.py` to enforce 100% public XML doc coverage.
-- `release-drafter.yml` — auto-updates the draft release notes when PR labels change.
-- `release.yml` — publishes the GitHub Release when a `v*` tag is pushed.
+- `.github/workflows/release.yml` — fires on `v*` tag push, publishes the GitHub Release with the package artifacts.
 
-These need no secrets and run on Ubuntu — pure-text checks, no Unity Editor involved. Unity-side test runs and performance benchmarks are intentionally **not** wired to CI; the framework is solo-maintained and the maintainer runs them locally before pushing.
+PR-time and push-to-main automation was removed deliberately. The framework is solo-maintained and the maintainer runs every gate locally before pushing:
+
+| Check | How to run locally |
+| --- | --- |
+| Tests (151 EditMode tests, ~25s) | Unity Editor → Test Runner → EditMode → Run All |
+| Benchmark regressions | Unity Editor → Test Runner → Performance category → Run, then `python scripts/check-benchmark-regression.py --results Library/ --baseline scripts/benchmark-baseline.json` |
+| XML doc coverage (Phase 5 gate at 100%) | `python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json` |
+| EditorConfig compliance | Any editor with EditorConfig plugin handles this on save |
+| Public API drift | Open the diff before committing; new public members need a line in `PublicAPI.Unshipped.txt` |
 
 ## PublicAPI Roslyn analyzer (one-time at v1.0)
 
-The `PublicAPI.{Shipped,Unshipped}.txt` files under each Runtime asmdef are currently review-only: the analyzer DLLs are committed under `Assets/RevCore/_Analyzers/` but the `RoslynAnalyzer` asset label is intentionally absent so the analyzer stays dormant.
+The analyzer DLLs are committed under `Assets/RevCore/_Analyzers/` and each Runtime asmdef has a `csc.rsp` that wires the per-module `PublicAPI.*.txt` files into the compile. The `RoslynAnalyzer` asset label is intentionally absent so the analyzer is dormant — activating now would block compile with ~1,000 `RS0016` warnings against an empty Shipped surface.
 
-Activating now would block compile with ~1,000 `RS0016` warnings ("Symbol 'X' is not part of the declared API") because the Shipped surface is empty. Seeding is scheduled as a one-time v1.0 release task; the full flip-live procedure lives in `docs/contributing/RELEASE_CHECKLIST.md` under "One-time at v1.0: seed the baseline".
-
-Until then, the `.txt` files are a manually-curated record — the maintainer scans them in PR diffs by eye.
+Activation is the one-time v1.0 release task documented in `docs/contributing/RELEASE_CHECKLIST.md`. Until then the `PublicAPI.*.txt` files are a manually-curated record the maintainer scans in PR diffs by eye.

@@ -10,16 +10,15 @@ RevCore is a Unity framework used in multiple production projects. Any change yo
 4. [Public API Guide](PUBLIC_API_GUIDE.md) — how `PublicAPI.Shipped.txt` works and what to update.
 5. [Release Checklist](RELEASE_CHECKLIST.md) — the steps the maintainer follows on tag.
 
-For the CI overview (four pure-text workflows run on every PR, no secrets needed) and the one-time PublicAPI analyzer activation scheduled for v1.0, see [CI Setup](CI_SETUP.md).
+CI is intentionally minimal — see [CI Setup](CI_SETUP.md). The only workflow is `release.yml`, which fires on `v*` tag pushes to publish the GitHub Release. Every quality gate runs locally before push.
 
 ### Quick rules
 
-- Public API changes require an entry in `PublicAPI.Unshipped.txt`. CI blocks otherwise.
-- Public types and members require XML doc comments. CI blocks otherwise.
-- New behavior requires a test. CI tracks coverage; drops are blocked.
-- Performance-sensitive paths run under `Unity.PerformanceTesting`. Regressions over 5% are blocked.
+- Public API changes require an entry in `PublicAPI.Unshipped.txt`. Review-only until v1.0; check the diff before pushing.
+- Public types and members require XML doc comments. Run `python scripts/check-xmldoc-coverage.py` locally to verify the 100% baseline still holds.
+- New behavior requires a test under the relevant module's `Tests/Runtime/` folder. Run Unity Test Runner → EditMode locally and confirm all 151 tests are green before pushing.
+- Performance-sensitive paths run under `Unity.PerformanceTesting`. Run the Performance category locally and feed `Library/PerformanceTestResults.json` to `scripts/check-benchmark-regression.py` to verify the 5% tolerance.
 - Breaking changes go through Deprecation Policy. No silent removals.
-- Every PR is labelled `breaking`, `feature`, `fix`, `perf`, `docs`, `chore`, or `test`. Release Drafter uses these to generate the changelog.
 
 ### Branches
 
