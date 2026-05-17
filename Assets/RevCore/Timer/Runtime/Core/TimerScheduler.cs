@@ -98,30 +98,22 @@ namespace RevCore
 		{
 			FlushQueue();
 
+			// CountdownTimer.Tick and ConditionTimer.Tick both return true when the handle is
+			// no longer running (cancelled OR completed), so a single Tick call collapses both
+			// the "expired naturally" and "cancelled lazily" cases. The remove helpers are
+			// idempotent for handles already cleared from the indices.
 			for (int i = m_countdowns.Count - 1; i >= 0; i--)
 			{
 				var timer = m_countdowns[i];
-				if (timer.Handle.IsCancelled)
-				{
-					// Cancelled-but-not-yet-reaped (lazy cleanup from Cancel/Replace).
-					RemoveCountdownAtPreservingOrder(i, indexAlreadyCleared: true);
-					continue;
-				}
 				float delta = timer.UnscaledTime ? unscaledDeltaTime : deltaTime;
 				if (timer.Tick(delta))
-					RemoveCountdownAtPreservingOrder(i, indexAlreadyCleared: false);
+					RemoveCountdownAtPreservingOrder(i);
 			}
 
 			for (int i = m_conditions.Count - 1; i >= 0; i--)
 			{
-				var timer = m_conditions[i];
-				if (timer.Handle.IsCancelled)
-				{
-					RemoveConditionAtPreservingOrder(i, indexAlreadyCleared: true);
-					continue;
-				}
-				if (timer.Tick())
-					RemoveConditionAtPreservingOrder(i, indexAlreadyCleared: false);
+				if (m_conditions[i].Tick())
+					RemoveConditionAtPreservingOrder(i);
 			}
 		}
 
@@ -290,59 +282,49 @@ namespace RevCore
 		/// <summary>
 		/// Removes <c>m_countdowns[idx]</c>, preserving order. Items after <c>idx</c> shift down
 		/// by one; their entries in <c>m_countdownIndexByHandle</c> are decremented to match.
+		/// Idempotent on handles that were already cleared from the indices (e.g. by an earlier
+		/// <see cref="RemoveHandle"/> call during a lazy cancel) — the dict ops degrade to no-ops.
 		/// </summary>
-		/// <param name="idx">Index to remove.</param>
-		/// <param name="indexAlreadyCleared">
-		/// <c>true</c> when the removed timer's handle was already dropped from the indices
-		/// (e.g. by <see cref="RemoveHandle"/> during a cancel). <c>false</c> when this is the
-		/// first time we touch the indices for this timer (e.g. natural completion in Tick).
-		/// </param>
-		private void RemoveCountdownAtPreservingOrder(int idx, bool indexAlreadyCleared)
+		private void RemoveCountdownAtPreservingOrder(int idx)
 		{
 			var removed = m_countdowns[idx];
 			m_countdowns.RemoveAt(idx);
 
-			if (!indexAlreadyCleared)
+			m_countdownIndexByHandle.Remove(removed.Handle);
+			int id = removed.Handle.Id;
+			if (m_countdownsById.TryGetValue(id, out var list))
 			{
-				m_countdownIndexByHandle.Remove(removed.Handle);
-				int id = removed.Handle.Id;
-				if (m_countdownsById.TryGetValue(id, out var list))
-				{
-					for (int i = 0; i < list.Count; i++)
-						if (ReferenceEquals(list[i], removed))
-						{
-							list.RemoveAt(i);
-							break;
-						}
-					if (list.Count == 0)
-						m_countdownsById.Remove(id);
-				}
+				for (int i = 0; i < list.Count; i++)
+					if (ReferenceEquals(list[i], removed))
+					{
+						list.RemoveAt(i);
+						break;
+					}
+				if (list.Count == 0)
+					m_countdownsById.Remove(id);
 			}
 
 			for (int j = idx; j < m_countdowns.Count; j++)
 				m_countdownIndexByHandle[m_countdowns[j].Handle] = j;
 		}
 
-		private void RemoveConditionAtPreservingOrder(int idx, bool indexAlreadyCleared)
+		private void RemoveConditionAtPreservingOrder(int idx)
 		{
 			var removed = m_conditions[idx];
 			m_conditions.RemoveAt(idx);
 
-			if (!indexAlreadyCleared)
+			m_conditionIndexByHandle.Remove(removed.Handle);
+			int id = removed.Handle.Id;
+			if (m_conditionsById.TryGetValue(id, out var list))
 			{
-				m_conditionIndexByHandle.Remove(removed.Handle);
-				int id = removed.Handle.Id;
-				if (m_conditionsById.TryGetValue(id, out var list))
-				{
-					for (int i = 0; i < list.Count; i++)
-						if (ReferenceEquals(list[i], removed))
-						{
-							list.RemoveAt(i);
-							break;
-						}
-					if (list.Count == 0)
-						m_conditionsById.Remove(id);
-				}
+				for (int i = 0; i < list.Count; i++)
+					if (ReferenceEquals(list[i], removed))
+					{
+						list.RemoveAt(i);
+						break;
+					}
+				if (list.Count == 0)
+					m_conditionsById.Remove(id);
 			}
 
 			for (int j = idx; j < m_conditions.Count; j++)
