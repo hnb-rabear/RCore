@@ -4,31 +4,51 @@ Two pieces of out-of-band setup are required before the CI workflows in `.github
 
 ## 1. Unity license secrets
 
-`unity-test.yml` and `benchmark.yml` invoke `game-ci/unity-test-runner`, which needs a valid Unity license to run the Editor in batch mode. Without these secrets every PR run errors out on the licensing step.
+`unity-test.yml` and `benchmark.yml` invoke `game-ci/unity-test-runner`, which needs a valid Unity license to run the Editor in batch mode.
+
+> **Current status**: both workflows are set to `workflow_dispatch` only (manual trigger). The `pull_request` / `push` triggers are commented out so PRs don't show a red X while no license is configured. Restore them after the secrets below are set.
 
 ### Adding the license secrets
 
 In the repo on GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
 
-Add the secrets for the license tier the project actually owns:
+The two license tiers have different setup paths.
 
-**Personal license** (typical for solo maintainers / small studios):
+#### Pro / Plus (paid) — easy path
 
-- `UNITY_LICENSE` — full contents of the `.ulf` file (XML). Activate via Unity Hub → Sign In with your Unity ID, then export from `~/.local/share/unity3d/Unity/Unity_lic.ulf` (Linux/WSL) or `C:\ProgramData\Unity\Unity_lic.ulf` (Windows).
-- `UNITY_EMAIL` — Unity ID email.
-- `UNITY_PASSWORD` — Unity ID password.
-
-**Pro / Plus license**:
+Add three secrets:
 
 - `UNITY_SERIAL` — Pro/Plus serial number (e.g. `SB-XXXX-XXXX-XXXX-XXXX-XXXX`).
 - `UNITY_EMAIL` — Unity ID email.
 - `UNITY_PASSWORD` — Unity ID password.
 
-Either tier works — `unity-test-runner` checks `UNITY_LICENSE` first, then falls back to `UNITY_SERIAL`.
+#### Personal (free) — manual `.ulf` flow
+
+Unity 2020+ stopped storing the Personal `.ulf` as a plain file on disk; the Unity Licensing Client now caches an encrypted blob via the Unity ID sign-in. The `license.unity3d.com/manual` web flow that game-ci docs reference now accepts Pro/Plus serials only (the Personal `.alf`-upload path on that page has been deprecated as of 2026).
+
+Today's working flow for Personal on CI:
+
+1. Locally generate the activation request: in a clean folder, run
+
+       Unity.exe -batchmode -createManualActivationFile -nographics -logfile activation.log -quit
+
+   That writes `Unity_v<version>.alf` next to the log file.
+2. Sign in to <https://id.unity.com/>.
+3. Visit <https://license.unity3d.com/manual> while signed in. If the page still only shows the Plus/Pro serial input, the Personal upload path is not currently available — fall back to one of:
+   - Use the game-ci-supported workflow `game-ci/unity-request-activation-file@v2` followed by `game-ci/unity-activate@v2` (some recent releases handle the activation server-side without the manual upload step).
+   - Wait for Unity to restore the Personal flow.
+   - Upgrade to Pro/Plus and use the serial path above.
+4. Save the resulting `.ulf` file. Open it in a text editor and copy the full XML contents into the GitHub secret `UNITY_LICENSE`. Also add `UNITY_EMAIL` and `UNITY_PASSWORD`.
+
+`unity-test-runner` checks `UNITY_LICENSE` first, then falls back to `UNITY_SERIAL`.
 
 ### Verifying the license
 
-After the secrets are set, rerun a workflow from **Actions → Unity Tests → Run workflow**. Watch the first job's first step: it should report `Activated license` rather than the licensing error.
+After the secrets are set:
+
+1. Restore the auto-triggers in `unity-test.yml` and `benchmark.yml` (uncomment the `pull_request` and `push` blocks at the top of each file).
+2. Open **Actions → Unity Tests → Run workflow** and trigger a manual run, or open a PR with a code change.
+3. Watch the first job's first step: it should report `Activated license` rather than the licensing error.
 
 ## 2. PublicAPI Roslyn analyzer
 
@@ -53,9 +73,7 @@ The 8 Runtime asmdefs each already have a `csc.rsp` next to them that points the
 
 Add a new public method to any Runtime assembly and do not update `PublicAPI.Unshipped.txt`. Trigger a Unity compile (e.g. by re-saving the file). The Console should report:
 
-```text
-RS0016: Symbol '<your new symbol>' is not part of the declared API.
-```
+    RS0016: Symbol '<your new symbol>' is not part of the declared API.
 
 Use the Roslyn Quick Fix → **Add to public API**. Unity's Inspector exposes the fix; alternatively, manually add the symbol line to `PublicAPI.Unshipped.txt`.
 
