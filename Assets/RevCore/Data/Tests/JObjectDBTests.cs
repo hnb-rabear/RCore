@@ -11,7 +11,9 @@ namespace RevCore.Tests
         [SetUp]
         public void SetUp()
         {
-            JObjectDB.collections.Clear();
+            // ClearInMemoryForTests is internal to RevCore.Data.Runtime; visible to this test
+            // assembly via [InternalsVisibleTo("RevCore.Data.Tests")] on the runtime side.
+            JObjectDB.ClearInMemoryForTests();
             PlayerPrefs.DeleteKey(Prefix + "score");
         }
 
@@ -53,7 +55,7 @@ namespace RevCore.Tests
         {
             JObjectDB.CreateCollection<TestData>(Prefix + "score");
             JObjectDB.Delete(Prefix + "score");
-            Assert.IsFalse(JObjectDB.collections.ContainsKey(Prefix + "score"));
+            Assert.IsNull(JObjectDB.GetCollection(Prefix + "score"));
         }
 
         [Test]

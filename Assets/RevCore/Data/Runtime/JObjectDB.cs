@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using UnityEngine;
+
+[assembly: InternalsVisibleTo("RevCore.Data.Tests")]
 
 namespace RevCore
 {
@@ -17,6 +20,10 @@ namespace RevCore
     {
         private const string CollectionsKey = "JObjectDB";
 
+        // Private storage. All internal code reads/writes through this field so the Stage 2
+        // obsolete-error on the public `collections` member doesn't break self-references.
+        private static readonly Dictionary<string, JObjectData> s_collections = new();
+
         /// <summary>
         /// Direct access to the in-memory collection map. Public for backward compatibility only;
         /// will become private in v1.0. Use <see cref="GetCollection"/>, <see cref="CreateCollection{T}"/>,
@@ -24,15 +31,16 @@ namespace RevCore
         /// dictionary bypasses key persistence (<c>SaveCollectionKey</c>) and will silently lose data
         /// on the next <see cref="Reload"/>.
         /// </summary>
-        [Obsolete("Direct field access will be made private in v1.0. Use GetCollection, CreateCollection, GetCollectionKeys, or GetAllData instead.", error: false)]
-        public static Dictionary<string, JObjectData> collections = new();
+        [Obsolete("Direct field access will be made private in v1.0. Use GetCollection, CreateCollection, GetCollectionKeys, or GetAllData instead.", error: true)]
+        public static Dictionary<string, JObjectData> collections => s_collections;
 
-#pragma warning disable CS0618 // Self-references to the obsolete field below are intentional during the deprecation window.
+        /// <summary>Test-only: clears the in-memory registry without touching PlayerPrefs. Used by Tests SetUp to isolate state between tests.</summary>
+        internal static void ClearInMemoryForTests() => s_collections.Clear();
 
         /// <summary>Returns the collection registered under <paramref name="key"/>, or <c>null</c> when absent.</summary>
         public static JObjectData GetCollection(string key)
         {
-            collections.TryGetValue(key, out var col);
+            s_collections.TryGetValue(key, out var col);
             return col;
         }
 
@@ -43,11 +51,11 @@ namespace RevCore
         /// </summary>
         public static T CreateCollection<T>(string key, T defaultVal = null) where T : JObjectData, new()
         {
-            if (collections.ContainsKey(key))
+            if (s_collections.ContainsKey(key))
                 Debug.LogError($"JObjectDB: Overwriting existing collection '{key}'.");
 
             var col = new T { key = key };
-            collections[key] = col;
+            s_collections[key] = col;
 
             if (!col.Load() && defaultVal != null)
             {
@@ -62,13 +70,13 @@ namespace RevCore
 
         /// <summary>Returns every registered key. Falls back to keys persisted in PlayerPrefs when nothing is registered (e.g. before <see cref="JObjectDBManager{T}.Init"/>).</summary>
         public static List<string> GetCollectionKeys()
-            => collections.Count == 0 ? GetSavedCollectionKeys() : collections.Keys.ToList();
+            => s_collections.Count == 0 ? GetSavedCollectionKeys() : s_collections.Keys.ToList();
 
         /// <summary>Returns <c>key → json</c> for every registered collection. Allocates a fresh dictionary on each call.</summary>
         public static Dictionary<string, string> GetAllData()
         {
             var dict = new Dictionary<string, string>();
-            if (collections.Count == 0)
+            if (s_collections.Count == 0)
             {
                 foreach (string key in GetCollectionKeys())
                 {
@@ -78,7 +86,7 @@ namespace RevCore
                 }
                 return dict;
             }
-            foreach (var pair in collections)
+            foreach (var pair in s_collections)
                 dict[pair.Key] = pair.Value.ToJson();
             return dict;
         }
@@ -87,7 +95,7 @@ namespace RevCore
         public static Dictionary<string, object> GetAllDataObjects()
         {
             var dict = new Dictionary<string, object>();
-            if (collections.Count == 0)
+            if (s_collections.Count == 0)
             {
                 foreach (string key in GetCollectionKeys())
                 {
@@ -97,7 +105,7 @@ namespace RevCore
                 }
                 return dict;
             }
-            foreach (var pair in collections)
+            foreach (var pair in s_collections)
                 dict[pair.Key] = pair.Value;
             return dict;
         }
@@ -108,14 +116,14 @@ namespace RevCore
         /// <summary>Calls <see cref="JObjectData.Save"/> on every registered collection.</summary>
         public static void Save()
         {
-            foreach (var pair in collections)
+            foreach (var pair in s_collections)
                 pair.Value.Save();
         }
 
         /// <summary>Calls <see cref="JObjectData.Load()"/> on every registered collection — overwrites in-memory state with the latest persisted version.</summary>
         public static void Reload()
         {
-            foreach (var pair in collections)
+            foreach (var pair in s_collections)
                 pair.Value.Load();
         }
 
@@ -128,7 +136,7 @@ namespace RevCore
                 PlayerPrefs.SetString(CollectionsKey, JsonConvert.SerializeObject(keys));
                 PlayerPrefs.DeleteKey(key);
             }
-            collections.Remove(key);
+            s_collections.Remove(key);
         }
 
         /// <summary>Deletes every persisted key (data + key list) and clears the in-memory registry. Factory-reset.</summary>
@@ -137,7 +145,7 @@ namespace RevCore
             foreach (string key in GetSavedCollectionKeys())
                 PlayerPrefs.DeleteKey(key);
             PlayerPrefs.DeleteKey(CollectionsKey);
-            collections.Clear();
+            s_collections.Clear();
         }
 
         /// <summary>
@@ -229,6 +237,5 @@ namespace RevCore
             return Path.Combine(Application.persistentDataPath, name + ".json");
 #endif
         }
-#pragma warning restore CS0618
     }
 }
