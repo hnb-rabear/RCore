@@ -1,10 +1,10 @@
 {
-  "RevCore.Tests.Benchmark_EventBusTests.ListenerCount_5_types_5_listeners_each_1k_lookups": 0.006099999999999994,
-  "RevCore.Tests.Benchmark_EventBusTests.Publish_100_listeners_10k_events": 7.05964999999992,
-  "RevCore.Tests.Benchmark_EventBusTests.Subscribe_Unsubscribe_pair_1k_iterations": 0.3631500000001324,
-  "RevCore.Tests.Benchmark_RevPoolTests.Spawn_and_release_1000": 33.67689999999993,
-  "RevCore.Tests.Benchmark_RevPoolTests.Spawn_at_cap_2000_eviction_cycles": 4.393100000000004,
+  "RevCore.Tests.Benchmark_EventBusTests.ListenerCount_5_types_5_listeners_each_1k_lookups": 0.012799999999999923,
+  "RevCore.Tests.Benchmark_EventBusTests.Publish_100_listeners_10k_events": 7.309900000000198,
+  "RevCore.Tests.Benchmark_EventBusTests.Subscribe_Unsubscribe_pair_1k_iterations": 0.37474999999994907,
+  "RevCore.Tests.Benchmark_RevPoolTests.Spawn_and_release_1000": 14.723399999999856,
+  "RevCore.Tests.Benchmark_RevPoolTests.Spawn_at_cap_2000_eviction_cycles": 4.688500000000204,
   "RevCore.Tests.Benchmark_TimerSchedulerTests.Cancel_one_id_among_1000_timers": 0.0011999999999999789,
-  "RevCore.Tests.Benchmark_TimerSchedulerTests.Create_10000_timers": 10.662199999999757,
-  "RevCore.Tests.Benchmark_TimerSchedulerTests.Tick_1000_timers_for_1000_frames": 70.92439999999988
+  "RevCore.Tests.Benchmark_TimerSchedulerTests.Create_10000_timers": 10.696599999999762,
+  "RevCore.Tests.Benchmark_TimerSchedulerTests.Tick_1000_timers_for_1000_frames": 52.92360000000008
 }
