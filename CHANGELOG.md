@@ -4,6 +4,11 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Removed
+
+- `RevCore.UI.CustomToggleSlider` and its `CustomToggleSliderEditor` deleted. The type had been `[Obsolete("Use JustToggle instead")]` for one minor. `JustToggle` is the drop-in replacement — same underlying `Toggle.isOn` contract, richer transition system. Pre-1.0 minor break per `SEMVER_POLICY`.
+- `RCore.UI.CustomToggleSlider` (legacy framework) deleted in lockstep with RevCore. The legacy sample `Assets/RCore/Main/Samples~/Examples/Script/UI/PanelExample.cs` now references `JustToggle` instead.
+
 ### Deprecated
 
 - `MathHelper.Ded2Rad(float)` / `Tad2Deg(float)` marked `[Obsolete]` (Stage 1) — typos. Use `Deg2Rad` / `Rad2Deg` instead. Will be removed in v1.0.

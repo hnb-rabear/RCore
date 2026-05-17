@@ -8,7 +8,7 @@ namespace RCore.Example.UI
 {
     public class PanelExample : PanelController
     {
-        [SerializeField] private CustomToggleSlider m_toggleSlider;
+        [SerializeField] private JustToggle m_toggleSlider;
         [SerializeField] private JustToggle m_tab1;
         [SerializeField] private JustToggle m_tab2;
         [SerializeField] private JustToggle m_tab3;

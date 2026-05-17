@@ -25,7 +25,7 @@ Runtime UI components and helpers for RevCore Unity projects.
 ### Buttons and toggles
 
 - `JustButton`, `SimpleButton`, `SimpleTMPButton`
-- `JustToggle`, `CustomToggleGroup`, `CustomToggleSlider`
+- `JustToggle`, `CustomToggleGroup`
 
 Button SFX emits `UISfxTriggeredEvent` through RevCore.Foundation events. Greyscale state uses an explicit serialized material; RevCore.UI does not require a magic `Resources/Greyscale` asset.
 
