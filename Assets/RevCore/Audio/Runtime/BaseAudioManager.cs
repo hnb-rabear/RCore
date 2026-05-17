@@ -619,8 +619,40 @@ namespace RevCore
         #endregion
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// Editor-only: instantiates the "Music" and "Sfx" child GameObjects with their
+        /// <see cref="AudioSource"/>s the first time the component is added (or after a manual
+        /// Reset). Idempotent. Runtime creates these on demand in <see cref="EnsureAudioSources"/>,
+        /// so this exists purely so the hierarchy looks complete in the scene view.
+        /// </summary>
+        protected virtual void Reset()
+        {
+            m_sfxSources ??= new List<AudioSource>();
+            if (m_musicSource == null)
+            {
+                var obj = new GameObject("Music");
+                obj.transform.SetParent(transform);
+                m_musicSource = obj.AddComponent<AudioSource>();
+                m_musicSource.loop = true;
+                m_musicSource.playOnAwake = false;
+            }
+            if (m_sfxSourceUnlimited == null)
+            {
+                var obj = new GameObject("Sfx");
+                obj.transform.SetParent(transform);
+                m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
+                m_sfxSourceUnlimited.loop = false;
+                m_sfxSourceUnlimited.playOnAwake = false;
+            }
+        }
+
         protected virtual void OnValidate()
         {
+            // No structural mutation here. OnValidate fires inside an Awake / CheckConsistency
+            // context that forbids SendMessage; AddComponent and new GameObject() both trigger
+            // SendMessage and Unity logs warnings ("Music: OnDidAddComponent" etc). Anything
+            // that creates GameObjects or components belongs in Reset() (one-shot, on add)
+            // or in runtime EnsureAudioSources().
             m_sfxSources ??= new List<AudioSource>();
             var audioSources = gameObject.GetComponentsInChildren<AudioSource>(true);
 
@@ -630,19 +662,6 @@ namespace RevCore
                     m_musicSource = source;
                 if (m_sfxSourceUnlimited == null && source.gameObject.name.Contains("Sfx"))
                     m_sfxSourceUnlimited = source;
-            }
-
-            if (m_musicSource == null)
-            {
-                var obj = new GameObject("Music");
-                obj.transform.SetParent(transform);
-                m_musicSource = obj.AddComponent<AudioSource>();
-            }
-            if (m_sfxSourceUnlimited == null)
-            {
-                var obj = new GameObject("Sfx");
-                obj.transform.SetParent(transform);
-                m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
             }
 
             foreach (var source in audioSources)
@@ -656,10 +675,16 @@ namespace RevCore
                     m_sfxSources.Remove(source);
             }
 
-            m_sfxSourceUnlimited.loop = false;
-            m_sfxSourceUnlimited.playOnAwake = false;
-            m_musicSource.loop = true;
-            m_musicSource.playOnAwake = false;
+            if (m_sfxSourceUnlimited != null)
+            {
+                m_sfxSourceUnlimited.loop = false;
+                m_sfxSourceUnlimited.playOnAwake = false;
+            }
+            if (m_musicSource != null)
+            {
+                m_musicSource.loop = true;
+                m_musicSource.playOnAwake = false;
+            }
 
 #if DOTWEEN
             if (m_masterTweener == null || !m_masterTweener.IsPlaying())

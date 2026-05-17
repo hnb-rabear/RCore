@@ -14,9 +14,11 @@ namespace RevCore.UI
     /// <remarks>
     /// Subclass to define how panel types are resolved at runtime — implement
     /// <see cref="OnResolvePanelByType"/> for type-based pushes and <see cref="OnReceivedPanelRequest"/>
-    /// for value-carrying requests. The root inherits Unity Canvas + GraphicRaycaster automatically
-    /// (added in <see cref="OnValidate"/>).
+    /// for value-carrying requests. The root automatically pulls in Unity <see cref="Canvas"/>
+    /// + <see cref="GraphicRaycaster"/> via <see cref="RequireComponent"/>.
     /// </remarks>
+    [RequireComponent(typeof(Canvas))]
+    [RequireComponent(typeof(GraphicRaycaster))]
     public abstract class PanelRoot : PanelStack
     {
         /// <summary>Full-screen button rendered behind the topmost panel; clicking it triggers <see cref="PanelController.Back"/>. Auto-created on first use.</summary>
@@ -41,16 +43,6 @@ namespace RevCore.UI
         {
             Events.Unsubscribe<PushPanelEvent>(PushPanelHandler);
             Events.Unsubscribe<RequestPanelEvent>(RequestPanelHandler);
-        }
-
-        protected virtual void OnValidate()
-        {
-            var canvas = gameObject.GetComponent<Canvas>();
-            if (canvas == null)
-                gameObject.AddComponent<Canvas>();
-            var graphicRaycaster = gameObject.GetComponent<GraphicRaycaster>();
-            if (graphicRaycaster == null)
-                gameObject.AddComponent<GraphicRaycaster>();
         }
 
         protected override void OnAnyChildHide(PanelController pPanel)
