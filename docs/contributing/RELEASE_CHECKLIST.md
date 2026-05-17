@@ -24,6 +24,19 @@ Run through this list every time you cut a tag. Treat it as a hard gate, not a g
 - [ ] Sort `PublicAPI.Shipped.txt` (analyzer expects sorted).
 - [ ] `PublicAPI.Unshipped.txt` reset to the file's required header.
 
+#### One-time at v1.0: seed the baseline
+
+The Roslyn analyzer DLLs under `Assets/RevCore/_Analyzers/` are committed but **dormant** — the `RoslynAnalyzer` asset label is intentionally absent because `PublicAPI.Shipped.txt` is empty and activating the analyzer would block compile with ~1,000 `RS0016` warnings.
+
+At the v1.0 cut, do this once:
+
+- [ ] Open `Assets/RevCore/_Analyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.dll` and `…CodeFixes.dll` in Unity Inspector. Add the asset label `RoslynAnalyzer` to BOTH (capital R + capital A, exact text).
+- [ ] Open the project in Rider or Visual Studio. Build → Problems panel will list every `RS0016` warning.
+- [ ] Use the "Add to public API" code fix at solution scope. The fix writes correctly-formatted lines to each module's `PublicAPI.Unshipped.txt`.
+  - If Rider's MSBuild path does not surface the warnings (Unity's generated `.csproj` may not propagate `csc.rsp` additional files), build inside Unity instead — the Roslyn fix is also available via the Unity Editor when the label is set.
+- [ ] Move all entries from each module's `Unshipped.txt` to `Shipped.txt` per the standard promotion step above.
+- [ ] Commit. From v1.0 onward every public API change must update `Unshipped.txt` to compile.
+
 ### 4. CHANGELOG finalize
 
 - [ ] Replace `## [Unreleased]` with `## [X.Y.Z] - YYYY-MM-DD`.
