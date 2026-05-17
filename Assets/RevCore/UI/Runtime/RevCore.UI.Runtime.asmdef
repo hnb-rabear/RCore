@@ -5,7 +5,8 @@
     "RevCore.Foundation.Runtime",
     "RevCore.Inspector.Runtime",
     "RevCore.Pool.Runtime",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "RevCore.Timer.Runtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

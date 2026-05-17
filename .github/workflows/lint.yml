@@ -17,8 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: editorconfig-checker/action-editorconfig-checker@v2
-        with:
-          version: 3.0.3
 
   yaml:
     name: YAML lint
@@ -46,11 +44,3 @@ jobs:
             docs/**/*.md
             CHANGELOG.md
             README.md
-          config: |
-            {
-              "default": true,
-              "MD013": false,
-              "MD024": { "siblings_only": true },
-              "MD033": false,
-              "MD041": false
-            }

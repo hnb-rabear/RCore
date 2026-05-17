@@ -1,7 +1,7 @@
 {
   "name": "RevCore.Pool.Editor",
   "rootNamespace": "RevCore.Editor",
-  "references": ["RevCore.Pool.Runtime"],
+  "references": ["RevCore.Pool.Runtime","RevCore.Foundation.Runtime","RevCore.Timer.Runtime"],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

@@ -7,7 +7,9 @@
     "RevCore.Prefs.Editor",
     "Unity.Addressables",
     "Unity.Addressables.Editor",
-    "Unity.ResourceManager"
+    "Unity.ResourceManager",
+    "RevCore.Inspector.Runtime",
+    "RevCore.Prefs.Runtime"
   ],
   "includePlatforms": [
     "Editor"

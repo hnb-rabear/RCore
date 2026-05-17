@@ -1,14 +1,18 @@
 name: Benchmark
 
+# Manual trigger only until Unity license secrets are configured. See
+# docs/contributing/CI_SETUP.md for the activation runbook. Restore the auto
+# triggers (pull_request, push to main) once UNITY_LICENSE / UNITY_EMAIL /
+# UNITY_PASSWORD are set.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "Assets/RevCore/**/*.cs"
-      - "Packages/manifest.json"
-      - ".github/workflows/benchmark.yml"
-  push:
-    branches: [main]
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - "Assets/RevCore/**/*.cs"
+  #     - "Packages/manifest.json"
+  #     - ".github/workflows/benchmark.yml"
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 concurrency:

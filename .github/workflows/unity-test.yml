@@ -1,15 +1,19 @@
 name: Unity Tests
 
+# Manual trigger only until Unity license secrets are configured. The auto
+# triggers (pull_request, push to main) are commented out so PRs don't show a
+# red X on every run. Restore them after UNITY_LICENSE / UNITY_EMAIL /
+# UNITY_PASSWORD are set per docs/contributing/CI_SETUP.md.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "Assets/RevCore/**"
-      - "Packages/**"
-      - "ProjectSettings/**"
-      - ".github/workflows/unity-test.yml"
-  push:
-    branches: [main]
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - "Assets/RevCore/**"
+  #     - "Packages/**"
+  #     - "ProjectSettings/**"
+  #     - ".github/workflows/unity-test.yml"
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 concurrency:
