@@ -14,6 +14,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Deprecated
 
+- `PoolsContainer<T>.GetActiveList()` and `PoolsContainer<T>.GetAllItems()` marked `[Obsolete]` (Stage 1) — both allocate a new `List<T>` on every call. Replacements: `ForEachActive(Action<T>)` / `ForEachItem(Action<T>)` (zero-alloc iteration) or `CopyActiveTo(List<T>)` / `CopyAllTo(List<T>)` (caller owns the buffer, zero-alloc when reused across frames). The old methods now delegate to the new ones, so the warning is the only behavior change. Both will be removed at v1.0.
 - `JObjectDB.collections` bumped to **Stage 2** (`[Obsolete(..., error: true)]`) — direct field access is now a compile error. The deprecation window opened in Phase 3; consumers that haven't migrated have one minor's notice. Use `GetCollection`, `CreateCollection`, `GetCollectionKeys`, or `GetAllData` instead. The field stays in place during Stage 2 so reflection-based access (e.g. unit tests using `#pragma warning disable CS0619`) still works; the field will become private at v1.0 (Stage 3). Internal callers in `JObjectDB`'s own pragma block, the two Editor utilities (`JObjectDBManagerEditor`, `JObjectModelCollectionEditor`), and the test suite were migrated to the public API in the same commit.
 - `MathHelper.Ded2Rad(float)` / `Tad2Deg(float)` marked `[Obsolete]` (Stage 1) — typos. Use `Deg2Rad` / `Rad2Deg` instead. Will be removed in v1.0.
 - `TransformHelper.CovertAnchoredPosFromChildToParent` (both overloads) marked `[Obsolete]` (Stage 1) — typo. Use the new `ConvertAnchoredPosFromChildToParent` instead. Will be removed in v1.0.
@@ -33,6 +34,8 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
+- `PoolsContainer<T>.ForEachActive(Action<T>)` / `ForEachItem(Action<T>)` — zero-alloc iteration over the pool's active or full membership; preferred over the allocating `GetActiveList()` / `GetAllItems()` on per-frame hot paths.
+- `PoolsContainer<T>.CopyActiveTo(List<T>)` / `CopyAllTo(List<T>)` — caller-owned-buffer variants. Reuse the same list across frames to reach steady-state zero allocations.
 - `TransformHelper.ConvertAnchoredPosFromChildToParent` (extension on `RectTransform` + static overload with raw values) — correctly-spelled replacement for the legacy `Covert…` typo. Same behavior; new API is the path forward, old name remains for one minor as `[Obsolete]` Stage 1.
 - `ColorHelper.TryHexToColor(string, out Color)` — explicit-failure variant of `HexToColor`. Returns `false` and `Color.clear` on invalid/null/empty input. The existing `HexToColor` is unchanged.
 - `JObjectDBManager<T>.SaveForced()` — bypasses the 200 ms throttle that `Save(now: true)` applies. Internal `OnApplicationPause`/`OnApplicationQuit` now use this so end-of-life saves can never silently fail under the throttle (the original cause of intermittent save loss in shipping projects). The legacy `Save(now: true)` behaviour is unchanged.

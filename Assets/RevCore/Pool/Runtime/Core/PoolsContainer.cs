@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -128,29 +129,85 @@ namespace RevCore
         }
 
         /// <summary>
-        /// Allocates a fresh list containing every active item across every contained pool. Allocates
-        /// on each call — Phase 4 will add a zero-alloc <c>CopyActiveTo(List)</c> overload.
+        /// Invokes <paramref name="action"/> for each active item across every contained pool.
+        /// Zero allocations — preferred over <see cref="GetActiveList"/> for per-frame iteration.
         /// </summary>
+        public void ForEachActive(Action<T> action)
+        {
+            if (action == null) return;
+            foreach (var pool in m_poolByPrefabId.Values)
+            {
+                var active = pool.ActiveList();
+                for (int i = 0; i < active.Count; i++)
+                    action(active[i]);
+            }
+        }
+
+        /// <summary>
+        /// Invokes <paramref name="action"/> for each item (active + inactive) across every contained pool.
+        /// Zero allocations — preferred over <see cref="GetAllItems"/> for per-frame iteration.
+        /// </summary>
+        public void ForEachItem(Action<T> action)
+        {
+            if (action == null) return;
+            foreach (var pool in m_poolByPrefabId.Values)
+            {
+                var active = pool.ActiveList();
+                for (int i = 0; i < active.Count; i++)
+                    action(active[i]);
+                var inactive = pool.InactiveList();
+                for (int i = 0; i < inactive.Count; i++)
+                    action(inactive[i]);
+            }
+        }
+
+        /// <summary>
+        /// Appends every active item across every contained pool to <paramref name="dest"/>. Caller
+        /// owns the list and its capacity, so repeated calls with the same buffer reach steady-state
+        /// zero allocations. Pass <c>null</c> to no-op.
+        /// </summary>
+        public void CopyActiveTo(List<T> dest)
+        {
+            if (dest == null) return;
+            foreach (var pool in m_poolByPrefabId.Values)
+                dest.AddRange(pool.ActiveList());
+        }
+
+        /// <summary>
+        /// Appends every item (active + inactive) across every contained pool to <paramref name="dest"/>.
+        /// Caller-owned list as in <see cref="CopyActiveTo"/>.
+        /// </summary>
+        public void CopyAllTo(List<T> dest)
+        {
+            if (dest == null) return;
+            foreach (var pool in m_poolByPrefabId.Values)
+            {
+                dest.AddRange(pool.ActiveList());
+                dest.AddRange(pool.InactiveList());
+            }
+        }
+
+        /// <summary>
+        /// Allocates a fresh list containing every active item across every contained pool. Prefer
+        /// <see cref="ForEachActive"/> or <see cref="CopyActiveTo"/> on hot paths — both are zero-alloc.
+        /// </summary>
+        [Obsolete("Allocates per call. Use ForEachActive(Action<T>) or CopyActiveTo(List<T>) on hot paths. Will be removed in v1.0.", error: false)]
         public List<T> GetActiveList()
         {
             var output = new List<T>();
-            foreach (var pool in m_poolByPrefabId.Values)
-                output.AddRange(pool.ActiveList());
+            CopyActiveTo(output);
             return output;
         }
 
         /// <summary>
         /// Allocates a fresh list containing every item (active and inactive) across every contained pool.
-        /// Allocates on each call.
+        /// Prefer <see cref="ForEachItem"/> or <see cref="CopyAllTo"/> on hot paths — both are zero-alloc.
         /// </summary>
+        [Obsolete("Allocates per call. Use ForEachItem(Action<T>) or CopyAllTo(List<T>) on hot paths. Will be removed in v1.0.", error: false)]
         public List<T> GetAllItems()
         {
             var output = new List<T>();
-            foreach (var pool in m_poolByPrefabId.Values)
-            {
-                output.AddRange(pool.ActiveList());
-                output.AddRange(pool.InactiveList());
-            }
+            CopyAllTo(output);
             return output;
         }
 
