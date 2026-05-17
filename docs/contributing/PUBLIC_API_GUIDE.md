@@ -62,16 +62,23 @@ Sort lines lexicographically. (The analyzer offers a "Sort" code fix.)
 
 Without this file, public API changes are invisible in PR diffs (they hide inside large code diffs). With it, every surface change is one line in a tracked file that the reviewer (you, solo) can scan in seconds. This is the single most important governance mechanism for a solo-maintained framework.
 
-### Wiring up the analyzer in Unity (remaining work)
+### Analyzer wiring
 
-The skeleton files (`PublicAPI.Shipped.txt`, `PublicAPI.Unshipped.txt`) are in place per Runtime asmdef. To make the analyzer actually enforce them in the Unity compile, two pieces still need to be added in a follow-up commit:
+As of v1.0.0, the analyzer is live:
 
-1. **Place the analyzer DLL** at `Assets/RevCore/_Analyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.dll`. Download from NuGet, take the file under `analyzers/dotnet/cs/`. In Unity Inspector, set its **Asset Labels** to include `RoslynAnalyzer`, and untick all platforms so it never ships to runtime builds.
-2. **Add a `csc.rsp`** next to each Runtime asmdef containing:
+- The analyzer DLL pair lives at `Assets/RevCore/_Analyzers/` (`Microsoft.CodeAnalysis.PublicApiAnalyzers.dll` + the matching `CodeFixes.dll`). Both have the **`RoslynAnalyzer`** asset label set on their `.meta` files — Unity feeds them into the C# compiler invocation.
+- Each Runtime asmdef has a sibling `csc.rsp` declaring its two `additionalfile`s, so the analyzer knows which symbol file pair belongs to which assembly.
 
-   ```
-   /additionalfile:Assets/RevCore/<Module>/Runtime/PublicAPI.Shipped.txt
-   /additionalfile:Assets/RevCore/<Module>/Runtime/PublicAPI.Unshipped.txt
-   ```
+Together: edit a public symbol → recompile → analyzer fires → Quick Fix in Rider / VS / VS Code (with C# Dev Kit) writes to the right `Unshipped.txt`. No further wiring needed.
 
-Until that wiring lands, the files are still useful as a manually-curated record — the maintainer reviews them in PR diff.
+### Releasing — Unshipped to Shipped
+
+At release-cut time, run:
+
+```bash
+python scripts/seal-public-api.py
+```
+
+The script promotes every `PublicAPI.Unshipped.txt` entry to `PublicAPI.Shipped.txt` (sorted), and resets each `Unshipped.txt` to its header-only state. Idempotent: re-running on an already-sealed module is a no-op. Use `--dry-run` to preview.
+
+The v1.0.0 release used this same script after Rider bulk-applied "Add to public API" across the full surface — see `release/v1.0.0` branch history.

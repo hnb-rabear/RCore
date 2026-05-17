@@ -4,22 +4,33 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-17
+
+The 1.0 release cut. Closes out the framework hardening plan: every Stage 1 deprecation tracked through v0.5.0 is resolved (deleted, made internal, or promoted to Stage 3), the PublicAPI Roslyn analyzer is no longer dormant, and the package surface is committed.
+
+Pre-1.0 minor versions were allowed to break the public API per `docs/contributing/SEMVER_POLICY.md`. From 1.0.0 onward, breaks require a major bump and a deprecation window.
+
 ### Added
 
 - `IRevDiagnostics` (Phase 7.1) — opt-in observability interface that the framework's hot paths fire on. Ten hooks across four modules: Timer (scheduled / cancelled / completed), EventBus (subscribed / unsubscribed / published), Pool (spawn / release), and Audio (PlaySFX / PlayMusic). Default state (no listener) costs one null check per hook site; the static accessor `RevDiagnostics.Listener` lets a consumer wire a single implementation at startup. Payload is metadata only (primitive types + `System.Type`) — no `ITimerHandle`, no `Component`, no `AudioClip` — so consumer code doesn't accidentally prolong GC lifetimes by capturing object refs in closures.
 - Three reference listeners under `Foundation/Samples~/Diagnostics/`: `CrashBufferDiagnostics` (last N events as a ring buffer for crash report attachments), `DebugOverlayDiagnostics` (on-screen counter MonoBehaviour for active timers / events/sec / spawns/sec), and `UnityLogDiagnostics` (verbose `Debug.Log` mirror — dev-only). Surfaced via the Foundation `samples[]` Package Manager entry.
-
-### Added
-
-- `docs/migration/README.md`, `docs/migration/PLAN.md`, `docs/migration/gap-categories.md` (Phase 8) — the consumer-facing migration documentation set. The README is the entry point; PLAN.md is the step-by-step playbook (when to migrate, module order, mechanical-rename batch, save-file compatibility, rollback); gap-categories.md groups the 259 `GAP` types into ~14 buckets with a default `PORT` / `REPLACE` / `DROP` / `DEFER` action per bucket. The plan is documentation-only — no migration tool ships yet. A sketch of a future tool lives in PLAN.md §9.
+- `docs/migration/README.md`, `docs/migration/PLAN.md`, `docs/migration/gap-categories.md` (Phase 8) — the consumer-facing migration documentation set. The README is the entry point; PLAN.md is the step-by-step playbook (when to migrate, module order, mechanical-rename batch, save-file compatibility, rollback); gap-categories.md groups the 259 `GAP` types into ~14 buckets with a default `PORT` / `REPLACE` / `DROP` / `DEFER` action per bucket. The plan is documentation-only — no migration tool ships yet.
 
 ### Changed
 
+- All nine `package.json` files bumped from `0.5.0` to `1.0.0` (Audio, Data, Foundation, Inspector, Pool, Prefs, Timer, Tools, UI). Consumers pinned to `?path=Assets/RevCore/{Module}#v0.5.0` upgrade to `#v1.0.0` to pick up this cut.
+- The `Microsoft.CodeAnalysis.PublicApiAnalyzers` Roslyn analyzer (`Assets/RevCore/_Analyzers/`) is now live — the `RoslynAnalyzer` asset label is set on both DLLs, so the Unity compiler picks them up. Every public member must appear in its module's `PublicAPI.Shipped.txt`; any new addition is reported as `RS0016 — Symbol is not part of the declared API`. The `PublicAPI.Unshipped.txt` lane is for additions that haven't been "shipped" yet; promote to Shipped at each release cut.
+- All currently-public symbols (956 members across the eight runtime modules) bulk-populated into `PublicAPI.Shipped.txt`. The `PublicAPI.Unshipped.txt` files are empty post-cut (with the canonical `#nullable enable` header retained as the format requires).
 - `docs/migration/rcore-to-revcore-api-map.{md,csv}` audited: 16 `LIKELY` rows resolved (7 promoted to `RENAMED` after verifying the RevCore target exists, 9 demoted to `GAP` because the fuzzy-match target was wrong — Editor drawers, mismatched type kinds, etc.). The map now reports 0 LIKELY, 15 RENAMED, 97 PORTED, 259 GAP. The two stale `PORTED` rows for `SimpleButton` and `CustomToggleSlider` (both deleted from RevCore in v0.5.0) are recorded as `RENAMED` to their drop-in replacements (`SimpleTMPButton`, `JustToggle`).
 - `EventBus.Publish<T>`, `EventBus.ListenerCountFor<T>`, and `EventBus.Clear<T>` are now zero-alloc on the hot path. The per-type storage moves from `Dictionary<Type, Delegate>` to `Dictionary<Type, Entry>` where `Entry` keeps the multicast delegate plus a maintained `Count`. The old code called `Delegate.GetInvocationList()` inside `Publish` purely to feed the diagnostics callback the listener count — that call returns a freshly-allocated `Delegate[]` every Publish, which dominated steady-state allocations for consumer projects that publish per-frame. Subscribe / Unsubscribe maintain the count alongside the delegate; behavior (dedup on Subscribe, no-op on unknown Unsubscribe, silent Publish with zero listeners, accurate `Clear<T>` decrement) is bit-for-bit identical and remains pinned by `Characterization_EventBusTests` and `RevDiagnosticsTests`.
+- `Result<T>.Value` is now `internal` (was public `[Obsolete]` Stage 1). The public API for reading a `Result<T>` is `TryGetValue(out T value)` (preferred) or `ValueOr(T fallback)`. The internal getter is preserved for tests pinning the throw-on-error contract via `[InternalsVisibleTo("RevCore.Foundation.Tests")]` (added to `Result.cs`); the `#pragma warning disable CS0618` lines in `ResultTests` are gone with the obsolete attribute.
 
 ### Removed
 
+- `MathHelper.Ded2Rad(float)` and `MathHelper.Tad2Deg(float)` deleted (had been `[Obsolete]` Stage 1 — typos). Use `Deg2Rad(float)` / `Rad2Deg(float)`.
+- `TransformHelper.CovertAnchoredPosFromChildToParent(...)` (both overloads) deleted (had been `[Obsolete]` Stage 1 — typo). Use `ConvertAnchoredPosFromChildToParent(...)`.
+- `PoolsContainer<T>.GetActiveList()` and `PoolsContainer<T>.GetAllItems()` deleted (had been `[Obsolete]` Stage 1 — allocated a fresh `List<T>` per call). Use `ForEachActive(Action<T>)` / `ForEachItem(Action<T>)` for zero-alloc iteration, or `CopyActiveTo(List<T>)` / `CopyAllTo(List<T>)` when a buffer is needed.
+- `JObjectDB.collections` (the public `Dictionary<string, JObjectData>` get-only property, formerly `[Obsolete(..., error: true)]` Stage 2) deleted. Internal storage `s_collections` remains private. Consumers use `GetCollection(string)`, `CreateCollection<T>`, `GetCollectionKeys()`, or `GetAllData()`.
 - Reference in `Assets/RevCore/Prefs/README.md` to a future "encrypted prefs" RevCore.Data feature. RevCore intentionally does not ship value encryption — a hardcoded-key obfuscation layer only stops PlayerPrefs editors, not anyone with the binary. The README now states the no-encryption policy explicitly and points consumers at server-side validation for sensitive state.
 
 ## [0.5.0] - 2026-05-17
@@ -81,5 +92,6 @@ First tagged release. Establishes the pre-1.0 baseline that consumer projects ca
 - `.editorconfig` extended with C# code style and analyzer severity rules.
 - `.gitattributes` added with `*.meta merge=union` to reduce conflict on regenerated GUIDs.
 
-[Unreleased]: https://github.com/hnb-rabear/RCore/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/hnb-rabear/RCore/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/hnb-rabear/RCore/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/hnb-rabear/RCore/releases/tag/v0.5.0

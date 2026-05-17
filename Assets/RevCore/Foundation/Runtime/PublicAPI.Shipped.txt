@@ -1,5 +1,18 @@
 #nullable enable
 RevCore.ColorHelper.TryHexToColor(string hex, out UnityEngine.Color color) -> bool
 RevCore.EventBus.ListenerCountFor<T>() -> int
+RevCore.IRevDiagnostics
+RevCore.IRevDiagnostics.OnAudioPlayMusic(string clipName, bool looping) -> void
+RevCore.IRevDiagnostics.OnAudioPlaySFX(string clipName) -> void
+RevCore.IRevDiagnostics.OnEventPublished(System.Type eventType, int listenerCount) -> void
+RevCore.IRevDiagnostics.OnEventSubscribed(System.Type eventType, int newCount) -> void
+RevCore.IRevDiagnostics.OnEventUnsubscribed(System.Type eventType, int newCount) -> void
+RevCore.IRevDiagnostics.OnPoolRelease(string poolName) -> void
+RevCore.IRevDiagnostics.OnPoolSpawn(string poolName, bool reused) -> void
+RevCore.IRevDiagnostics.OnTimerCancelled(int id) -> void
+RevCore.IRevDiagnostics.OnTimerCompleted(int id, float overtime) -> void
+RevCore.IRevDiagnostics.OnTimerScheduled(int id, float duration, bool unscaled) -> void
+RevCore.RevDiagnostics
+static RevCore.RevDiagnostics.Listener -> RevCore.IRevDiagnostics
 static RevCore.TransformHelper.ConvertAnchoredPosFromChildToParent(UnityEngine.Vector2 childAnchoredPos, UnityEngine.Vector2 childAnchorMax, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2
 static RevCore.TransformHelper.ConvertAnchoredPosFromChildToParent(this UnityEngine.RectTransform childRect, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2

@@ -187,30 +187,6 @@ namespace RevCore
             }
         }
 
-        /// <summary>
-        /// Allocates a fresh list containing every active item across every contained pool. Prefer
-        /// <see cref="ForEachActive"/> or <see cref="CopyActiveTo"/> on hot paths — both are zero-alloc.
-        /// </summary>
-        [Obsolete("Allocates per call. Use ForEachActive(Action<T>) or CopyActiveTo(List<T>) on hot paths. Will be removed in v1.0.", error: false)]
-        public List<T> GetActiveList()
-        {
-            var output = new List<T>();
-            CopyActiveTo(output);
-            return output;
-        }
-
-        /// <summary>
-        /// Allocates a fresh list containing every item (active and inactive) across every contained pool.
-        /// Prefer <see cref="ForEachItem"/> or <see cref="CopyAllTo"/> on hot paths — both are zero-alloc.
-        /// </summary>
-        [Obsolete("Allocates per call. Use ForEachItem(Action<T>) or CopyAllTo(List<T>) on hot paths. Will be removed in v1.0.", error: false)]
-        public List<T> GetAllItems()
-        {
-            var output = new List<T>();
-            CopyAllTo(output);
-            return output;
-        }
-
         /// <inheritdoc />
         public void Release(T item)
         {
