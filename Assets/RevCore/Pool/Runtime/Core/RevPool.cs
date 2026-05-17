@@ -194,6 +194,7 @@ namespace RevCore
                 spawned.transform.SetAsLastSibling();
 
             OnSpawn?.Invoke(spawned);
+            RevDiagnostics.Listener?.OnPoolSpawn(m_name, reused);
             return spawned;
         }
 
@@ -232,6 +233,7 @@ namespace RevCore
                 if (ReferenceEquals(m_activeList[i], item))
                 {
                     MoveToInactive(item, i);
+                    RevDiagnostics.Listener?.OnPoolRelease(m_name);
                     return;
                 }
             }

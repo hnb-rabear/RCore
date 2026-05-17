@@ -229,6 +229,7 @@ namespace RevCore
 			if (!m_countdownsById.TryGetValue(id, out var list))
 				m_countdownsById[id] = list = new List<CountdownTimer>(1);
 			list.Add(timer);
+			RevDiagnostics.Listener?.OnTimerScheduled(id, timer.Handle.Duration, timer.UnscaledTime);
 		}
 
 		private void AddCondition(ConditionTimer timer)
@@ -247,6 +248,9 @@ namespace RevCore
 			// Drop the handle from the indices immediately; the main list keeps the timer until
 			// the next Tick reaps it (lazy cleanup). Subsequent dict lookups treat the handle as
 			// already gone, which preserves the contract for Cancel(id) and Replace*IfNeeded.
+			// RemoveHandle is only reachable from TimerHandle.Cancel — natural completion goes
+			// through Tick's RemoveCountdownAtPreservingOrder. So a successful removal here is
+			// the moment to fire OnTimerCancelled.
 			if (m_countdownIndexByHandle.Remove(handle, out _))
 			{
 				if (m_countdownsById.TryGetValue(handle.Id, out var list))
@@ -260,6 +264,7 @@ namespace RevCore
 					if (list.Count == 0)
 						m_countdownsById.Remove(handle.Id);
 				}
+				RevDiagnostics.Listener?.OnTimerCancelled(handle.Id);
 				return;
 			}
 
@@ -276,6 +281,7 @@ namespace RevCore
 					if (list.Count == 0)
 						m_conditionsById.Remove(handle.Id);
 				}
+				RevDiagnostics.Listener?.OnTimerCancelled(handle.Id);
 			}
 		}
 

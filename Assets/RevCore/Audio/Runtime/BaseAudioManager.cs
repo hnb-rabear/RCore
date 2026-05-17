@@ -297,6 +297,7 @@ namespace RevCore
             if (play)
                 m_musicSource.Play();
             SetMusicVolume(volume, fadeDuration);
+            RevDiagnostics.Listener?.OnAudioPlayMusic(clip.name, loop);
         }
 
         /// <summary>Plays <paramref name="clips"/> sequentially via a coroutine, looping the whole sequence.</summary>
@@ -583,6 +584,7 @@ namespace RevCore
                 source.PlayOneShot(clip);
             else
                 source.Play();
+            RevDiagnostics.Listener?.OnAudioPlaySFX(clip.name);
             return source;
         }
 
