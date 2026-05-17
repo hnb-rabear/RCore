@@ -1,0 +1,372 @@
+rcore_module,rcore_type,kind,status,revcore_module,revcore_type,note
+Audio,AudioCollection,class,PORTED,Audio,AudioCollection,RCore.Audio -> RevCore
+Audio,ScriptGenerator,struct,PORTED,Audio,ScriptGenerator,RCore.Audio -> RevCore
+Audio,AudioManager,class,PORTED,Audio,AudioManager,RCore.Audio -> RevCore
+Audio,UISfxTriggeredEvent,struct,PORTED,Foundation,UISfxTriggeredEvent,RCore.Audio -> RevCore
+Audio,BaseAudioManager,class,PORTED,Audio,BaseAudioManager,RCore.Audio -> RevCore
+Audio,SfxSource,class,PORTED,Audio,SfxSource,RCore.Audio -> RevCore
+Common,AnimEventListener,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,AssetsList,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/BigNumber,BigNumberD,class,LIKELY,Foundation,BigNumber,fuzzy match score 0.95
+Common/BigNumber,BigNumberF,class,LIKELY,Foundation,BigNumber,fuzzy match score 0.95
+Common/BigNumber,BigNumberAlphaExtension,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/BigNumber,BigNumberHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Debug,Debug,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Debug,DebugDraw,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Debug,FOVInfo,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,DontDestroyedGroup,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,Env,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,IEncryption,interface,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,Encryption,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,EventDispatcher,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,void,delegate,PORTED,Foundation,void,RCore -> RevCore
+Common,BaseEvent,interface,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AddressableUtil,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetBundleRef,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetBundleWithEnumKey,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetBundleWith2EnumKeys,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetBundleWithIntKey,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetBundleWrap,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetRef_SpriteAtlas,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AssetRef_FontAsset,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,ComponentRef,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,ComponentRef_SpriteRenderer,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,CameraHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,ColorExtension,class,PORTED,Foundation,ColorExtension,RCore -> RevCore
+Common/Helper,ColorHelper,class,PORTED,Foundation,ColorHelper,RCore -> RevCore
+Common/Helper,ComponentHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,ComponentExtension,class,PORTED,Foundation,ComponentExtension,RCore -> RevCore
+Common/Helper,DebugDrawHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,DateTimePickerWindow,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorAssetUtil,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,SpriteInfo,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorBuildUtil,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorComponentUtil,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorDrawing,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorFileUtil,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiButton,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiColor,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiDropdownListEnum,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiDropdownListInt,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiDropdownListString,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiFoldout,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiHeaderFoldout,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiInt,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiTabs,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiText,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GuiToggle,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,IDraw,interface,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorGui,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorLayout,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,EditorSerializedPropertyExtensions,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,GUIStyleHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,JsonHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,MathHelper,class,PORTED,Foundation,MathHelper,RCore -> RevCore
+Common/Helper,MathExtension,class,PORTED,Foundation,MathExtension,RCore -> RevCore
+Common/Helper,NameGenerator,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,void,delegate,PORTED,Foundation,void,RCore -> RevCore
+Common/Helper,void,delegate,PORTED,Foundation,void,RCore -> RevCore
+Common/Helper,void,delegate,PORTED,Foundation,void,RCore -> RevCore
+Common/Helper,void,delegate,PORTED,Foundation,void,RCore -> RevCore
+Common/Helper,bool,delegate,PORTED,Foundation,bool,RCore -> RevCore
+Common/Helper,bool,delegate,PORTED,Foundation,bool,RCore -> RevCore
+Common/Helper,RUtil,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,RUtilExtension,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,RandomExtension,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,StringBuilderExtension,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,TimeHelper,class,PORTED,Foundation,TimeHelper,RCore -> RevCore
+Common/Helper,TimeExtension,class,PORTED,Foundation,TimeExtension,RCore -> RevCore
+Common/Helper,TrajectoryHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,ProjectileHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,AnchorType,enum,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,TransformExtension,class,PORTED,Foundation,TransformExtension,RCore -> RevCore
+Common/Helper,IPInfo,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Helper,WebRequestHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Pool,CustomPool,class,GAP,Pool,,no RevCore equivalent found — port or drop?
+Common/Pool,PoolsContainer,class,PORTED,Pool,PoolsContainer,RCore -> RevCore
+Common,REditorPrefContainer,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPref,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefBool,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefInt,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefFloat,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefDateTime,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefString,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefList,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefDict,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefSerializableObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefEnum,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,REditorPrefVector,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RMenu,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RPlayerPrefContainer,class,RENAMED,Prefs,PlayerPrefContainer,RCore -> RevCore
+Common,RPlayerPref,class,RENAMED,Prefs,PlayerPref,RCore -> RevCore
+Common,RPlayerPrefBool,class,RENAMED,Prefs,PlayerPrefBool,RCore -> RevCore
+Common,RPlayerPrefInt,class,RENAMED,Prefs,PlayerPrefInt,RCore -> RevCore
+Common,RPlayerPrefFloat,class,RENAMED,Prefs,PlayerPrefFloat,RCore -> RevCore
+Common,RPlayerPrefDateTime,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RPlayerPrefString,class,RENAMED,Prefs,PlayerPrefString,RCore -> RevCore
+Common,RPlayerPrefList,class,LIKELY,Prefs,PlayerPrefInt,fuzzy match score 0.89
+Common,RPlayerPrefDict,class,LIKELY,Prefs,PlayerPrefInt,fuzzy match score 0.89
+Common,RPlayerPrefObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RPlayerPrefSerializableObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,Roman,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,SceneLoader,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/SerializableDictionary,SerializableDictionary,class,PORTED,Foundation,SerializableDictionary,RCore -> RevCore
+Common/SerializableDictionary,SerializedDictionary,class,PORTED,Foundation,SerializedDictionary,RCore -> RevCore
+Common/SerializableDictionary,SerializableDictionaryDrawer,class,LIKELY,Foundation,SerializableDictionary,fuzzy match score 0.88
+Common/SerializableDictionary,SerializableKeyValue,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/SerializableDictionary,SerializableKeyValueDrawer,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/SerializableDictionary,UnityObjectWrapper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/SerializableDictionary,AssetReferenceWrapper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common/Timer,TimedAction,class,PORTED,Timer,TimedAction,RCore -> RevCore
+Common/Timer,TimerEvents,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,TimerEventsGlobal,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,CountdownEvent,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,ConditionEvent,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,DelayableEvent,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,CountdownEventsGroup,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,ConditionEventsGroup,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/Timer,TimerEventsInScene,class,GAP,Timer,,no RevCore equivalent found — port or drop?
+Common/VFX,CFX_Component,class,GAP,,,RCore-only module — not in RevCore scope yet
+Common/VFX,CFX_ParticleComponent,class,GAP,,,RCore-only module — not in RevCore scope yet
+Common/VFX,CFX_ParticleComponentEditor,class,GAP,,,RCore-only module — not in RevCore scope yet
+Common,RVector2,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RVector2Int,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RVector3,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RVector3Int,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,RVector4,struct,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,YesNoNone,enum,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,PerfectRatio,enum,PORTED,Foundation,PerfectRatio,RCore -> RevCore
+Common,UIPivot,enum,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Common,TapFeedback,enum,GAP,Foundation,,no RevCore equivalent found — port or drop?
+Configuration.cs,Configuration,class,GAP,,,RCore-only module — not in RevCore scope yet
+Configuration.cs,Env,class,GAP,,,RCore-only module — not in RevCore scope yet
+Configuration.cs,Directive,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/Common,BinaryDataSaver,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data,ConfigCollection,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data,ConfigCollectionEditor,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data,ConfigCollectionEditor,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data/JObjectDB,IJObjectHandler,interface,PORTED,Data,IJObjectHandler,RCore.Data.JObject -> RevCore
+Data/JObjectDB,InjectAttribute,class,PORTED,Data,InjectAttribute,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectDB,class,PORTED,Data,JObjectDB,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectDBManager,class,PORTED,Data,JObjectDBManager,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectDBManagerV2,class,LIKELY,Data,JObjectDBManager,fuzzy match score 0.94
+Data/JObjectDB,IJObjectData,interface,PORTED,Data,IJObjectData,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectData,class,PORTED,Data,JObjectData,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectDataCollection,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data/JObjectDB,JObjectDataCollectionEditor,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data/JObjectDB,JObjectDataCollectionEditor,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data/JObjectDB,JObjectHandler,class,LIKELY,Data,IJObjectHandler,fuzzy match score 0.97
+Data/JObjectDB,IJObjectModel,interface,PORTED,Data,IJObjectModel,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectModel,class,PORTED,Data,JObjectModel,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectModelCollection,class,PORTED,Data,JObjectModelCollection,RCore.Data.JObject -> RevCore
+Data/JObjectDB,JObjectModelCollectionEditor,class,LIKELY,Data,JObjectModelCollection,fuzzy match score 0.88
+Data/JObjectDB,JObjectModelCollectionEditor,class,LIKELY,Data,JObjectModelCollection,fuzzy match score 0.88
+Data/JObjectDB,NewDayStartedEvent,class,PORTED,Data,NewDayStartedEvent,RCore.Data.JObject -> RevCore
+Data/JObjectDB,SessionData,class,PORTED,Data,SessionData,RCore.Data.JObject -> RevCore
+Data/JObjectDB,SessionDataHandler,class,GAP,Data,,no RevCore equivalent found — port or drop?
+Data/JObjectDB,ISessionModel,interface,PORTED,Data,ISessionModel,RCore.Data.JObject -> RevCore
+Data/JObjectDB,SessionModel,class,PORTED,Data,SessionModel,RCore.Data.JObject -> RevCore
+Data/KeyValueDB,KeyValueSS,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,KeyValueCollection,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,KeyValueDB,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,KeyValueDBManager,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,KeyValueDBManagerEditor,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,KeyValueDBManagerEditor,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,InvItemData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,InventoryData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,InvRPGItemData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,InventoryRPGData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,BigNumberData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,BoolData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,DataGroup,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,DateTimeData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,FloatData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,FunData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,IntegerData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,ListData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,LongData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,ObjectData,class,LIKELY,Data,JObjectData,fuzzy match score 0.95
+Data/KeyValueDB,StringData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/KeyValueDB,TimedTaskData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
+Data/RPGBase,AttributesCollection,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/RPGBase,Attribute,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/RPGBase,AttributeParseExtenstion,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/RPGBase,Mod,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/RPGBase,TimedMod,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/RPGBase,LinkedMod,class,GAP,,,RCore-only module — not in RevCore scope yet
+Data/RPGBase,ModsContainer,class,GAP,,,RCore-only module — not in RevCore scope yet
+Inspector,AutoFillAttribute,class,PORTED,Inspector,AutoFillAttribute,RCore.Inspector -> RevCore
+Inspector,AutoFillDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,CommentAttribute,class,PORTED,Inspector,CommentAttribute,RCore.Inspector -> RevCore
+Inspector,CommentDecoratorDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,CreateScriptableObjectAttribute,class,PORTED,Inspector,CreateScriptableObjectAttribute,RCore.Inspector -> RevCore
+Inspector,CreateScriptableObjectDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,DisplayEnumAttribute,class,PORTED,Inspector,DisplayEnumAttribute,RCore.Inspector -> RevCore
+Inspector,DisplayEnumDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,ExposeScriptableObjectAttribute,class,PORTED,Inspector,ExposeScriptableObjectAttribute,RCore.Inspector -> RevCore
+Inspector,ExposeScriptableObjectDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,FolderPathAttribute,class,PORTED,Inspector,FolderPathAttribute,RCore.Inspector -> RevCore
+Inspector,FolderPathPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,HighlightAttribute,class,PORTED,Inspector,HighlightAttribute,RCore.Inspector -> RevCore
+Inspector,HighlightPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,InspectorButtonAttribute,class,PORTED,Inspector,InspectorButtonAttribute,RCore.Inspector -> RevCore
+Inspector,InspectorButton,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,ReadOnlyAttribute,class,PORTED,Inspector,ReadOnlyAttribute,RCore.Inspector -> RevCore
+Inspector,ReadOnlyPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,SeparatorAttribute,class,PORTED,Inspector,SeparatorAttribute,RCore.Inspector -> RevCore
+Inspector,SeparatorDecoratorDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,ShowIfAttribute,class,PORTED,Inspector,ShowIfAttribute,RCore.Inspector -> RevCore
+Inspector,ShowIfDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,SingleLayerAttribute,class,PORTED,Inspector,SingleLayerAttribute,RCore.Inspector -> RevCore
+Inspector,SingleLayerPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,SpriteBoxAttribute,class,PORTED,Inspector,SpriteBoxAttribute,RCore.Inspector -> RevCore
+Inspector,SpriteBoxDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,TMPFontMaterialsAttribute,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,TMPFontMaterialsDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,TagSelectorAttribute,class,PORTED,Inspector,TagSelectorAttribute,RCore.Inspector -> RevCore
+Inspector,TagSelectorPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,TimeStampAttribute,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Plugins,RNative,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONNodeType,enum,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONTextMode,enum,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONNodeExt,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONNode,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,Enumerator,struct,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,ValueEnumerator,struct,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,KeyEnumerator,struct,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,LinqEnumerator,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONArray,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONObject,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONString,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONNumber,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONBool,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONNull,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSONLazyCreator,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,JSON,class,GAP,,,RCore-only module — not in RevCore scope yet
+Plugins,UniClipboard,class,GAP,,,RCore-only module — not in RevCore scope yet
+UI/Button,JustButton,class,PORTED,UI,JustButton,RCore.UI -> RevCore.UI
+UI/Button,JustButtonEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/Button,SimpleButton,class,PORTED,UI,SimpleButton,RCore.UI -> RevCore.UI
+UI/Button,SimpleButtonEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/Button,SimpleTMPButton,class,PORTED,UI,SimpleTMPButton,RCore.UI -> RevCore.UI
+UI,HoledLayerMask,class,PORTED,UI,HoledLayerMask,RCore.UI -> RevCore.UI
+UI,HoledLayerMaskEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/HomePage,HorizontalSnapScrollView,class,PORTED,UI,HorizontalSnapScrollView,RCore.UI -> RevCore.UI
+UI/HomePage,SnapScrollItem,class,PORTED,UI,SnapScrollItem,RCore.UI -> RevCore.UI
+UI,IgnoreScreenSafe,class,PORTED,UI,IgnoreScreenSafe,RCore.UI -> RevCore.UI
+UI,ImageWithText,class,PORTED,UI,ImageWithText,RCore.UI -> RevCore.UI
+UI,ImageWithTextTMP,class,PORTED,UI,ImageWithTextTMP,RCore.UI -> RevCore.UI
+UI/Joystick,Joystick,class,PORTED,UI,Joystick,RCore.UI -> RevCore.UI
+UI/Joystick,JoystickArea,class,PORTED,UI,JoystickArea,RCore.UI -> RevCore.UI
+UI/Layout,HorizontalAlignment,class,LIKELY,UI,HorizontalAlignmentUI,fuzzy match score 0.95
+UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore -> RevCore.UI
+UI/Layout,HorizontalAlignmentUI,class,PORTED,UI,HorizontalAlignmentUI,RCore.UI -> RevCore.UI
+UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore.UI -> RevCore.UI
+UI/Layout,IAligned,interface,PORTED,UI,IAligned,RCore.UI -> RevCore.UI
+UI/Layout,TableAlignment,class,LIKELY,UI,TableAlignmentUI,fuzzy match score 0.93
+UI/Layout,TableLayoutType,enum,PORTED,UI,TableLayoutType,RCore -> RevCore.UI
+UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore -> RevCore.UI
+UI/Layout,TableAlignmentUI,class,PORTED,UI,TableAlignmentUI,RCore.UI -> RevCore.UI
+UI/Layout,TableLayoutType,enum,PORTED,UI,TableLayoutType,RCore.UI -> RevCore.UI
+UI/Layout,AlignmentVertical,enum,PORTED,UI,AlignmentVertical,RCore.UI -> RevCore.UI
+UI/Layout,AlignmentHorizontal,enum,PORTED,UI,AlignmentHorizontal,RCore.UI -> RevCore.UI
+UI/Layout,VerticalAlignment,class,LIKELY,UI,VerticalAlignmentUI,fuzzy match score 0.94
+UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore -> RevCore.UI
+UI/Layout,VerticalAlignmentUI,class,PORTED,UI,VerticalAlignmentUI,RCore.UI -> RevCore.UI
+UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore.UI -> RevCore.UI
+UI/PanelStack,PanelController,class,PORTED,UI,PanelController,RCore.UI -> RevCore.UI
+UI/PanelStack,PanelControllerEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/PanelStack,PanelRoot,class,PORTED,UI,PanelRoot,RCore.UI -> RevCore.UI
+UI/PanelStack,PanelRootEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/PanelStack,PanelStack,class,PORTED,UI,PanelStack,RCore.UI -> RevCore.UI
+UI/PanelStack,PushMode,enum,PORTED,UI,PushMode,RCore.UI -> RevCore.UI
+UI/PanelStack,PanelStackEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/PanelStack,PanelStackEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,ProgressBar,class,PORTED,UI,ProgressBar,RCore.UI -> RevCore.UI
+UI,FillDirection,enum,PORTED,UI,FillDirection,RCore.UI -> RevCore.UI
+UI,ProgressBarEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,ProgressBarEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,ScreenSafeArea,class,PORTED,UI,ScreenSafeArea,RCore.UI -> RevCore.UI
+UI/Scrollview,OptimizedHorizontalScrollView,class,PORTED,UI,OptimizedHorizontalScrollView,RCore.UI -> RevCore.UI
+UI/Scrollview,OptimizedHorizontalScrollViewEditor,class,LIKELY,UI,OptimizedHorizontalScrollView,fuzzy match score 0.91
+UI/Scrollview,OptimizedHorizontalScrollViewEditor,class,LIKELY,UI,OptimizedHorizontalScrollView,fuzzy match score 0.91
+UI/Scrollview,OptimizedScrollItem,class,PORTED,UI,OptimizedScrollItem,RCore.UI -> RevCore.UI
+UI/Scrollview,OptimizedScrollItemTest,class,LIKELY,UI,OptimizedScrollItem,fuzzy match score 0.90
+UI/Scrollview,ScrollDirection,enum,PORTED,UI,ScrollDirection,RCore.UI -> RevCore.UI
+UI/Scrollview,OptimizedScrollView,class,PORTED,UI,OptimizedScrollView,RCore.UI -> RevCore.UI
+UI/Scrollview,OptimizedVerticalScrollView,class,PORTED,UI,OptimizedVerticalScrollView,RCore.UI -> RevCore.UI
+UI/Scrollview,ScrollRectEx,class,PORTED,UI,ScrollRectEx,RCore.UI -> RevCore.UI
+UI/Toggle,CustomToggleGroup,class,PORTED,UI,CustomToggleGroup,RCore.UI -> RevCore.UI
+UI/Toggle,CustomToggleSlider,class,PORTED,UI,CustomToggleSlider,RCore.UI -> RevCore.UI
+UI/Toggle,CustomToggleEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/Toggle,JustToggle,class,PORTED,UI,JustToggle,RCore.UI -> RevCore.UI
+UI/Toggle,SizeTransition,class,PORTED,UI,SizeTransition,RCore.UI -> RevCore.UI
+UI/Toggle,PositionTransition,class,PORTED,UI,PositionTransition,RCore.UI -> RevCore.UI
+UI/Toggle,ColorTransition,class,PORTED,UI,ColorTransition,RCore.UI -> RevCore.UI
+UI/Toggle,SpriteTransition,class,PORTED,UI,SpriteTransition,RCore.UI -> RevCore.UI
+UI/Toggle,CustomToggleTabEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,ITweenItem,interface,PORTED,UI,ITweenItem,RCore.UI -> RevCore.UI
+UI,UICircleArranger,class,PORTED,UI,UICircleArranger,RCore.UI -> RevCore.UI
+Services/Ads,AdMobProvider,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Ads,ApplovinProvider,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Ads,IAdProvider,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Ads,IRewardedAdListener,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Ads,IInterstitialAdListener,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Ads,IBannerAdListener,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Ads,IronSourceProvider,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,ABConfigPropertyDrawer,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebase,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseAnalytics,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,AnalyticEvent,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseAuth,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseCrashlytics,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RDatabaseReference,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseDatabase,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,PlayerIdentityDoc,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,PlayerDataDoc,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseFirestore,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,PlayerIdentityDoc,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,PlayerDataDoc,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseFirestore,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,IRemoteConfig,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseRemote,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,ABConfig,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,WaitForTaskStorage,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,SavedFileDefinition,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Firebase,RFirebaseStorage,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,GameServices,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,ConflictResolutionStrategy,delegate,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,ISavedGameMetadata,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,SelectUIStatus,enum,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,GameServices,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,GameServices,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,AskFriendResolutionStatus,enum,GAP,,,RCore-only module — not in RevCore scope yet
+Services/GameServices,GameServices,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/IAP,IAPManager,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,DefaultSerializer,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,GameNotification,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,IPendingNotificationsSerializer,interface,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,NotificationsManager,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,OperatingMode,enum,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,NotificationsPlatform,class,GAP,,,RCore-only module — not in RevCore scope yet
+Services/Notification,PendingNotification,class,GAP,,,RCore-only module — not in RevCore scope yet
+UI,ContentRectSizeFilter,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/DragDrop,UIDragController,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/DragDrop,UIDragHandler,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/DragDrop,UIDraggableItem,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI/DragDrop,UIDraggableWorldItem,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,LeftSnapScrollView,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,PointerAlignment,enum,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,MessageWithPointer,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,MessagesHUD,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,Message,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,Bubble,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,Notification,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,ResolutionFixer,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,CanvasResolutionFixerEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,UIGridScaler,class,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,ScaleType,enum,GAP,UI,,no RevCore equivalent found — port or drop?
+UI,VerticalSnapScrollView,class,GAP,UI,,no RevCore equivalent found — port or drop?

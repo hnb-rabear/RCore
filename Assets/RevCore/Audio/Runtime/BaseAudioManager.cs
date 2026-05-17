@@ -9,22 +9,40 @@ using Random = UnityEngine.Random;
 
 namespace RevCore
 {
+    /// <summary>
+    /// Inheritable audio system component. Maintains separate volume axes (master / SFX / music),
+    /// a pool of SFX <see cref="AudioSource"/>s for concurrent playback, a dedicated unlimited
+    /// SFX source for fire-and-forget effects, and a music source. With the <c>DOTWEEN</c> define,
+    /// volume setters can fade smoothly; without it they snap.
+    /// </summary>
+    /// <remarks>
+    /// Single instance is the typical usage — see <see cref="AudioManager"/>. Subclass when you need
+    /// to override <see cref="Start"/> or wire up additional event subscriptions.
+    /// </remarks>
     public class BaseAudioManager : MonoBehaviour
     {
+        /// <summary>The asset that lists all sound effect and music clips this manager can play.</summary>
         [AutoFill] public AudioCollection audioCollection;
         [SerializeField] protected bool m_enabledSfx = true;
         [SerializeField] protected bool m_enabledMusic = true;
         [SerializeField] protected List<AudioSource> m_sfxSources;
+        /// <summary>Source used by <see cref="PlaySFX(AudioClip, int, bool, float)"/> overloads that don't care about voice counting.</summary>
         [SerializeField] public AudioSource m_sfxSourceUnlimited;
+        /// <summary>Source used for music playback. Auto-created on first use if not assigned in the inspector.</summary>
         [SerializeField] public AudioSource m_musicSource;
         [SerializeField, Range(0, 1f)] protected float m_masterVolume = 1f;
         [SerializeField, Range(0, 1f)] protected float m_sfxVolume = 1f;
         [SerializeField, Range(0, 1f)] protected float m_musicVolume = 1f;
 
+        /// <summary>True when SFX playback is enabled. Toggle via <see cref="EnableSFX"/>.</summary>
         public bool EnabledSFX => m_enabledSfx;
+        /// <summary>True when music playback is enabled. Toggle via <see cref="EnableMusic"/>.</summary>
         public bool EnabledMusic => m_enabledMusic;
+        /// <summary>Master volume (0..1). Multiplied with both SFX and music volumes at play time.</summary>
         public float MasterVolume => m_masterVolume;
+        /// <summary>SFX-only volume axis (0..1).</summary>
         public float SFXVolume => m_sfxVolume;
+        /// <summary>Music-only volume axis (0..1).</summary>
         public float MusicVolume => m_musicVolume;
 
 #if DOTWEEN
@@ -101,10 +119,11 @@ namespace RevCore
                     source.volume = m_masterVolume * m_sfxVolume;
         }
 
+        /// <summary>Sets <see cref="MasterVolume"/>. With <c>DOTWEEN</c>, fades over <paramref name="fadeDuration"/> seconds; without it, snaps. <paramref name="onComplete"/> runs after the fade.</summary>
         public void SetMasterVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
 #if DOTWEEN
-            m_masterTweener.Kill();
+            m_masterTweener?.Kill();
 #endif
             if (m_masterVolume == value)
             {
@@ -190,6 +209,7 @@ namespace RevCore
 
         #region Music
 
+        /// <summary>Toggles music playback. Disabling stops the music source; enabling resumes from the last clip.</summary>
         public void EnableMusic(bool value)
         {
             m_enabledMusic = value;
@@ -197,10 +217,11 @@ namespace RevCore
             m_musicSource.mute = !value;
         }
 
+        /// <summary>Sets <see cref="MusicVolume"/>. With <c>DOTWEEN</c>, fades over <paramref name="fadeDuration"/> seconds; without it, snaps. <paramref name="onComplete"/> runs after the fade.</summary>
         public void SetMusicVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
 #if DOTWEEN
-            m_musicTweener.Kill();
+            m_musicTweener?.Kill();
 #endif
             EnsureAudioSources();
 
@@ -241,6 +262,7 @@ namespace RevCore
             }
         }
 
+        /// <summary>Stops the music source. With <c>DOTWEEN</c>, fades out over <paramref name="fadeDuration"/>; without it, stops immediately.</summary>
         public void StopMusic(float fadeDuration = 0, Action onComplete = null)
         {
             SetMusicVolume(0, fadeDuration, () =>
@@ -251,6 +273,7 @@ namespace RevCore
             });
         }
 
+        /// <summary>Resumes playback of the last music clip assigned to <see cref="m_musicSource"/>. Fades in over <paramref name="fadeDuration"/> with DOTWEEN.</summary>
         public void PlayMusic(float fadeDuration = 0, float volume = 1f)
         {
             EnsureAudioSources();
@@ -259,6 +282,7 @@ namespace RevCore
             SetMusicVolume(volume, fadeDuration);
         }
 
+        /// <summary>Plays <paramref name="clip"/> on the music source. <paramref name="loop"/> selects looping; fade and volume control the transition.</summary>
         public void PlayMusic(AudioClip clip, bool loop, float fadeDuration = 0, float volume = 1f)
         {
             if (clip == null)
@@ -275,6 +299,7 @@ namespace RevCore
             SetMusicVolume(volume, fadeDuration);
         }
 
+        /// <summary>Plays <paramref name="clips"/> sequentially via a coroutine, looping the whole sequence.</summary>
         public void PlayMusics(AudioClip[] clips, float fadeDuration = 0, float volume = 1f)
         {
             if (m_playMusicsCoroutine != null)
@@ -332,8 +357,10 @@ namespace RevCore
             }
         }
 
+        /// <summary>True when the music source is currently playing (any clip).</summary>
         public bool IsPlayingMusic() => m_musicSource != null && m_musicSource.isPlaying;
 
+        /// <summary>Resolves <paramref name="fileName"/> against <see cref="audioCollection"/> and plays it on the music source.</summary>
         public void PlayMusic(string fileName, bool loop = false, float fadeDuration = 0)
         {
             if (audioCollection == null)
@@ -343,6 +370,7 @@ namespace RevCore
             PlayMusic(clip, loop, fadeDuration);
         }
 
+        /// <summary>Plays the music clip at <see cref="audioCollection"/> index <paramref name="id"/>.</summary>
         public void PlayMusicById(int id, bool loop = false, float fadeDuration = 0, float volume = 1f)
         {
             if (audioCollection == null)
@@ -352,6 +380,7 @@ namespace RevCore
             PlayMusic(clip, loop, fadeDuration, volume);
         }
 
+        /// <summary>Plays the music clips at the given <see cref="audioCollection"/> indices in sequence.</summary>
         public void PlayMusicByIds(int[] ids, float fadeDuration = 0, float volume = 1f)
         {
             if (audioCollection == null || ids == null || ids.Length == 0)
@@ -367,6 +396,7 @@ namespace RevCore
 
         #region SFX
 
+        /// <summary>Toggles SFX playback. Disabling stops every in-flight SFX source.</summary>
         public void EnableSFX(bool value)
         {
             m_enabledSfx = value;
@@ -377,10 +407,11 @@ namespace RevCore
             m_sfxSourceUnlimited.mute = !value;
         }
 
+        /// <summary>Sets <see cref="SFXVolume"/>. With <c>DOTWEEN</c>, fades over <paramref name="fadeDuration"/>; without it, snaps. <paramref name="onComplete"/> runs after the fade.</summary>
         public void SetSFXVolume(float value, float fadeDuration = 0, Action onComplete = null)
         {
 #if DOTWEEN
-            m_sfxTweener.Kill();
+            m_sfxTweener?.Kill();
 #endif
             if (value == m_sfxVolume)
             {
@@ -419,6 +450,7 @@ namespace RevCore
             }
         }
 
+        /// <summary>Stops every active SFX source currently playing <paramref name="clip"/>.</summary>
         public void StopSFX(AudioClip clip)
         {
             if (clip == null)
@@ -443,6 +475,7 @@ namespace RevCore
             }
         }
 
+        /// <summary>Stops every active SFX source.</summary>
         public void StopSFXs()
         {
             if (m_sfxSources != null)
@@ -522,6 +555,12 @@ namespace RevCore
             }
         }
 
+        /// <summary>
+        /// Plays <paramref name="clip"/> on an available SFX source. <paramref name="limitNumber"/> > 0
+        /// caps the number of concurrent instances of this clip. <paramref name="pitchRandomMultiplier"/>
+        /// applies a random pitch within [1/m, m].
+        /// </summary>
+        /// <returns>The <see cref="AudioSource"/> playing the clip, or <c>null</c> if disabled or no slot available.</returns>
         public AudioSource PlaySFX(AudioClip clip, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1)
         {
             if (clip == null)
@@ -547,6 +586,7 @@ namespace RevCore
             return source;
         }
 
+        /// <summary>Plays the SFX clip resolved by name from <see cref="audioCollection"/>.</summary>
         public AudioSource PlaySFX(string fileName, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1)
         {
             if (!m_enabledSfx || audioCollection == null)
@@ -556,6 +596,7 @@ namespace RevCore
             return PlaySFX(clip, limitNumber, loop, pitchRandomMultiplier);
         }
 
+        /// <summary>Plays the SFX clip at <see cref="audioCollection"/> index <paramref name="index"/>.</summary>
         public AudioSource PlaySFX(int index, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1)
         {
             if (!m_enabledSfx || audioCollection == null)
@@ -565,6 +606,7 @@ namespace RevCore
             return PlaySFX(clip, limitNumber, loop, pitchRandomMultiplier);
         }
 
+        /// <summary>Stops every active SFX source playing the clip at <see cref="audioCollection"/> index <paramref name="index"/>.</summary>
         public void StopSFX(int index)
         {
             if (audioCollection == null)
@@ -577,8 +619,40 @@ namespace RevCore
         #endregion
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// Editor-only: instantiates the "Music" and "Sfx" child GameObjects with their
+        /// <see cref="AudioSource"/>s the first time the component is added (or after a manual
+        /// Reset). Idempotent. Runtime creates these on demand in <see cref="EnsureAudioSources"/>,
+        /// so this exists purely so the hierarchy looks complete in the scene view.
+        /// </summary>
+        protected virtual void Reset()
+        {
+            m_sfxSources ??= new List<AudioSource>();
+            if (m_musicSource == null)
+            {
+                var obj = new GameObject("Music");
+                obj.transform.SetParent(transform);
+                m_musicSource = obj.AddComponent<AudioSource>();
+                m_musicSource.loop = true;
+                m_musicSource.playOnAwake = false;
+            }
+            if (m_sfxSourceUnlimited == null)
+            {
+                var obj = new GameObject("Sfx");
+                obj.transform.SetParent(transform);
+                m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
+                m_sfxSourceUnlimited.loop = false;
+                m_sfxSourceUnlimited.playOnAwake = false;
+            }
+        }
+
         protected virtual void OnValidate()
         {
+            // No structural mutation here. OnValidate fires inside an Awake / CheckConsistency
+            // context that forbids SendMessage; AddComponent and new GameObject() both trigger
+            // SendMessage and Unity logs warnings ("Music: OnDidAddComponent" etc). Anything
+            // that creates GameObjects or components belongs in Reset() (one-shot, on add)
+            // or in runtime EnsureAudioSources().
             m_sfxSources ??= new List<AudioSource>();
             var audioSources = gameObject.GetComponentsInChildren<AudioSource>(true);
 
@@ -588,19 +662,6 @@ namespace RevCore
                     m_musicSource = source;
                 if (m_sfxSourceUnlimited == null && source.gameObject.name.Contains("Sfx"))
                     m_sfxSourceUnlimited = source;
-            }
-
-            if (m_musicSource == null)
-            {
-                var obj = new GameObject("Music");
-                obj.transform.SetParent(transform);
-                m_musicSource = obj.AddComponent<AudioSource>();
-            }
-            if (m_sfxSourceUnlimited == null)
-            {
-                var obj = new GameObject("Sfx");
-                obj.transform.SetParent(transform);
-                m_sfxSourceUnlimited = obj.AddComponent<AudioSource>();
             }
 
             foreach (var source in audioSources)
@@ -614,10 +675,16 @@ namespace RevCore
                     m_sfxSources.Remove(source);
             }
 
-            m_sfxSourceUnlimited.loop = false;
-            m_sfxSourceUnlimited.playOnAwake = false;
-            m_musicSource.loop = true;
-            m_musicSource.playOnAwake = false;
+            if (m_sfxSourceUnlimited != null)
+            {
+                m_sfxSourceUnlimited.loop = false;
+                m_sfxSourceUnlimited.playOnAwake = false;
+            }
+            if (m_musicSource != null)
+            {
+                m_musicSource.loop = true;
+                m_musicSource.playOnAwake = false;
+            }
 
 #if DOTWEEN
             if (m_masterTweener == null || !m_masterTweener.IsPlaying())

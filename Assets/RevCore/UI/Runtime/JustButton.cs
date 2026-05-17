@@ -8,18 +8,30 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Extended Unity <see cref="Button"/> with three opt-in behaviors common in mobile games: scale-bounce
+    /// on press, on/off sprite swap for interactable state, and a greyscale material for the disabled look.
+    /// Plays a named SFX on click via the global <see cref="UISfxTriggeredEvent"/>.
+    /// </summary>
     [AddComponentMenu("RevCore/UI/JustButton")]
     public class JustButton : Button
     {
         [SerializeField] protected Image m_img;
         [SerializeField] protected Material m_greyscaleMaterial;
 
+        /// <summary>Scale down on press, bounce back on release.</summary>
         public bool scaleBounceEffect = true;
+        /// <summary>Aspect-ratio constraint applied on enable. See <see cref="RevCore.PerfectRatio"/>.</summary>
         public PerfectRatio perfectRatio = PerfectRatio.Height;
+        /// <summary>Render with a greyscale material when interactable is false.</summary>
         public bool greyscaleEffect;
+        /// <summary>Swap between <see cref="imgOn"/> and <see cref="imgOff"/> sprites based on interactable state.</summary>
         public bool imgOnOffSwap;
+        /// <summary>Sprite shown when interactable.</summary>
         public Sprite imgOn;
+        /// <summary>Sprite shown when not interactable.</summary>
         public Sprite imgOff;
+        /// <summary>Name of the SFX clip to play on click. Empty string silences clicks.</summary>
         public string clickSfx = "button";
 
         private Vector3 m_initialScale;
@@ -29,8 +41,10 @@ namespace RevCore.UI
         private int m_perfectSpriteId;
         private Action m_inactionStateAction;
 
+        /// <summary>RectTransform of the target graphic, falling back to this transform. Used for scale/bounce calculations.</summary>
         public RectTransform RectTransform => targetGraphic != null ? targetGraphic.rectTransform : transform as RectTransform;
 
+        /// <summary>Cached <see cref="UnityEngine.UI.Image"/> on this GameObject. Resolved lazily on first access.</summary>
         public Image Img
         {
             get
@@ -98,6 +112,7 @@ namespace RevCore.UI
                 Init();
         }
 
+        /// <summary>Caches the initial scale and applies <see cref="CheckPerfectRatio"/> + initial sprite/greyscale state. Safe to call multiple times.</summary>
         public void Init()
         {
             if (m_initialed)
@@ -125,12 +140,14 @@ namespace RevCore.UI
                 CheckPerfectRatio();
         }
 
+        /// <summary>Sets a callback to invoke when a press lands while the button is not interactable. Useful for "buy more energy" prompts on locked actions.</summary>
         public virtual void SetInactiveStateAction(Action action)
         {
             m_inactionStateAction = action;
             enabled = m_active || m_inactionStateAction != null;
         }
 
+        /// <inheritdoc />
         public override void OnPointerDown(PointerEventData eventData)
         {
             if (m_active)
@@ -162,6 +179,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <inheritdoc />
         public override void OnPointerUp(PointerEventData eventData)
         {
             if (m_active)
@@ -181,43 +199,51 @@ namespace RevCore.UI
             }
         }
 
+        /// <inheritdoc />
         public override void OnPointerClick(PointerEventData eventData)
         {
             if (m_active)
                 base.OnPointerClick(eventData);
         }
 
+        /// <inheritdoc />
         public override void OnSelect(BaseEventData eventData)
         {
             if (m_active)
                 base.OnSelect(eventData);
         }
 
+        /// <summary>Returns the greyscale material (loaded from Resources on first call).</summary>
         public Material GetGreyMat()
         {
             return m_greyscaleMaterial;
         }
 
+        /// <summary>Swaps the image's material between the original and the greyscale variant.</summary>
         public void EnableGrey(bool value)
         {
             greyscaleEffect = value;
         }
 
+        /// <summary>True when the button is currently accepting input (interactable + active in hierarchy + not in the inactive state).</summary>
         public bool Enabled()
         {
             return enabled && m_active;
         }
 
+        /// <summary>Sets the currently displayed sprite, refreshing the perfect-ratio constraint.</summary>
         public void SetActiveSprite(Sprite sprite)
         {
             imgOn = sprite;
         }
 
+        /// <summary>Marks the button "active" (responds to clicks normally) vs inactive (routes to <see cref="SetInactiveStateAction"/>).</summary>
         public void SetActive(bool value)
         {
             m_active = value;
         }
 
+        /// <summary>Sets <c>interactable</c> and applies the on/off sprite swap and greyscale effect as configured.</summary>
         public virtual void SetEnable(bool value)
         {
             if (Img != null)
@@ -232,6 +258,7 @@ namespace RevCore.UI
             interactable = value;
         }
 
+        /// <summary>Applies the <see cref="perfectRatio"/> constraint to the rect size based on the current sprite's native dimensions.</summary>
         public void CheckPerfectRatio()
         {
             if (m_img == null || m_img.sprite == null || m_img.type != Image.Type.Sliced
@@ -258,6 +285,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Plays a scale-pulse bubble effect over <paramref name="duration"/> seconds. Requires DOTWEEN.</summary>
         public void PlayBubbleEffect(float duration)
         {
 #if DOTWEEN

@@ -1,0 +1,22 @@
+name: Question / Discussion
+description: Ask how to do something with RevCore.
+title: "[question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, check `docs/ARCHITECTURE.md` and the module README under `Assets/RevCore/<Module>/`.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: What you have tried
+      description: Code snippet, docs you read, Stack Overflow answer that didn't fit.

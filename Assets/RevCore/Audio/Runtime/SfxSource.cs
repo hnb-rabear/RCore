@@ -4,8 +4,15 @@ using Random = UnityEngine.Random;
 
 namespace RevCore
 {
+    /// <summary>
+    /// Component that picks a random clip name from <see cref="mClips"/> and plays it via the
+    /// active <see cref="AudioManager"/>. Attach to a UI/effect prefab to play sounds without
+    /// referencing the audio manager from script. In "Standalone Mode" (when <c>m_AudioSource</c>
+    /// is assigned) plays through the local AudioSource instead of the shared pool.
+    /// </summary>
     public class SfxSource : MonoBehaviour
     {
+        /// <summary>Pool of clip names to choose from at random. Empty means the component is silent.</summary>
         [SerializeField] public string[] mClips;
         [SerializeField] private bool mIsLoop;
         [SerializeField, Range(0.5f, 2f)] private float m_PitchRandomMultiplier = 1f;
@@ -59,9 +66,13 @@ namespace RevCore
             m_initialized = true;
         }
 
+        /// <summary>Toggles looping playback.</summary>
         public void SetLoop(bool loop) => mIsLoop = loop;
+
+        /// <summary>Sets the local volume (multiplied with master and SFX volume at play time). Standalone-mode only.</summary>
         public void SetVolume(float val) => m_Vol = val;
 
+        /// <summary>Replaces the clip pool and re-resolves indices against the active <see cref="AudioCollection"/>.</summary>
         public void SetUp(string[] clips, bool isLoop)
         {
             mClips = clips ?? Array.Empty<string>();
@@ -70,6 +81,7 @@ namespace RevCore
             Init();
         }
 
+        /// <summary>Picks a random clip from <see cref="mClips"/> and plays it. No-op when <see cref="AudioManager.EnabledSFX"/> is false.</summary>
         public void PlaySFX()
         {
             if (!m_initialized)
@@ -121,6 +133,7 @@ namespace RevCore
             }
         }
 
+        /// <summary>Stops looping playback. Only valid in Standalone Mode (when a local <see cref="AudioSource"/> is assigned); logs an error otherwise.</summary>
         public void StopSFX()
         {
             if (m_AudioSource == null)

@@ -10,7 +10,9 @@ namespace RevCore.Tests
 			var result = Result<int>.Ok(42);
 			Assert.IsTrue(result.IsOk);
 			Assert.IsFalse(result.IsError);
+#pragma warning disable CS0618 // Value is [Obsolete] Stage 1 — exercised here on purpose for the pin.
 			Assert.AreEqual(42, result.Value);
+#pragma warning restore CS0618
 		}
 
 		[Test]
@@ -26,7 +28,9 @@ namespace RevCore.Tests
 		public void Value_on_error_throws()
 		{
 			var result = Result<int>.Fail("bad");
+#pragma warning disable CS0618 // Value is [Obsolete] Stage 1 — exercised here on purpose for the pin.
 			Assert.Throws<System.InvalidOperationException>(() => { var _ = result.Value; });
+#pragma warning restore CS0618
 		}
 
 		[Test]

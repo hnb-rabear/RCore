@@ -10,15 +10,27 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Full-screen dim overlay with a rectangular "hole" cut out around a target — used to highlight
+    /// a single UI element during tutorials and onboarding. The hole is built from a four-quad
+    /// approach (top/bottom/left/right images), so any UI render mode works.
+    /// </summary>
     [AddComponentMenu("RevCore/UI/Holed Layer Mask")]
     public class HoledLayerMask : MonoBehaviour
     {
+        /// <summary>Root rect containing the hole + four side dimmer images.</summary>
         public RectTransform rectContainer;
+        /// <summary>Image rendered inside the hole (typically transparent — the "look through" area).</summary>
         public Image imgHole;
+        /// <summary>Dim image covering the area left of the hole.</summary>
         public Image imgLeft;
+        /// <summary>Dim image covering the area right of the hole.</summary>
         public Image imgRight;
+        /// <summary>Dim image covering the area above the hole.</summary>
         public Image imgTop;
+        /// <summary>Dim image covering the area below the hole.</summary>
         public Image imgBot;
+        /// <summary>Inspector helper — focus the hole on this rect in edit mode.</summary>
         public RectTransform testTarget;
 
         private RectTransform m_currentTarget;
@@ -97,6 +109,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Shows or hides the overlay. Hiding disables the component to stop the per-frame tween work.</summary>
         public void Active(bool pValue)
         {
             enabled = pValue;
@@ -114,6 +127,7 @@ namespace RevCore.UI
                 imgBot.gameObject.SetActive(pValue);
         }
 
+        /// <summary>Sets the color of all four dim images uniformly.</summary>
         public void SetColor(Color pColor)
         {
             if (imgLeft != null)
@@ -126,6 +140,7 @@ namespace RevCore.UI
                 imgBot.color = pColor;
         }
 
+        /// <summary>Tweens the hole over <paramref name="pTime"/> seconds to <paramref name="pTarget"/>'s world rect (requires DOTWEEN).</summary>
         public void FocusToTarget(RectTransform pTarget, float pTime)
         {
             Active(true);
@@ -172,6 +187,7 @@ namespace RevCore.UI
 #endif
         }
 
+        /// <summary>Snaps the hole to <paramref name="pTarget"/>'s world rect without animating. <paramref name="pPostValidatingRect"/> triggers a follow-up validate next frame.</summary>
         public void FocusToTargetImmediately(RectTransform pTarget, bool pPostValidatingRect = true)
         {
             Active(true);
@@ -195,11 +211,13 @@ namespace RevCore.UI
                 StartCoroutine(IEPostValidating(pTarget));
         }
 
+        /// <summary>Returns the hole image's rect transform — useful when you need to place additional decorations around it.</summary>
         public RectTransform GetHoleTransform()
         {
             return imgHole.rectTransform;
         }
 
+        /// <summary>Variant that focuses on a world-space <see cref="SpriteRenderer"/> instead of a UI rect. Projects through <paramref name="pWorldCamera"/> into <paramref name="pMainCanvas"/>'s space.</summary>
         public void FocusToTargetImmediately(SpriteRenderer pTarget, RectTransform pMainCanvas, Camera pWorldCamera)
         {
             Active(true);
@@ -233,6 +251,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Replaces the hole shape with a custom sprite mask cut from <paramref name="spriteToClone"/>. Editor utility for non-rectangular holes.</summary>
         public void CreateHoleFromSprite(Sprite spriteToClone)
         {
             try
@@ -268,12 +287,14 @@ namespace RevCore.UI
             }
         }
 
+        /// <summary>Reverts a sprite-mask hole back to the default rectangular four-quad layout.</summary>
         public void ClearSpriteMask()
         {
             imgHole.sprite = null;
             imgHole.color = Color.clear;
         }
 
+        /// <summary>Editor utility that auto-creates the four side dimmer images + hole image as children. Idempotent.</summary>
         public void CreateComponents()
         {
             if (rectContainer == null)

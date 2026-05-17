@@ -1,0 +1,55 @@
+# Changelog
+
+All notable changes to RevCore are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [SemVer 2.0.0](https://semver.org/) per [docs/contributing/SEMVER_POLICY.md](docs/contributing/SEMVER_POLICY.md).
+
+## [Unreleased]
+
+### Removed
+
+- `RevCore.UI.SimpleButton` and its `SimpleButtonEditor` deleted. The type had been `[Obsolete("Use SimpleTMPButton instead")]` for one minor. `SimpleTMPButton` is the drop-in replacement — same `JustButton` base, label is TextMeshPro instead of the legacy `UnityEngine.UI.Text`. Pre-1.0 minor break per `SEMVER_POLICY`. RCore's `SimpleButton` (legacy framework) is intentionally retained for backward compatibility with the four in-flight consumer projects.
+- `RevCore.UI.CustomToggleSlider` and its `CustomToggleSliderEditor` deleted. The type had been `[Obsolete("Use JustToggle instead")]` for one minor. `JustToggle` is the drop-in replacement — same underlying `Toggle.isOn` contract, richer transition system. Pre-1.0 minor break per `SEMVER_POLICY`.
+- `RCore.UI.CustomToggleSlider` (legacy framework) deleted in lockstep with RevCore. The legacy sample `Assets/RCore/Main/Samples~/Examples/Script/UI/PanelExample.cs` now references `JustToggle` instead.
+
+### Deprecated
+
+- `MathHelper.Ded2Rad(float)` / `Tad2Deg(float)` marked `[Obsolete]` (Stage 1) — typos. Use `Deg2Rad` / `Rad2Deg` instead. Will be removed in v1.0.
+- `TransformHelper.CovertAnchoredPosFromChildToParent` (both overloads) marked `[Obsolete]` (Stage 1) — typo. Use the new `ConvertAnchoredPosFromChildToParent` instead. Will be removed in v1.0.
+- `Result<T>.Value` getter marked `[Obsolete]` (Stage 1). Throws on error; prefer `TryGetValue(out value)` or `ValueOr(fallback)` to avoid the throw. Will become internal in v1.0.
+- `JObjectDB.collections` field marked `[Obsolete]` (Stage 1 per `DEPRECATION_POLICY.md`). Direct mutation of this static dictionary bypasses key persistence and is the source of "save file silently drops a collection after reload" reports. Use `GetCollection`, `CreateCollection`, `GetCollectionKeys`, or `GetAllData` instead. Field will be made private in v1.0.
+
+### Fixed
+
+- `PanelRoot` and `BaseAudioManager` no longer trigger Unity's "SendMessage cannot be called during Awake, CheckConsistency, or OnValidate" warnings on import. `PanelRoot` declares `[RequireComponent(typeof(Canvas))]` + `[RequireComponent(typeof(GraphicRaycaster))]` instead of creating those components from `OnValidate`. `BaseAudioManager` moves the "Music" / "Sfx" child GameObject creation from `OnValidate` to `Reset()` (Editor-only, fires once on Add Component); the runtime path in `EnsureAudioSources` (called from `Start`) still creates the children on demand, so PlayMode behavior is unchanged. `OnValidate` retains the read-only field validation pass.
+- `PanelController.Show` now activates the GameObject before starting the show coroutine. The previous flow set `gameObject.SetActive(true)` from inside `IE_Show`, but Unity refuses `StartCoroutine` on an inactive GameObject and logs `Coroutine couldn't be started because the the game object '<name>' is inactive!` — meaning panels that began hidden (the typical case) never animated in. `SetActivePanel(true)` inside `IE_Show` stays, idempotent for active GameObjects, so subclass overrides still see the activation hook at the same lifecycle point.
+- `ColorHelper.TryHexToColor` now enforces its documented `Color.clear` failure contract for invalid (non-empty, non-null) hex strings. Unity's `ColorUtility.TryParseHtmlString` leaves its `out` parameter at `Color.white` on parse failure, which was leaking through our wrapper: e.g. `TryHexToColor("not-a-hex", out var c)` returned `false` with `c == Color.white` instead of `Color.clear`. Affects only the new explicit-failure API; the legacy `HexToColor` silent-fail behavior is unchanged (it intentionally passes Unity's behavior through).
+- `TimerScheduler.WaitForSeconds` / `WaitForCondition` no longer throw `ArgumentOutOfRangeException` when invoked a second time with the same non-zero `id`. The replace path cancelled the existing handle before overwriting the list slot; `Handle.Cancel()` fires the `RemoveHandle` callback, which `RemoveAt(i)`s the very slot the next line then tries to assign — the indexer throws because the list is now shorter than `i`. Fix: replace the slot first, then cancel the (no-longer-listed) handle. The "same non-zero id replaces existing timer" contract pinned by `TimerSchedulerTests.Same_non_zero_id_replaces_existing_timer` is restored. Both `m_countdowns` and `m_conditions` paths are affected; both are fixed.
+- All 8 RevCore test asmdef now set `"includePlatforms": ["Editor"]` so tests appear in the Test Runner **EditMode** tab instead of PlayMode. All tests are pure `[Test]` (no `[UnityTest]`), and benchmark tests use `Measure.Method` (no `Measure.Frames`), so EditMode is safe. Previously tests defaulted to PlayMode, leaving the CI `editmode` matrix job discovering zero RevCore tests.
+- `OptimizedScrollView.Initialize`, `OptimizedHorizontalScrollView.Init`, `OptimizedVerticalScrollView.Init` now early-return cleanly on `totalItems <= 0` (free items, zero out cached state, collapse container size). Previously they fell through to indexing `m_itemsScrolled[0]`, which crashed when the prefab list was empty. The empty-list state is a legitimate intermediate during async data loads and must not raise.
+- `OptimizedHorizontalScrollView.ScrollBarChanged` no longer logs an error when `m_optimizedTotal == 0` — that condition is the legitimate empty-scroll state, not a programming bug. The horizontal variant now matches the existing silent guards on `OptimizedScrollView` and `OptimizedVerticalScrollView`.
+- `BaseAudioManager.SetMasterVolume` / `SetMusicVolume` / `SetSFXVolume` now null-check the cached `Tweener` before calling `Kill()`. Calling these volume setters before any fade had ever started (e.g. on the very first frame, or after a domain reload that nulled the tween fields) would throw a `NullReferenceException` when DOTWEEN was enabled. Guarded with `?.Kill()`.
+
+### Added
+
+- `TransformHelper.ConvertAnchoredPosFromChildToParent` (extension on `RectTransform` + static overload with raw values) — correctly-spelled replacement for the legacy `Covert…` typo. Same behavior; new API is the path forward, old name remains for one minor as `[Obsolete]` Stage 1.
+- `ColorHelper.TryHexToColor(string, out Color)` — explicit-failure variant of `HexToColor`. Returns `false` and `Color.clear` on invalid/null/empty input. The existing `HexToColor` is unchanged.
+- `JObjectDBManager<T>.SaveForced()` — bypasses the 200 ms throttle that `Save(now: true)` applies. Internal `OnApplicationPause`/`OnApplicationQuit` now use this so end-of-life saves can never silently fail under the throttle (the original cause of intermittent save loss in shipping projects). The legacy `Save(now: true)` behaviour is unchanged.
+- `EventBus.ListenerCountFor<T>()` — per-type listener count on the concrete `EventBus` class. O(1) dictionary lookup plus one invocation-list walk only when listeners exist; prefer this over the aggregate `IEventBus.ListenerCount` on hot paths. Not added to `IEventBus` to avoid breaking external implementations.
+- Governance docs under `docs/contributing/`: API design guidelines, semver policy, deprecation policy, release checklist, public API guide.
+- GitHub Actions workflows: Unity test matrix (2022 LTS + Unity 6), lint, docs coverage, release drafter.
+- Issue templates (bug, feature, question) and PR template.
+- Root `CHANGELOG.md`.
+- Phase 1 inventory artifacts: `docs/api-inventory.csv` (503 symbols), `docs/migration/rcore-to-revcore-api-map.{md,csv}`, `docs/gap-analysis.md` (250 RCore-only types catalogued).
+- Characterization tests pinning current behavior of `ColorHelper.HexToColor`, `EventBus.Publish`/`ListenerCount`, `RevPool` over-capacity eviction, `TimerScheduler.Cancel` (incl. the `id=0` matches-all-defaults sharp edge).
+- Tooling scripts: `scripts/extract-api-surface.py`, `scripts/build-migration-map.py`.
+- Phase 2: benchmark suite (`Benchmark_EventBusTests`, `Benchmark_RevPoolTests`, `Benchmark_TimerSchedulerTests`) + CI workflow (`.github/workflows/benchmark.yml`) + regression checker (`scripts/check-benchmark-regression.py`) + `docs/contributing/BENCHMARK_GUIDE.md`.
+- `com.unity.test-framework.performance` (3.0.3) and `com.unity.testtools.codecoverage` (1.2.6) added to `Packages/manifest.json`.
+
+### Changed
+
+- `RevPool.Spawn` no longer walks the inactive bucket for null entries on every call. Items only become null when their GameObjects were destroyed externally — rare in steady-state usage. Spawn now checks the tail (the LIFO pop site) and only triggers `RemoveNullInactiveItems` when that one slot is null. Common-case Spawn drops from O(inactive_count) to O(1) for the cleanup step. `RelocateInactive` is unchanged and still runs when the bucket is empty so externally-deactivated items get reabsorbed.
+- `EventBus.ListenerCount` is now an O(1) read of a maintained counter instead of an O(types × listeners) walk that called `GetInvocationList()` once per subscribed event type. Subscribe / Unsubscribe / Clear / `Clear<T>` keep the counter in sync. Behavior preserved: deduplicated subscribes don't double-count, unsubscribing a listener that wasn't registered is still a silent no-op, and `Clear<T>` properly subtracts that type's listeners. Pinned by `Characterization_EventBusTests.ListenerCount_sums_invocation_lists_across_types`.
+- `TimerScheduler.Cancel(int)`, `WaitForSeconds`, `WaitForCondition`, and the internal handle-removal callback now run in amortized O(1) instead of O(n). Two parallel indices on top of the main list — a per-id map and a per-handle index map — turn id lookups, dedup checks, and handle removals from full-list scans into dictionary hits. The observable contract (Cancel(0) matches all default-id timers, same non-zero id replaces, Tick callback order in reverse-registration) is preserved and pinned by `Characterization_TimerSchedulerTests`. Cancelled timers stay in the main list until the next `Tick` reaps them (lazy cleanup), which keeps re-entrant Cancel/Replace paths safe.
+- `.editorconfig` extended with C# code style and analyzer severity rules.
+- `.gitattributes` added with `*.meta merge=union` to reduce conflict on regenerated GUIDs.
+
+[Unreleased]: https://github.com/hnb-rabear/rcore/compare/main...HEAD

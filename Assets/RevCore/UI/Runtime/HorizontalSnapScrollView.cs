@@ -8,10 +8,19 @@ using DG.Tweening;
 
 namespace RevCore.UI
 {
+    /// <summary>
+    /// Horizontal "paginated" scroll view that snaps to one <see cref="SnapScrollItem"/> at a time
+    /// (carousel / onboarding pattern). Items can be wider than the viewport; the snap target is
+    /// the item whose center is nearest to <c>m_PointToCheckDistanceToCenter</c>. Fires events on
+    /// scroll start / end and on index change.
+    /// </summary>
     public class HorizontalSnapScrollView : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
+        /// <summary>Fired with the new focused index after each snap.</summary>
         public Action<int> onIndexChanged;
+        /// <summary>Fired when the snap animation completes.</summary>
         public Action onScrollEnd;
+        /// <summary>Fired when the user begins a drag.</summary>
         public Action onScrollStart;
 
         [Tooltip("The index of the item to be displayed first when the scene loads.")]
@@ -54,12 +63,19 @@ namespace RevCore.UI
         private bool m_checkBoundary;
         private bool m_checkStop;
 
+        /// <summary>The scroll rect's content rect transform.</summary>
         public RectTransform Content => m_ScrollView.content;
+        /// <summary>Index of the currently-focused item, or -1 before first focus is established.</summary>
         public int FocusedItemIndex => m_FocusedItemIndex;
+        /// <summary>Number of items in the scroll view.</summary>
         public int TotalItems => m_Items.Length;
+        /// <summary>True during the snap animation that follows a drag end.</summary>
         public bool IsSnapping => m_IsSnapping;
+        /// <summary>True while the user is actively dragging.</summary>
         public bool IsDragging => m_IsDragging;
+        /// <summary>Backing array of items in hierarchy order.</summary>
         public SnapScrollItem[] Items => m_Items;
+        /// <summary>The currently-focused item. Undefined when no item has been focused yet.</summary>
         public SnapScrollItem FocusedItem => m_Items[m_FocusedItemIndex];
 
         private void Start()
@@ -121,7 +137,7 @@ namespace RevCore.UI
                 {
                     FindNearestItem();
                     int index = m_FocusedItemIndex;
-                    var targetPos = m_Items[index].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+                    var targetPos = m_Items[index].RectTransform.ConvertAnchoredPosFromChildToParent(m_ScrollView.content);
 
                     if (m_dragFromLeft)
                     {
@@ -159,6 +175,7 @@ namespace RevCore.UI
             }
         }
 
+        /// <inheritdoc />
         public void OnBeginDrag(PointerEventData eventData)
         {
             if (!m_ScrollView.horizontal || m_IsSnapping)
@@ -177,6 +194,7 @@ namespace RevCore.UI
                     item.OnBeginDrag();
         }
 
+        /// <inheritdoc />
         public void OnDrag(PointerEventData eventData)
         {
             if (!m_ScrollView.horizontal)
@@ -198,6 +216,7 @@ namespace RevCore.UI
                 m_Items[Mathf.Clamp(m_PreviousItemIndex + 1, 0, m_Items.Length - 1)].Show();
         }
 
+        /// <inheritdoc />
         public void OnEndDrag(PointerEventData eventData)
         {
             if (!m_ScrollView.horizontal)
@@ -213,6 +232,7 @@ namespace RevCore.UI
             m_dragFromLeft = m_beginDragPosition.x < endDragPosition.x;
         }
 
+        /// <summary>Snaps to <paramref name="item"/>. <paramref name="pImmediately"/> skips the snap animation.</summary>
         public void MoveToItem(SnapScrollItem item, bool pImmediately = false)
         {
             int index = m_Items.IndexOf(item);
@@ -220,6 +240,7 @@ namespace RevCore.UI
                 MoveToItem(index, pImmediately);
         }
 
+        /// <summary>Snaps to the item at <paramref name="pIndex"/>. <paramref name="pImmediately"/> skips the snap animation.</summary>
         public void MoveToItem(int pIndex, bool pImmediately = false)
         {
             if (pIndex < 0 || pIndex >= m_Items.Length || !m_Validated)
@@ -237,6 +258,7 @@ namespace RevCore.UI
             MoveToFocusedItem(pImmediately, m_SpringThreshold);
         }
 
+        /// <summary>Queues a <see cref="Validate"/> call for the next frame — used when item active state changes mid-frame.</summary>
         public void ValidateNextFrame()
         {
             if (m_validateNextFrame)
@@ -244,6 +266,7 @@ namespace RevCore.UI
             m_validateNextFrame = true;
         }
 
+        /// <summary>Recomputes content bounds, item positions, and focused index. Called once after item set changes.</summary>
         public void Validate()
         {
             SnapScrollItem focusedItem = null;
@@ -305,7 +328,7 @@ namespace RevCore.UI
 
             m_ScrollView.StopMovement();
 
-            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.ConvertAnchoredPosFromChildToParent(m_ScrollView.content);
             targetAnchored.x -= m_TargetPosOffset.x;
             targetAnchored.y -= m_TargetPosOffset.y;
 
@@ -409,7 +432,7 @@ namespace RevCore.UI
             for (int i = 0; i < m_Items.Length; i++)
                 m_Items[i].Show();
 
-            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.ConvertAnchoredPosFromChildToParent(m_ScrollView.content);
             targetAnchored.x -= m_TargetPosOffset.x;
             targetAnchored.y -= m_TargetPosOffset.y;
             if (targetAnchored.x > m_ContentAnchoredXMax)

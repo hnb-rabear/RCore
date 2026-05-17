@@ -1,0 +1,53 @@
+name: Feature request
+description: Propose a new feature or improvement for RevCore.
+title: "[feature] "
+labels: ["feature", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that RevCore doesn't currently support well?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like RevCore to solve it? Sketch the API if you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you tried, similar libraries you looked at.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Audio
+        - Data
+        - Foundation
+        - Inspector
+        - Pool
+        - Prefs
+        - Timer
+        - Tools
+        - UI
+        - New module
+        - Cross-cutting
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: breaking
+    attributes:
+      label: Breaking change?
+      options:
+        - label: This would change existing public API or behavior
+        - label: This is purely additive

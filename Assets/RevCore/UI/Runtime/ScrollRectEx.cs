@@ -5,6 +5,12 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// <see cref="ScrollRect"/> that re-routes drags along an orthogonal axis to a parent drag
+	/// handler. The standard ScrollRect captures drags even when the user clearly meant to drag
+	/// the parent — this subclass detects that case (drag axis disagrees with the local axis
+	/// configuration) and forwards drag events up the hierarchy.
+	/// </summary>
 	public class ScrollRectEx : ScrollRect
 	{
 		private bool m_routeToParent;
@@ -23,12 +29,14 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <inheritdoc />
 		public override void OnInitializePotentialDrag(PointerEventData eventData)
 		{
 			DoForParents<IInitializePotentialDragHandler>(parent => parent.OnInitializePotentialDrag(eventData));
 			base.OnInitializePotentialDrag(eventData);
 		}
 
+		/// <inheritdoc />
 		public override void OnDrag(PointerEventData eventData)
 		{
 			if (m_routeToParent)
@@ -37,6 +45,7 @@ namespace RevCore.UI
 				base.OnDrag(eventData);
 		}
 
+		/// <inheritdoc />
 		public override void OnBeginDrag(PointerEventData eventData)
 		{
 			if (!horizontal && Math.Abs(eventData.delta.x) > Math.Abs(eventData.delta.y))
@@ -52,6 +61,7 @@ namespace RevCore.UI
 				base.OnBeginDrag(eventData);
 		}
 
+		/// <inheritdoc />
 		public override void OnEndDrag(PointerEventData eventData)
 		{
 			if (m_routeToParent)

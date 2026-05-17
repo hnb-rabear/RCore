@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: RevCore Documentation
+    url: https://github.com/hnb-rabear/rcore/tree/main/docs
+    about: Architecture, contributing guide, semver policy.

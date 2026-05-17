@@ -9,12 +9,21 @@ using UnityEngine.Serialization;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Arranges immediate children in a horizontal line with configurable spacing and alignment.
+	/// Optional height curve produces an arc by offsetting Y based on the child's normalized X.
+	/// Supports DOTWEEN-driven animated reflow.
+	/// </summary>
 	public class HorizontalAlignmentUI : MonoBehaviour, IAligned
 	{
+		/// <summary>Horizontal alignment of the row inside the container.</summary>
 		public enum Alignment
 		{
+			/// <summary>Pin to the left edge.</summary>
 			Left,
+			/// <summary>Pin to the right edge.</summary>
 			Right,
+			/// <summary>Center within the container.</summary>
 			Center,
 		}
 
@@ -180,6 +189,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <inheritdoc />
 		public void Align()
 		{
 			Init();
@@ -195,6 +205,7 @@ namespace RevCore.UI
 			AlignByTweener(null);
 		}
 		
+		/// <inheritdoc />
 		public void AlignByTweener(Action onFinish)
 		{
 			StartCoroutine(IEAlignByTweener(onFinish));

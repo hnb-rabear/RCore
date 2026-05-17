@@ -4,20 +4,36 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+    /// <summary>Scroll axis for <see cref="OptimizedScrollView"/>.</summary>
     public enum ScrollDirection
     {
+        /// <summary>Items laid out left-to-right.</summary>
         Horizontal = 0,
+        /// <summary>Items laid out top-to-bottom.</summary>
         Vertical = 1
     }
 
+    /// <summary>
+    /// Virtualized scroll view that instantiates only as many <see cref="OptimizedScrollItem"/>
+    /// instances as fit on screen (plus a small buffer), recycling them as the user scrolls.
+    /// Cuts allocation cost for long lists. Supports both horizontal and vertical layout via the
+    /// <see cref="Direction"/> field; specialized horizontal/vertical subclasses give finer control.
+    /// </summary>
     public class OptimizedScrollView : MonoBehaviour
     {
+        /// <summary>The underlying <see cref="UnityEngine.UI.ScrollRect"/>.</summary>
         public ScrollRect scrollView;
+        /// <summary>The content container whose size grows to the virtual total.</summary>
         public RectTransform container;
+        /// <summary>Mask used to clip scrolled items.</summary>
         public Mask mask;
+        /// <summary>Prefab cloned to populate items.</summary>
         public OptimizedScrollItem prefab;
+        /// <summary>Total virtual item count. Edit via <see cref="Initialize"/>.</summary>
         public int total = 1;
+        /// <summary>Spacing between items along the scroll axis.</summary>
         public float spacing;
+        /// <summary>Scroll axis.</summary>
         public ScrollDirection Direction = ScrollDirection.Horizontal;
 
         private RectTransform m_maskRect;
@@ -47,10 +63,28 @@ namespace RevCore.UI
                 m_itemsScrolled[i].ManualUpdate();
         }
 
+        /// <summary>
+        /// (Re)builds the scroll view for <paramref name="totalItems"/> items. Pass
+        /// <paramref name="force"/> to force a rebuild even when the count hasn't changed.
+        /// Returns early without crashing when <paramref name="totalItems"/> is 0.
+        /// </summary>
         public void Initialize(int totalItems, bool force = false)
         {
             if (totalItems == total && !force)
                 return;
+
+            if (totalItems <= 0)
+            {
+                if (m_itemsScrolled != null)
+                    m_itemsScrolled.Free(container);
+                m_itemsRect = new List<RectTransform>();
+                total = 0;
+                m_optimizedTotal = 0;
+                container.sizeDelta = Direction == ScrollDirection.Horizontal
+                    ? new Vector2(0, container.sizeDelta.y)
+                    : new Vector2(container.sizeDelta.x, 0);
+                return;
+            }
 
             m_itemsRect = new List<RectTransform>();
 
@@ -98,6 +132,7 @@ namespace RevCore.UI
             container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - ((Direction == ScrollDirection.Horizontal ? m_maskRect.rect.size.x : m_maskRect.rect.size.y) * 0.5f));
         }
 
+        /// <summary>Recomputes which items are visible at <paramref name="normPos"/> (0..1) and reassigns indices. Wired to the scroll bar's onValueChanged.</summary>
         public void ScrollBarChanged(float normPos)
         {
             if (m_optimizedTotal <= 0)
@@ -135,6 +170,7 @@ namespace RevCore.UI
             item.anchoredPosition3D = m_startPos + m_offsetVec * index * m_prefabSize;
         }
 
+        /// <summary>Returns the active pool of scroll items. Live view, not a copy.</summary>
         public List<OptimizedScrollItem> GetListItem()
         {
             return m_itemsScrolled;

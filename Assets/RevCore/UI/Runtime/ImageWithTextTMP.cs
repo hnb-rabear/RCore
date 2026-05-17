@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+	/// <summary>TextMeshPro variant of <see cref="ImageWithText"/> — image plus a <see cref="TextMeshProUGUI"/> label with optional auto-resize on sprite change.</summary>
 	[AddComponentMenu("RevCore/UI/ImageWithTextTMP")]
 	public class ImageWithTextTMP : MonoBehaviour
 	{
@@ -14,6 +15,7 @@ namespace RevCore.UI
 		[SerializeField] protected bool m_AutoResize;
 		[SerializeField] protected Vector2 m_FixedSize;
 
+		/// <summary>The image component (resolved lazily from children if not assigned).</summary>
 		public Image image
 		{
 			get
@@ -24,6 +26,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>The label (resolved lazily from children if not assigned).</summary>
 		public TextMeshProUGUI label
 		{
 			get
@@ -34,8 +37,10 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>This component's rect transform.</summary>
 		public RectTransform rectTransform => transform as RectTransform;
 
+		/// <summary>The active sprite. Setting it applies <see cref="SetSprite"/>.</summary>
 		public Sprite sprite
 		{
 			get => image.sprite;
@@ -46,6 +51,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>Assigns a sprite and (when <c>m_AutoResize</c>) resizes the image per <c>m_FixedSize</c>.</summary>
 		public void SetSprite(Sprite sprite)
 		{
 			image.sprite = sprite;

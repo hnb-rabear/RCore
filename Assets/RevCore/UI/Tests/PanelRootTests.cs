@@ -1,12 +1,17 @@
 using System;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace RevCore.UI.Tests
 {
     [TestFixture]
     public class PanelRootTests
     {
+        private static readonly MethodInfo s_onEnable = typeof(PanelRoot).GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly MethodInfo s_onDisable = typeof(PanelRoot).GetMethod("OnDisable", BindingFlags.Instance | BindingFlags.NonPublic);
+
         private GameObject m_rootObject;
         private TestPanelRoot m_root;
 
@@ -16,11 +21,16 @@ namespace RevCore.UI.Tests
             Events.Clear();
             m_rootObject = new GameObject("panel-root-test");
             m_root = m_rootObject.AddComponent<TestPanelRoot>();
+            // EditMode Test Runner does not consistently fire MonoBehaviour.OnEnable on
+            // AddComponent; invoke it via reflection so PanelRoot subscribes to the
+            // PushPanelEvent / RequestPanelEvent handlers that the static dispatch tests rely on.
+            s_onEnable.Invoke(m_root, null);
         }
 
         [TearDown]
         public void TearDown()
         {
+            s_onDisable.Invoke(m_root, null);
             Events.Clear();
             UnityEngine.Object.DestroyImmediate(m_rootObject);
         }
@@ -68,6 +78,9 @@ namespace RevCore.UI.Tests
         [Test]
         public void OnResolvePanelByType_returns_null_by_default()
         {
+            // Base PanelRoot.OnResolvePanelByType returns null; PushPanelHandler then logs
+            // an error and skips the push. Pin both observable effects.
+            LogAssert.Expect(LogType.Error, "Panel of type TestPanel not resolved by TestPanelRoot.");
             PanelRoot.PushInternalPanel<PanelController>(typeof(TestPanelRoot), typeof(TestPanel));
 
             Assert.AreEqual(0, m_root.StackCount);

@@ -3,6 +3,11 @@ using UnityEngine.UI;
 
 namespace RevCore.UI
 {
+	/// <summary>
+	/// Component pairing an <see cref="Image"/> with a legacy <see cref="Text"/> label. Sprite assignment
+	/// can optionally resize the image to fit <c>m_fixedSize</c>. See <see cref="ImageWithTextTMP"/>
+	/// for the TextMeshPro variant.
+	/// </summary>
 	[AddComponentMenu("RevCore/UI/ImageWithText")]
 	public class ImageWithText : MonoBehaviour
 	{
@@ -13,6 +18,7 @@ namespace RevCore.UI
 		[SerializeField] protected bool m_autoResize;
 		[SerializeField] protected Vector2 m_fixedSize;
 
+		/// <summary>The image component (resolved lazily from children if not assigned).</summary>
 		public Image image
 		{
 			get
@@ -23,6 +29,7 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>The label (resolved lazily from children if not assigned).</summary>
 		public Text label
 		{
 			get
@@ -33,8 +40,10 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>This component's rect transform.</summary>
 		public RectTransform rectTransform => transform as RectTransform;
 
+		/// <summary>The active sprite. Setting it applies <see cref="SetSprite"/>.</summary>
 		public Sprite sprite
 		{
 			get => image.sprite;
@@ -45,12 +54,14 @@ namespace RevCore.UI
 			}
 		}
 
+		/// <summary>The label text.</summary>
 		public string text
 		{
 			get => label.text;
 			set => label.text = value;
 		}
 
+		/// <summary>Assigns a sprite and (when <c>m_autoResize</c>) resizes the image per <c>m_fixedSize</c>.</summary>
 		public void SetSprite(Sprite sprite)
 		{
 			m_Img.sprite = sprite;

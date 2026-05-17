@@ -1,0 +1,64 @@
+name: Benchmark
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Assets/RevCore/**/*.cs"
+      - "Packages/manifest.json"
+      - ".github/workflows/benchmark.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Performance baselines
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # The benchmark suite uses Unity.PerformanceTesting via game-ci.
+    # We run it on Unity 2022 LTS only (consistent reference); a regression on
+    # Unity 6 would surface in unity-test workflow's play-mode pass.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-bench-2022-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-bench-2022-
+
+      - name: Run benchmark suite
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          unityVersion: "2022.3.40f1"
+          testMode: editmode
+          # Filter only [Category("Performance")] tests to keep the run focused.
+          customParameters: "-testCategory Performance"
+          artifactsPath: BenchmarkResults
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BenchmarkResults
+          path: BenchmarkResults
+
+      # Comparison step: parse PerformanceTestResults.xml, diff against
+      # scripts/benchmark-baseline.json, fail the job if any test regressed >5%.
+      - name: Compare against baseline
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/check-benchmark-regression.py --results BenchmarkResults --baseline scripts/benchmark-baseline.json --tolerance 5
