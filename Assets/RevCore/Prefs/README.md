@@ -112,7 +112,8 @@ showGizmos.Value = false;
 
 ## Safety Notes
 
-- Prefs wrappers do not use `Newtonsoft.Json` or `Encryption`. Complex JSON/encrypted prefs belong in RevCore.Data.
+- Prefs wrappers do not use `Newtonsoft.Json`. Complex JSON serialization belongs in RevCore.Data.
+- RevCore intentionally does not ship value encryption. Treat PlayerPrefs as plaintext; route sensitive state (auth tokens, IAP receipts, server-validated currency) through your backend.
 - Runtime has no `UnityEditor` dependency.
 - EditorPrefs wrappers live in a separate Editor asmdef.
 - `PlayerPrefContainer` does not auto-save. Call `SaveChanges()` explicitly.
