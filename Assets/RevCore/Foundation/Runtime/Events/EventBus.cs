@@ -10,7 +10,17 @@ namespace RevCore
 	/// </summary>
 	public sealed class EventBus : IEventBus
 	{
-		private readonly Dictionary<Type, Delegate> m_listeners = new();
+		// Per-type entry storing the multicast delegate plus a maintained listener count.
+		// The count avoids `GetInvocationList()` on the Publish hot path — that call returns
+		// a freshly-allocated `Delegate[]` every invocation, which is the single largest
+		// per-Publish allocation in steady-state usage.
+		private struct Entry
+		{
+			public Delegate Del;
+			public int Count;
+		}
+
+		private readonly Dictionary<Type, Entry> m_listeners = new();
 		private int m_totalListenerCount;
 
 		/// <inheritdoc />
@@ -21,18 +31,21 @@ namespace RevCore
 		{
 			var key = typeof(T);
 			int newCount;
-			if (m_listeners.TryGetValue(key, out var existing))
+			if (m_listeners.TryGetValue(key, out var entry))
 			{
-				var typed = (Action<T>)existing;
+				var typed = (Action<T>)entry.Del;
+				// Dedup walk is unavoidable here, but Subscribe is not a hot path —
+				// callers wire listeners at startup, not per-frame.
 				if (Array.IndexOf(typed.GetInvocationList(), listener) >= 0)
 					return;
-				var combined = typed + listener;
-				m_listeners[key] = combined;
-				newCount = combined.GetInvocationList().Length;
+				entry.Del = typed + listener;
+				entry.Count++;
+				newCount = entry.Count;
+				m_listeners[key] = entry;
 			}
 			else
 			{
-				m_listeners[key] = listener;
+				m_listeners[key] = new Entry { Del = listener, Count = 1 };
 				newCount = 1;
 			}
 			m_totalListenerCount++;
@@ -43,9 +56,9 @@ namespace RevCore
 		public void Unsubscribe<T>(Action<T> listener) where T : IEvent
 		{
 			var key = typeof(T);
-			if (!m_listeners.TryGetValue(key, out var existing))
+			if (!m_listeners.TryGetValue(key, out var entry))
 				return;
-			var typed = (Action<T>)existing;
+			var typed = (Action<T>)entry.Del;
 			var updated = typed - listener;
 			if (ReferenceEquals(updated, typed))
 				return; // listener wasn't in the invocation list; no-op
@@ -57,8 +70,10 @@ namespace RevCore
 			}
 			else
 			{
-				m_listeners[key] = updated;
-				newCount = updated.GetInvocationList().Length;
+				entry.Del = updated;
+				entry.Count--;
+				newCount = entry.Count;
+				m_listeners[key] = entry;
 			}
 			m_totalListenerCount--;
 			RevDiagnostics.Listener?.OnEventUnsubscribed(key, newCount);
@@ -68,11 +83,10 @@ namespace RevCore
 		public void Publish<T>(T evt) where T : IEvent
 		{
 			int listenerCount = 0;
-			if (m_listeners.TryGetValue(typeof(T), out var del))
+			if (m_listeners.TryGetValue(typeof(T), out var entry))
 			{
-				var typed = (Action<T>)del;
-				listenerCount = typed.GetInvocationList().Length;
-				typed.Invoke(evt);
+				listenerCount = entry.Count;
+				((Action<T>)entry.Del).Invoke(evt);
 			}
 			RevDiagnostics.Listener?.OnEventPublished(typeof(T), listenerCount);
 		}
@@ -87,23 +101,22 @@ namespace RevCore
 		/// <inheritdoc />
 		public void Clear<T>() where T : IEvent
 		{
-			if (m_listeners.TryGetValue(typeof(T), out var existing))
+			if (m_listeners.TryGetValue(typeof(T), out var entry))
 			{
-				m_totalListenerCount -= existing.GetInvocationList().Length;
+				m_totalListenerCount -= entry.Count;
 				m_listeners.Remove(typeof(T));
 			}
 		}
 
 		/// <summary>
-		/// Returns the number of subscribers for event type <typeparamref name="T"/>. O(1) plus
-		/// the cost of <see cref="Delegate.GetInvocationList"/> when there is at least one
-		/// listener. Prefer this over <see cref="ListenerCount"/> on hot paths that only care
-		/// about one event type.
+		/// Returns the number of subscribers for event type <typeparamref name="T"/>. O(1) dictionary
+		/// lookup plus a single integer read — no allocation. Prefer this over
+		/// <see cref="ListenerCount"/> on hot paths that only care about one event type.
 		/// </summary>
 		public int ListenerCountFor<T>() where T : IEvent
 		{
-			return m_listeners.TryGetValue(typeof(T), out var del) && del != null
-				? del.GetInvocationList().Length
+			return m_listeners.TryGetValue(typeof(T), out var entry)
+				? entry.Count
 				: 0;
 		}
 	}

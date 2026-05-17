@@ -9,6 +9,14 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 - `IRevDiagnostics` (Phase 7.1) — opt-in observability interface that the framework's hot paths fire on. Ten hooks across four modules: Timer (scheduled / cancelled / completed), EventBus (subscribed / unsubscribed / published), Pool (spawn / release), and Audio (PlaySFX / PlayMusic). Default state (no listener) costs one null check per hook site; the static accessor `RevDiagnostics.Listener` lets a consumer wire a single implementation at startup. Payload is metadata only (primitive types + `System.Type`) — no `ITimerHandle`, no `Component`, no `AudioClip` — so consumer code doesn't accidentally prolong GC lifetimes by capturing object refs in closures.
 - Three reference listeners under `Foundation/Samples~/Diagnostics/`: `CrashBufferDiagnostics` (last N events as a ring buffer for crash report attachments), `DebugOverlayDiagnostics` (on-screen counter MonoBehaviour for active timers / events/sec / spawns/sec), and `UnityLogDiagnostics` (verbose `Debug.Log` mirror — dev-only). Surfaced via the Foundation `samples[]` Package Manager entry.
 
+### Changed
+
+- `EventBus.Publish<T>`, `EventBus.ListenerCountFor<T>`, and `EventBus.Clear<T>` are now zero-alloc on the hot path. The per-type storage moves from `Dictionary<Type, Delegate>` to `Dictionary<Type, Entry>` where `Entry` keeps the multicast delegate plus a maintained `Count`. The old code called `Delegate.GetInvocationList()` inside `Publish` purely to feed the diagnostics callback the listener count — that call returns a freshly-allocated `Delegate[]` every Publish, which dominated steady-state allocations for consumer projects that publish per-frame. Subscribe / Unsubscribe maintain the count alongside the delegate; behavior (dedup on Subscribe, no-op on unknown Unsubscribe, silent Publish with zero listeners, accurate `Clear<T>` decrement) is bit-for-bit identical and remains pinned by `Characterization_EventBusTests` and `RevDiagnosticsTests`.
+
+### Removed
+
+- Reference in `Assets/RevCore/Prefs/README.md` to a future "encrypted prefs" RevCore.Data feature. RevCore intentionally does not ship value encryption — a hardcoded-key obfuscation layer only stops PlayerPrefs editors, not anyone with the binary. The README now states the no-encryption policy explicitly and points consumers at server-side validation for sensitive state.
+
 ## [0.5.0] - 2026-05-17
 
 First tagged release. Establishes the pre-1.0 baseline that consumer projects can pin via UPM `?path=` git URL. All Phase 0–6 work plus most of Phase 4 (perf wins) is in this cut. v1.0 is reserved for the final cleanup — Stage 1 deprecations going to Stage 2/3 and the PublicAPI Roslyn analyzer flipping live.
