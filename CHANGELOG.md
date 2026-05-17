@@ -14,6 +14,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Deprecated
 
+- `JObjectDB.collections` bumped to **Stage 2** (`[Obsolete(..., error: true)]`) — direct field access is now a compile error. The deprecation window opened in Phase 3; consumers that haven't migrated have one minor's notice. Use `GetCollection`, `CreateCollection`, `GetCollectionKeys`, or `GetAllData` instead. The field stays in place during Stage 2 so reflection-based access (e.g. unit tests using `#pragma warning disable CS0619`) still works; the field will become private at v1.0 (Stage 3). Internal callers in `JObjectDB`'s own pragma block, the two Editor utilities (`JObjectDBManagerEditor`, `JObjectModelCollectionEditor`), and the test suite were migrated to the public API in the same commit.
 - `MathHelper.Ded2Rad(float)` / `Tad2Deg(float)` marked `[Obsolete]` (Stage 1) — typos. Use `Deg2Rad` / `Rad2Deg` instead. Will be removed in v1.0.
 - `TransformHelper.CovertAnchoredPosFromChildToParent` (both overloads) marked `[Obsolete]` (Stage 1) — typo. Use the new `ConvertAnchoredPosFromChildToParent` instead. Will be removed in v1.0.
 - `Result<T>.Value` getter marked `[Obsolete]` (Stage 1). Throws on error; prefer `TryGetValue(out value)` or `ValueOr(fallback)` to avoid the throw. Will become internal in v1.0.

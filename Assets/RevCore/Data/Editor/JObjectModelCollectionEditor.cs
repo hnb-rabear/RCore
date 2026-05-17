@@ -30,7 +30,7 @@ namespace RevCore.Editor
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("JObject DB", EditorStyles.boldLabel);
 
-            if (JObjectDB.collections.Count > 0 && GUILayout.Button("Save All Collections"))
+            if (JObjectDB.GetCollectionKeys().Count > 0 && GUILayout.Button("Save All Collections"))
                 JObjectDB.Save();
 
             if (GUILayout.Button("Backup All Data..."))
