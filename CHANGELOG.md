@@ -35,6 +35,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- `TimerScheduler.Cancel(int)`, `WaitForSeconds`, `WaitForCondition`, and the internal handle-removal callback now run in amortized O(1) instead of O(n). Two parallel indices on top of the main list — a per-id map and a per-handle index map — turn id lookups, dedup checks, and handle removals from full-list scans into dictionary hits. The observable contract (Cancel(0) matches all default-id timers, same non-zero id replaces, Tick callback order in reverse-registration) is preserved and pinned by `Characterization_TimerSchedulerTests`. Cancelled timers stay in the main list until the next `Tick` reaps them (lazy cleanup), which keeps re-entrant Cancel/Replace paths safe.
 - `.editorconfig` extended with C# code style and analyzer severity rules.
 - `.gitattributes` added with `*.meta merge=union` to reduce conflict on regenerated GUIDs.
 
