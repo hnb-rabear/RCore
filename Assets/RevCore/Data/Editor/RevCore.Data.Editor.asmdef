@@ -3,7 +3,10 @@
   "rootNamespace": "RevCore.Editor",
   "references": [
     "RevCore.Foundation.Runtime",
-    "RevCore.Data.Runtime"
+    "RevCore.Data.Runtime",
+    "RevCore.Inspector.Runtime",
+    "RevCore.Prefs.Runtime",
+    "RevCore.Timer.Runtime"
   ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],

@@ -7,9 +7,9 @@ using UnityEngine.UI;
 
 namespace RevCore.UI.Editor
 {
-    [CanEditMultipleObjects]
-    [CustomEditor(typeof(SimpleTMPButton), true)]
-    public class SimpleTMPButtonEditor : JustButtonEditor
+	[CanEditMultipleObjects]
+	[CustomEditor(typeof(SimpleTMPButton), true)]
+	public class SimpleTMPButtonEditor : JustButtonEditor
     {
         private SimpleTMPButton m_target;
         private string[] m_matsName = Array.Empty<string>();

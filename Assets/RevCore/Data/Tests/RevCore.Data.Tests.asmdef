@@ -7,7 +7,8 @@
     "RevCore.Prefs.Runtime",
     "RevCore.Data.Runtime",
     "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "UnityEditor.TestRunner",
+    "RevCore.Inspector.Runtime"
   ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],

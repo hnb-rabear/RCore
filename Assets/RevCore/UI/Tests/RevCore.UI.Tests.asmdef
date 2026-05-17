@@ -6,7 +6,9 @@
     "RevCore.Foundation.Runtime",
     "RevCore.Inspector.Runtime",
     "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "UnityEditor.TestRunner",
+    "RevCore.Pool.Runtime",
+    "RevCore.Timer.Runtime"
   ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],

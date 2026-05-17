@@ -5,7 +5,10 @@
     "RevCore.UI.Runtime",
     "RevCore.Foundation.Runtime",
     "RevCore.Inspector.Editor",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "RevCore.Inspector.Runtime",
+    "RevCore.Pool.Runtime",
+    "RevCore.Timer.Runtime"
   ],
   "includePlatforms": [
     "Editor"

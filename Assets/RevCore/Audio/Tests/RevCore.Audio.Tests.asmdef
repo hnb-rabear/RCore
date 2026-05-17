@@ -5,7 +5,8 @@
     "RevCore.Foundation.Runtime",
     "RevCore.Audio.Runtime",
     "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "UnityEditor.TestRunner",
+    "RevCore.Inspector.Runtime"
   ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
