@@ -35,6 +35,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- `EventBus.ListenerCount` is now an O(1) read of a maintained counter instead of an O(types × listeners) walk that called `GetInvocationList()` once per subscribed event type. Subscribe / Unsubscribe / Clear / `Clear<T>` keep the counter in sync. Behavior preserved: deduplicated subscribes don't double-count, unsubscribing a listener that wasn't registered is still a silent no-op, and `Clear<T>` properly subtracts that type's listeners. Pinned by `Characterization_EventBusTests.ListenerCount_sums_invocation_lists_across_types`.
 - `TimerScheduler.Cancel(int)`, `WaitForSeconds`, `WaitForCondition`, and the internal handle-removal callback now run in amortized O(1) instead of O(n). Two parallel indices on top of the main list — a per-id map and a per-handle index map — turn id lookups, dedup checks, and handle removals from full-list scans into dictionary hits. The observable contract (Cancel(0) matches all default-id timers, same non-zero id replaces, Tick callback order in reverse-registration) is preserved and pinned by `Characterization_TimerSchedulerTests`. Cancelled timers stay in the main list until the next `Tick` reaps them (lazy cleanup), which keeps re-entrant Cancel/Replace paths safe.
 - `.editorconfig` extended with C# code style and analyzer severity rules.
 - `.gitattributes` added with `*.meta merge=union` to reduce conflict on regenerated GUIDs.
