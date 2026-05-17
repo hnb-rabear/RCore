@@ -77,7 +77,7 @@ namespace RevCore.UI
         protected void ToggleDimmerOverlay()
         {
             if (m_dimmerOverlay == null)
-                m_dimmerOverlay = CreatDimmerOverlay();
+                m_dimmerOverlay = CreateDimmerOverlay();
             var highestPanel = GetHighestPanel();
             if (highestPanel != this)
             {
@@ -150,7 +150,7 @@ namespace RevCore.UI
             return StackCount > 0;
         }
 
-        private Button CreatDimmerOverlay()
+        private Button CreateDimmerOverlay()
         {
             var fullScreenImageObj = new GameObject("BtnBackBackground", typeof(Image));
             fullScreenImageObj.transform.SetParent(transform, false);
