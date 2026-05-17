@@ -22,6 +22,11 @@
       "displayName": "Service Locator Sample",
       "description": "Example ServiceLocator registration and resolution usage.",
       "path": "Samples~/ServiceLocatorSample"
+    },
+    {
+      "displayName": "Diagnostics Listeners",
+      "description": "Reference IRevDiagnostics implementations: crash buffer, debug HUD, verbose Unity log.",
+      "path": "Samples~/Diagnostics"
     }
   ]
 }

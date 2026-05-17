@@ -28,6 +28,7 @@ namespace RevCore
 			float overtime = Handle.Elapsed - Handle.Duration;
 			Handle.Complete();
 			m_onComplete?.Invoke(overtime);
+			RevDiagnostics.Listener?.OnTimerCompleted(Handle.Id, overtime);
 			return true;
 		}
 	}

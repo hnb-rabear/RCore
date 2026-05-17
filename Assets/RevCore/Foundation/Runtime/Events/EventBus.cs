@@ -20,18 +20,23 @@ namespace RevCore
 		public void Subscribe<T>(Action<T> listener) where T : IEvent
 		{
 			var key = typeof(T);
+			int newCount;
 			if (m_listeners.TryGetValue(key, out var existing))
 			{
 				var typed = (Action<T>)existing;
 				if (Array.IndexOf(typed.GetInvocationList(), listener) >= 0)
 					return;
-				m_listeners[key] = typed + listener;
+				var combined = typed + listener;
+				m_listeners[key] = combined;
+				newCount = combined.GetInvocationList().Length;
 			}
 			else
 			{
 				m_listeners[key] = listener;
+				newCount = 1;
 			}
 			m_totalListenerCount++;
+			RevDiagnostics.Listener?.OnEventSubscribed(key, newCount);
 		}
 
 		/// <inheritdoc />
@@ -44,18 +49,32 @@ namespace RevCore
 			var updated = typed - listener;
 			if (ReferenceEquals(updated, typed))
 				return; // listener wasn't in the invocation list; no-op
+			int newCount;
 			if (updated == null)
+			{
 				m_listeners.Remove(key);
+				newCount = 0;
+			}
 			else
+			{
 				m_listeners[key] = updated;
+				newCount = updated.GetInvocationList().Length;
+			}
 			m_totalListenerCount--;
+			RevDiagnostics.Listener?.OnEventUnsubscribed(key, newCount);
 		}
 
 		/// <inheritdoc />
 		public void Publish<T>(T evt) where T : IEvent
 		{
+			int listenerCount = 0;
 			if (m_listeners.TryGetValue(typeof(T), out var del))
-				((Action<T>)del).Invoke(evt);
+			{
+				var typed = (Action<T>)del;
+				listenerCount = typed.GetInvocationList().Length;
+				typed.Invoke(evt);
+			}
+			RevDiagnostics.Listener?.OnEventPublished(typeof(T), listenerCount);
 		}
 
 		/// <inheritdoc />
