@@ -207,27 +207,11 @@ Then delete (or move out of `Assets/`) the 3 `Benchmark_*.cs` files. Phase 2's b
 
 ## 4. Pending external setup (not blockers, but enables more CI)
 
-These can be done at any time.
+> Updated mid-Phase: the maintainer does not hold a Unity license and won't be acquiring one, so the Unity-side CI workflows (`unity-test.yml`, `benchmark.yml`) have been removed entirely. Tests and benchmarks run locally before push. The remaining four workflows (lint, docs-coverage, release-drafter, release) are pure-text and need no secrets.
 
-### 4.1 Unity license secrets on GitHub
+### 4.1 PublicAPI Roslyn analyzer activation
 
-Without these, `unity-test.yml` and `benchmark.yml` workflows error out on every PR. Add to repo Settings → Secrets and variables → Actions:
-- `UNITY_LICENSE` (content of `.ulf` file) — Personal license
-- OR `UNITY_SERIAL` (Pro)
-- `UNITY_EMAIL`
-- `UNITY_PASSWORD`
-
-### 4.2 PublicAPI Roslyn analyzer DLL
-
-Without this, `PublicAPI.{Shipped,Unshipped}.txt` files are review-only — they don't enforce in compile. Setup:
-1. Download `Microsoft.CodeAnalysis.PublicApiAnalyzers.dll` from NuGet (extract `.nupkg` as zip, find file under `analyzers/dotnet/cs/`).
-2. Drop into `Assets/RevCore/_Analyzers/` (create folder).
-3. In Unity Inspector: bunch all platforms unchecked, add asset label `RoslynAnalyzer`.
-4. For each Runtime asmdef, create `csc.rsp` next to it:
-   ```
-   /additionalfile:Assets/RevCore/<Module>/Runtime/PublicAPI.Shipped.txt
-   /additionalfile:Assets/RevCore/<Module>/Runtime/PublicAPI.Unshipped.txt
-   ```
+The analyzer DLLs are committed under `Assets/RevCore/_Analyzers/` and the `csc.rsp` files are wired per Runtime asmdef. The `RoslynAnalyzer` label is intentionally absent because the Shipped surface is empty; activating now would block compile with ~1,000 RS0016 warnings. Activation is scheduled as the one-time v1.0 release task in `docs/contributing/RELEASE_CHECKLIST.md`.
 
 Details in `docs/contributing/PUBLIC_API_GUIDE.md`.
 
