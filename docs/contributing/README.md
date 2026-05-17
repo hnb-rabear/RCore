@@ -10,6 +10,8 @@ RevCore is a Unity framework used in multiple production projects. Any change yo
 4. [Public API Guide](PUBLIC_API_GUIDE.md) — how `PublicAPI.Shipped.txt` works and what to update.
 5. [Release Checklist](RELEASE_CHECKLIST.md) — the steps the maintainer follows on tag.
 
+For maintainer setup (one-time per repo), see [CI Setup](CI_SETUP.md) — Unity license secrets and the PublicAPI Roslyn analyzer DLL drop.
+
 ### Quick rules
 
 - Public API changes require an entry in `PublicAPI.Unshipped.txt`. CI blocks otherwise.
