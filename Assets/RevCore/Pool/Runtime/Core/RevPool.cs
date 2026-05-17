@@ -158,7 +158,14 @@ namespace RevCore
                 MoveToInactive(oldest, 0);
             }
 
-            RemoveNullInactiveItems();
+            // Lazy null cleanup: items in the inactive bucket only become null when their
+            // GameObjects were destroyed externally (scene unload, manual Destroy, etc.) — rare
+            // in steady-state pool usage. We pop from the tail (LIFO), so only do the full-list
+            // null walk when the tail is actually null. The common case skips an O(N) scan per
+            // spawn. RelocateInactive (the active->inactive sweep) still runs when the bucket
+            // is empty so externally-deactivated items can be reused.
+            if (m_inactiveList.Count > 0 && m_inactiveList[m_inactiveList.Count - 1] == null)
+                RemoveNullInactiveItems();
             if (m_autoRelocate && m_inactiveList.Count == 0)
                 RelocateInactive();
 
