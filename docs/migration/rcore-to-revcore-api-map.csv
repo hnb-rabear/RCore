@@ -7,8 +7,8 @@ Audio,BaseAudioManager,class,PORTED,Audio,BaseAudioManager,RCore.Audio -> RevCor
 Audio,SfxSource,class,PORTED,Audio,SfxSource,RCore.Audio -> RevCore
 Common,AnimEventListener,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common,AssetsList,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
-Common/BigNumber,BigNumberD,class,LIKELY,Foundation,BigNumber,fuzzy match score 0.95
-Common/BigNumber,BigNumberF,class,LIKELY,Foundation,BigNumber,fuzzy match score 0.95
+Common/BigNumber,BigNumberD,class,RENAMED,Foundation,BigNumber,RCore double/float variants consolidated into one BigNumber (Phase 8 audit)
+Common/BigNumber,BigNumberF,class,RENAMED,Foundation,BigNumber,RCore double/float variants consolidated into one BigNumber (Phase 8 audit)
 Common/BigNumber,BigNumberAlphaExtension,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common/BigNumber,BigNumberHelper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common/Debug,Debug,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
@@ -107,15 +107,15 @@ Common,RPlayerPrefInt,class,RENAMED,Prefs,PlayerPrefInt,RCore -> RevCore
 Common,RPlayerPrefFloat,class,RENAMED,Prefs,PlayerPrefFloat,RCore -> RevCore
 Common,RPlayerPrefDateTime,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common,RPlayerPrefString,class,RENAMED,Prefs,PlayerPrefString,RCore -> RevCore
-Common,RPlayerPrefList,class,LIKELY,Prefs,PlayerPrefInt,fuzzy match score 0.89
-Common,RPlayerPrefDict,class,LIKELY,Prefs,PlayerPrefInt,fuzzy match score 0.89
+Common,RPlayerPrefList,class,GAP,Prefs,,no scalar RevCore.Prefs equivalent for list-typed prefs (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 17)
+Common,RPlayerPrefDict,class,GAP,Prefs,,no scalar RevCore.Prefs equivalent for dict-typed prefs (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 17)
 Common,RPlayerPrefObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common,RPlayerPrefSerializableObject,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common,Roman,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common,SceneLoader,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common/SerializableDictionary,SerializableDictionary,class,PORTED,Foundation,SerializableDictionary,RCore -> RevCore
 Common/SerializableDictionary,SerializedDictionary,class,PORTED,Foundation,SerializedDictionary,RCore -> RevCore
-Common/SerializableDictionary,SerializableDictionaryDrawer,class,LIKELY,Foundation,SerializableDictionary,fuzzy match score 0.88
+Common/SerializableDictionary,SerializableDictionaryDrawer,class,GAP,Foundation,,Editor drawer — runtime SerializableDictionary not the same target (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 1)
 Common/SerializableDictionary,SerializableKeyValue,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common/SerializableDictionary,SerializableKeyValueDrawer,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
 Common/SerializableDictionary,UnityObjectWrapper,class,GAP,Foundation,,no RevCore equivalent found — port or drop?
@@ -152,18 +152,18 @@ Data/JObjectDB,IJObjectHandler,interface,PORTED,Data,IJObjectHandler,RCore.Data.
 Data/JObjectDB,InjectAttribute,class,PORTED,Data,InjectAttribute,RCore.Data.JObject -> RevCore
 Data/JObjectDB,JObjectDB,class,PORTED,Data,JObjectDB,RCore.Data.JObject -> RevCore
 Data/JObjectDB,JObjectDBManager,class,PORTED,Data,JObjectDBManager,RCore.Data.JObject -> RevCore
-Data/JObjectDB,JObjectDBManagerV2,class,LIKELY,Data,JObjectDBManager,fuzzy match score 0.94
+Data/JObjectDB,JObjectDBManagerV2,class,RENAMED,Data,JObjectDBManager,now generic JObjectDBManager<T> over the collection type (Phase 8 audit)
 Data/JObjectDB,IJObjectData,interface,PORTED,Data,IJObjectData,RCore.Data.JObject -> RevCore
 Data/JObjectDB,JObjectData,class,PORTED,Data,JObjectData,RCore.Data.JObject -> RevCore
 Data/JObjectDB,JObjectDataCollection,class,GAP,Data,,no RevCore equivalent found — port or drop?
 Data/JObjectDB,JObjectDataCollectionEditor,class,GAP,Data,,no RevCore equivalent found — port or drop?
 Data/JObjectDB,JObjectDataCollectionEditor,class,GAP,Data,,no RevCore equivalent found — port or drop?
-Data/JObjectDB,JObjectHandler,class,LIKELY,Data,IJObjectHandler,fuzzy match score 0.97
+Data/JObjectDB,JObjectHandler,class,RENAMED,Data,IJObjectHandler,class promoted to interface — consumers go from inheritance to implementation (Phase 8 audit)
 Data/JObjectDB,IJObjectModel,interface,PORTED,Data,IJObjectModel,RCore.Data.JObject -> RevCore
 Data/JObjectDB,JObjectModel,class,PORTED,Data,JObjectModel,RCore.Data.JObject -> RevCore
 Data/JObjectDB,JObjectModelCollection,class,PORTED,Data,JObjectModelCollection,RCore.Data.JObject -> RevCore
-Data/JObjectDB,JObjectModelCollectionEditor,class,LIKELY,Data,JObjectModelCollection,fuzzy match score 0.88
-Data/JObjectDB,JObjectModelCollectionEditor,class,LIKELY,Data,JObjectModelCollection,fuzzy match score 0.88
+Data/JObjectDB,JObjectModelCollectionEditor,class,GAP,Data,,Editor drawer for JObjectModelCollection; not a consumer-facing rename (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 1)
+Data/JObjectDB,JObjectModelCollectionEditor,class,GAP,Data,,Editor drawer for JObjectModelCollection; not a consumer-facing rename (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 1)
 Data/JObjectDB,NewDayStartedEvent,class,PORTED,Data,NewDayStartedEvent,RCore.Data.JObject -> RevCore
 Data/JObjectDB,SessionData,class,PORTED,Data,SessionData,RCore.Data.JObject -> RevCore
 Data/JObjectDB,SessionDataHandler,class,GAP,Data,,no RevCore equivalent found — port or drop?
@@ -188,7 +188,7 @@ Data/KeyValueDB,FunData,class,GAP,Prefs,,no RevCore equivalent found — port or
 Data/KeyValueDB,IntegerData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
 Data/KeyValueDB,ListData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
 Data/KeyValueDB,LongData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
-Data/KeyValueDB,ObjectData,class,LIKELY,Data,JObjectData,fuzzy match score 0.95
+Data/KeyValueDB,ObjectData,class,GAP,Data,,KeyValueDB.ObjectData is from the legacy KeyValueDB lineage; JObjectData is a different design. KeyValueDB is DROP per gap-categories.md Bucket 7 (Phase 8 audit demoted from LIKELY)
 Data/KeyValueDB,StringData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
 Data/KeyValueDB,TimedTaskData,class,GAP,Prefs,,no RevCore equivalent found — port or drop?
 Data/RPGBase,AttributesCollection,class,GAP,,,RCore-only module — not in RevCore scope yet
@@ -249,7 +249,7 @@ Plugins,JSON,class,GAP,,,RCore-only module — not in RevCore scope yet
 Plugins,UniClipboard,class,GAP,,,RCore-only module — not in RevCore scope yet
 UI/Button,JustButton,class,PORTED,UI,JustButton,RCore.UI -> RevCore.UI
 UI/Button,JustButtonEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
-UI/Button,SimpleButton,class,PORTED,UI,SimpleButton,RCore.UI -> RevCore.UI
+UI/Button,SimpleButton,class,RENAMED,UI,SimpleTMPButton,RevCore.UI.SimpleButton was deleted in v0.5.0 — drop-in replacement is SimpleTMPButton (TMP label)
 UI/Button,SimpleButtonEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
 UI/Button,SimpleTMPButton,class,PORTED,UI,SimpleTMPButton,RCore.UI -> RevCore.UI
 UI,HoledLayerMask,class,PORTED,UI,HoledLayerMask,RCore.UI -> RevCore.UI
@@ -261,19 +261,19 @@ UI,ImageWithText,class,PORTED,UI,ImageWithText,RCore.UI -> RevCore.UI
 UI,ImageWithTextTMP,class,PORTED,UI,ImageWithTextTMP,RCore.UI -> RevCore.UI
 UI/Joystick,Joystick,class,PORTED,UI,Joystick,RCore.UI -> RevCore.UI
 UI/Joystick,JoystickArea,class,PORTED,UI,JoystickArea,RCore.UI -> RevCore.UI
-UI/Layout,HorizontalAlignment,class,LIKELY,UI,HorizontalAlignmentUI,fuzzy match score 0.95
+UI/Layout,HorizontalAlignment,class,RENAMED,UI,HorizontalAlignmentUI,UI suffix added to disambiguate from Unity TextAnchor (Phase 8 audit)
 UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore -> RevCore.UI
 UI/Layout,HorizontalAlignmentUI,class,PORTED,UI,HorizontalAlignmentUI,RCore.UI -> RevCore.UI
 UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore.UI -> RevCore.UI
 UI/Layout,IAligned,interface,PORTED,UI,IAligned,RCore.UI -> RevCore.UI
-UI/Layout,TableAlignment,class,LIKELY,UI,TableAlignmentUI,fuzzy match score 0.93
+UI/Layout,TableAlignment,class,RENAMED,UI,TableAlignmentUI,UI suffix added to disambiguate (Phase 8 audit)
 UI/Layout,TableLayoutType,enum,PORTED,UI,TableLayoutType,RCore -> RevCore.UI
 UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore -> RevCore.UI
 UI/Layout,TableAlignmentUI,class,PORTED,UI,TableAlignmentUI,RCore.UI -> RevCore.UI
 UI/Layout,TableLayoutType,enum,PORTED,UI,TableLayoutType,RCore.UI -> RevCore.UI
 UI/Layout,AlignmentVertical,enum,PORTED,UI,AlignmentVertical,RCore.UI -> RevCore.UI
 UI/Layout,AlignmentHorizontal,enum,PORTED,UI,AlignmentHorizontal,RCore.UI -> RevCore.UI
-UI/Layout,VerticalAlignment,class,LIKELY,UI,VerticalAlignmentUI,fuzzy match score 0.94
+UI/Layout,VerticalAlignment,class,RENAMED,UI,VerticalAlignmentUI,UI suffix added to disambiguate (Phase 8 audit)
 UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore -> RevCore.UI
 UI/Layout,VerticalAlignmentUI,class,PORTED,UI,VerticalAlignmentUI,RCore.UI -> RevCore.UI
 UI/Layout,Alignment,enum,PORTED,UI,Alignment,RCore.UI -> RevCore.UI
@@ -291,16 +291,16 @@ UI,ProgressBarEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
 UI,ProgressBarEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
 UI,ScreenSafeArea,class,PORTED,UI,ScreenSafeArea,RCore.UI -> RevCore.UI
 UI/Scrollview,OptimizedHorizontalScrollView,class,PORTED,UI,OptimizedHorizontalScrollView,RCore.UI -> RevCore.UI
-UI/Scrollview,OptimizedHorizontalScrollViewEditor,class,LIKELY,UI,OptimizedHorizontalScrollView,fuzzy match score 0.91
-UI/Scrollview,OptimizedHorizontalScrollViewEditor,class,LIKELY,UI,OptimizedHorizontalScrollView,fuzzy match score 0.91
+UI/Scrollview,OptimizedHorizontalScrollViewEditor,class,GAP,UI,,Editor drawer; not a consumer-facing rename (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 1)
+UI/Scrollview,OptimizedHorizontalScrollViewEditor,class,GAP,UI,,Editor drawer; not a consumer-facing rename (Phase 8 audit demoted from LIKELY — see gap-categories.md Bucket 1)
 UI/Scrollview,OptimizedScrollItem,class,PORTED,UI,OptimizedScrollItem,RCore.UI -> RevCore.UI
-UI/Scrollview,OptimizedScrollItemTest,class,LIKELY,UI,OptimizedScrollItem,fuzzy match score 0.90
+UI/Scrollview,OptimizedScrollItemTest,class,GAP,UI,,Test scene fixture; not a consumer-facing type (Phase 8 audit demoted from LIKELY)
 UI/Scrollview,ScrollDirection,enum,PORTED,UI,ScrollDirection,RCore.UI -> RevCore.UI
 UI/Scrollview,OptimizedScrollView,class,PORTED,UI,OptimizedScrollView,RCore.UI -> RevCore.UI
 UI/Scrollview,OptimizedVerticalScrollView,class,PORTED,UI,OptimizedVerticalScrollView,RCore.UI -> RevCore.UI
 UI/Scrollview,ScrollRectEx,class,PORTED,UI,ScrollRectEx,RCore.UI -> RevCore.UI
 UI/Toggle,CustomToggleGroup,class,PORTED,UI,CustomToggleGroup,RCore.UI -> RevCore.UI
-UI/Toggle,CustomToggleSlider,class,PORTED,UI,CustomToggleSlider,RCore.UI -> RevCore.UI
+UI/Toggle,CustomToggleSlider,class,RENAMED,UI,JustToggle,CustomToggleSlider deleted from both frameworks in v0.5.0 — JustToggle is the drop-in replacement
 UI/Toggle,CustomToggleEditor,class,GAP,UI,,no RevCore equivalent found — port or drop?
 UI/Toggle,JustToggle,class,PORTED,UI,JustToggle,RCore.UI -> RevCore.UI
 UI/Toggle,SizeTransition,class,PORTED,UI,SizeTransition,RCore.UI -> RevCore.UI
