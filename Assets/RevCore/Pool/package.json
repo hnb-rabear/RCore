@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.pool",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "displayName": "RevCore.Pool",
   "description": "Reusable Component and GameObject pooling for the RevCore framework.",
   "unity": "2022.3",

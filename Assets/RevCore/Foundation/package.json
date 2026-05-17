@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.foundation",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "displayName": "RevCore.Foundation",
   "description": "Core contracts, event bus, logging, result types, and utility helpers for the RevCore framework.",
   "unity": "2022.3",

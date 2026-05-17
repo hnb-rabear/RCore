@@ -1,2 +1,1 @@
 #nullable enable
-virtual RevCore.JObjectDBManager<T>.SaveForced() -> bool

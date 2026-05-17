@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.ui",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "displayName": "RevCore.UI",
   "description": "Runtime UI components and helpers for RevCore.",
   "unity": "2022.3",
