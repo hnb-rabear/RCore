@@ -137,7 +137,7 @@ namespace RevCore.UI
                 {
                     FindNearestItem();
                     int index = m_FocusedItemIndex;
-                    var targetPos = m_Items[index].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+                    var targetPos = m_Items[index].RectTransform.ConvertAnchoredPosFromChildToParent(m_ScrollView.content);
 
                     if (m_dragFromLeft)
                     {
@@ -328,7 +328,7 @@ namespace RevCore.UI
 
             m_ScrollView.StopMovement();
 
-            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.ConvertAnchoredPosFromChildToParent(m_ScrollView.content);
             targetAnchored.x -= m_TargetPosOffset.x;
             targetAnchored.y -= m_TargetPosOffset.y;
 
@@ -432,7 +432,7 @@ namespace RevCore.UI
             for (int i = 0; i < m_Items.Length; i++)
                 m_Items[i].Show();
 
-            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.CovertAnchoredPosFromChildToParent(m_ScrollView.content);
+            var targetAnchored = m_Items[m_FocusedItemIndex].RectTransform.ConvertAnchoredPosFromChildToParent(m_ScrollView.content);
             targetAnchored.x -= m_TargetPosOffset.x;
             targetAnchored.y -= m_TargetPosOffset.y;
             if (targetAnchored.x > m_ContentAnchoredXMax)

@@ -6,6 +6,9 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Deprecated
 
+- `MathHelper.Ded2Rad(float)` / `Tad2Deg(float)` marked `[Obsolete]` (Stage 1) — typos. Use `Deg2Rad` / `Rad2Deg` instead. Will be removed in v1.0.
+- `TransformHelper.CovertAnchoredPosFromChildToParent` (both overloads) marked `[Obsolete]` (Stage 1) — typo. Use the new `ConvertAnchoredPosFromChildToParent` instead. Will be removed in v1.0.
+- `Result<T>.Value` getter marked `[Obsolete]` (Stage 1). Throws on error; prefer `TryGetValue(out value)` or `ValueOr(fallback)` to avoid the throw. Will become internal in v1.0.
 - `JObjectDB.collections` field marked `[Obsolete]` (Stage 1 per `DEPRECATION_POLICY.md`). Direct mutation of this static dictionary bypasses key persistence and is the source of "save file silently drops a collection after reload" reports. Use `GetCollection`, `CreateCollection`, `GetCollectionKeys`, or `GetAllData` instead. Field will be made private in v1.0.
 
 ### Fixed
@@ -20,6 +23,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
+- `TransformHelper.ConvertAnchoredPosFromChildToParent` (extension on `RectTransform` + static overload with raw values) — correctly-spelled replacement for the legacy `Covert…` typo. Same behavior; new API is the path forward, old name remains for one minor as `[Obsolete]` Stage 1.
 - `ColorHelper.TryHexToColor(string, out Color)` — explicit-failure variant of `HexToColor`. Returns `false` and `Color.clear` on invalid/null/empty input. The existing `HexToColor` is unchanged.
 - `JObjectDBManager<T>.SaveForced()` — bypasses the 200 ms throttle that `Save(now: true)` applies. Internal `OnApplicationPause`/`OnApplicationQuit` now use this so end-of-life saves can never silently fail under the throttle (the original cause of intermittent save loss in shipping projects). The legacy `Save(now: true)` behaviour is unchanged.
 - `EventBus.ListenerCountFor<T>()` — per-type listener count on the concrete `EventBus` class. O(1) dictionary lookup plus one invocation-list walk only when listeners exist; prefer this over the aggregate `IEventBus.ListenerCount` on hot paths. Not added to `IEventBus` to avoid breaking external implementations.

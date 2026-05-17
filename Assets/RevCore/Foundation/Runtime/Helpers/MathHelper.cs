@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace RevCore
 {
@@ -87,8 +89,10 @@ namespace RevCore
 		/// <summary>Converts radians to degrees.</summary>
 		public static float Rad2Deg(float radian) => radian * Mathf.Rad2Deg;
 		/// <summary>Typo'd alias of <see cref="Deg2Rad(float)"/>. Retained for backward compatibility; will be removed in v1.0.</summary>
+		[Obsolete("Typo. Use Deg2Rad instead. Will be removed in v1.0.", error: false)]
 		public static float Ded2Rad(float degree) => Deg2Rad(degree);
 		/// <summary>Typo'd alias of <see cref="Rad2Deg(float)"/>. Retained for backward compatibility; will be removed in v1.0.</summary>
+		[Obsolete("Typo. Use Rad2Deg instead. Will be removed in v1.0.", error: false)]
 		public static float Tad2Deg(float radian) => Rad2Deg(radian);
 		/// <summary>Angle in degrees from point <paramref name="from"/> to point <paramref name="to"/>, measured from +X axis.</summary>
 		public static float AngleDeg(Vector2 from, Vector2 to) => AtanDeg(to.y - from.y, to.x - from.x);

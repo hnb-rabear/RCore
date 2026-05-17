@@ -51,6 +51,7 @@ namespace RevCore
 
 		/// <summary>The success value.</summary>
 		/// <exception cref="InvalidOperationException">Thrown when accessed on an error result. Prefer <see cref="TryGetValue"/> or <see cref="ValueOr"/> to avoid the throw.</exception>
+		[Obsolete("Throws on error. Prefer TryGetValue or ValueOr. Value will become internal in v1.0.", error: false)]
 		public T Value
 		{
 			get

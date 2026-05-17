@@ -170,9 +170,9 @@ namespace RevCore
 		/// <summary>
 		/// Converts <paramref name="childRect"/>'s anchored position into <paramref name="parentRect"/>'s
 		/// local anchored space — useful when teleporting an item between two scroll containers without
-		/// visible jump. The "Covert" spelling is a legacy typo retained for backward compatibility.
+		/// visible jump.
 		/// </summary>
-		public static Vector2 CovertAnchoredPosFromChildToParent(this RectTransform childRect, RectTransform parentRect)
+		public static Vector2 ConvertAnchoredPosFromChildToParent(this RectTransform childRect, RectTransform parentRect)
 		{
 			float contentWidth = parentRect.rect.width;
 			float contentHeight = parentRect.rect.height;
@@ -189,7 +189,7 @@ namespace RevCore
 		/// Overload that takes raw values instead of reading them from a child <see cref="RectTransform"/>.
 		/// Useful when the child hasn't been instantiated yet (placement preview).
 		/// </summary>
-		public static Vector2 CovertAnchoredPosFromChildToParent(Vector2 childAnchoredPos, Vector2 childAnchorMax, RectTransform parentRect)
+		public static Vector2 ConvertAnchoredPosFromChildToParent(Vector2 childAnchoredPos, Vector2 childAnchorMax, RectTransform parentRect)
 		{
 			float contentWidth = parentRect.rect.width;
 			float contentHeight = parentRect.rect.height;
@@ -200,6 +200,16 @@ namespace RevCore
 			targetAnchored.y -= contentHeight * (childAnchorMax.y - 0.5f);
 			return targetAnchored;
 		}
+
+		/// <summary>Typo'd alias of <see cref="ConvertAnchoredPosFromChildToParent(RectTransform, RectTransform)"/>. Will be removed in v1.0.</summary>
+		[Obsolete("Typo. Use ConvertAnchoredPosFromChildToParent instead. Will be removed in v1.0.", error: false)]
+		public static Vector2 CovertAnchoredPosFromChildToParent(this RectTransform childRect, RectTransform parentRect)
+			=> ConvertAnchoredPosFromChildToParent(childRect, parentRect);
+
+		/// <summary>Typo'd alias of <see cref="ConvertAnchoredPosFromChildToParent(Vector2, Vector2, RectTransform)"/>. Will be removed in v1.0.</summary>
+		[Obsolete("Typo. Use ConvertAnchoredPosFromChildToParent instead. Will be removed in v1.0.", error: false)]
+		public static Vector2 CovertAnchoredPosFromChildToParent(Vector2 childAnchoredPos, Vector2 childAnchorMax, RectTransform parentRect)
+			=> ConvertAnchoredPosFromChildToParent(childAnchoredPos, childAnchorMax, parentRect);
 
 		/// <summary>Returns <c>true</c> when <paramref name="item"/> is anywhere in the transitive child chain of <paramref name="parent"/>.</summary>
 		public static bool IsChildOfParent(this Transform item, Transform parent)
