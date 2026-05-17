@@ -180,7 +180,7 @@ Then in Unity:
 1. **Window → General → Console** → click red error filter. Read every red error. The first one is usually the root cause.
 2. **Window → Package Manager → In Project** dropdown. Look for "Performance testing API" and "Code Coverage". If missing, the package version in `manifest.json` failed to resolve.
 3. Check `Library/PackageCache/` on disk for `com.unity.test-framework.performance@*` and `com.unity.testtools.codecoverage@*` directories.
-4. If package is wrong version: edit `Packages/manifest.json` to use a version Unity accepts (likely `2.8.x` for older Unity, `3.0.x` for newer; check https://docs.unity3d.com/Packages/com.unity.test-framework.performance@3.0/manual/index.html for compatibility). Reload Unity.
+4. If package is wrong version: edit `Packages/manifest.json` to use a version Unity accepts (likely `2.8.x` for older Unity, `3.0.x` for newer; check <https://docs.unity3d.com/Packages/com.unity.test-framework.performance@3.0/manual/index.html> for compatibility). Reload Unity.
 
 ### Quick fallback if performance package is unavailable
 
