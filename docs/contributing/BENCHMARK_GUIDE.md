@@ -14,13 +14,13 @@ Benchmark tests are co-located with regular tests under `Assets/RevCore/<Module>
 
 Open Test Runner in Unity, switch to **EditMode**, filter by category `Performance`, hit Run. Results are written to `PerformanceTestResults.{xml,json}` under the project's Library folder.
 
-### CI
+### Local-only runs
 
-`.github/workflows/benchmark.yml` runs the suite on Unity 2022 LTS on every PR. Results are uploaded as the `BenchmarkResults` artifact. The script `scripts/check-benchmark-regression.py` then compares each test's **Median** sample against `scripts/benchmark-baseline.json` and fails the job if any test exceeds the baseline by more than 5%.
+The benchmark suite is not wired to CI (the maintainer doesn't hold a Unity license; the Unity-side workflow was removed). Instead, the maintainer runs the suite locally before pushing perf-sensitive changes and compares against the committed baseline with `scripts/check-benchmark-regression.py`.
 
 ### Updating the baseline
 
-You refresh the baseline once per release, on `main`, after CI has reported the new numbers:
+Refresh the baseline once per release, on `main`, after a local Performance run:
 
 ```bash
 # Download the BenchmarkResults artifact from the latest CI run into ./_bench,

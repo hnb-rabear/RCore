@@ -52,9 +52,9 @@ Phase 2 turns "tests pass" into a measurable, gated quality bar. Coverage and be
    git commit -am "chore(benchmark): seed baseline from first CI run"
    ```
 
-2. **Roslyn analyzer DLLs** (per `docs/contributing/PUBLIC_API_GUIDE.md`): drop the `Microsoft.CodeAnalysis.PublicApiAnalyzers.dll` under `Assets/RevCore/_Analyzers/`, set label `RoslynAnalyzer`, add `csc.rsp` per Runtime asmdef.
+2. **Roslyn analyzer DLLs** (per `docs/contributing/PUBLIC_API_GUIDE.md`): the analyzer + CodeFixes DLLs are committed under `Assets/RevCore/_Analyzers/` with `csc.rsp` wired per Runtime asmdef, but the `RoslynAnalyzer` label is deliberately absent — activation is a one-time v1.0 step (see `docs/contributing/RELEASE_CHECKLIST.md`).
 
-3. **Unity license secrets** (`UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD`) must be added to the repo's GitHub Actions secrets for `unity-test.yml` and `benchmark.yml` to run. Without these, the workflows error out — but they do not block other gates (lint, docs-coverage run independently).
+3. **CI**: the Unity-driven workflows (`unity-test.yml`, `benchmark.yml`) were removed because the maintainer does not hold a Unity license and Personal manual activation has been deprecated. Tests and benchmarks run locally before push instead. The four remaining workflows (lint, docs-coverage, release-drafter, release) are pure-text and require no secrets.
 
 ### Why we stopped here in Phase 2
 
