@@ -1,5 +1,1 @@
 #nullable enable
-RevCore.PoolsContainer<T>.CopyActiveTo(System.Collections.Generic.List<T> dest) -> void
-RevCore.PoolsContainer<T>.CopyAllTo(System.Collections.Generic.List<T> dest) -> void
-RevCore.PoolsContainer<T>.ForEachActive(System.Action<T> action) -> void
-RevCore.PoolsContainer<T>.ForEachItem(System.Action<T> action) -> void

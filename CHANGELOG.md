@@ -4,6 +4,10 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-17
+
+First tagged release. Establishes the pre-1.0 baseline that consumer projects can pin via UPM `?path=` git URL. All Phase 0–6 work plus most of Phase 4 (perf wins) is in this cut. v1.0 is reserved for the final cleanup — Stage 1 deprecations going to Stage 2/3 and the PublicAPI Roslyn analyzer flipping live.
+
 ### Removed
 
 - `.github/workflows/lint.yml`, `.github/workflows/docs-coverage.yml`, `.github/workflows/release-drafter.yml` (workflow), `.github/release-drafter.yml` (config), `.github/labels.yml`, `.markdownlint-cli2.jsonc` — the three PR-time workflows added too little value for the solo-maintained workflow. Lint catches issues an EditorConfig-aware IDE already catches on save; docs coverage and benchmark regression run as local checks via the same Python scripts; release notes can be composed by hand at v1.0 cut time. The repo keeps `release.yml` (tag-triggered publish) and the local scripts (`check-xmldoc-coverage.py`, `check-benchmark-regression.py`). Quality gates move entirely to the local-run-before-push discipline documented in `docs/contributing/CI_SETUP.md` and `docs/contributing/README.md`.
@@ -59,4 +63,5 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 - `.editorconfig` extended with C# code style and analyzer severity rules.
 - `.gitattributes` added with `*.meta merge=union` to reduce conflict on regenerated GUIDs.
 
-[Unreleased]: https://github.com/hnb-rabear/rcore/compare/main...HEAD
+[Unreleased]: https://github.com/hnb-rabear/RCore/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/hnb-rabear/RCore/releases/tag/v0.5.0

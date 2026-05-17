@@ -1,5 +1,1 @@
 #nullable enable
-RevCore.ColorHelper.TryHexToColor(string hex, out UnityEngine.Color color) -> bool
-RevCore.EventBus.ListenerCountFor<T>() -> int
-static RevCore.TransformHelper.ConvertAnchoredPosFromChildToParent(this UnityEngine.RectTransform childRect, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2
-static RevCore.TransformHelper.ConvertAnchoredPosFromChildToParent(UnityEngine.Vector2 childAnchoredPos, UnityEngine.Vector2 childAnchorMax, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2

@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.data",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "displayName": "RevCore.Data",
   "description": "JObjectDB V2 data persistence system for RevCore — typed ScriptableObject models, PlayerPrefs backend, dependency injection.",
   "unity": "2022.3",
