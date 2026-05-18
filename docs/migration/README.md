@@ -36,4 +36,6 @@ The shape of a future tool is sketched in [`PLAN.md`](PLAN.md) §6.
 
 ## Phase status
 
-This is **Phase 8** of the RevCore hardening plan — *documentation only*. Phase 9 (v1.0 prep: Stage 1→2/3 deprecations, PublicAPI analyzer activation, version bump) is the next milestone. Migration tooling can be implemented in a later phase, after consumer projects begin actually migrating and reveal which auto-rewrites would pay off.
+This document set was produced in **Phase 8** of the RevCore hardening plan — documentation only, no migration tooling.
+
+**Plan complete.** Phase 9 (v1.0 cut) shipped as `v1.0.0` on 2026-05-17: Stage 1 deprecations cleared, package versions bumped to 1.0.0, full RevCore public surface committed to per-module `PublicAPI.Shipped.txt`. RevCore is now a stable framework. Migration tooling remains intentionally absent — consumer projects continue to run on RCore and there is no concrete demand for auto-rewrites yet. When a consumer initiates migration, the inputs documented here (`rcore-to-revcore-api-map.csv`, `gap-categories.md`) become the source-of-truth for any tooling built then.

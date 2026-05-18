@@ -22,15 +22,27 @@ Roslyn analyzers consumed at compile time by every RevCore Runtime asmdef.
 
 The 8 Runtime asmdefs each have a `csc.rsp` next to them that wires the per-module `PublicAPI.*.txt` files into the compile as `/additionalfile` references — no further per-module setup needed.
 
-## Current state: dormant by design
+## Current state: dormant — post-v1.0
 
-Both DLLs are committed but **the `RoslynAnalyzer` asset label is intentionally absent**. With the label, the analyzer immediately reports ~1,000 `RS0016` warnings ("Symbol 'X' is not part of the declared API") because none of RevCore's existing public surface has been seeded into the `PublicAPI.Shipped.txt` files yet.
+Both DLLs are committed but **the `RoslynAnalyzer` asset label is intentionally absent**.
 
-Seeding ~1,000 entries by hand is intractable, and Rider's "Add to public API" quick fix does not work in the current Unity setup because Unity's generated `.csproj` files don't propagate the `csc.rsp` `/additionalfile` references to Rider/MSBuild — Rider's analyzer instance can't see the `PublicAPI.*.txt` files.
+At the v1.0 cut (2026-05-17), the label was temporarily set so Rider could populate every module's `PublicAPI.Unshipped.txt` via its "Add to public API" code fix at solution scope. `scripts/seal-public-api.py` then promoted those 1337 entries into the matching `PublicAPI.Shipped.txt` files. After seeding, the label was **reverted**.
 
-The plan: seed `PublicAPI.Shipped.txt` for every module as a deliberate step in the v1.0 release checklist (see `docs/contributing/RELEASE_CHECKLIST.md`). At that point we add the `RoslynAnalyzer` label back to both DLLs, the analyzer goes live, and from v1.0 onward every public API change must update `Unshipped.txt` to compile.
+The reason the label cannot stay on: Unity loads any DLL bearing `RoslynAnalyzer` project-wide, which means the analyzer fires for the default `Assembly-CSharp(-Editor)` compilations. Those compilations contain legacy `Assets/RCore.Archives/`, `Assets/RCore.LXLite/`, `Assets/RCore.SheetX/` — none of which carry asmdefs or track a PublicAPI surface. The result is ~130 `RS0016` warnings on legacy code the maintainer has explicitly decided to leave untouched. Editorconfig-based scoping (path globs in root config, nested `.editorconfig` under `Assets/RevCore/`) does not suppress these in practice — Roslyn's editorconfig matcher and Unity's analyzer loader do not interact the way the spec implies.
 
-Until then the `.txt` files are review-only: the maintainer scans them in PR diffs by eye.
+Live enforcement and the "RCore untouched" mandate are therefore mutually exclusive in current Unity. Without asmdef-level analyzer scoping in a future Unity version, the analyzer stays dormant.
+
+**The `Shipped.txt` files still serve as a committed paper trail.** Every PR adding public surface includes a one-line diff to the right module's file; the solo maintainer scans it by eye. Discipline replaces enforcement.
+
+### How to temporarily activate
+
+For an audit pass (e.g. verifying a refactor didn't expand the surface) or to re-seed after a major reshuffling:
+
+1. Edit `Microsoft.CodeAnalysis.PublicApiAnalyzers.dll.meta` — add a `labels:` block with `- RoslynAnalyzer` underneath, between the `guid:` line and the `PluginImporter:` line. Same edit for `Microsoft.CodeAnalysis.PublicApiAnalyzers.CodeFixes.dll.meta`.
+2. Recompile in Unity — RS0016 fires for any public symbol not in `Shipped.txt` / `Unshipped.txt`.
+3. Apply Rider quick fixes solution-wide if needed.
+4. Run `python scripts/seal-public-api.py` to promote.
+5. **Revert** the label change before committing.
 
 ## Why this folder exists
 

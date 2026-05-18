@@ -1,5 +1,12 @@
 # RCore Framework
 
+This repository houses two Unity frameworks side by side:
+
+*   **RCore** (`Assets/RCore/`) — the legacy framework, in production across 4+ consumer projects. Documented below. Continues to ship without deprecation.
+*   **RevCore** (`Assets/RevCore/`) — the next-generation rewrite. Now at **v1.0.0** (released 2026-05-17). Hardened across Phases 0–9: governance docs, public-API tracking, 100% XML doc coverage, zero-alloc hot paths, 160 EditMode tests, semver-stable contract. See [`Assets/RevCore/Foundation/README.md`](Assets/RevCore/Foundation/README.md) for the module index, [`CHANGELOG.md`](CHANGELOG.md) for the release notes, and [`docs/migration/`](docs/migration/) for the RCore → RevCore migration plan.
+
+New projects should consider RevCore. Existing RCore projects have no deadline to migrate.
+
 ## Overview
 
 RCore is a Unity framework providing essential systems and helpers for game development. It focuses on streamlining common tasks with reusable modules, UI components, data persistence, and editor productivity tools.

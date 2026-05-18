@@ -14,15 +14,15 @@ CI is intentionally minimal — see [CI Setup](CI_SETUP.md). The only workflow i
 
 ### Quick rules
 
-- Public API changes require an entry in `PublicAPI.Unshipped.txt`. Review-only until v1.0; check the diff before pushing.
-- Public types and members require XML doc comments. Run `python scripts/check-xmldoc-coverage.py` locally to verify the 100% baseline still holds.
-- New behavior requires a test under the relevant module's `Tests/Runtime/` folder. Run Unity Test Runner → EditMode locally and confirm all 151 tests are green before pushing.
+- Public API changes require an entry in `PublicAPI.Unshipped.txt`. The analyzer is dormant (see [CI_SETUP](CI_SETUP.md) and [PUBLIC_API_GUIDE](PUBLIC_API_GUIDE.md)), so this is enforced by review, not by compile. At release-cut, `scripts/seal-public-api.py` promotes `Unshipped` → `Shipped`.
+- Public types and members require XML doc comments. Run `python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json` locally to verify the 100% baseline (956 members as of v1.0.0) still holds.
+- New behavior requires a test under the relevant module's `Tests/Runtime/` folder. Run Unity Test Runner → EditMode locally and confirm all 160 tests are green before pushing.
 - Performance-sensitive paths run under `Unity.PerformanceTesting`. Run the Performance category locally and feed `Library/PerformanceTestResults.json` to `scripts/check-benchmark-regression.py` to verify the 5% tolerance.
-- Breaking changes go through Deprecation Policy. No silent removals.
+- Breaking changes go through Deprecation Policy. No silent removals. From v1.0.0 onward, public API breaks require a major version bump.
 
 ### Branches
 
-- `main` — development (currently pre-1.0; minor versions may break).
+- `main` — development. Post-v1.0.0: breaking changes require a major bump per [SEMVER_POLICY](SEMVER_POLICY.md).
 - `vX.Y-lts` — created on demand for backports.
 
 ### Issue templates

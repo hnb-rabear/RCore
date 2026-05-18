@@ -20,22 +20,20 @@ Run through this list every time you cut a tag. Treat it as a hard gate, not a g
 
 ### 3. PublicAPI promotion
 
-- [ ] Move every entry from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` (per module).
-- [ ] Sort `PublicAPI.Shipped.txt` (analyzer expects sorted).
-- [ ] `PublicAPI.Unshipped.txt` reset to the file's required header.
+- [ ] Run `python scripts/seal-public-api.py` from the repo root. The script merges every module's `PublicAPI.Unshipped.txt` into the matching `PublicAPI.Shipped.txt` (sorted), then resets `Unshipped.txt` to its header-only state. Use `--dry-run` first to preview.
+- [ ] Verify with `--dry-run` again — it should report "All 8 modules already sealed — nothing to do."
 
-#### One-time at v1.0: seed the baseline
+Promotion is idempotent. Re-running on already-sealed modules is a no-op. The script replaces the old hand-edit workflow described in pre-v1.0 versions of this checklist.
 
-The Roslyn analyzer DLLs under `Assets/RevCore/_Analyzers/` are committed but **dormant** — the `RoslynAnalyzer` asset label is intentionally absent because `PublicAPI.Shipped.txt` is empty and activating the analyzer would block compile with ~1,000 `RS0016` warnings.
+#### Historical note: v1.0 baseline seeding
 
-At the v1.0 cut, do this once:
+The v1.0 cut (2026-05-17) was the one-time bootstrap that populated every module's `PublicAPI.Shipped.txt` with the existing public surface — 1337 entries across the eight runtime modules. The procedure used:
 
-- [ ] Open `Assets/RevCore/_Analyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.dll` and `…CodeFixes.dll` in Unity Inspector. Add the asset label `RoslynAnalyzer` to BOTH (capital R + capital A, exact text).
-- [ ] Open the project in Rider or Visual Studio. Build → Problems panel will list every `RS0016` warning.
-- [ ] Use the "Add to public API" code fix at solution scope. The fix writes correctly-formatted lines to each module's `PublicAPI.Unshipped.txt`.
-  - If Rider's MSBuild path does not surface the warnings (Unity's generated `.csproj` may not propagate `csc.rsp` additional files), build inside Unity instead — the Roslyn fix is also available via the Unity Editor when the label is set.
-- [ ] Move all entries from each module's `Unshipped.txt` to `Shipped.txt` per the standard promotion step above.
-- [ ] Commit. From v1.0 onward every public API change must update `Unshipped.txt` to compile.
+1. The `RoslynAnalyzer` asset label was temporarily added to both DLLs in `Assets/RevCore/_Analyzers/`. Rider's "Add to public API" code fix was invoked at solution scope; entries landed in each module's `Unshipped.txt`.
+2. `scripts/seal-public-api.py` promoted everything to `Shipped.txt`.
+3. The `RoslynAnalyzer` label was REVERTED — the analyzer is dormant post-v1.0. See `docs/contributing/PUBLIC_API_GUIDE.md` "Analyzer wiring" for the reasoning (Unity loads any labelled analyzer project-wide, which fires RS0016 on legacy RCore folders the maintainer will not touch).
+
+The Shipped.txt files remain committed as a paper trail for PR review even with the analyzer dormant. Re-activating the analyzer for a one-shot audit pass is documented in `PUBLIC_API_GUIDE.md`.
 
 ### 4. CHANGELOG finalize
 
