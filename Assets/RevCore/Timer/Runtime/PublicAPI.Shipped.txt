@@ -1,1 +1,71 @@
 #nullable enable
+RevCore.GlobalTimers
+RevCore.GlobalTimers.GlobalTimers() -> void
+RevCore.ITimerHandle
+RevCore.ITimerHandle.Cancel() -> void
+RevCore.ITimerHandle.Duration.get -> float
+RevCore.ITimerHandle.Elapsed.get -> float
+RevCore.ITimerHandle.Id.get -> int
+RevCore.ITimerHandle.IsCancelled.get -> bool
+RevCore.ITimerHandle.IsCompleted.get -> bool
+RevCore.ITimerHandle.IsRunning.get -> bool
+RevCore.ITimerHandle.Remaining.get -> float
+RevCore.ITimerScheduler
+RevCore.ITimerScheduler.ActiveCount.get -> int
+RevCore.ITimerScheduler.Cancel(int id) -> void
+RevCore.ITimerScheduler.Clear() -> void
+RevCore.ITimerScheduler.Tick(float deltaTime, float unscaledDeltaTime) -> void
+RevCore.SceneTimers
+RevCore.SceneTimers.SceneTimers() -> void
+RevCore.TimedAction
+RevCore.TimedAction.Finish() -> void
+RevCore.TimedAction.GetElapsedTime() -> float
+RevCore.TimedAction.IsRunning.get -> bool
+RevCore.TimedAction.RemainTime.get -> float
+RevCore.TimedAction.SetElapsedTime(float value) -> void
+RevCore.TimedAction.Start(float targetTime) -> void
+RevCore.TimedAction.Stop() -> void
+RevCore.TimedAction.TimeTarget.get -> float
+RevCore.TimedAction.TimedAction() -> void
+RevCore.TimedAction.Update(float deltaTime) -> void
+RevCore.TimerDriver
+RevCore.TimerDriver.TimerDriver() -> void
+RevCore.TimerScheduler
+RevCore.TimerScheduler.ActiveCount.get -> int
+RevCore.TimerScheduler.Cancel(int id) -> void
+RevCore.TimerScheduler.Clear() -> void
+RevCore.TimerScheduler.Tick(float deltaTime, float unscaledDeltaTime) -> void
+RevCore.TimerScheduler.TimerScheduler() -> void
+RevCore.Timers
+static RevCore.Timers.ActiveCount.get -> int
+static RevCore.Timers.Cancel(int id) -> void
+static RevCore.Timers.Clear() -> void
+static RevCore.Timers.Tick(float deltaTime, float unscaledDeltaTime) -> void
+virtual RevCore.TimerDriver.Awake() -> void
+virtual RevCore.TimerDriver.LateUpdate() -> void
+~RevCore.ITimerScheduler.Cancel(RevCore.ITimerHandle handle) -> void
+~RevCore.ITimerScheduler.Debounce<T>(T evt, float seconds) -> RevCore.ITimerHandle
+~RevCore.ITimerScheduler.Enqueue(System.Action action) -> void
+~RevCore.ITimerScheduler.WaitForCondition(RevCore.ConditionalDelegate condition, System.Action onComplete, int id = 0) -> RevCore.ITimerHandle
+~RevCore.ITimerScheduler.WaitForSeconds(float seconds, System.Action onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle
+~RevCore.ITimerScheduler.WaitForSeconds(float seconds, System.Action<float> onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle
+~RevCore.TimedAction.OnFinished -> System.Action
+~RevCore.TimerDriver.Scheduler.get -> RevCore.ITimerScheduler
+~RevCore.TimerDriver.WaitForCondition(RevCore.ConditionalDelegate condition, System.Action onComplete, int id = 0) -> RevCore.ITimerHandle
+~RevCore.TimerDriver.WaitForSeconds(float seconds, System.Action onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle
+~RevCore.TimerScheduler.Cancel(RevCore.ITimerHandle handle) -> void
+~RevCore.TimerScheduler.Debounce<T>(T evt, float seconds) -> RevCore.ITimerHandle
+~RevCore.TimerScheduler.Enqueue(System.Action action) -> void
+~RevCore.TimerScheduler.WaitForCondition(RevCore.ConditionalDelegate condition, System.Action onComplete, int id = 0) -> RevCore.ITimerHandle
+~RevCore.TimerScheduler.WaitForSeconds(float seconds, System.Action onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle
+~RevCore.TimerScheduler.WaitForSeconds(float seconds, System.Action<float> onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle
+~static RevCore.GlobalTimers.Instance.get -> RevCore.GlobalTimers
+~static RevCore.SceneTimers.Instance.get -> RevCore.SceneTimers
+~static RevCore.Timers.Cancel(RevCore.ITimerHandle handle) -> void
+~static RevCore.Timers.Debounce<T>(T evt, float seconds) -> RevCore.ITimerHandle
+~static RevCore.Timers.Enqueue(System.Action action) -> void
+~static RevCore.Timers.Scheduler.get -> RevCore.ITimerScheduler
+~static RevCore.Timers.Scheduler.set -> void
+~static RevCore.Timers.WaitForCondition(RevCore.ConditionalDelegate condition, System.Action onComplete, int id = 0) -> RevCore.ITimerHandle
+~static RevCore.Timers.WaitForSeconds(float seconds, System.Action onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle
+~static RevCore.Timers.WaitForSeconds(float seconds, System.Action<float> onComplete, bool unscaledTime = false, int id = 0) -> RevCore.ITimerHandle

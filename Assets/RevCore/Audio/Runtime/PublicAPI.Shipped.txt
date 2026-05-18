@@ -1,1 +1,75 @@
 #nullable enable
+RevCore.AudioCollection
+RevCore.AudioCollection.AudioCollection() -> void
+RevCore.AudioCollection.ScriptGenerator
+RevCore.AudioCollection.ScriptGenerator.ScriptGenerator() -> void
+RevCore.AudioCollection.UnloadABMusic(int index) -> void
+RevCore.AudioCollection.UnloadABSfx(int index) -> void
+RevCore.AudioCollection.generator -> RevCore.AudioCollection.ScriptGenerator
+RevCore.AudioManager
+RevCore.AudioManager.AudioManager() -> void
+RevCore.BaseAudioManager
+RevCore.BaseAudioManager.BaseAudioManager() -> void
+RevCore.BaseAudioManager.EnableMusic(bool value) -> void
+RevCore.BaseAudioManager.EnableSFX(bool value) -> void
+RevCore.BaseAudioManager.EnabledMusic.get -> bool
+RevCore.BaseAudioManager.EnabledSFX.get -> bool
+RevCore.BaseAudioManager.IsPlayingMusic() -> bool
+RevCore.BaseAudioManager.MasterVolume.get -> float
+RevCore.BaseAudioManager.MusicVolume.get -> float
+RevCore.BaseAudioManager.PlayMusic(float fadeDuration = 0, float volume = 1) -> void
+RevCore.BaseAudioManager.PlayMusicById(int id, bool loop = false, float fadeDuration = 0, float volume = 1) -> void
+RevCore.BaseAudioManager.SFXVolume.get -> float
+RevCore.BaseAudioManager.StopSFX(int index) -> void
+RevCore.BaseAudioManager.StopSFXs() -> void
+RevCore.BaseAudioManager.m_enabledMusic -> bool
+RevCore.BaseAudioManager.m_enabledSfx -> bool
+RevCore.BaseAudioManager.m_masterVolume -> float
+RevCore.BaseAudioManager.m_musicVolume -> float
+RevCore.BaseAudioManager.m_sfxVolume -> float
+RevCore.SfxSource
+RevCore.SfxSource.PlaySFX() -> void
+RevCore.SfxSource.SetLoop(bool loop) -> void
+RevCore.SfxSource.SetVolume(float val) -> void
+RevCore.SfxSource.SfxSource() -> void
+RevCore.SfxSource.StopSFX() -> void
+override RevCore.AudioManager.Start() -> void
+virtual RevCore.BaseAudioManager.OnValidate() -> void
+virtual RevCore.BaseAudioManager.Reset() -> void
+virtual RevCore.BaseAudioManager.Start() -> void
+~RevCore.AudioCollection.GetMusicClip(int index) -> UnityEngine.AudioClip
+~RevCore.AudioCollection.GetMusicClip(string key) -> UnityEngine.AudioClip
+~RevCore.AudioCollection.GetMusicClip(string key, ref int index) -> UnityEngine.AudioClip
+~RevCore.AudioCollection.GetSFXClip(int index) -> UnityEngine.AudioClip
+~RevCore.AudioCollection.GetSFXClip(string key, out int index) -> UnityEngine.AudioClip
+~RevCore.AudioCollection.GetSFXClip(string name) -> UnityEngine.AudioClip
+~RevCore.AudioCollection.GetSFXNames() -> string[]
+~RevCore.AudioCollection.LoadABMusic(int index) -> System.Threading.Tasks.Task
+~RevCore.AudioCollection.LoadABSfx(int index) -> System.Threading.Tasks.Task
+~RevCore.AudioCollection.ScriptGenerator.inputMusicsFolder -> string
+~RevCore.AudioCollection.ScriptGenerator.inputSfxsFolder -> string
+~RevCore.AudioCollection.ScriptGenerator.namespace -> string
+~RevCore.AudioCollection.ScriptGenerator.outputIDsFolder -> string
+~RevCore.AudioCollection.abMusicClips -> UnityEngine.AddressableAssets.AssetReferenceT<UnityEngine.AudioClip>[]
+~RevCore.AudioCollection.abSfxClips -> UnityEngine.AddressableAssets.AssetReferenceT<UnityEngine.AudioClip>[]
+~RevCore.AudioCollection.musicClips -> UnityEngine.AudioClip[]
+~RevCore.AudioCollection.sfxClips -> UnityEngine.AudioClip[]
+~RevCore.BaseAudioManager.PlayMusic(UnityEngine.AudioClip clip, bool loop, float fadeDuration = 0, float volume = 1) -> void
+~RevCore.BaseAudioManager.PlayMusic(string fileName, bool loop = false, float fadeDuration = 0) -> void
+~RevCore.BaseAudioManager.PlayMusicByIds(int[] ids, float fadeDuration = 0, float volume = 1) -> void
+~RevCore.BaseAudioManager.PlayMusics(UnityEngine.AudioClip[] clips, float fadeDuration = 0, float volume = 1) -> void
+~RevCore.BaseAudioManager.PlaySFX(UnityEngine.AudioClip clip, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1) -> UnityEngine.AudioSource
+~RevCore.BaseAudioManager.PlaySFX(int index, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1) -> UnityEngine.AudioSource
+~RevCore.BaseAudioManager.PlaySFX(string fileName, int limitNumber = 0, bool loop = false, float pitchRandomMultiplier = 1) -> UnityEngine.AudioSource
+~RevCore.BaseAudioManager.SetMasterVolume(float value, float fadeDuration = 0, System.Action onComplete = null) -> void
+~RevCore.BaseAudioManager.SetMusicVolume(float value, float fadeDuration = 0, System.Action onComplete = null) -> void
+~RevCore.BaseAudioManager.SetSFXVolume(float value, float fadeDuration = 0, System.Action onComplete = null) -> void
+~RevCore.BaseAudioManager.StopMusic(float fadeDuration = 0, System.Action onComplete = null) -> void
+~RevCore.BaseAudioManager.StopSFX(UnityEngine.AudioClip clip) -> void
+~RevCore.BaseAudioManager.audioCollection -> RevCore.AudioCollection
+~RevCore.BaseAudioManager.m_musicSource -> UnityEngine.AudioSource
+~RevCore.BaseAudioManager.m_sfxSourceUnlimited -> UnityEngine.AudioSource
+~RevCore.BaseAudioManager.m_sfxSources -> System.Collections.Generic.List<UnityEngine.AudioSource>
+~RevCore.SfxSource.SetUp(string[] clips, bool isLoop) -> void
+~RevCore.SfxSource.mClips -> string[]
+~static RevCore.AudioManager.Instance.get -> RevCore.AudioManager

@@ -1,6 +1,36 @@
 #nullable enable
+RevCore.BigNumber
+RevCore.BigNumber.BigNumber() -> void
+RevCore.BigNumber.BigNumber(double value) -> void
+RevCore.BigNumber.BigNumber(float value) -> void
+RevCore.BigNumber.BigNumber(int value) -> void
+RevCore.BigNumber.BigNumber(long value) -> void
+RevCore.BigNumber.CompareTo(RevCore.BigNumber other) -> int
+RevCore.BigNumber.HasValue() -> bool
+RevCore.BigNumber.Length() -> int
+RevCore.BigNumber.ToDouble() -> double
+RevCore.BigNumber.ToInt() -> int
+RevCore.BigNumber.ToLong() -> long
+RevCore.BoolDelegate
+RevCore.CameraExtension
+RevCore.CollectionExtension
+RevCore.CollectionHelper
+RevCore.ColorExtension
+RevCore.ColorHelper
 RevCore.ColorHelper.TryHexToColor(string hex, out UnityEngine.Color color) -> bool
+RevCore.ComponentExtension
+RevCore.ConditionalDelegate
+RevCore.EventBus
+RevCore.EventBus.Clear() -> void
+RevCore.EventBus.EventBus() -> void
+RevCore.EventBus.ListenerCount.get -> int
 RevCore.EventBus.ListenerCountFor<T>() -> int
+RevCore.Events
+RevCore.FloatDelegate
+RevCore.IEvent
+RevCore.IEventBus
+RevCore.IEventBus.Clear() -> void
+RevCore.IEventBus.ListenerCount.get -> int
 RevCore.IRevDiagnostics
 RevCore.IRevDiagnostics.OnAudioPlayMusic(string clipName, bool looping) -> void
 RevCore.IRevDiagnostics.OnAudioPlaySFX(string clipName) -> void
@@ -12,7 +42,368 @@ RevCore.IRevDiagnostics.OnPoolSpawn(string poolName, bool reused) -> void
 RevCore.IRevDiagnostics.OnTimerCancelled(int id) -> void
 RevCore.IRevDiagnostics.OnTimerCompleted(int id, float overtime) -> void
 RevCore.IRevDiagnostics.OnTimerScheduled(int id, float duration, bool unscaled) -> void
+RevCore.IRevLogger
+RevCore.IRevLogger.MinLevel.get -> RevCore.LogLevel
+RevCore.IRevLogger.MinLevel.set -> void
+RevCore.IServiceLocator
+RevCore.IServiceLocator.Clear() -> void
+RevCore.IServiceLocator.Count.get -> int
+RevCore.IntDelegate
+RevCore.Log
+RevCore.LogLevel
+RevCore.LogLevel.Debug = 1 -> RevCore.LogLevel
+RevCore.LogLevel.Error = 4 -> RevCore.LogLevel
+RevCore.LogLevel.Info = 2 -> RevCore.LogLevel
+RevCore.LogLevel.Off = 5 -> RevCore.LogLevel
+RevCore.LogLevel.Trace = 0 -> RevCore.LogLevel
+RevCore.LogLevel.Warning = 3 -> RevCore.LogLevel
+RevCore.MathExtension
+RevCore.MathHelper
+RevCore.PerfectRatio
+RevCore.PerfectRatio.Height = 2 -> RevCore.PerfectRatio
+RevCore.PerfectRatio.None = 0 -> RevCore.PerfectRatio
+RevCore.PerfectRatio.Width = 1 -> RevCore.PerfectRatio
+RevCore.Result
+RevCore.Result.IsError.get -> bool
+RevCore.Result.IsOk.get -> bool
+RevCore.Result.Result() -> void
+RevCore.Result<T>
+RevCore.Result<T>.IsError.get -> bool
+RevCore.Result<T>.IsOk.get -> bool
+RevCore.Result<T>.Result() -> void
+RevCore.Result<T>.TryGetValue(out T value) -> bool
+RevCore.Result<T>.ValueOr(T fallback) -> T
 RevCore.RevDiagnostics
+RevCore.RevLog
+RevCore.RevLog.MinLevel.get -> RevCore.LogLevel
+RevCore.RevLog.MinLevel.set -> void
+RevCore.RevLog.RevLog() -> void
+RevCore.RevLoggerExtensions
+RevCore.SerializableDictionary<TKey, TValue>
+RevCore.SerializableDictionary<TKey, TValue>.SerializableDictionary() -> void
+RevCore.SerializableDictionary<TKey, TValue>.this[TKey key].get -> TValue
+RevCore.SerializableDictionary<TKey, TValue>.this[TKey key].set -> void
+RevCore.SerializedDictionary<TKey, TValue>
+RevCore.SerializedDictionary<TKey, TValue>.SerializedDictionary() -> void
+RevCore.SerializedDictionary<TKey, TValue>.SerializedDictionary(TKey key, TValue value, int index = 0) -> void
+RevCore.SerializedDictionary<TKey, TValue>.index -> int
+RevCore.SerializedDictionary<TKey, TValue>.k -> TKey
+RevCore.SerializedDictionary<TKey, TValue>.keyDuplicated -> bool
+RevCore.SerializedDictionary<TKey, TValue>.v -> TValue
+RevCore.ServiceLocator
+RevCore.ServiceLocator.Clear() -> void
+RevCore.ServiceLocator.Count.get -> int
+RevCore.ServiceLocator.ServiceLocator() -> void
+RevCore.Services
+RevCore.StringExtension
+RevCore.StringHelper
+RevCore.TimeExtension
+RevCore.TimeHelper
+RevCore.TransformExtension
+RevCore.UISfxTriggeredEvent
+RevCore.UISfxTriggeredEvent.UISfxTriggeredEvent() -> void
+RevCore.VoidDelegate
+static RevCore.BigNumber.Create(float value) -> RevCore.BigNumber
+static RevCore.BigNumber.Create(int value) -> RevCore.BigNumber
+static RevCore.BigNumber.Create(long value) -> RevCore.BigNumber
+static RevCore.BigNumber.Max(RevCore.BigNumber a, RevCore.BigNumber b) -> RevCore.BigNumber
+static RevCore.BigNumber.Pow(RevCore.BigNumber value, int power) -> RevCore.BigNumber
+static RevCore.BigNumber.Sqrt(RevCore.BigNumber value) -> RevCore.BigNumber
+static RevCore.BigNumber.operator %(RevCore.BigNumber left, RevCore.BigNumber right) -> RevCore.BigNumber
+static RevCore.BigNumber.operator *(RevCore.BigNumber left, RevCore.BigNumber right) -> RevCore.BigNumber
+static RevCore.BigNumber.operator +(RevCore.BigNumber left, RevCore.BigNumber right) -> RevCore.BigNumber
+static RevCore.BigNumber.operator -(RevCore.BigNumber left, RevCore.BigNumber right) -> RevCore.BigNumber
+static RevCore.BigNumber.operator /(RevCore.BigNumber left, RevCore.BigNumber right) -> RevCore.BigNumber
+static RevCore.BigNumber.operator <(RevCore.BigNumber left, RevCore.BigNumber right) -> bool
+static RevCore.BigNumber.operator <=(RevCore.BigNumber left, RevCore.BigNumber right) -> bool
+static RevCore.BigNumber.operator >(RevCore.BigNumber left, RevCore.BigNumber right) -> bool
+static RevCore.BigNumber.operator >=(RevCore.BigNumber left, RevCore.BigNumber right) -> bool
+static RevCore.ColorExtension.Brightness(this UnityEngine.Color color) -> float
+static RevCore.ColorExtension.Darker(this UnityEngine.Color color) -> UnityEngine.Color
+static RevCore.ColorExtension.Invert(this UnityEngine.Color color) -> UnityEngine.Color
+static RevCore.ColorExtension.IsApproximatelyBlack(this UnityEngine.Color color) -> bool
+static RevCore.ColorExtension.IsApproximatelyWhite(this UnityEngine.Color color) -> bool
+static RevCore.ColorExtension.Lighter(this UnityEngine.Color color) -> UnityEngine.Color
+static RevCore.ColorExtension.Opaque(this UnityEngine.Color color) -> UnityEngine.Color
+static RevCore.ColorExtension.SetAlpha(this UnityEngine.Color color, float alpha) -> UnityEngine.Color
+static RevCore.ColorExtension.ToInt(this UnityEngine.Color c) -> int
+static RevCore.ColorExtension.ToRGBAHex(this UnityEngine.Color color) -> int
+static RevCore.ColorExtension.ToRGBAHex(this UnityEngine.Color32 color) -> int
+static RevCore.Events.Clear() -> void
+static RevCore.MathExtension.Approximately(this UnityEngine.Vector3 value, UnityEngine.Vector3 refValue) -> bool
+static RevCore.MathExtension.DistanceTo(this UnityEngine.Vector3 root, UnityEngine.Vector3 target) -> float
+static RevCore.MathExtension.Round(this UnityEngine.Vector3 vector, int decimalPlaces) -> UnityEngine.Vector3
+static RevCore.MathExtension.SetValue(this UnityEngine.Vector3Int vector, int x, int y, int z) -> UnityEngine.Vector3Int
+static RevCore.MathExtension.Sign(this UnityEngine.Vector3 val) -> UnityEngine.Vector3
+static RevCore.MathExtension.Sign(this float x) -> float
+static RevCore.MathExtension.Sign(this int x) -> int
+static RevCore.MathExtension.ToPositiveAngle(this UnityEngine.Vector3 angle) -> UnityEngine.Vector3
+static RevCore.MathExtension.ToPositiveAngle(this float angle) -> float
+static RevCore.MathHelper.AngleDeg(UnityEngine.Vector2 from, UnityEngine.Vector2 to) -> float
+static RevCore.MathHelper.AtanDeg(float dy, float dx) -> float
+static RevCore.MathHelper.AtanRad(float dy, float dx) -> float
+static RevCore.MathHelper.CalcAngle(UnityEngine.Vector2 direction) -> float
+static RevCore.MathHelper.CalcAngle(UnityEngine.Vector3 dir1, UnityEngine.Vector3 dir2) -> float
+static RevCore.MathHelper.CalcAngle360(UnityEngine.Vector3 fromDir, UnityEngine.Vector3 toDir) -> UnityEngine.Vector3
+static RevCore.MathHelper.CalcAngle360X(UnityEngine.Vector3 fromDir, UnityEngine.Vector3 toDir) -> float
+static RevCore.MathHelper.CalcAngle360Y(UnityEngine.Vector3 fromDir, UnityEngine.Vector3 toDir) -> float
+static RevCore.MathHelper.CalcAngle360Z(UnityEngine.Vector3 fromDir, UnityEngine.Vector3 toDir) -> float
+static RevCore.MathHelper.CalcBaseValue(int maxLevel, float totalValue, float valueGrow, float surplus = 0) -> float
+static RevCore.MathHelper.CalcCompoundingValue(float baseValue, float grow, int level) -> float
+static RevCore.MathHelper.CalcPosition(UnityEngine.Vector3 rootPos, float distance, UnityEngine.Vector3 dir) -> UnityEngine.Vector3
+static RevCore.MathHelper.ClampIndex(int val, int max) -> int
+static RevCore.MathHelper.CosDeg(float degree) -> float
+static RevCore.MathHelper.CosRad(float radian) -> float
+static RevCore.MathHelper.DecimalToHexChar(int num) -> char
+static RevCore.MathHelper.Deg2Rad(float degree) -> float
+static RevCore.MathHelper.DirOfAngle(UnityEngine.Vector3 angle) -> UnityEngine.Vector3
+static RevCore.MathHelper.DirOfXAngle(float angleDegrees) -> UnityEngine.Vector3
+static RevCore.MathHelper.DirOfYAngle(float angleDegrees) -> UnityEngine.Vector3
+static RevCore.MathHelper.DirOfZAngle(float angleDegrees) -> UnityEngine.Vector3
+static RevCore.MathHelper.Factorial(int val) -> int
+static RevCore.MathHelper.GCD(int a, int b) -> int
+static RevCore.MathHelper.GetPosOnCircle(UnityEngine.Vector3 root, float angleDeg, float radius) -> UnityEngine.Vector3
+static RevCore.MathHelper.GetPosOnCircle(float angleDeg, float radius) -> UnityEngine.Vector2
+static RevCore.MathHelper.HexToDecimal(char ch) -> int
+static RevCore.MathHelper.InsideAngle(float angle, float minAngle, float maxAngle) -> bool
+static RevCore.MathHelper.IsBetween(UnityEngine.Vector2 from, UnityEngine.Vector2 to, UnityEngine.Vector2 mid) -> bool
+static RevCore.MathHelper.IsBetween(UnityEngine.Vector3 from, UnityEngine.Vector3 to, UnityEngine.Vector3 mid) -> bool
+static RevCore.MathHelper.IsBetweenXZ(UnityEngine.Vector3 from, UnityEngine.Vector3 to, UnityEngine.Vector3 mid) -> bool
+static RevCore.MathHelper.IsInside(UnityEngine.Vector2 a, UnityEngine.Vector2 b, UnityEngine.Vector2 c, UnityEngine.Vector2 p) -> bool
+static RevCore.MathHelper.LeftDirection(UnityEngine.Vector3 forward, UnityEngine.Vector3 up) -> UnityEngine.Vector3
+static RevCore.MathHelper.LeftDirectionXZ(UnityEngine.Vector3 forward) -> UnityEngine.Vector3
+static RevCore.MathHelper.Lerp(float from, float to, float factor) -> float
+static RevCore.MathHelper.Rad2Deg(float radian) -> float
+static RevCore.MathHelper.RandomPointOnCircleEdge_XY(UnityEngine.Vector2 center, float radius) -> UnityEngine.Vector3
+static RevCore.MathHelper.RandomPointOnCircleEdge_XZ(UnityEngine.Vector3 center, float radius) -> UnityEngine.Vector3
+static RevCore.MathHelper.RandomPointOnCircle_XZ(UnityEngine.Vector3 center, float radius) -> UnityEngine.Vector3
+static RevCore.MathHelper.RepeatIndex(int val, int max) -> int
+static RevCore.MathHelper.RightDirection(UnityEngine.Vector3 forward, UnityEngine.Vector3 up) -> UnityEngine.Vector3
+static RevCore.MathHelper.RightDirectionXZ(UnityEngine.Vector3 forward) -> UnityEngine.Vector3
+static RevCore.MathHelper.Round(UnityEngine.Vector2 value, int decimalPlaces) -> UnityEngine.Vector2
+static RevCore.MathHelper.Round(UnityEngine.Vector3 value, int decimalPlaces) -> UnityEngine.Vector3
+static RevCore.MathHelper.Round(float value, int decimalPlaces) -> float
+static RevCore.MathHelper.SinDeg(float degree) -> float
+static RevCore.MathHelper.SinRad(float radian) -> float
+static RevCore.MathHelper.TanDeg(float degree) -> float
+static RevCore.MathHelper.WrapAngle(float angle) -> float
+static RevCore.Result.Ok() -> RevCore.Result
+static RevCore.Result<T>.Ok(T value) -> RevCore.Result<T>
 static RevCore.RevDiagnostics.Listener -> RevCore.IRevDiagnostics
+static RevCore.Services.Clear() -> void
+static RevCore.TimeExtension.ToUnixTimestamp(this System.DateTime value) -> long
+static RevCore.TimeExtension.ToUnixTimestampInt(this System.DateTime value) -> int
+static RevCore.TimeHelper.CalcStepsPassed(int totalSeconds, int intervalSeconds, out int modSeconds) -> int
+static RevCore.TimeHelper.DateTimeToUnixTimestamp(System.DateTime value) -> long
+static RevCore.TimeHelper.DateTimeToUnixTimestampInt(System.DateTime value) -> int
+static RevCore.TimeHelper.GetCurrentWeekNumber(System.DateTime date) -> int
+static RevCore.TimeHelper.GetEndTimeOfMonth(System.DateTime date) -> System.DateTime
+static RevCore.TimeHelper.GetEndTimeOfNextWeekDay(System.DateTime date, System.DayOfWeek day) -> System.DateTime
+static RevCore.TimeHelper.GetNow(bool utc) -> System.DateTime
+static RevCore.TimeHelper.GetNowTimestamp(bool utc) -> int
+static RevCore.TimeHelper.GetSecondsTillDayOfWeek(System.DayOfWeek day, System.DateTime from) -> double
+static RevCore.TimeHelper.GetSecondsTillMidNight(System.DateTime from) -> double
+static RevCore.TimeHelper.GetSecondsTillTargetHour(System.DateTime from, int targetHour) -> double
+static RevCore.TimeHelper.GetStartTimeOfMonth(System.DateTime date) -> System.DateTime
+static RevCore.TimeHelper.GetStartTimeOfNextWeekDay(System.DateTime date, System.DayOfWeek day) -> System.DateTime
+static RevCore.TimeHelper.UnixTimestampToDateTime(double unixTimestamp) -> System.DateTime
+static RevCore.TimeHelper.UnixTimestampToDateTime(int unixTimestamp) -> System.DateTime
+static RevCore.TransformExtension.Add(this UnityEngine.Vector3 vector, UnityEngine.Vector3 value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.AddX(this UnityEngine.Vector2 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.AddX(this UnityEngine.Vector3 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.AddY(this UnityEngine.Vector2 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.AddY(this UnityEngine.Vector3 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.AddZ(this UnityEngine.Vector3 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.SetX(this UnityEngine.Vector3 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.SetY(this UnityEngine.Vector3 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.SetZ(this UnityEngine.Vector3 vector, float value) -> UnityEngine.Vector3
+static RevCore.TransformExtension.ToVector2(this UnityEngine.Vector3 vector) -> UnityEngine.Vector2
 static RevCore.TransformHelper.ConvertAnchoredPosFromChildToParent(UnityEngine.Vector2 childAnchoredPos, UnityEngine.Vector2 childAnchorMax, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2
 static RevCore.TransformHelper.ConvertAnchoredPosFromChildToParent(this UnityEngine.RectTransform childRect, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2
+static readonly RevCore.BigNumber.One -> RevCore.BigNumber
+static readonly RevCore.BigNumber.OneHundred -> RevCore.BigNumber
+static readonly RevCore.BigNumber.Ten -> RevCore.BigNumber
+static readonly RevCore.BigNumber.Two -> RevCore.BigNumber
+static readonly RevCore.BigNumber.Zero -> RevCore.BigNumber
+static readonly RevCore.TimeHelper.Epoch -> System.DateTime
+~RevCore.BigNumber.BigNumber(string value) -> void
+~RevCore.BigNumber.ToShortString() -> string
+~RevCore.EventBus.Clear<T>() -> void
+~RevCore.EventBus.Publish<T>(T evt) -> void
+~RevCore.EventBus.Subscribe<T>(System.Action<T> listener) -> void
+~RevCore.EventBus.Unsubscribe<T>(System.Action<T> listener) -> void
+~RevCore.IEventBus.Clear<T>() -> void
+~RevCore.IEventBus.Publish<T>(T evt) -> void
+~RevCore.IEventBus.Subscribe<T>(System.Action<T> listener) -> void
+~RevCore.IEventBus.Unsubscribe<T>(System.Action<T> listener) -> void
+~RevCore.IRevLogger.Log(RevCore.LogLevel level, string message, UnityEngine.Object context = null) -> void
+~RevCore.IRevLogger.Log(RevCore.LogLevel level, string tag, string message, UnityEngine.Object context = null) -> void
+~RevCore.IServiceLocator.Contains<T>() -> bool
+~RevCore.IServiceLocator.Get<T>() -> T
+~RevCore.IServiceLocator.Register<T>(T service) -> void
+~RevCore.IServiceLocator.TryGet<T>(out T service) -> bool
+~RevCore.IServiceLocator.Unregister<T>() -> bool
+~RevCore.Result.ErrorMessage.get -> string
+~RevCore.Result<T>.ErrorMessage.get -> string
+~RevCore.RevLog.Log(RevCore.LogLevel level, string message, UnityEngine.Object context = null) -> void
+~RevCore.RevLog.Log(RevCore.LogLevel level, string tag, string message, UnityEngine.Object context = null) -> void
+~RevCore.ServiceLocator.Contains<T>() -> bool
+~RevCore.ServiceLocator.Get<T>() -> T
+~RevCore.ServiceLocator.Register<T>(T service) -> void
+~RevCore.ServiceLocator.TryGet<T>(out T service) -> bool
+~RevCore.ServiceLocator.Unregister<T>() -> bool
+~RevCore.UISfxTriggeredEvent.Sfx.get -> string
+~RevCore.UISfxTriggeredEvent.UISfxTriggeredEvent(string sfx) -> void
+~override RevCore.BigNumber.ToString() -> string
+~static RevCore.BigNumber.Create(string value) -> RevCore.BigNumber
+~static RevCore.BigNumber.Parse(string value) -> RevCore.BigNumber
+~static RevCore.CameraExtension.WorldPointToCanvasPoint(this UnityEngine.Camera camera, UnityEngine.Vector3 worldPos, UnityEngine.RectTransform canvasRect) -> UnityEngine.Vector3
+~static RevCore.CollectionExtension.Add(this System.Collections.Generic.Dictionary<int, int> source, System.Collections.Generic.Dictionary<int, int> dict) -> void
+~static RevCore.CollectionExtension.Add<T>(this T[] array, T obj, out T[] output) -> void
+~static RevCore.CollectionExtension.AddOrSet<K, V>(this System.Collections.Generic.Dictionary<K, V> source, K key, V val) -> void
+~static RevCore.CollectionExtension.AddRange<T>(this T[] array1, T[] array2, out T[] output) -> void
+~static RevCore.CollectionExtension.Contain(this int[] array, int obj) -> bool
+~static RevCore.CollectionExtension.ContainsKey<T>(this System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<int, T>> list, int key) -> bool
+~static RevCore.CollectionExtension.Count<T>(this T[] array, System.Predicate<T> match) -> int
+~static RevCore.CollectionExtension.Exists<T>(this T[] array, System.Predicate<T> match) -> bool
+~static RevCore.CollectionExtension.Find<T>(this T[] array, System.Predicate<T> match) -> T
+~static RevCore.CollectionExtension.FindAll<T>(this T[] array, System.Predicate<T> match) -> T[]
+~static RevCore.CollectionExtension.FindIndex<T>(this T[] array, System.Predicate<T> match) -> int
+~static RevCore.CollectionExtension.FindLast<T>(this T[] array, System.Predicate<T> match) -> T
+~static RevCore.CollectionExtension.IndexOf<T>(this T[] array, T obj) -> int
+~static RevCore.CollectionExtension.MinusAndRemove(this System.Collections.Generic.Dictionary<int, int> source, System.Collections.Generic.Dictionary<int, int> dict) -> void
+~static RevCore.CollectionExtension.RandomKey<TKey, TValue>(this System.Collections.Generic.Dictionary<TKey, TValue> source) -> TKey
+~static RevCore.CollectionExtension.RandomKey<TKey, TValue>(this System.Collections.Generic.Dictionary<TKey, TValue> source, TValue minVal) -> TKey
+~static RevCore.CollectionExtension.RandomKeyHasLowestValue<TKey, TValue>(this System.Collections.Generic.Dictionary<TKey, TValue> source) -> TKey
+~static RevCore.CollectionExtension.Remove<K, V>(this System.Collections.Generic.Dictionary<K, V> source, System.Collections.Generic.List<K> keys) -> void
+~static RevCore.CollectionExtension.Remove<T>(this System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<int, T>> list, int key) -> void
+~static RevCore.CollectionExtension.Remove<T>(this T[] array, T obj, out T[] output) -> void
+~static RevCore.CollectionExtension.RemoveAll<T>(this T[] array, System.Predicate<T> match, out T[] output) -> void
+~static RevCore.CollectionExtension.RemoveAt<T>(this T[] array, int index, out T[] output) -> void
+~static RevCore.CollectionExtension.RemoveDuplicated<T>(this System.Collections.Generic.List<T> list) -> void
+~static RevCore.CollectionExtension.RemoveNull<T>(this System.Collections.Generic.List<T> list) -> System.Collections.Generic.List<T>
+~static RevCore.CollectionExtension.Shuffle<T>(this System.Collections.Generic.List<T> list) -> void
+~static RevCore.CollectionExtension.Shuffle<T>(this T[] array) -> void
+~static RevCore.CollectionExtension.Swap<T>(this System.Collections.Generic.List<T> list, int index1, int index2) -> void
+~static RevCore.CollectionExtension.ToKeyValuePairs<TKey, TValue>(this System.Collections.Generic.Dictionary<TKey, TValue> source) -> System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<TKey, TValue>>
+~static RevCore.CollectionExtension.ToList<T>(this T[] array) -> System.Collections.Generic.List<T>
+~static RevCore.CollectionExtension.TryAdd<T>(this System.Collections.Generic.List<T> list, T item) -> bool
+~static RevCore.CollectionExtension.TryAdd<TKey, TValue>(this System.Collections.Generic.Dictionary<TKey, TValue> dict, TKey key, TValue value) -> bool
+~static RevCore.CollectionHelper.DictToString(System.Collections.Generic.IDictionary<string, object> d) -> string
+~static RevCore.ColorExtension.ToRGBAHexString(this UnityEngine.Color color) -> string
+~static RevCore.ColorHelper.HexToColor(string hex) -> UnityEngine.Color
+~static RevCore.ColorHelper.TryHexToColor(string hex, out UnityEngine.Color color) -> bool
+~static RevCore.ComponentExtension.CompareTags(this UnityEngine.Collider collider, params string[] tags) -> bool
+~static RevCore.ComponentExtension.CompareTags(this UnityEngine.GameObject gameObject, params string[] tags) -> bool
+~static RevCore.ComponentExtension.FindAllComponentsInChildren<T>(this UnityEngine.GameObject root) -> System.Collections.Generic.List<T>
+~static RevCore.ComponentExtension.FindChildObject(this UnityEngine.GameObject root, string name, bool contain = false) -> UnityEngine.GameObject
+~static RevCore.ComponentExtension.FindChildObjects(this UnityEngine.GameObject root, string name, System.Collections.Generic.List<UnityEngine.GameObject> output, bool contain = false) -> void
+~static RevCore.ComponentExtension.FindComponentInChildren<T>(this UnityEngine.GameObject root) -> T
+~static RevCore.ComponentExtension.FindComponentInChildren<T>(this UnityEngine.GameObject root, out T output) -> void
+~static RevCore.ComponentExtension.FindComponentInChildren<T>(this UnityEngine.GameObject root, string childName, bool containChildName = false) -> T
+~static RevCore.ComponentExtension.FindComponentInChildrenWithIndex<T>(this UnityEngine.GameObject root, int index) -> T
+~static RevCore.ComponentExtension.FindComponentInParent<T>(this UnityEngine.GameObject root) -> T
+~static RevCore.ComponentExtension.FindComponentsInChildren<T>(this UnityEngine.GameObject root) -> System.Collections.Generic.List<T>
+~static RevCore.ComponentExtension.FindComponentsInChildren<T>(this UnityEngine.GameObject root, out System.Collections.Generic.List<T> output) -> void
+~static RevCore.ComponentExtension.GameObjectId<T>(this T target) -> int
+~static RevCore.ComponentExtension.GetAllChildren(this UnityEngine.GameObject parent) -> System.Collections.Generic.List<UnityEngine.GameObject>
+~static RevCore.ComponentExtension.GetOrAddComponent<T>(this UnityEngine.GameObject gameObject) -> T
+~static RevCore.ComponentExtension.IsActive(this UnityEngine.Component target) -> bool
+~static RevCore.ComponentExtension.IsPrefab(this UnityEngine.GameObject target) -> bool
+~static RevCore.ComponentExtension.NativeSize(this UnityEngine.Sprite sprite) -> UnityEngine.Vector2
+~static RevCore.ComponentExtension.NormalizedPivot(this UnityEngine.Sprite sprite) -> UnityEngine.Vector2
+~static RevCore.ComponentExtension.PerfectRatio(this UnityEngine.UI.Image image) -> void
+~static RevCore.ComponentExtension.SetActive(this UnityEngine.Component target, bool value) -> void
+~static RevCore.ComponentExtension.SetAlpha(this UnityEngine.UI.Image img, float alpha) -> void
+~static RevCore.ComponentExtension.SetNativeSize(this UnityEngine.UI.Image image, UnityEngine.Vector2 maxSize) -> UnityEngine.Vector2
+~static RevCore.ComponentExtension.SetParent(this UnityEngine.Component target, UnityEngine.Transform parent) -> void
+~static RevCore.ComponentExtension.Sketch(this UnityEngine.UI.Image image, UnityEngine.Vector2 preferredSize, bool preferNative = false) -> UnityEngine.Vector2
+~static RevCore.ComponentExtension.SketchByHeight(this UnityEngine.UI.Image image, float preferredHeight, bool preferNative = false) -> UnityEngine.Vector2
+~static RevCore.ComponentExtension.SketchByWidth(this UnityEngine.UI.Image image, float preferredWidth, bool preferNative = false) -> UnityEngine.Vector2
+~static RevCore.ComponentExtension.SortByName<T>(this System.Collections.Generic.List<T> objects) -> System.Collections.Generic.List<T>
+~static RevCore.Events.Global.get -> RevCore.IEventBus
+~static RevCore.Events.Publish<T>(T evt) -> void
+~static RevCore.Events.Subscribe<T>(System.Action<T> listener) -> void
+~static RevCore.Events.Unsubscribe<T>(System.Action<T> listener) -> void
+~static RevCore.Log.Error(string message, UnityEngine.Object context = null) -> void
+~static RevCore.Log.Info(string message, UnityEngine.Object context = null) -> void
+~static RevCore.Log.Logger.get -> RevCore.IRevLogger
+~static RevCore.Log.Logger.set -> void
+~static RevCore.Log.Warn(string message, UnityEngine.Object context = null) -> void
+~static RevCore.MathExtension.DistanceTo(this UnityEngine.Transform root, UnityEngine.Vector3 target) -> float
+~static RevCore.MathExtension.DistanceTo<T>(this UnityEngine.Transform root, T target) -> float
+~static RevCore.MathExtension.ToBinary(this int val, int bits) -> string
+~static RevCore.MathHelper.CalcGridNodes(UnityEngine.Vector3 rootPos, int width, int length, float tileSize, bool rootIsCenter = false) -> System.Collections.Generic.List<UnityEngine.Vector3>
+~static RevCore.MathHelper.DecimalToHex24(int num) -> string
+~static RevCore.MathHelper.DecimalToHex32(int num) -> string
+~static RevCore.MathHelper.DecimalToHex8(int num) -> string
+~static RevCore.MathHelper.Dot(UnityEngine.Transform root, UnityEngine.Transform target) -> float
+~static RevCore.MathHelper.GetCenterVector(System.Collections.Generic.IEnumerable<UnityEngine.Vector3> vectors) -> UnityEngine.Vector3
+~static RevCore.MathHelper.GetRandomIndexFromChances(System.Collections.Generic.List<int> chances) -> int
+~static RevCore.MathHelper.GetRandomIndexFromChances(params float[] chances) -> int
+~static RevCore.MathHelper.GetRandomIndexFromChances(params int[] chances) -> int
+~static RevCore.MathHelper.IntToBinary(int val, int bits) -> string
+~static RevCore.MathHelper.OnRightOrLeft(UnityEngine.Transform root, UnityEngine.Vector3 position) -> bool
+~static RevCore.MathHelper.Sum(params int[] numbers) -> int
+~static RevCore.Result.Fail(string error) -> RevCore.Result
+~static RevCore.Result<T>.Fail(string error) -> RevCore.Result<T>
+~static RevCore.RevLoggerExtensions.Error(this RevCore.IRevLogger logger, string message, UnityEngine.Object context = null) -> void
+~static RevCore.RevLoggerExtensions.Info(this RevCore.IRevLogger logger, string message, UnityEngine.Object context = null) -> void
+~static RevCore.RevLoggerExtensions.Warn(this RevCore.IRevLogger logger, string message, UnityEngine.Object context = null) -> void
+~static RevCore.SerializedDictionary<TKey, TValue>.implicit operator RevCore.SerializedDictionary<TKey, TValue>(System.Collections.Generic.KeyValuePair<TKey, TValue> kvp) -> RevCore.SerializedDictionary<TKey, TValue>
+~static RevCore.SerializedDictionary<TKey, TValue>.implicit operator System.Collections.Generic.KeyValuePair<TKey, TValue>(RevCore.SerializedDictionary<TKey, TValue> kvp) -> System.Collections.Generic.KeyValuePair<TKey, TValue>
+~static RevCore.Services.Contains<T>() -> bool
+~static RevCore.Services.Get<T>() -> T
+~static RevCore.Services.Global.get -> RevCore.IServiceLocator
+~static RevCore.Services.Register<T>(T service) -> void
+~static RevCore.Services.TryGet<T>(out T service) -> bool
+~static RevCore.Services.Unregister<T>() -> bool
+~static RevCore.StringExtension.RemoveSpecialCharacters(this string str, string replace = "") -> string
+~static RevCore.StringExtension.ToCapitalizeEachWord(this string str) -> string
+~static RevCore.StringExtension.ToLowerCaseFirstChar(this string str) -> string
+~static RevCore.StringExtension.ToSentenceCase(this string str) -> string
+~static RevCore.StringHelper.GetFirstLine(string text) -> string
+~static RevCore.StringHelper.GetFirstSentence(string text) -> string
+~static RevCore.StringHelper.GetFirstWords(string text, int length) -> string
+~static RevCore.StringHelper.GetStableHashCode(string str) -> int
+~static RevCore.StringHelper.JoinString(string separator, params string[] strs) -> string
+~static RevCore.StringHelper.Reverse(System.Text.StringBuilder sb) -> void
+~static RevCore.StringHelper.SeparateStringAndNum(string str, out string numberPart, out string stringPart) -> void
+~static RevCore.StringHelper.ToLowerUnderscore(string input) -> string
+~static RevCore.TimeHelper.FormatDHMs(double seconds, int maxSplits = 2) -> string
+~static RevCore.TimeHelper.FormatHhMmSs(double seconds, int maxSplits = 3) -> string
+~static RevCore.TimeHelper.TryParse(string timeString, out System.DateTime output, System.DateTime fallback) -> bool
+~static RevCore.TransformExtension.AddPosX(this UnityEngine.Transform transform, float x) -> UnityEngine.Transform
+~static RevCore.TransformExtension.AddPosY(this UnityEngine.Transform transform, float y) -> UnityEngine.Transform
+~static RevCore.TransformExtension.AddPosZ(this UnityEngine.Transform transform, float z) -> UnityEngine.Transform
+~static RevCore.TransformExtension.BotLeft(this UnityEngine.RectTransform rect) -> UnityEngine.Vector2
+~static RevCore.TransformExtension.BotRight(this UnityEngine.RectTransform rect) -> UnityEngine.Vector2
+~static RevCore.TransformExtension.Bounds(this UnityEngine.RectTransform rect) -> UnityEngine.Bounds
+~static RevCore.TransformExtension.Center(this UnityEngine.RectTransform rect) -> UnityEngine.Vector2
+~static RevCore.TransformExtension.ConvertAnchoredPosFromChildToParent(UnityEngine.Vector2 childAnchoredPos, UnityEngine.Vector2 childAnchorMax, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2
+~static RevCore.TransformExtension.ConvertAnchoredPosFromChildToParent(this UnityEngine.RectTransform childRect, UnityEngine.RectTransform parentRect) -> UnityEngine.Vector2
+~static RevCore.TransformExtension.FlipX(this UnityEngine.Transform transform) -> UnityEngine.Transform
+~static RevCore.TransformExtension.FlipX(this UnityEngine.Transform transform, int direction) -> UnityEngine.Transform
+~static RevCore.TransformExtension.FlipY(this UnityEngine.Transform transform) -> UnityEngine.Transform
+~static RevCore.TransformExtension.FlipY(this UnityEngine.Transform transform, int direction) -> UnityEngine.Transform
+~static RevCore.TransformExtension.GetAllChildren(this UnityEngine.Transform transform) -> System.Collections.Generic.IEnumerable<UnityEngine.Transform>
+~static RevCore.TransformExtension.GetChildren(this UnityEngine.Transform transform) -> System.Collections.Generic.List<UnityEngine.Transform>
+~static RevCore.TransformExtension.HierarchyDeep(this UnityEngine.Transform transform) -> int
+~static RevCore.TransformExtension.IsChildOfParent(this UnityEngine.Transform item, UnityEngine.Transform parent) -> bool
+~static RevCore.TransformExtension.LookAtDirection(this UnityEngine.Transform transform, UnityEngine.Vector3 direction) -> UnityEngine.Transform
+~static RevCore.TransformExtension.Reset(this UnityEngine.Transform transform) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetAnchoredPosX(this UnityEngine.RectTransform transform, float x) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetLocalPosX(this UnityEngine.Transform transform, float x) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetLocalPosY(this UnityEngine.Transform transform, float y) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetLocalPosZ(this UnityEngine.Transform transform, float z) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetPosX(this UnityEngine.Transform transform, float x) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetPosY(this UnityEngine.Transform transform, float y) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetPosZ(this UnityEngine.Transform transform, float z) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetScaleX(this UnityEngine.Transform transform, float x) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetScaleY(this UnityEngine.Transform transform, float y) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetScaleZ(this UnityEngine.Transform transform, float z) -> UnityEngine.Transform
+~static RevCore.TransformExtension.SetX(this UnityEngine.RectTransform transform, float x) -> void
+~static RevCore.TransformExtension.SetY(this UnityEngine.RectTransform transform, float y) -> void
+~static RevCore.TransformExtension.Sort(this UnityEngine.Transform transform, System.Func<UnityEngine.Transform, System.IComparable> sortFunction) -> void
+~static RevCore.TransformExtension.TopLeft(this UnityEngine.RectTransform rect) -> UnityEngine.Vector2
+~static RevCore.TransformExtension.TopRight(this UnityEngine.RectTransform rect) -> UnityEngine.Vector2

@@ -1,1 +1,43 @@
 #nullable enable
+RevCore.IPref
+RevCore.IPref.Delete() -> void
+RevCore.IPref.IsChanged.get -> bool
+RevCore.IPref.SaveChange() -> void
+RevCore.PlayerPref
+RevCore.PlayerPref.Delete() -> void
+RevCore.PlayerPref.IsChanged.get -> bool
+RevCore.PlayerPref.changed -> bool
+RevCore.PlayerPrefBool
+RevCore.PlayerPrefBool.Value.get -> bool
+RevCore.PlayerPrefBool.Value.set -> void
+RevCore.PlayerPrefContainer
+RevCore.PlayerPrefFloat
+RevCore.PlayerPrefFloat.Value.get -> float
+RevCore.PlayerPrefFloat.Value.set -> void
+RevCore.PlayerPrefInt
+RevCore.PlayerPrefInt.Value.get -> int
+RevCore.PlayerPrefInt.Value.set -> void
+RevCore.PlayerPrefString
+abstract RevCore.PlayerPref.SaveChange() -> void
+override RevCore.PlayerPrefBool.SaveChange() -> void
+override RevCore.PlayerPrefFloat.SaveChange() -> void
+override RevCore.PlayerPrefInt.SaveChange() -> void
+override RevCore.PlayerPrefString.SaveChange() -> void
+static RevCore.PlayerPrefContainer.ClearRegistered() -> void
+static RevCore.PlayerPrefContainer.DeleteAll() -> void
+static RevCore.PlayerPrefContainer.SaveChanges() -> void
+~RevCore.IPref.Key.get -> string
+~RevCore.PlayerPref.Key.get -> string
+~RevCore.PlayerPref.PlayerPref(string key) -> void
+~RevCore.PlayerPrefBool.OnUpdated -> System.Action
+~RevCore.PlayerPrefBool.PlayerPrefBool(string key, bool defaultValue = false) -> void
+~RevCore.PlayerPrefFloat.PlayerPrefFloat(string key, float defaultValue = 0) -> void
+~RevCore.PlayerPrefInt.PlayerPrefInt(string key, int defaultValue = 0) -> void
+~RevCore.PlayerPrefString.PlayerPrefString(string key, string defaultValue = "") -> void
+~RevCore.PlayerPrefString.Value.get -> string
+~RevCore.PlayerPrefString.Value.set -> void
+~override RevCore.PlayerPrefBool.ToString() -> string
+~override RevCore.PlayerPrefFloat.ToString() -> string
+~override RevCore.PlayerPrefInt.ToString() -> string
+~override RevCore.PlayerPrefString.ToString() -> string
+~static RevCore.PlayerPrefContainer.Register(RevCore.PlayerPref pref) -> void

@@ -1,2 +1,141 @@
 #nullable enable
+RevCore.IJObjectData
+RevCore.IJObjectData.Delete() -> void
+RevCore.IJObjectData.Load() -> bool
+RevCore.IJObjectData.Save(bool minimizeSize = false) -> void
+RevCore.IJObjectHandler
+RevCore.IJObjectHandler.OnPause(bool pause, int utcNowTimestamp, int offlineSeconds) -> void
+RevCore.IJObjectHandler.OnPostLoad(int utcNowTimestamp, int offlineSeconds) -> void
+RevCore.IJObjectHandler.OnPreSave(int utcNowTimestamp) -> void
+RevCore.IJObjectHandler.OnRemoteConfigFetched() -> void
+RevCore.IJObjectHandler.OnUpdate(float deltaTime) -> void
+RevCore.IJObjectHandler.Save() -> void
+RevCore.IJObjectModel
+RevCore.ISessionModel
+RevCore.ISessionModel.ActiveTime.get -> float
+RevCore.ISessionModel.Days.get -> int
+RevCore.ISessionModel.DaysStreak.get -> int
+RevCore.ISessionModel.LastActive.get -> int
+RevCore.ISessionModel.SessionsDaily.get -> int
+RevCore.ISessionModel.SessionsMonthly.get -> int
+RevCore.ISessionModel.SessionsTotal.get -> int
+RevCore.ISessionModel.SessionsWeekly.get -> int
+RevCore.InjectAttribute
+RevCore.InjectAttribute.InjectAttribute() -> void
+RevCore.JObjectDB
+RevCore.JObjectDBManager<T>.EnableAutoSave(bool value) -> void
+RevCore.JObjectDBManager<T>.GetOfflineSeconds() -> int
+RevCore.JObjectDBManager<T>.Initialized.get -> bool
+RevCore.JObjectDBManager<T>.JObjectDBManager() -> void
+RevCore.JObjectDBManager<T>.OnRemoteConfigFetched() -> void
+RevCore.JObjectDBManager<T>.m_enableAutoSave -> bool
+RevCore.JObjectDBManager<T>.m_initialized -> bool
+RevCore.JObjectDBManager<T>.m_lastSave -> float
+RevCore.JObjectDBManager<T>.m_saveCountdown -> float
+RevCore.JObjectDBManager<T>.m_saveDelay -> int
+RevCore.JObjectDBManager<T>.m_saveDelayCustom -> float
+RevCore.JObjectDBManager<T>.m_saveOnPause -> bool
+RevCore.JObjectDBManager<T>.m_saveOnQuit -> bool
+RevCore.JObjectData
+RevCore.JObjectData.Delete() -> void
+RevCore.JObjectData.JObjectData() -> void
+RevCore.JObjectModel<T>.JObjectModel() -> void
+RevCore.JObjectModel<T>.Save() -> void
+RevCore.JObjectModelCollection
+RevCore.JObjectModelCollection.InjectDependencies() -> void
+RevCore.JObjectModelCollection.JObjectModelCollection() -> void
+RevCore.JObjectModelCollection.OnRemoteConfigFetched() -> void
+RevCore.NewDayStartedEvent
+RevCore.NewDayStartedEvent.NewDayStartedEvent() -> void
+RevCore.SessionData
+RevCore.SessionData.SessionData() -> void
+RevCore.SessionData.SessionsDaily.get -> int
+RevCore.SessionData.SessionsDaily.set -> void
+RevCore.SessionData.SessionsMonthly.get -> int
+RevCore.SessionData.SessionsMonthly.set -> void
+RevCore.SessionData.SessionsTotal.get -> int
+RevCore.SessionData.SessionsTotal.set -> void
+RevCore.SessionData.SessionsWeekly.get -> int
+RevCore.SessionData.SessionsWeekly.set -> void
+RevCore.SessionData.activeTime -> float
+RevCore.SessionData.days -> int
+RevCore.SessionData.daysStreak -> int
+RevCore.SessionData.firstActive -> int
+RevCore.SessionData.lastActive -> int
+RevCore.SessionModel
+RevCore.SessionModel.AddOneDay() -> void
+RevCore.SessionModel.SessionModel() -> void
+RevCore.SessionModel.secondsTillNextDay -> float
+RevCore.SessionModel.secondsTillNextWeek -> float
+abstract RevCore.JObjectModel<T>.Init() -> void
+abstract RevCore.JObjectModel<T>.OnPause(bool pause, int utcNowTimestamp, int offlineSeconds) -> void
+abstract RevCore.JObjectModel<T>.OnPostLoad(int utcNowTimestamp, int offlineSeconds) -> void
+abstract RevCore.JObjectModel<T>.OnPreSave(int utcNowTimestamp) -> void
+abstract RevCore.JObjectModel<T>.OnRemoteConfigFetched() -> void
+abstract RevCore.JObjectModel<T>.OnUpdate(float deltaTime) -> void
+override RevCore.SessionData.Load() -> bool
+override RevCore.SessionModel.Init() -> void
+override RevCore.SessionModel.OnPause(bool pause, int utcNowTimestamp, int offlineSeconds) -> void
+override RevCore.SessionModel.OnPostLoad(int utcNowTimestamp, int offlineSeconds) -> void
+override RevCore.SessionModel.OnPreSave(int utcNowTimestamp) -> void
+override RevCore.SessionModel.OnRemoteConfigFetched() -> void
+override RevCore.SessionModel.OnUpdate(float deltaTime) -> void
+static RevCore.JObjectDB.CopyAllData() -> void
+static RevCore.JObjectDB.DeleteAll() -> void
+static RevCore.JObjectDB.Reload() -> void
+static RevCore.JObjectDB.Save() -> void
+virtual RevCore.JObjectDBManager<T>.Init() -> void
+virtual RevCore.JObjectDBManager<T>.OnApplicationFocus(bool hasFocus) -> void
+virtual RevCore.JObjectDBManager<T>.OnApplicationPause(bool pause) -> void
+virtual RevCore.JObjectDBManager<T>.OnApplicationQuit() -> void
+virtual RevCore.JObjectDBManager<T>.Save(bool now = false, float saveDelayCustom = 0) -> bool
 virtual RevCore.JObjectDBManager<T>.SaveForced() -> bool
+virtual RevCore.JObjectDBManager<T>.Update() -> void
+virtual RevCore.JObjectData.Load() -> bool
+virtual RevCore.JObjectData.Save(bool minimizeSize = false) -> void
+virtual RevCore.JObjectModelCollection.Load() -> void
+virtual RevCore.JObjectModelCollection.OnPause(bool pause) -> void
+virtual RevCore.JObjectModelCollection.OnUpdate(float deltaTime) -> void
+virtual RevCore.JObjectModelCollection.PostLoad() -> void
+virtual RevCore.JObjectModelCollection.Save() -> void
+virtual RevCore.SessionModel.GetOfflineSeconds() -> int
+~RevCore.IJObjectData.ToJson(bool minimizeSize = false) -> string
+~RevCore.IJObjectModel.Data.get -> RevCore.JObjectData
+~RevCore.IJObjectModel.Key.get -> string
+~RevCore.JObjectDBManager<T>
+~RevCore.JObjectDBManager<T>.DataCollection.get -> T
+~RevCore.JObjectDBManager<T>.m_dataCollection -> T
+~RevCore.JObjectDBManager<T>.onInitialized -> System.Action
+~RevCore.JObjectData.DispatchEvent<T>(T e, float debounceSeconds = 0) -> void
+~RevCore.JObjectData.Load(string json) -> bool
+~RevCore.JObjectData.ToJson(bool minimizeSize = false) -> string
+~RevCore.JObjectData.key.get -> string
+~RevCore.JObjectData.key.set -> void
+~RevCore.JObjectModel<T>
+~RevCore.JObjectModel<T>.Data.get -> RevCore.JObjectData
+~RevCore.JObjectModel<T>.DispatchEvent<TEvent>(TEvent e, float debounceSeconds = 0) -> void
+~RevCore.JObjectModel<T>.Import(T newData) -> void
+~RevCore.JObjectModel<T>.Key.get -> string
+~RevCore.JObjectModel<T>.data -> T
+~RevCore.JObjectModel<T>.key -> string
+~RevCore.JObjectModelCollection.CreateModel<TData>(RevCore.JObjectModel<TData> model, TData defaultVal = null) -> void
+~RevCore.JObjectModelCollection.CreateModel<TData>(RevCore.JObjectModel<TData> model, string key, TData defaultVal = null) -> void
+~RevCore.JObjectModelCollection.Get<T>() -> T
+~RevCore.JObjectModelCollection.GetData() -> System.Collections.Generic.Dictionary<string, object>
+~RevCore.JObjectModelCollection.m_models -> System.Collections.Generic.List<RevCore.IJObjectModel>
+~RevCore.JObjectModelCollection.session -> RevCore.SessionModel
+~RevCore.SessionData.installVersion -> string
+~RevCore.SessionData.sessions -> int[]
+~RevCore.SessionData.updateVersion -> string
+~static RevCore.JObjectDB.Backup(string filePath = null, bool openDirectory = false) -> void
+~static RevCore.JObjectDB.CreateCollection<T>(string key, T defaultVal = null) -> T
+~static RevCore.JObjectDB.Delete(string key) -> void
+~static RevCore.JObjectDB.GetAllData() -> System.Collections.Generic.Dictionary<string, string>
+~static RevCore.JObjectDB.GetAllDataObjects() -> System.Collections.Generic.Dictionary<string, object>
+~static RevCore.JObjectDB.GetCollection(string key) -> RevCore.JObjectData
+~static RevCore.JObjectDB.GetCollectionKeys() -> System.Collections.Generic.List<string>
+~static RevCore.JObjectDB.Import(string jsonData) -> void
+~static RevCore.JObjectDB.Restore(string filePath) -> void
+~static RevCore.JObjectDB.ToJson() -> string
+~virtual RevCore.JObjectModelCollection.Import(System.Collections.Generic.Dictionary<string, object> data) -> void
+~virtual RevCore.JObjectModelCollection.Import(string jsonData) -> void

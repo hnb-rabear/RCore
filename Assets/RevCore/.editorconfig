@@ -1,0 +1,20 @@
+# Nested editorconfig — applies only to .cs files under Assets/RevCore/.
+# Re-enables the PublicAPI analyzer rules that the project root .editorconfig
+# disables globally. The global disable is necessary because the analyzer DLL
+# carries the RoslynAnalyzer asset label and Unity feeds it to every csc
+# invocation in the project, including legacy RCore folders that track no
+# PublicAPI surface. By re-enabling here, RevCore stays under strict
+# governance while RCore stays untouched.
+#
+# Per editorconfig spec: the closest .editorconfig to a file wins for any
+# overlapping setting. This file lives at Assets/RevCore/.editorconfig and
+# therefore overrides the root for everything below it.
+
+root = false
+
+[*.cs]
+dotnet_diagnostic.RS0016.severity = error  # Symbol not part of declared API
+dotnet_diagnostic.RS0017.severity = error  # Symbol is part of declared API but not found
+dotnet_diagnostic.RS0022.severity = error  # Public namespace not in shipped/unshipped
+dotnet_diagnostic.RS0024.severity = error  # PublicAPI file has invalid entry
+dotnet_diagnostic.RS0025.severity = error  # Duplicate entry in PublicAPI file
