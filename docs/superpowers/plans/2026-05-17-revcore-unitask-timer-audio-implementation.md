@@ -3,7 +3,7 @@
 **Spec**: [`docs/superpowers/specs/2026-05-17-revcore-unitask-integration-design.md`](../specs/2026-05-17-revcore-unitask-integration-design.md)
 **Target release**: `v1.1.0` (additive — no deprecations).
 **Branch**: `feat/timer-audio-unitask-v1.1` off `main`.
-**Verified against** code at commit `30950b0` (v1.0.0 cut on `main`).
+**Verified against** code at commit `f394ff0` (PR #13 merge — current `origin/main` head). PR #13 was docs-only; no `.cs`, `.asmdef`, or `package.json` changes between `30950b0` (v1.0.0 cut) and `f394ff0`, so the code-claim verification table below is unaffected by the PR #13 merge.
 
 This plan covers PR-A only. PR-B (new `RevCore.Addressables` module) is a separate plan written after PR-A merges.
 
@@ -31,7 +31,7 @@ To avoid hallucinated APIs, the following were confirmed against the actual code
 Two design choices already locked in by spec §8, defaulted here to keep the plan executable without another approval round:
 
 - **`Timers` partial-class question** → make `Timers` `partial`. New async methods land in a sibling `TimersAsync.cs` file for clean separation. If the user later prefers a single-file `Timers.cs`, the merge is one move-and-delete.
-- **UniTask version pin** → leave at the existing git URL pin in `Packages/manifest.json` (`com.cysharp.unitask` from default branch). Module `package.json` declares the dependency by name + version `"2.5.0"` as a floor. The drift risk noted in spec §6 is acknowledged.
+- **UniTask version pin** → leave at the existing git URL pin in `Packages/manifest.json` (`com.cysharp.unitask` from default branch). Module `package.json` declares the dependency as `"com.cysharp.unitask": "2.5.10"` to match the installed version (verified in `Library/PackageCache/com.cysharp.unitask@.../package.json`). UPM resolves the git-URL pin regardless, so this is mainly documentation. The drift risk noted in spec §6 is acknowledged.
 - **Cancellation-race test** → covered by inspection (`TrySet*` idempotency comment) in the implementation; no dedicated test fixture in PR-A.
 
 ## Task graph
@@ -457,7 +457,7 @@ namespace RevCore.Tests
 
 **File:** `Assets/RevCore/Timer/package.json`
 
-**Change:** bump version to `1.1.0` and add UniTask dependency.
+**Change:** bump version to `1.1.0` and add UniTask dependency. Version `2.5.10` matches the actual installed UniTask in `Library/PackageCache/com.cysharp.unitask@.../package.json`. UPM resolves the git-URL pin in `Packages/manifest.json` regardless of the value here, so this is mainly a documentation hint — but match-on-install keeps it honest.
 
 ```json
 {
@@ -466,7 +466,7 @@ namespace RevCore.Tests
   ...
   "dependencies": {
     "com.rabear.revcore.foundation": "1.0.0",
-    "com.cysharp.unitask": "2.5.0"
+    "com.cysharp.unitask": "2.5.10"
   },
   ...
 }
@@ -488,10 +488,10 @@ static RevCore.Timers.WaitForFramesAsync(int frameCount, System.Threading.Cancel
 
 **File:** `Assets/RevCore/Timer/CHANGELOG.md`
 
-Add new `[1.1.0] - <today>` section above the existing `[1.0.0] - 2026-05-13` entry:
+Add new `[1.1.0] - 2026-05-19` section above the existing `[1.0.0] - 2026-05-13` entry:
 
 ```markdown
-## [1.1.0] - 2026-05-18
+## [1.1.0] - 2026-05-19
 
 ### Added
 
@@ -759,7 +759,7 @@ namespace RevCore.Tests
     "com.rabear.revcore.foundation": "1.0.0",
     "com.rabear.revcore.inspector": "1.0.0",
     "com.rabear.revcore.prefs": "1.0.0",
-    "com.cysharp.unitask": "2.5.0"
+    "com.cysharp.unitask": "2.5.10"
   },
   ...
 }
@@ -779,19 +779,42 @@ static RevCore.AudioAsyncExtensions.FadeOutMusicAsync(this RevCore.BaseAudioMana
 
 ### T11.3 — Update Audio module CHANGELOG
 
+Unlike `Timer/CHANGELOG.md` (which only has a `[1.0.0]` scaffold entry), `Audio/CHANGELOG.md` currently carries a non-empty `[Unreleased]` section. Inspect the file before editing — verified at this writing it contains seven `Fixed` entries (AudioCollection lookups, BaseAudioManager init, etc.) and one `Added` entry (tests for those fixes) that all shipped at v0.5.0 but were never moved out of `[Unreleased]` during the v0.5.0 cut (pre-existing module-CHANGELOG drift acknowledged in `docs/SESSION_HANDOFF.md` §4).
+
+Two sub-steps:
+
+#### T11.3a — Retroactively assign the existing `[Unreleased]` content to `[0.5.0]`
+
 **File:** `Assets/RevCore/Audio/CHANGELOG.md`
 
+Change the existing `## [Unreleased]` header to `## [0.5.0] - 2026-05-17` (matching the v0.5.0 ship date in root `CHANGELOG.md`). The `Fixed` and `Added` lists below it are unchanged. Insert a fresh empty `## [Unreleased]` above for future cycles, then the new `## [1.1.0]` section described in T11.3b.
+
+#### T11.3b — Add the `[1.1.0]` section
+
 ```markdown
-## [1.1.0] - 2026-05-18
+## [Unreleased]
+
+## [1.1.0] - 2026-05-19
 
 ### Added
 
 - `AudioAsyncExtensions.FadeMusicAsync` — awaitable music-volume fade.
 - `AudioAsyncExtensions.FadeOutMusicAsync` — awaitable fade-to-zero + stop.
 - Hard dependency on `com.cysharp.unitask` declared in `package.json`.
+
+## [0.5.0] - 2026-05-17
+
+(existing Fixed + Added lists, formerly under Unreleased)
+
+## [1.0.0] - 2026-05-13
+
+(unchanged scaffold)
 ```
 
-**Verify:** XML doc coverage script reports the new public members as documented.
+**Verify:**
+
+- XML doc coverage script reports the new public members as documented.
+- Audio CHANGELOG no longer has any pre-v1.1 content under `[Unreleased]` (the section is now empty / staging for the next cycle).
 
 ---
 
@@ -799,12 +822,12 @@ static RevCore.AudioAsyncExtensions.FadeOutMusicAsync(this RevCore.BaseAudioMana
 
 **File:** `CHANGELOG.md`
 
-Promote the empty `[Unreleased]` section to `[1.1.0] - <today>` and add a new empty `[Unreleased]` above it. Update the link table at the bottom (`[1.1.0]: …compare/v1.0.0...v1.1.0` and `[Unreleased]: …compare/v1.1.0...HEAD`).
+Promote the empty `[Unreleased]` section to `[1.1.0] - 2026-05-19` and add a new empty `[Unreleased]` above it. Update the link table at the bottom (`[1.1.0]: …compare/v1.0.0...v1.1.0` and `[Unreleased]: …compare/v1.1.0...HEAD`).
 
 ```markdown
 ## [Unreleased]
 
-## [1.1.0] - 2026-05-18
+## [1.1.0] - 2026-05-19
 
 UniTask integration (PR-A of the spec at `docs/superpowers/specs/2026-05-17-revcore-unitask-integration-design.md`). Purely additive — no deprecations, no behaviour changes to the v1.0 surface.
 
@@ -817,7 +840,7 @@ UniTask integration (PR-A of the spec at `docs/superpowers/specs/2026-05-17-revc
 - `RevCore.Audio`:
   - `AudioAsyncExtensions.FadeMusicAsync(this BaseAudioManager, float, float, CancellationToken)` — awaitable music fade.
   - `AudioAsyncExtensions.FadeOutMusicAsync(this BaseAudioManager, float, CancellationToken)` — awaitable fade-out + stop.
-- Hard dependency on `com.cysharp.unitask` (2.5.0+) declared in both modules' `package.json`. UniTask is already in `Packages/manifest.json` at the repo level, so consumer install cost is zero.
+- Hard dependency on `com.cysharp.unitask` (2.5.10) declared in both modules' `package.json`. UniTask is already in `Packages/manifest.json` at the repo level, so consumer install cost is zero.
 
 ### Changed
 
@@ -839,17 +862,34 @@ Update version links section:
 
 User runs these gates locally and reports status before commit:
 
-1. **Compile:** Unity Editor recompiles cleanly with no error (warnings RS0016 expected on legacy `Assets/RCore.*` per the dormant-analyzer documentation — those are pre-existing).
-2. **Tests:** Unity Test Runner → EditMode → Run All. Expected count: **178** (160 from v1.0 + 12 from `TimerAsyncTests` + 6 from `AudioAsyncTests`). All green.
-3. **XML doc coverage:**
+### T13.0 — Baseline check (BEFORE any of T2–T12 are applied)
+
+Optional but recommended. From a clean `main` checkout (before branching to `feat/timer-audio-unitask-v1.1`):
+
+1. Unity Test Runner → EditMode → Run All. Record the test count. **Expected baseline: 160** (per v1.0.0 SESSION_HANDOFF). If the count differs, the delta arithmetic in T13.2 below needs adjustment — recompute the expected post-PR-A count as `(baseline + 12 + 6)` and use that instead of the literal `178`.
+2. `python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json` → record `Public members: <N>`. **Expected baseline: 956**. If different, the expected delta in T13.3 still holds (+6), but the absolute total shifts accordingly.
+
+This step prevents discovering mid-PR that the baseline drifted between v1.0.0 and now.
+
+### T13.1 — Compile
+
+Unity Editor recompiles cleanly with no error (warnings RS0016 expected on legacy `Assets/RCore.*` per the dormant-analyzer documentation — those are pre-existing).
+
+### T13.2 — Tests
+
+Unity Test Runner → EditMode → Run All. Expected count: `<baseline from T13.0> + 18` (= **178** if baseline is 160). Breakdown: +12 from `TimerAsyncTests`, +6 from `AudioAsyncTests`. All green.
+
+### T13.3 — XML doc coverage
 
 ```powershell
 python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json
 ```
 
-Expected: 100 % coverage; documented count rises by 6 (3 Timer async methods + `AudioAsyncExtensions` type + 2 Audio async methods). The script may need its baseline updated — pass `--update-baseline` if it complains about the new count.
+Expected: 100 % coverage; documented count rises by 6 versus T13.0 baseline (3 Timer async methods + `AudioAsyncExtensions` type + 2 Audio async methods). The baseline `scripts/xmldoc-baseline.json` may need its threshold updated — pass `--update-baseline` if the script complains about the new count.
 
-4. **No untracked file noise:** `git status -s` should list only the planned files. RCore.Archives and other RCore.* folders should be untouched.
+### T13.4 — No untracked file noise
+
+`git status -s` should list only the planned files (see T14 for the exact whitelist). `Assets/RCore.Archives/` and other `Assets/RCore.*` folders must be untouched.
 
 If any step fails, capture the failure detail (test name, line number, log message) and pass back to the next session before continuing.
 
