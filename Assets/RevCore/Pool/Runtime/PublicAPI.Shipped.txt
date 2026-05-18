@@ -1,5 +1,90 @@
 #nullable enable
+RevCore.IPool<T>.ActiveCount.get -> int
+RevCore.IPool<T>.InactiveCount.get -> int
+RevCore.IPool<T>.ReleaseAll() -> void
+RevCore.IPoolContainer<T>.PoolCount.get -> int
+RevCore.IPoolContainer<T>.ReleaseAll() -> void
+RevCore.PoolComponentExtensions
+RevCore.PoolObject
+RevCore.PoolObject.PoolObject() -> void
 RevCore.PoolsContainer<T>.CopyActiveTo(System.Collections.Generic.List<T> dest) -> void
 RevCore.PoolsContainer<T>.CopyAllTo(System.Collections.Generic.List<T> dest) -> void
 RevCore.PoolsContainer<T>.ForEachActive(System.Action<T> action) -> void
 RevCore.PoolsContainer<T>.ForEachItem(System.Action<T> action) -> void
+RevCore.PoolsContainer<T>.LimitNumber.get -> int
+RevCore.PoolsContainer<T>.LimitNumber.set -> void
+RevCore.PoolsContainer<T>.PoolCount.get -> int
+RevCore.PoolsContainer<T>.ReleaseAll() -> void
+RevCore.RevPool<T>.ActiveCount.get -> int
+RevCore.RevPool<T>.DestroyAll() -> void
+RevCore.RevPool<T>.InactiveCount.get -> int
+RevCore.RevPool<T>.Init() -> void
+RevCore.RevPool<T>.LimitNumber.get -> int
+RevCore.RevPool<T>.LimitNumber.set -> void
+RevCore.RevPool<T>.Prepare(int count) -> void
+RevCore.RevPool<T>.PushToLastSibling.get -> bool
+RevCore.RevPool<T>.PushToLastSibling.set -> void
+RevCore.RevPool<T>.ReleaseAll() -> void
+RevCore.RevPool<T>.RevPool() -> void
+~RevCore.IPool<T>
+~RevCore.IPool<T>.ActiveItems.get -> System.Collections.Generic.IReadOnlyList<T>
+~RevCore.IPool<T>.InactiveItems.get -> System.Collections.Generic.IReadOnlyList<T>
+~RevCore.IPool<T>.Name.get -> string
+~RevCore.IPool<T>.Parent.get -> UnityEngine.Transform
+~RevCore.IPool<T>.Prefab.get -> T
+~RevCore.IPool<T>.Release(T item) -> void
+~RevCore.IPool<T>.Spawn() -> T
+~RevCore.IPool<T>.Spawn(UnityEngine.Vector3 position, bool worldPosition = true) -> T
+~RevCore.IPoolContainer<T>
+~RevCore.IPoolContainer<T>.Get(T prefab) -> RevCore.RevPool<T>
+~RevCore.IPoolContainer<T>.Release(T item) -> void
+~RevCore.IPoolContainer<T>.Spawn(T prefab) -> T
+~RevCore.IPoolContainer<T>.Spawn(T prefab, UnityEngine.Vector3 position, bool worldPosition = true) -> T
+~RevCore.PoolObject.ReleaseHandle.get -> RevCore.ITimerHandle
+~RevCore.PoolsContainer<T>
+~RevCore.PoolsContainer<T>.Add(RevCore.RevPool<T> pool) -> void
+~RevCore.PoolsContainer<T>.Add(T prefab) -> RevCore.RevPool<T>
+~RevCore.PoolsContainer<T>.Container.get -> UnityEngine.Transform
+~RevCore.PoolsContainer<T>.CreatePool(T prefab, System.Collections.Generic.List<T> sceneObjects) -> void
+~RevCore.PoolsContainer<T>.FindComponent(UnityEngine.GameObject gameObject) -> T
+~RevCore.PoolsContainer<T>.Get(T prefab) -> RevCore.RevPool<T>
+~RevCore.PoolsContainer<T>.PoolsContainer(UnityEngine.Transform container) -> void
+~RevCore.PoolsContainer<T>.PoolsContainer(string containerName, int initialCount = 1, UnityEngine.Transform parent = null) -> void
+~RevCore.PoolsContainer<T>.Release(T item) -> void
+~RevCore.PoolsContainer<T>.Release(T prefab, T item) -> void
+~RevCore.PoolsContainer<T>.Release(UnityEngine.GameObject gameObject) -> void
+~RevCore.PoolsContainer<T>.Spawn(T prefab) -> T
+~RevCore.PoolsContainer<T>.Spawn(T prefab, UnityEngine.Transform point) -> T
+~RevCore.PoolsContainer<T>.Spawn(T prefab, UnityEngine.Vector3 position, bool worldPosition = true) -> T
+~RevCore.RevPool<T>
+~RevCore.RevPool<T>.ActiveItems.get -> System.Collections.Generic.IReadOnlyList<T>
+~RevCore.RevPool<T>.ActiveList() -> System.Collections.Generic.List<T>
+~RevCore.RevPool<T>.AddOutsider(T sceneObject) -> void
+~RevCore.RevPool<T>.AddOutsiders(System.Collections.Generic.List<T> sceneObjects) -> void
+~RevCore.RevPool<T>.Destroy(T item) -> void
+~RevCore.RevPool<T>.FindComponent(UnityEngine.GameObject gameObject) -> T
+~RevCore.RevPool<T>.FindFromActive(T item) -> T
+~RevCore.RevPool<T>.FindFromInactive(T item) -> T
+~RevCore.RevPool<T>.GetFromActive(int index) -> T
+~RevCore.RevPool<T>.InactiveItems.get -> System.Collections.Generic.IReadOnlyList<T>
+~RevCore.RevPool<T>.InactiveList() -> System.Collections.Generic.List<T>
+~RevCore.RevPool<T>.Name.get -> string
+~RevCore.RevPool<T>.OnSpawn -> System.Action<T>
+~RevCore.RevPool<T>.Parent.get -> UnityEngine.Transform
+~RevCore.RevPool<T>.Prefab.get -> T
+~RevCore.RevPool<T>.Release(T item) -> void
+~RevCore.RevPool<T>.Release(T item, RevCore.ConditionalDelegate condition) -> void
+~RevCore.RevPool<T>.Release(T item, float delaySeconds) -> void
+~RevCore.RevPool<T>.Release(UnityEngine.GameObject item) -> void
+~RevCore.RevPool<T>.RevPool(T prefab, int initialCount, UnityEngine.Transform parent, string name = "", bool autoRelocate = true) -> void
+~RevCore.RevPool<T>.RevPool(UnityEngine.GameObject prefab, int initialCount, UnityEngine.Transform parent, string name = "", bool autoRelocate = true) -> void
+~RevCore.RevPool<T>.SetName(string name) -> void
+~RevCore.RevPool<T>.SetParent(UnityEngine.Transform parent) -> void
+~RevCore.RevPool<T>.Spawn() -> T
+~RevCore.RevPool<T>.Spawn(UnityEngine.Transform point) -> T
+~RevCore.RevPool<T>.Spawn(UnityEngine.Vector3 position, bool worldPosition = true) -> T
+~RevCore.RevPool<T>.Spawn(UnityEngine.Vector3 position, bool worldPosition, out bool reused) -> T
+~static RevCore.PoolComponentExtensions.Free<T>(this System.Collections.Generic.List<T> list) -> void
+~static RevCore.PoolComponentExtensions.Free<T>(this System.Collections.Generic.List<T> list, UnityEngine.Transform parent) -> void
+~static RevCore.PoolComponentExtensions.Obtain<T>(this System.Collections.Generic.List<T> list, UnityEngine.Transform parent) -> T
+~static RevCore.PoolComponentExtensions.Prepare<T>(this System.Collections.Generic.List<T> list, T prefab, UnityEngine.Transform parent, int count, string name = null) -> void

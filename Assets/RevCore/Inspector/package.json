@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.inspector",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Inspector",
   "description": "Attribute-based inspector decorations and custom editors for Unity.",
   "unity": "2022.3",

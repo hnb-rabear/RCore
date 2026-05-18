@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.audio",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Audio",
   "description": "Audio management — clip repository, SFX pooling, music playback, volume fading, optional Addressables and DOTween support",
   "unity": "2022.3",

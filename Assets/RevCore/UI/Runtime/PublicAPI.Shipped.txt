@@ -1,1 +1,497 @@
 #nullable enable
+RevCore.UI.CustomToggleGroup
+RevCore.UI.CustomToggleGroup.CustomToggleGroup() -> void
+RevCore.UI.CustomToggleGroup.SetToggleInteractable(bool value) -> void
+RevCore.UI.CustomToggleGroup.resizeX -> bool
+RevCore.UI.CustomToggleGroup.resizeY -> bool
+RevCore.UI.HoledLayerMask
+RevCore.UI.HoledLayerMask.Active(bool pValue) -> void
+RevCore.UI.HoledLayerMask.ClearSpriteMask() -> void
+RevCore.UI.HoledLayerMask.CreateComponents() -> void
+RevCore.UI.HoledLayerMask.HoledLayerMask() -> void
+RevCore.UI.HoledLayerMask.SetColor(UnityEngine.Color pColor) -> void
+RevCore.UI.HorizontalAlignmentUI
+RevCore.UI.HorizontalAlignmentUI.Align() -> void
+RevCore.UI.HorizontalAlignmentUI.Alignment
+RevCore.UI.HorizontalAlignmentUI.Alignment.Center = 2 -> RevCore.UI.HorizontalAlignmentUI.Alignment
+RevCore.UI.HorizontalAlignmentUI.Alignment.Left = 0 -> RevCore.UI.HorizontalAlignmentUI.Alignment
+RevCore.UI.HorizontalAlignmentUI.Alignment.Right = 1 -> RevCore.UI.HorizontalAlignmentUI.Alignment
+RevCore.UI.HorizontalAlignmentUI.HorizontalAlignmentUI() -> void
+RevCore.UI.HorizontalSnapScrollView
+RevCore.UI.HorizontalSnapScrollView.FocusedItemIndex.get -> int
+RevCore.UI.HorizontalSnapScrollView.HorizontalSnapScrollView() -> void
+RevCore.UI.HorizontalSnapScrollView.IsDragging.get -> bool
+RevCore.UI.HorizontalSnapScrollView.IsSnapping.get -> bool
+RevCore.UI.HorizontalSnapScrollView.MoveToItem(int pIndex, bool pImmediately = false) -> void
+RevCore.UI.HorizontalSnapScrollView.TotalItems.get -> int
+RevCore.UI.HorizontalSnapScrollView.Validate() -> void
+RevCore.UI.HorizontalSnapScrollView.ValidateNextFrame() -> void
+RevCore.UI.IAligned
+RevCore.UI.IAligned.Align() -> void
+RevCore.UI.ITweenItem
+RevCore.UI.ITweenItem.OnFinish() -> void
+RevCore.UI.ITweenItem.OnStart() -> void
+RevCore.UI.IgnoreScreenSafe
+RevCore.UI.IgnoreScreenSafe.IgnoreScreenSafe() -> void
+RevCore.UI.ImageWithText
+RevCore.UI.ImageWithText.ImageWithText() -> void
+RevCore.UI.ImageWithText.m_autoResize -> bool
+RevCore.UI.ImageWithText.m_fixedSize -> UnityEngine.Vector2
+RevCore.UI.ImageWithTextTMP
+RevCore.UI.ImageWithTextTMP.ImageWithTextTMP() -> void
+RevCore.UI.ImageWithTextTMP.m_AutoResize -> bool
+RevCore.UI.ImageWithTextTMP.m_FixedSize -> UnityEngine.Vector2
+RevCore.UI.Joystick
+RevCore.UI.Joystick.Joystick() -> void
+RevCore.UI.Joystick.position -> UnityEngine.Vector2
+RevCore.UI.Joystick.radius -> float
+RevCore.UI.JoystickArea
+RevCore.UI.JoystickArea.JoystickArea() -> void
+RevCore.UI.JoystickArea.autoHideJoystick -> bool
+RevCore.UI.JustButton
+RevCore.UI.JustButton.CheckPerfectRatio() -> void
+RevCore.UI.JustButton.EnableGrey(bool value) -> void
+RevCore.UI.JustButton.Enabled() -> bool
+RevCore.UI.JustButton.Init() -> void
+RevCore.UI.JustButton.JustButton() -> void
+RevCore.UI.JustButton.PlayBubbleEffect(float duration) -> void
+RevCore.UI.JustButton.SetActive(bool value) -> void
+RevCore.UI.JustButton.greyscaleEffect -> bool
+RevCore.UI.JustButton.imgOnOffSwap -> bool
+RevCore.UI.JustButton.perfectRatio -> RevCore.PerfectRatio
+RevCore.UI.JustButton.scaleBounceEffect -> bool
+RevCore.UI.JustToggle
+RevCore.UI.JustToggle.ColorTransition
+RevCore.UI.JustToggle.ColorTransition.ColorTransition() -> void
+RevCore.UI.JustToggle.ColorTransition.off -> UnityEngine.Color
+RevCore.UI.JustToggle.ColorTransition.on -> UnityEngine.Color
+RevCore.UI.JustToggle.IsOn.get -> bool
+RevCore.UI.JustToggle.IsOn.set -> void
+RevCore.UI.JustToggle.JustToggle() -> void
+RevCore.UI.JustToggle.PositionTransition
+RevCore.UI.JustToggle.PositionTransition.PositionTransition() -> void
+RevCore.UI.JustToggle.PositionTransition.off -> UnityEngine.Vector3
+RevCore.UI.JustToggle.PositionTransition.on -> UnityEngine.Vector3
+RevCore.UI.JustToggle.SizeTransition
+RevCore.UI.JustToggle.SizeTransition.SizeTransition() -> void
+RevCore.UI.JustToggle.SizeTransition.off -> UnityEngine.Vector3
+RevCore.UI.JustToggle.SizeTransition.on -> UnityEngine.Vector3
+RevCore.UI.JustToggle.SpriteTransition
+RevCore.UI.JustToggle.SpriteTransition.SpriteTransition() -> void
+RevCore.UI.JustToggle.enableSizeSwitch -> bool
+RevCore.UI.JustToggle.isLocked -> bool
+RevCore.UI.JustToggle.scaleBounceEffect -> bool
+RevCore.UI.JustToggle.sizeActive -> UnityEngine.Vector2
+RevCore.UI.JustToggle.sizeInactive -> UnityEngine.Vector2
+RevCore.UI.JustToggle.tweenTime -> float
+RevCore.UI.OptimizedHorizontalScrollView
+RevCore.UI.OptimizedHorizontalScrollView.CenterChild(int index) -> void
+RevCore.UI.OptimizedHorizontalScrollView.Expand(int totalSlot) -> void
+RevCore.UI.OptimizedHorizontalScrollView.Init(int totalItems, bool force) -> void
+RevCore.UI.OptimizedHorizontalScrollView.OptimizedHorizontalScrollView() -> void
+RevCore.UI.OptimizedHorizontalScrollView.RefreshScrollBar() -> void
+RevCore.UI.OptimizedHorizontalScrollView.ScrollBarChanged(float normPos) -> void
+RevCore.UI.OptimizedHorizontalScrollView.ScrollToBot(bool tween = false) -> void
+RevCore.UI.OptimizedHorizontalScrollView.ScrollToTarget(int index) -> void
+RevCore.UI.OptimizedHorizontalScrollView.ScrollToTop(bool tween = false) -> void
+RevCore.UI.OptimizedHorizontalScrollView.TotalFullCellVisible() -> int
+RevCore.UI.OptimizedHorizontalScrollView.spacing -> float
+RevCore.UI.OptimizedHorizontalScrollView.total -> int
+RevCore.UI.OptimizedScrollItem
+RevCore.UI.OptimizedScrollItem.Index.get -> int
+RevCore.UI.OptimizedScrollItem.ManualUpdate() -> void
+RevCore.UI.OptimizedScrollItem.OptimizedScrollItem() -> void
+RevCore.UI.OptimizedScrollItem.Refresh() -> void
+RevCore.UI.OptimizedScrollItem.UpdateContent(int index, bool forced = false) -> bool
+RevCore.UI.OptimizedScrollItem.m_index -> int
+RevCore.UI.OptimizedScrollItem.visible.get -> bool
+RevCore.UI.OptimizedScrollItem.visible.set -> void
+RevCore.UI.OptimizedScrollView
+RevCore.UI.OptimizedScrollView.Direction -> RevCore.UI.ScrollDirection
+RevCore.UI.OptimizedScrollView.Initialize(int totalItems, bool force = false) -> void
+RevCore.UI.OptimizedScrollView.OptimizedScrollView() -> void
+RevCore.UI.OptimizedScrollView.ScrollBarChanged(float normPos) -> void
+RevCore.UI.OptimizedScrollView.spacing -> float
+RevCore.UI.OptimizedScrollView.total -> int
+RevCore.UI.OptimizedVerticalScrollView
+RevCore.UI.OptimizedVerticalScrollView.Init(int totalItems, bool force, int startIndex = 0) -> void
+RevCore.UI.OptimizedVerticalScrollView.IsAnimating.get -> bool
+RevCore.UI.OptimizedVerticalScrollView.OptimizedVerticalScrollView() -> void
+RevCore.UI.OptimizedVerticalScrollView.ScrollToBot(bool tween = false) -> void
+RevCore.UI.OptimizedVerticalScrollView.ScrollToTop(bool tween = false) -> void
+RevCore.UI.OptimizedVerticalScrollView.StopAnimateItemMove() -> void
+RevCore.UI.OptimizedVerticalScrollView.animMoveDelay -> float
+RevCore.UI.OptimizedVerticalScrollView.animMoveDurationPerItem -> float
+RevCore.UI.OptimizedVerticalScrollView.animMoveMaxDuration -> float
+RevCore.UI.OptimizedVerticalScrollView.animMoveMinDuration -> float
+RevCore.UI.OptimizedVerticalScrollView.autoMatchHeight -> bool
+RevCore.UI.OptimizedVerticalScrollView.maxViewHeight -> float
+RevCore.UI.OptimizedVerticalScrollView.minViewHeight -> float
+RevCore.UI.OptimizedVerticalScrollView.onAnimationCompleted -> System.Action
+RevCore.UI.OptimizedVerticalScrollView.onAnimationStarted -> System.Action
+RevCore.UI.OptimizedVerticalScrollView.spacing -> float
+RevCore.UI.OptimizedVerticalScrollView.total -> int
+RevCore.UI.OptimizedVerticalScrollView.totalCellOnRow -> int
+RevCore.UI.PanelController
+RevCore.UI.PanelController.Displayed.get -> bool
+RevCore.UI.PanelController.IsActiveAndEnabled() -> bool
+RevCore.UI.PanelController.IsChildPanel() -> bool
+RevCore.UI.PanelController.IsLocked() -> bool
+RevCore.UI.PanelController.PanelController() -> void
+RevCore.UI.PanelController.SessionShowCount.get -> int
+RevCore.UI.PanelController.Transiting.get -> bool
+RevCore.UI.PanelController.enableFXTransition -> bool
+RevCore.UI.PanelController.m_isHiding -> bool
+RevCore.UI.PanelController.m_isShowing -> bool
+RevCore.UI.PanelController.m_showed -> bool
+RevCore.UI.PanelController.nested -> bool
+RevCore.UI.PanelController.useOnce -> bool
+RevCore.UI.PanelRoot
+RevCore.UI.PanelRoot.PanelRoot() -> void
+RevCore.UI.PanelRoot.ToggleDimmerOverlay() -> void
+RevCore.UI.PanelRoot.m_blockQueue -> bool
+RevCore.UI.PanelStack
+RevCore.UI.PanelStack.DisplayOrder.get -> int
+RevCore.UI.PanelStack.Index.get -> int
+RevCore.UI.PanelStack.PanelStack() -> void
+RevCore.UI.PanelStack.PopChildrenThenParent() -> void
+RevCore.UI.PanelStack.PopPanel(bool instant = true) -> void
+RevCore.UI.PanelStack.PopTillOneLeft() -> void
+RevCore.UI.PanelStack.PushMode
+RevCore.UI.PanelStack.PushMode.OnTop = 0 -> RevCore.UI.PanelStack.PushMode
+RevCore.UI.PanelStack.PushMode.Queued = 2 -> RevCore.UI.PanelStack.PushMode
+RevCore.UI.PanelStack.PushMode.Replacement = 1 -> RevCore.UI.PanelStack.PushMode
+RevCore.UI.PanelStack.StackCount.get -> int
+RevCore.UI.ProgressBar
+RevCore.UI.ProgressBar.BarSize() -> UnityEngine.Vector2
+RevCore.UI.ProgressBar.FillDirection
+RevCore.UI.ProgressBar.FillDirection.Bottom = 3 -> RevCore.UI.ProgressBar.FillDirection
+RevCore.UI.ProgressBar.FillDirection.Left = 0 -> RevCore.UI.ProgressBar.FillDirection
+RevCore.UI.ProgressBar.FillDirection.Right = 1 -> RevCore.UI.ProgressBar.FillDirection
+RevCore.UI.ProgressBar.FillDirection.Top = 2 -> RevCore.UI.ProgressBar.FillDirection
+RevCore.UI.ProgressBar.ProgressBar() -> void
+RevCore.UI.ProgressBar.fillByBarSize -> bool
+RevCore.UI.ProgressBar.fillDirection -> RevCore.UI.ProgressBar.FillDirection
+RevCore.UI.ProgressBar.isPercent -> bool
+RevCore.UI.ProgressBar.isTimeCountdown -> bool
+RevCore.UI.ProgressBar.maxFillRatio -> float
+RevCore.UI.ProgressBar.minFillRatio -> float
+RevCore.UI.ScreenSafeArea
+RevCore.UI.ScreenSafeArea.Log() -> void
+RevCore.UI.ScreenSafeArea.ScreenSafeArea() -> void
+RevCore.UI.ScreenSafeArea.fullBottom -> bool
+RevCore.UI.ScreenSafeArea.fullTop -> bool
+RevCore.UI.ScrollDirection
+RevCore.UI.ScrollDirection.Horizontal = 0 -> RevCore.UI.ScrollDirection
+RevCore.UI.ScrollDirection.Vertical = 1 -> RevCore.UI.ScrollDirection
+RevCore.UI.ScrollRectEx
+RevCore.UI.ScrollRectEx.ScrollRectEx() -> void
+RevCore.UI.SimpleTMPButton
+RevCore.UI.SimpleTMPButton.SimpleTMPButton() -> void
+RevCore.UI.SimpleTMPButton.fontColorOff -> UnityEngine.Color
+RevCore.UI.SimpleTMPButton.fontColorOn -> UnityEngine.Color
+RevCore.UI.SimpleTMPButton.fontColorOnOffSwap -> bool
+RevCore.UI.SimpleTMPButton.labelMatOnOffSwap -> bool
+RevCore.UI.SnapScrollItem
+RevCore.UI.SnapScrollItem.Showing.get -> bool
+RevCore.UI.SnapScrollItem.SnapScrollItem() -> void
+RevCore.UI.SnapScrollItem.m_keepActive -> bool
+RevCore.UI.SnapScrollItem.m_keepVisible -> bool
+RevCore.UI.SnapScrollItem.m_refreshed -> bool
+RevCore.UI.TableAlignmentUI
+RevCore.UI.TableAlignmentUI.Align() -> void
+RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.AlignmentHorizontal.Center = 2 -> RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.AlignmentHorizontal.CenterBot = 4 -> RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.AlignmentHorizontal.CenterTop = 3 -> RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.AlignmentHorizontal.Left = 0 -> RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.AlignmentHorizontal.Right = 1 -> RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.AlignmentVertical
+RevCore.UI.TableAlignmentUI.AlignmentVertical.Bottom = 1 -> RevCore.UI.TableAlignmentUI.AlignmentVertical
+RevCore.UI.TableAlignmentUI.AlignmentVertical.Center = 2 -> RevCore.UI.TableAlignmentUI.AlignmentVertical
+RevCore.UI.TableAlignmentUI.AlignmentVertical.Top = 0 -> RevCore.UI.TableAlignmentUI.AlignmentVertical
+RevCore.UI.TableAlignmentUI.AutoResizeContent() -> void
+RevCore.UI.TableAlignmentUI.Init() -> void
+RevCore.UI.TableAlignmentUI.TableAlignmentUI() -> void
+RevCore.UI.TableAlignmentUI.TableLayoutType
+RevCore.UI.TableAlignmentUI.TableLayoutType.Horizontal = 0 -> RevCore.UI.TableAlignmentUI.TableLayoutType
+RevCore.UI.TableAlignmentUI.TableLayoutType.Vertical = 1 -> RevCore.UI.TableAlignmentUI.TableLayoutType
+RevCore.UI.TableAlignmentUI.columnDistance -> float
+RevCore.UI.TableAlignmentUI.horizontalLayout -> RevCore.UI.TableAlignmentUI.AlignmentHorizontal
+RevCore.UI.TableAlignmentUI.maxColumn -> int
+RevCore.UI.TableAlignmentUI.maxRow -> int
+RevCore.UI.TableAlignmentUI.reverseY -> bool
+RevCore.UI.TableAlignmentUI.rowDistance -> float
+RevCore.UI.TableAlignmentUI.tableLayoutType -> RevCore.UI.TableAlignmentUI.TableLayoutType
+RevCore.UI.TableAlignmentUI.tweenTime -> float
+RevCore.UI.TableAlignmentUI.verticalLayout -> RevCore.UI.TableAlignmentUI.AlignmentVertical
+RevCore.UI.UICircleArranger
+RevCore.UI.UICircleArranger.ArrangeFromEdgeWithTween(bool leftToRight) -> void
+RevCore.UI.UICircleArranger.RefreshTargetPositionsWithTween() -> void
+RevCore.UI.UICircleArranger.UICircleArranger() -> void
+RevCore.UI.UICircleArranger.centerOnTop -> bool
+RevCore.UI.UICircleArranger.emitInterval -> float
+RevCore.UI.UICircleArranger.enableRotation -> bool
+RevCore.UI.UICircleArranger.maxDegree -> float
+RevCore.UI.UICircleArranger.maxDegreeBetween -> float
+RevCore.UI.UICircleArranger.radius -> float
+RevCore.UI.UICircleArranger.radiusStep -> float
+RevCore.UI.UICircleArranger.startDegree -> float
+RevCore.UI.UICircleArranger.tweenDuration -> float
+RevCore.UI.VerticalAlignmentUI
+RevCore.UI.VerticalAlignmentUI.Align() -> void
+RevCore.UI.VerticalAlignmentUI.Alignment
+RevCore.UI.VerticalAlignmentUI.Alignment.Bottom = 1 -> RevCore.UI.VerticalAlignmentUI.Alignment
+RevCore.UI.VerticalAlignmentUI.Alignment.Center = 2 -> RevCore.UI.VerticalAlignmentUI.Alignment
+RevCore.UI.VerticalAlignmentUI.Alignment.Top = 0 -> RevCore.UI.VerticalAlignmentUI.Alignment
+RevCore.UI.VerticalAlignmentUI.VerticalAlignmentUI() -> void
+abstract RevCore.UI.OptimizedScrollItem.OnUpdateContent() -> void
+abstract RevCore.UI.SnapScrollItem.Refresh() -> void
+override RevCore.UI.JustButton.Awake() -> void
+override RevCore.UI.JustButton.OnDisable() -> void
+override RevCore.UI.JustButton.OnEnable() -> void
+override RevCore.UI.JustButton.OnValidate() -> void
+override RevCore.UI.JustButton.Start() -> void
+override RevCore.UI.JustToggle.Awake() -> void
+override RevCore.UI.JustToggle.OnDisable() -> void
+override RevCore.UI.JustToggle.OnEnable() -> void
+override RevCore.UI.JustToggle.OnValidate() -> void
+override RevCore.UI.JustToggle.Start() -> void
+override RevCore.UI.PanelController.Awake() -> void
+override RevCore.UI.SimpleTMPButton.OnValidate() -> void
+override RevCore.UI.SimpleTMPButton.SetEnable(bool value) -> void
+static RevCore.UI.ScreenSafeArea.SetBottomOffsetForBannerAd(float bannerHeight, bool placeInSafeArea = true) -> void
+static RevCore.UI.ScreenSafeArea.SetTopOffsetForBannerAd(float bannerHeight, bool placeInSafeArea = true) -> void
+static RevCore.UI.ScreenSafeArea.bottomBannerOffset -> float
+static RevCore.UI.ScreenSafeArea.topBannerOffset -> float
+virtual RevCore.UI.ImageWithText.Validate() -> void
+virtual RevCore.UI.ImageWithTextTMP.Validate() -> void
+virtual RevCore.UI.JustButton.SetEnable(bool value) -> void
+virtual RevCore.UI.PanelController.AfterHiding() -> void
+virtual RevCore.UI.PanelController.AfterShowing() -> void
+virtual RevCore.UI.PanelController.Back() -> void
+virtual RevCore.UI.PanelController.BeforeHiding() -> void
+virtual RevCore.UI.PanelController.BeforeShowing() -> void
+virtual RevCore.UI.PanelController.BtnBack_Pressed() -> void
+virtual RevCore.UI.PanelController.Init() -> void
+virtual RevCore.UI.PanelController.Lock(bool pLock) -> void
+virtual RevCore.UI.PanelController.OnDisable() -> void
+virtual RevCore.UI.PanelController.OnReshow() -> void
+virtual RevCore.UI.PanelController.OnValidate() -> void
+virtual RevCore.UI.PanelController.SetActivePanel(bool pValue) -> void
+virtual RevCore.UI.PanelRoot.IsBusy(bool queueInvolved = false) -> bool
+virtual RevCore.UI.PanelRoot.OnDisable() -> void
+virtual RevCore.UI.PanelRoot.OnEnable() -> void
+virtual RevCore.UI.PanelRoot.PushPanelInQueue() -> void
+virtual RevCore.UI.PanelStack.Awake() -> void
+virtual RevCore.UI.PanelStack.PopAllPanels() -> void
+virtual RevCore.UI.ProgressBar.Active(bool value) -> void
+virtual RevCore.UI.ProgressBar.FillAmount.get -> float
+virtual RevCore.UI.ProgressBar.FillAmount.set -> void
+virtual RevCore.UI.ProgressBar.FillBar(float value) -> void
+virtual RevCore.UI.ProgressBar.Max.get -> float
+virtual RevCore.UI.ProgressBar.Max.set -> void
+virtual RevCore.UI.ProgressBar.Rank.get -> int
+virtual RevCore.UI.ProgressBar.Rank.set -> void
+virtual RevCore.UI.ProgressBar.SetProgressDisplay() -> void
+virtual RevCore.UI.ProgressBar.SetRankDisplay() -> void
+virtual RevCore.UI.ProgressBar.Value.get -> float
+virtual RevCore.UI.ProgressBar.Value.set -> void
+virtual RevCore.UI.SnapScrollItem.Hide() -> void
+virtual RevCore.UI.SnapScrollItem.OnDisable() -> void
+virtual RevCore.UI.SnapScrollItem.OnEnable() -> void
+virtual RevCore.UI.SnapScrollItem.Show() -> void
+virtual RevCore.UI.SnapScrollItem.Update() -> void
+~RevCore.UI.CustomToggleGroup.SetTarget(UnityEngine.RectTransform target, float tweenDuration = 0) -> void
+~RevCore.UI.CustomToggleGroup.dynamicBackground -> UnityEngine.RectTransform
+~RevCore.UI.HoledLayerMask.CreateHoleFromSprite(UnityEngine.Sprite spriteToClone) -> void
+~RevCore.UI.HoledLayerMask.FocusToTarget(UnityEngine.RectTransform pTarget, float pTime) -> void
+~RevCore.UI.HoledLayerMask.FocusToTargetImmediately(UnityEngine.RectTransform pTarget, bool pPostValidatingRect = true) -> void
+~RevCore.UI.HoledLayerMask.FocusToTargetImmediately(UnityEngine.SpriteRenderer pTarget, UnityEngine.RectTransform pMainCanvas, UnityEngine.Camera pWorldCamera) -> void
+~RevCore.UI.HoledLayerMask.GetHoleTransform() -> UnityEngine.RectTransform
+~RevCore.UI.HoledLayerMask.imgBot -> UnityEngine.UI.Image
+~RevCore.UI.HoledLayerMask.imgHole -> UnityEngine.UI.Image
+~RevCore.UI.HoledLayerMask.imgLeft -> UnityEngine.UI.Image
+~RevCore.UI.HoledLayerMask.imgRight -> UnityEngine.UI.Image
+~RevCore.UI.HoledLayerMask.imgTop -> UnityEngine.UI.Image
+~RevCore.UI.HoledLayerMask.rectContainer -> UnityEngine.RectTransform
+~RevCore.UI.HoledLayerMask.testTarget -> UnityEngine.RectTransform
+~RevCore.UI.HorizontalAlignmentUI.AlignByTweener(System.Action onFinish) -> void
+~RevCore.UI.HorizontalSnapScrollView.Content.get -> UnityEngine.RectTransform
+~RevCore.UI.HorizontalSnapScrollView.FocusedItem.get -> RevCore.UI.SnapScrollItem
+~RevCore.UI.HorizontalSnapScrollView.Items.get -> RevCore.UI.SnapScrollItem[]
+~RevCore.UI.HorizontalSnapScrollView.MoveToItem(RevCore.UI.SnapScrollItem item, bool pImmediately = false) -> void
+~RevCore.UI.HorizontalSnapScrollView.OnBeginDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.HorizontalSnapScrollView.OnDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.HorizontalSnapScrollView.OnEndDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.HorizontalSnapScrollView.onIndexChanged -> System.Action<int>
+~RevCore.UI.HorizontalSnapScrollView.onScrollEnd -> System.Action
+~RevCore.UI.HorizontalSnapScrollView.onScrollStart -> System.Action
+~RevCore.UI.IAligned.AlignByTweener(System.Action onFinish) -> void
+~RevCore.UI.ImageWithText.SetSprite(UnityEngine.Sprite sprite) -> void
+~RevCore.UI.ImageWithText.image.get -> UnityEngine.UI.Image
+~RevCore.UI.ImageWithText.label.get -> UnityEngine.UI.Text
+~RevCore.UI.ImageWithText.m_Img -> UnityEngine.UI.Image
+~RevCore.UI.ImageWithText.m_Txt -> UnityEngine.UI.Text
+~RevCore.UI.ImageWithText.rectTransform.get -> UnityEngine.RectTransform
+~RevCore.UI.ImageWithText.sprite.get -> UnityEngine.Sprite
+~RevCore.UI.ImageWithText.sprite.set -> void
+~RevCore.UI.ImageWithText.text.get -> string
+~RevCore.UI.ImageWithText.text.set -> void
+~RevCore.UI.ImageWithTextTMP.SetSprite(UnityEngine.Sprite sprite) -> void
+~RevCore.UI.ImageWithTextTMP.image.get -> UnityEngine.UI.Image
+~RevCore.UI.ImageWithTextTMP.label.get -> TMPro.TextMeshProUGUI
+~RevCore.UI.ImageWithTextTMP.m_Img -> UnityEngine.UI.Image
+~RevCore.UI.ImageWithTextTMP.m_Txt -> TMPro.TextMeshProUGUI
+~RevCore.UI.ImageWithTextTMP.rectTransform.get -> UnityEngine.RectTransform
+~RevCore.UI.ImageWithTextTMP.sprite.get -> UnityEngine.Sprite
+~RevCore.UI.ImageWithTextTMP.sprite.set -> void
+~RevCore.UI.Joystick.OnBeginDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.Joystick.OnDrag(UnityEngine.EventSystems.PointerEventData data) -> void
+~RevCore.UI.Joystick.OnEndDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.Joystick.onDrag -> System.Action<UnityEngine.Vector3>
+~RevCore.UI.Joystick.onDragBegin -> System.Action
+~RevCore.UI.Joystick.onDragEnd -> System.Action
+~RevCore.UI.Joystick.thumb -> UnityEngine.RectTransform
+~RevCore.UI.JoystickArea.OnBeginDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.JoystickArea.OnDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.JoystickArea.OnEndDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.JoystickArea.OnPointerDown(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.JoystickArea.OnPointerUp(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~RevCore.UI.JoystickArea.SetCanvas(UnityEngine.Canvas targetCanvas) -> void
+~RevCore.UI.JoystickArea.canvas -> UnityEngine.Canvas
+~RevCore.UI.JoystickArea.joystick -> RevCore.UI.Joystick
+~RevCore.UI.JustButton.GetGreyMat() -> UnityEngine.Material
+~RevCore.UI.JustButton.Img.get -> UnityEngine.UI.Image
+~RevCore.UI.JustButton.RectTransform.get -> UnityEngine.RectTransform
+~RevCore.UI.JustButton.SetActiveSprite(UnityEngine.Sprite sprite) -> void
+~RevCore.UI.JustButton.clickSfx -> string
+~RevCore.UI.JustButton.imgOff -> UnityEngine.Sprite
+~RevCore.UI.JustButton.imgOn -> UnityEngine.Sprite
+~RevCore.UI.JustButton.m_greyscaleMaterial -> UnityEngine.Material
+~RevCore.UI.JustButton.m_img -> UnityEngine.UI.Image
+~RevCore.UI.JustToggle.ColorTransition.target -> UnityEngine.UI.MaskableGraphic
+~RevCore.UI.JustToggle.PositionTransition.target -> UnityEngine.RectTransform
+~RevCore.UI.JustToggle.SizeTransition.layoutElement -> UnityEngine.UI.LayoutElement
+~RevCore.UI.JustToggle.SizeTransition.target -> UnityEngine.RectTransform
+~RevCore.UI.JustToggle.SpriteTransition.off -> UnityEngine.Sprite
+~RevCore.UI.JustToggle.SpriteTransition.on -> UnityEngine.Sprite
+~RevCore.UI.JustToggle.SpriteTransition.target -> UnityEngine.UI.Image
+~RevCore.UI.JustToggle.colorTransitions -> RevCore.UI.JustToggle.ColorTransition[]
+~RevCore.UI.JustToggle.contentsActive -> System.Collections.Generic.List<UnityEngine.RectTransform>
+~RevCore.UI.JustToggle.contentsInactive -> System.Collections.Generic.List<UnityEngine.RectTransform>
+~RevCore.UI.JustToggle.imgBackground -> UnityEngine.UI.Image
+~RevCore.UI.JustToggle.onClickOnLock -> System.Action
+~RevCore.UI.JustToggle.positionTransitions -> RevCore.UI.JustToggle.PositionTransition[]
+~RevCore.UI.JustToggle.sfxClip -> string
+~RevCore.UI.JustToggle.sfxClipOff -> string
+~RevCore.UI.JustToggle.sizeTransitions -> RevCore.UI.JustToggle.SizeTransition[]
+~RevCore.UI.JustToggle.spriteTransitions -> RevCore.UI.JustToggle.SpriteTransition[]
+~RevCore.UI.JustToggle.txtLabel -> TMPro.TextMeshProUGUI
+~RevCore.UI.OptimizedHorizontalScrollView.GetListItem() -> System.Collections.Generic.List<RevCore.UI.OptimizedScrollItem>
+~RevCore.UI.OptimizedHorizontalScrollView.Init(RevCore.UI.OptimizedScrollItem itemPrefab, int totalItems, bool force) -> void
+~RevCore.UI.OptimizedHorizontalScrollView.borderLeft -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedHorizontalScrollView.borderRight -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedHorizontalScrollView.container -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedHorizontalScrollView.content.get -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedHorizontalScrollView.prefab -> RevCore.UI.OptimizedScrollItem
+~RevCore.UI.OptimizedHorizontalScrollView.scrollView -> UnityEngine.UI.ScrollRect
+~RevCore.UI.OptimizedHorizontalScrollView.viewRect -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedScrollView.GetListItem() -> System.Collections.Generic.List<RevCore.UI.OptimizedScrollItem>
+~RevCore.UI.OptimizedScrollView.container -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedScrollView.mask -> UnityEngine.UI.Mask
+~RevCore.UI.OptimizedScrollView.prefab -> RevCore.UI.OptimizedScrollItem
+~RevCore.UI.OptimizedScrollView.scrollView -> UnityEngine.UI.ScrollRect
+~RevCore.UI.OptimizedVerticalScrollView.AnimateItemMove(int fromIndex, int toIndex, System.Action<UnityEngine.GameObject> configureClone = null, System.Action onComplete = null) -> void
+~RevCore.UI.OptimizedVerticalScrollView.GetListItem() -> System.Collections.Generic.List<RevCore.UI.OptimizedScrollItem>
+~RevCore.UI.OptimizedVerticalScrollView.Init(RevCore.UI.OptimizedScrollItem itemPrefab, int totalItems, bool force, int startIndex) -> void
+~RevCore.UI.OptimizedVerticalScrollView.MoveItemToIndex(int a, int b) -> System.Collections.IEnumerator
+~RevCore.UI.OptimizedVerticalScrollView.QueueAnimateItemMove(int fromIndex, int toIndex, System.Action<UnityEngine.GameObject> configureClone = null, System.Action onComplete = null) -> void
+~RevCore.UI.OptimizedVerticalScrollView.ScrollToIndex(int index, bool tween = false, System.Action onComplete = null, float overrideDuration = -1, DG.Tweening.Ease ease = DG.Tweening.Ease.OutQuad) -> void
+~RevCore.UI.OptimizedVerticalScrollView.container -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedVerticalScrollView.content.get -> UnityEngine.RectTransform
+~RevCore.UI.OptimizedVerticalScrollView.onContentUpdated -> System.Action
+~RevCore.UI.OptimizedVerticalScrollView.prefab -> RevCore.UI.OptimizedScrollItem
+~RevCore.UI.OptimizedVerticalScrollView.scrollView -> UnityEngine.UI.ScrollRect
+~RevCore.UI.PanelController.CanPop(out RevCore.UI.PanelController blockingPanel) -> bool
+~RevCore.UI.PanelController.CanvasGroup.get -> UnityEngine.CanvasGroup
+~RevCore.UI.PanelController.Contains<T>(T panel) -> bool
+~RevCore.UI.PanelController.Hide(UnityEngine.Events.UnityAction pOnDidHide = null) -> void
+~RevCore.UI.PanelController.IE_Hide(UnityEngine.Events.UnityAction pOnDidHide) -> System.Collections.IEnumerator
+~RevCore.UI.PanelController.IE_Show(UnityEngine.Events.UnityAction pOnDidShow) -> System.Collections.IEnumerator
+~RevCore.UI.PanelController.Show(UnityEngine.Events.UnityAction pOnDidShow = null) -> void
+~RevCore.UI.PanelController.btnBack -> UnityEngine.UI.Button
+~RevCore.UI.PanelController.onDidHide -> System.Action
+~RevCore.UI.PanelController.onDidShow -> System.Action
+~RevCore.UI.PanelController.onWillHide -> System.Action
+~RevCore.UI.PanelController.onWillShow -> System.Action
+~RevCore.UI.PanelRoot.AddPanelToQueue<T>(T pPanel) -> void
+~RevCore.UI.PanelRoot.RemovePanelInQueue(RevCore.UI.PanelController pPanel) -> void
+~RevCore.UI.PanelRoot.m_dimmerOverlay -> UnityEngine.UI.Button
+~RevCore.UI.PanelRoot.onAnyPanelHide -> System.Action<RevCore.UI.PanelController>
+~RevCore.UI.PanelRoot.onAnyPanelShow -> System.Action<RevCore.UI.PanelController>
+~RevCore.UI.PanelStack.CreatePanel<T>(ref T pPanel) -> T
+~RevCore.UI.PanelStack.GetCachedPanel<T>(T pOriginal) -> T
+~RevCore.UI.PanelStack.GetHighestPanel() -> RevCore.UI.PanelStack
+~RevCore.UI.PanelStack.GetRootPanel() -> RevCore.UI.PanelStack
+~RevCore.UI.PanelStack.Log(string pMessage) -> void
+~RevCore.UI.PanelStack.LogError(string pMessage) -> void
+~RevCore.UI.PanelStack.ParentPanel.get -> RevCore.UI.PanelStack
+~RevCore.UI.PanelStack.PopAllThenPush(RevCore.UI.PanelController panel) -> void
+~RevCore.UI.PanelStack.PopTillNoPanel(RevCore.UI.PanelController panel) -> void
+~RevCore.UI.PanelStack.PopTillPanel(RevCore.UI.PanelController panel) -> void
+~RevCore.UI.PanelStack.PushPanel(RevCore.UI.PanelController panel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) -> void
+~RevCore.UI.PanelStack.panelStack -> System.Collections.Generic.Stack<RevCore.UI.PanelController>
+~RevCore.UI.ProgressBar.imgBackground -> UnityEngine.UI.Image
+~RevCore.UI.ProgressBar.imgProgressValue -> UnityEngine.UI.Image
+~RevCore.UI.ProgressBar.txtRank -> TMPro.TextMeshProUGUI
+~RevCore.UI.ProgressBar.txtValue -> TMPro.TextMeshProUGUI
+~RevCore.UI.ScreenSafeArea.safeRects -> UnityEngine.RectTransform[]
+~RevCore.UI.SimpleTMPButton.Label.get -> TMPro.TextMeshProUGUI
+~RevCore.UI.SimpleTMPButton.label -> TMPro.TextMeshProUGUI
+~RevCore.UI.SimpleTMPButton.labelMatOff -> UnityEngine.Material
+~RevCore.UI.SimpleTMPButton.labelMatOn -> UnityEngine.Material
+~RevCore.UI.SnapScrollItem.RectTransform.get -> UnityEngine.RectTransform
+~RevCore.UI.SnapScrollItem.m_Main -> UnityEngine.RectTransform
+~RevCore.UI.SnapScrollItem.m_rectTransform -> UnityEngine.RectTransform
+~RevCore.UI.TableAlignmentUI.AlignByTweener(System.Action onFinish) -> void
+~RevCore.UI.TableAlignmentUI.animCurve -> UnityEngine.AnimationCurve
+~RevCore.UI.UICircleArranger.ArrangeFromCenterWithTween(System.Action pCallback) -> void
+~RevCore.UI.UICircleArranger.exceptions -> UnityEngine.RectTransform[]
+~RevCore.UI.UICircleArranger.positionXOverMoveTime -> UnityEngine.AnimationCurve
+~RevCore.UI.UICircleArranger.positionYOverMoveTime -> UnityEngine.AnimationCurve
+~RevCore.UI.UICircleArranger.scaleOverLifeTime -> UnityEngine.AnimationCurve
+~RevCore.UI.VerticalAlignmentUI.AlignByTweener(System.Action onFinish) -> void
+~abstract RevCore.UI.PanelRoot.OnReceivedPanelRequest(System.Type panelType, object value) -> RevCore.UI.PanelController
+~override RevCore.UI.JustButton.OnPointerClick(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.JustButton.OnPointerDown(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.JustButton.OnPointerUp(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.JustButton.OnSelect(UnityEngine.EventSystems.BaseEventData eventData) -> void
+~override RevCore.UI.JustToggle.OnPointerClick(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.JustToggle.OnPointerDown(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.JustToggle.OnPointerUp(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.PanelRoot.OnAnyChildHide(RevCore.UI.PanelController pPanel) -> void
+~override RevCore.UI.PanelRoot.OnAnyChildShow(RevCore.UI.PanelController pPanel) -> void
+~override RevCore.UI.ScrollRectEx.OnBeginDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.ScrollRectEx.OnDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.ScrollRectEx.OnEndDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~override RevCore.UI.ScrollRectEx.OnInitializePotentialDrag(UnityEngine.EventSystems.PointerEventData eventData) -> void
+~readonly RevCore.UI.PanelRoot.m_panelsInQueue -> System.Collections.Generic.List<RevCore.UI.PanelController>
+~static RevCore.UI.PanelController.GetSessionShowCount<T>(string name = null) -> int
+~static RevCore.UI.PanelRoot.PushInternalPanel<T>(System.Type root, System.Type pPanel, RevCore.UI.PanelStack.PushMode pPushMode = RevCore.UI.PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true) -> T
+~static RevCore.UI.PanelRoot.PushOuterPanel<T>(System.Type root, T pPanel, RevCore.UI.PanelStack.PushMode pPushMode = RevCore.UI.PanelStack.PushMode.OnTop, bool pKeepCurrentAndReplace = true) -> T
+~static RevCore.UI.PanelRoot.RequestPanel<T>(System.Type root, System.Type panel, object value) -> T
+~static RevCore.UI.ScreenSafeArea.OnOffsetChanged -> System.Action
+~static RevCore.UI.ScreenSafeArea.screenSafeAreas -> System.Collections.Generic.List<RevCore.UI.ScreenSafeArea>
+~virtual RevCore.UI.JustButton.SetInactiveStateAction(System.Action action) -> void
+~virtual RevCore.UI.OptimizedScrollItem.UpdateContent(object data) -> void
+~virtual RevCore.UI.PanelController.IE_HideFX() -> System.Collections.IEnumerator
+~virtual RevCore.UI.PanelController.IE_ShowFX() -> System.Collections.IEnumerator
+~virtual RevCore.UI.PanelRoot.AddPanelToQueue<T>(ref T pPanel) -> T
+~virtual RevCore.UI.PanelRoot.OnResolvePanelByType(System.Type panelType) -> RevCore.UI.PanelController
+~virtual RevCore.UI.PanelStack.OnAnyChildHide(RevCore.UI.PanelController pPanel) -> void
+~virtual RevCore.UI.PanelStack.OnAnyChildShow(RevCore.UI.PanelController pPanel) -> void
+~virtual RevCore.UI.PanelStack.PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) -> T
+~virtual RevCore.UI.PanelStack.PushPanelToTop(RevCore.UI.PanelController panel) -> void
+~virtual RevCore.UI.PanelStack.PushPanelToTop<T>(ref T pPanel, bool hidePusher = false) -> T
+~virtual RevCore.UI.PanelStack.TopPanel.get -> RevCore.UI.PanelController

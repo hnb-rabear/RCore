@@ -1,4 +1,7 @@
 using System;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("RevCore.Foundation.Tests")]
 
 namespace RevCore
 {
@@ -49,10 +52,9 @@ namespace RevCore
 
 		private readonly T m_value;
 
-		/// <summary>The success value.</summary>
-		/// <exception cref="InvalidOperationException">Thrown when accessed on an error result. Prefer <see cref="TryGetValue"/> or <see cref="ValueOr"/> to avoid the throw.</exception>
-		[Obsolete("Throws on error. Prefer TryGetValue or ValueOr. Value will become internal in v1.0.", error: false)]
-		public T Value
+		/// <summary>The success value. Internal — the public API surface for reading the value is <see cref="TryGetValue"/> or <see cref="ValueOr"/>. Retained for test pins and internal call sites that need to assert the throw-on-error contract.</summary>
+		/// <exception cref="InvalidOperationException">Thrown when accessed on an error result.</exception>
+		internal T Value
 		{
 			get
 			{

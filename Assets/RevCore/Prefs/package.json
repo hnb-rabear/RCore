@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.prefs",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "displayName": "RevCore.Prefs",
   "description": "Typed PlayerPrefs and EditorPrefs wrappers for the RevCore framework.",
   "unity": "2022.3",

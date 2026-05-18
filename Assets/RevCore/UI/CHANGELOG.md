@@ -2,12 +2,18 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-17
+
+Tracks the framework v1.0.0 release. No UI-module API changes in this cut beyond the version bump.
+
+## [0.5.0] - 2026-05-17
+
 ### Removed
 
 - `CustomToggleSlider` and `CustomToggleSliderEditor` deleted (had been `[Obsolete]` Stage 1). Use `JustToggle` instead — same `Toggle.isOn` API; richer transitions.
 - `SimpleButton` and `SimpleButtonEditor` deleted (had been `[Obsolete]` Stage 1). Use `SimpleTMPButton` instead — same `JustButton` lineage; label uses TextMeshPro rather than the legacy `UnityEngine.UI.Text`.
 
-## 1.0.0
+## [0.1.0] - 2026-05-13
 
 ### Added
 

@@ -20,19 +20,7 @@ namespace RevCore
     {
         private const string CollectionsKey = "JObjectDB";
 
-        // Private storage. All internal code reads/writes through this field so the Stage 2
-        // obsolete-error on the public `collections` member doesn't break self-references.
         private static readonly Dictionary<string, JObjectData> s_collections = new();
-
-        /// <summary>
-        /// Direct access to the in-memory collection map. Public for backward compatibility only;
-        /// will become private in v1.0. Use <see cref="GetCollection"/>, <see cref="CreateCollection{T}"/>,
-        /// <see cref="GetCollectionKeys"/>, or <see cref="GetAllData"/> instead. Direct mutation of this
-        /// dictionary bypasses key persistence (<c>SaveCollectionKey</c>) and will silently lose data
-        /// on the next <see cref="Reload"/>.
-        /// </summary>
-        [Obsolete("Direct field access will be made private in v1.0. Use GetCollection, CreateCollection, GetCollectionKeys, or GetAllData instead.", error: true)]
-        public static Dictionary<string, JObjectData> collections => s_collections;
 
         /// <summary>Test-only: clears the in-memory registry without touching PlayerPrefs. Used by Tests SetUp to isolate state between tests.</summary>
         internal static void ClearInMemoryForTests() => s_collections.Clear();

@@ -201,16 +201,6 @@ namespace RevCore
 			return targetAnchored;
 		}
 
-		/// <summary>Typo'd alias of <see cref="ConvertAnchoredPosFromChildToParent(RectTransform, RectTransform)"/>. Will be removed in v1.0.</summary>
-		[Obsolete("Typo. Use ConvertAnchoredPosFromChildToParent instead. Will be removed in v1.0.", error: false)]
-		public static Vector2 CovertAnchoredPosFromChildToParent(this RectTransform childRect, RectTransform parentRect)
-			=> ConvertAnchoredPosFromChildToParent(childRect, parentRect);
-
-		/// <summary>Typo'd alias of <see cref="ConvertAnchoredPosFromChildToParent(Vector2, Vector2, RectTransform)"/>. Will be removed in v1.0.</summary>
-		[Obsolete("Typo. Use ConvertAnchoredPosFromChildToParent instead. Will be removed in v1.0.", error: false)]
-		public static Vector2 CovertAnchoredPosFromChildToParent(Vector2 childAnchoredPos, Vector2 childAnchorMax, RectTransform parentRect)
-			=> ConvertAnchoredPosFromChildToParent(childAnchoredPos, childAnchorMax, parentRect);
-
 		/// <summary>Returns <c>true</c> when <paramref name="item"/> is anywhere in the transitive child chain of <paramref name="parent"/>.</summary>
 		public static bool IsChildOfParent(this Transform item, Transform parent)
 		{

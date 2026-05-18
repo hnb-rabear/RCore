@@ -1,14 +1,1 @@
 #nullable enable
-RevCore.IRevDiagnostics
-RevCore.IRevDiagnostics.OnAudioPlayMusic(string clipName, bool looping) -> void
-RevCore.IRevDiagnostics.OnAudioPlaySFX(string clipName) -> void
-RevCore.IRevDiagnostics.OnEventPublished(System.Type eventType, int listenerCount) -> void
-RevCore.IRevDiagnostics.OnEventSubscribed(System.Type eventType, int newCount) -> void
-RevCore.IRevDiagnostics.OnEventUnsubscribed(System.Type eventType, int newCount) -> void
-RevCore.IRevDiagnostics.OnPoolRelease(string poolName) -> void
-RevCore.IRevDiagnostics.OnPoolSpawn(string poolName, bool reused) -> void
-RevCore.IRevDiagnostics.OnTimerCancelled(int id) -> void
-RevCore.IRevDiagnostics.OnTimerCompleted(int id, float overtime) -> void
-RevCore.IRevDiagnostics.OnTimerScheduled(int id, float duration, bool unscaled) -> void
-RevCore.RevDiagnostics
-static RevCore.RevDiagnostics.Listener -> RevCore.IRevDiagnostics

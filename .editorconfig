@@ -87,12 +87,20 @@ dotnet_naming_style.s_prefix_style.capitalization = camel_case
 dotnet_diagnostic.CS1591.severity = warning  # Missing XML doc on public member (escalated to error in CI via /warnaserror)
 
 # Public API analyzer (enforces PublicAPI.Shipped/Unshipped)
-dotnet_diagnostic.RS0016.severity = error  # Symbol not part of declared API
-dotnet_diagnostic.RS0017.severity = error  # Symbol is part of declared API but not found
-dotnet_diagnostic.RS0022.severity = error  # Public namespace not in shipped/unshipped
-dotnet_diagnostic.RS0024.severity = error  # PublicAPI file has invalid entry
-dotnet_diagnostic.RS0025.severity = error  # Duplicate entry in PublicAPI file
-dotnet_diagnostic.RS0026.severity = error  # Do not add multiple public overloads
+# Disabled globally here, re-enabled with severity=error in Assets/RevCore/.editorconfig.
+# Reason: the analyzer DLL has the RoslynAnalyzer asset label, so Unity feeds it to
+# every csc invocation in the project — including legacy RCore folders that
+# deliberately track no PublicAPI surface. Nested editorconfig wins per spec.
+dotnet_diagnostic.RS0016.severity = none   # Symbol not part of declared API
+dotnet_diagnostic.RS0017.severity = none   # Symbol is part of declared API but not found
+dotnet_diagnostic.RS0022.severity = none   # Public namespace not in shipped/unshipped
+dotnet_diagnostic.RS0024.severity = none   # PublicAPI file has invalid entry
+dotnet_diagnostic.RS0025.severity = none   # Duplicate entry in PublicAPI file
+dotnet_diagnostic.RS0026.severity = none   # Multiple public overloads + optional params — N/A for source packages
+dotnet_diagnostic.RS0027.severity = none   # Adding optional param to method with existing overload — N/A for source packages
+dotnet_diagnostic.RS0041.severity = none   # Public members should not use oblivious types — RevCore has not adopted #nullable enable project-wide
+dotnet_diagnostic.RS0050.severity = none   # Public API contains oblivious reference types — same reason as RS0041
+dotnet_diagnostic.RS0051.severity = none   # Public API has nullability mismatch — same reason as RS0041
 
 # Performance / correctness
 dotnet_diagnostic.CA1822.severity = suggestion  # Member can be static
@@ -104,3 +112,6 @@ dotnet_diagnostic.CA2208.severity = warning     # ArgumentException — pass par
 # Obsolete usage must be visible
 dotnet_diagnostic.CS0612.severity = warning     # Obsolete (no message)
 dotnet_diagnostic.CS0618.severity = warning     # Obsolete (with message)
+
+# PublicAPI analyzer rules are re-enabled with severity=error via
+# Assets/RevCore/.editorconfig — nested config closest to the file wins.

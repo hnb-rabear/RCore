@@ -1,1 +1,41 @@
 #nullable enable
+RevCore.AutoFillAttribute
+RevCore.CommentAttribute
+RevCore.CreateScriptableObjectAttribute
+RevCore.CreateScriptableObjectAttribute.CreateScriptableObjectAttribute() -> void
+RevCore.DisplayEnumAttribute
+RevCore.ExposeScriptableObjectAttribute
+RevCore.ExposeScriptableObjectAttribute.ExposeScriptableObjectAttribute() -> void
+RevCore.FolderPathAttribute
+RevCore.FolderPathAttribute.FolderPathAttribute() -> void
+RevCore.HighlightAttribute
+RevCore.HighlightAttribute.HighlightAttribute() -> void
+RevCore.InspectorButtonAttribute
+RevCore.ReadOnlyAttribute
+RevCore.ReadOnlyAttribute.ReadOnlyAttribute() -> void
+RevCore.SeparatorAttribute
+RevCore.SeparatorAttribute.SeparatorAttribute() -> void
+RevCore.ShowIfAttribute
+RevCore.SingleLayerAttribute
+RevCore.SingleLayerAttribute.SingleLayerAttribute() -> void
+RevCore.SpriteBoxAttribute
+RevCore.SpriteBoxAttribute.SpriteBoxAttribute(float width = 36, float height = 36) -> void
+RevCore.SpriteBoxAttribute.height -> float
+RevCore.SpriteBoxAttribute.width -> float
+RevCore.TagSelectorAttribute
+RevCore.TagSelectorAttribute.TagSelectorAttribute() -> void
+RevCore.TagSelectorAttribute.UseDefaultTagFieldDrawer -> bool
+~RevCore.AutoFillAttribute.AutoFillAttribute(string path = "") -> void
+~RevCore.AutoFillAttribute.Path.get -> string
+~RevCore.CommentAttribute.CommentAttribute(string comment, string tooltip = "") -> void
+~RevCore.DisplayEnumAttribute.DisplayEnumAttribute(System.Type enumType) -> void
+~RevCore.DisplayEnumAttribute.DisplayEnumAttribute(string methodName) -> void
+~RevCore.DisplayEnumAttribute.EnumType.get -> System.Type
+~RevCore.DisplayEnumAttribute.MethodName.get -> string
+~RevCore.InspectorButtonAttribute.InspectorButtonAttribute(string label = null) -> void
+~RevCore.InspectorButtonAttribute.Label.get -> string
+~RevCore.SeparatorAttribute.SeparatorAttribute(string title) -> void
+~RevCore.ShowIfAttribute.ConditionMemberName.get -> string
+~RevCore.ShowIfAttribute.ShowIfAttribute(string conditionMemberName) -> void
+~readonly RevCore.CommentAttribute.content -> UnityEngine.GUIContent
+~readonly RevCore.SeparatorAttribute.title -> string
