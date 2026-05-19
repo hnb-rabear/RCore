@@ -1,0 +1,18 @@
+{
+  "name": "com.rabear.revcore.addressables",
+  "version": "1.0.0",
+  "displayName": "RevCore.Addressables",
+  "description": "UniTask-first helpers and serializable references over Unity Addressables for the RevCore framework.",
+  "unity": "2022.3",
+  "documentationUrl": "https://github.com/hnb-rabear/RCore",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
+  "keywords": ["addressables", "asset", "loader", "unitask", "framework"],
+  "dependencies": {
+    "com.unity.addressables": "1.22.0",
+    "com.cysharp.unitask": "2.5.10"
+  }
+}
