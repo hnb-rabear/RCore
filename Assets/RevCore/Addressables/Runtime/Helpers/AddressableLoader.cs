@@ -66,7 +66,15 @@ namespace RevCore
 		{
 			if (reference == null) throw new ArgumentNullException(nameof(reference));
 			ct.ThrowIfCancellationRequested();
-			var handle = reference.LoadAssetAsync<T>();
+			AsyncOperationHandle<T> handle;
+			try
+			{
+				handle = reference.LoadAssetAsync<T>();
+			}
+			catch (Exception ex)
+			{
+				throw new AddressableLoadException(reference.RuntimeKey, AsyncOperationStatus.Failed, ex);
+			}
 			return await AwaitOrThrow(handle, reference, progress, ct);
 		}
 
@@ -81,7 +89,15 @@ namespace RevCore
 		public static async UniTask<AsyncOperationHandle<T>> LoadAssetWithHandleAsync<T>(string address, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
 		{
 			ct.ThrowIfCancellationRequested();
-			var handle = Addressables.LoadAssetAsync<T>(address);
+			AsyncOperationHandle<T> handle;
+			try
+			{
+				handle = Addressables.LoadAssetAsync<T>(address);
+			}
+			catch (Exception ex)
+			{
+				throw new AddressableLoadException(address, AsyncOperationStatus.Failed, ex);
+			}
 			try
 			{
 				await handle.ToUniTask(progress, cancellationToken: ct);
