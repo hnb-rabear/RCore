@@ -40,5 +40,25 @@ namespace RevCore.Tests
 				await AddressableLoader.LoadAssetAsync<Texture2D>("any", ct: cts.Token);
 			});
 		}
+
+		[Test]
+		public void load_asset_async_with_invalid_AssetReference_throws()
+		{
+			var reference = new UnityEngine.AddressableAssets.AssetReference("00000000000000000000000000000000");
+			Assert.ThrowsAsync<AddressableLoadException>(async () =>
+			{
+				await AddressableLoader.LoadAssetAsync<Texture2D>(reference);
+			});
+		}
+
+		[Test]
+		public void load_asset_with_handle_async_returns_handle_for_caller_release()
+		{
+			Assert.ThrowsAsync<AddressableLoadException>(async () =>
+			{
+				var handle = await AddressableLoader.LoadAssetWithHandleAsync<Texture2D>("missing");
+				Assert.Fail("Expected exception, got " + handle);
+			});
+		}
 	}
 }

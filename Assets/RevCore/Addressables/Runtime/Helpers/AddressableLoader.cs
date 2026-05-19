@@ -60,5 +60,44 @@ namespace RevCore
 			}
 			handle.Completed += op => Addressables.Release(op);
 		}
+
+		/// <summary>Asynchronously loads an asset via an <see cref="AssetReference"/>.</summary>
+		public static async UniTask<T> LoadAssetAsync<T>(AssetReference reference, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
+		{
+			if (reference == null) throw new ArgumentNullException(nameof(reference));
+			ct.ThrowIfCancellationRequested();
+			var handle = reference.LoadAssetAsync<T>();
+			return await AwaitOrThrow(handle, reference, progress, ct);
+		}
+
+		/// <summary>Asynchronously loads a strongly-typed asset via an <see cref="AssetReferenceT{TObject}"/>.</summary>
+		public static UniTask<T> LoadAssetAsync<T>(AssetReferenceT<T> reference, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
+			=> LoadAssetAsync<T>((AssetReference)reference, progress, ct);
+
+		/// <summary>
+		/// Loads an asset and returns the underlying <see cref="AsyncOperationHandle{TObject}"/>. The caller owns the
+		/// handle and is responsible for calling <see cref="Addressables.Release{TObject}"/> when finished.
+		/// </summary>
+		public static async UniTask<AsyncOperationHandle<T>> LoadAssetWithHandleAsync<T>(string address, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
+		{
+			ct.ThrowIfCancellationRequested();
+			var handle = Addressables.LoadAssetAsync<T>(address);
+			try
+			{
+				await handle.ToUniTask(progress, cancellationToken: ct);
+				return handle;
+			}
+			catch (OperationCanceledException)
+			{
+				ReleaseOnComplete(handle);
+				throw;
+			}
+			catch (Exception ex)
+			{
+				var status = handle.IsValid() ? handle.Status : AsyncOperationStatus.Failed;
+				if (handle.IsValid()) Addressables.Release(handle);
+				throw new AddressableLoadException(address, status, ex);
+			}
+		}
 	}
 }
