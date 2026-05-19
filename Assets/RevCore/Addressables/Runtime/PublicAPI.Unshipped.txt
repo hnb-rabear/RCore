@@ -31,6 +31,17 @@ RevCore.AssetRef<T>.IsLoading.get -> bool
 RevCore.AssetRef<T>.IsLoaded.get -> bool
 RevCore.AssetRef<T>.LoadAsync(System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 RevCore.AssetRef<T>.Release() -> void
+RevCore.ComponentRef<TComponent>
+RevCore.ComponentRef<TComponent>.ComponentRef(string guid) -> void
+RevCore.ComponentRef<TComponent>.TypeName.get -> string
+RevCore.ComponentRef<TComponent>.Asset.get -> TComponent
+RevCore.ComponentRef<TComponent>.IsLoading.get -> bool
+RevCore.ComponentRef<TComponent>.IsLoaded.get -> bool
+override RevCore.ComponentRef<TComponent>.ValidateAsset(UnityEngine.Object obj) -> bool
+override RevCore.ComponentRef<TComponent>.ValidateAsset(string path) -> bool
+RevCore.ComponentRef<TComponent>.LoadAsync(System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<TComponent>
+RevCore.ComponentRef<TComponent>.Release() -> void
+RevCore.ComponentRef<TComponent>.HasType(System.Type checkType) -> bool
 RevCore.KeyedAssetRef<TKey, T>
 RevCore.KeyedAssetRef<TKey, T>.KeyedAssetRef() -> void
 RevCore.KeyedAssetRef<TKey, T>.Key.get -> TKey
