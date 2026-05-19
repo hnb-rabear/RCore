@@ -4,6 +4,8 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+- **RevCore.Addressables v1.0.0** — new standalone package: UniTask-first helpers (`AddressableLoader`, `AddressableDownloader`, `AddressableCatalog`, `AddressableScene`), serialisable wrappers (`AssetRef<T>`, `KeyedAssetRef<TKey,T>`, `ComponentRef<TComponent>`, `PrefabRef<TComponent>`), and `AddressableLoadException`. Replaces RCore's `AddressableUtil` + asset-ref family. See module README and `docs/migration/rcore-to-revcore-api-map.csv`.
+
 ## [1.1.0] - 2026-05-19
 
 UniTask integration (PR-A of the spec at `docs/superpowers/specs/2026-05-17-revcore-unitask-integration-design.md`). Purely additive — no deprecations, no behaviour changes to the v1.0 surface.
