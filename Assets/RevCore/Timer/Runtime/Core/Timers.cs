@@ -7,7 +7,7 @@ namespace RevCore
 	/// <see cref="Scheduler"/> — replace <see cref="Scheduler"/> at startup to plug in a custom
 	/// driver. See <see cref="ITimerScheduler"/> for member semantics.
 	/// </summary>
-	public static class Timers
+	public static partial class Timers
 	{
 		private static ITimerScheduler s_scheduler = new TimerScheduler();
 

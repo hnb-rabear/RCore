@@ -4,6 +4,25 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-19
+
+UniTask integration (PR-A of the spec at `docs/superpowers/specs/2026-05-17-revcore-unitask-integration-design.md`). Purely additive — no deprecations, no behaviour changes to the v1.0 surface.
+
+### Added
+
+- `RevCore.Timer`:
+  - `Timers.DelayAsync(float, bool, CancellationToken)` — awaitable wall-clock delay.
+  - `Timers.WaitForConditionAsync(Func<bool>, CancellationToken)` — awaitable predicate poll.
+  - `Timers.WaitForFramesAsync(int, CancellationToken)` — awaitable N-Tick wait.
+- `RevCore.Audio`:
+  - `AudioAsyncExtensions.FadeMusicAsync(this BaseAudioManager, float, float, CancellationToken)` — awaitable music fade.
+  - `AudioAsyncExtensions.FadeOutMusicAsync(this BaseAudioManager, float, CancellationToken)` — awaitable fade-out + stop.
+- Hard dependency on `com.cysharp.unitask` (2.5.10) declared in both modules' `package.json`. UniTask is already in `Packages/manifest.json` at the repo level, so consumer install cost is zero.
+
+### Changed
+
+- `Timers` static class is now `partial` (file split: `Core/Timers.cs` keeps the v1.0 callback API; `Core/TimersAsync.cs` adds the async API). No observable change.
+
 ## [1.0.0] - 2026-05-17
 
 The 1.0 release cut. Closes out the framework hardening plan: every Stage 1 deprecation tracked through v0.5.0 is resolved (deleted, made internal, or promoted to Stage 3), the full RevCore public surface is recorded in per-module `PublicAPI.Shipped.txt` files (1337 entries across 8 modules), and the package version is bumped.
@@ -94,6 +113,7 @@ First tagged release. Establishes the pre-1.0 baseline that consumer projects ca
 - `.editorconfig` extended with C# code style and analyzer severity rules.
 - `.gitattributes` added with `*.meta merge=union` to reduce conflict on regenerated GUIDs.
 
-[Unreleased]: https://github.com/hnb-rabear/RCore/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/hnb-rabear/RCore/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/hnb-rabear/RCore/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/hnb-rabear/RCore/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/hnb-rabear/RCore/releases/tag/v0.5.0

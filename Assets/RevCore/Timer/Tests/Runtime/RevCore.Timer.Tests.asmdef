@@ -4,6 +4,7 @@
   "references": [
     "RevCore.Timer.Runtime",
     "RevCore.Foundation.Runtime",
+    "UniTask",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner",
     "Unity.PerformanceTesting"

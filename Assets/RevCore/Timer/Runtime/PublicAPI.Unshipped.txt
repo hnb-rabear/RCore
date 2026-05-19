@@ -1,1 +1,4 @@
 #nullable enable
+static RevCore.Timers.DelayAsync(float seconds, bool unscaledTime = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask
+static RevCore.Timers.WaitForConditionAsync(System.Func<bool> predicate, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask
+static RevCore.Timers.WaitForFramesAsync(int frameCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask

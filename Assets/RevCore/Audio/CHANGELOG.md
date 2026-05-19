@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-19
+
+### Added
+
+- `AudioAsyncExtensions.FadeMusicAsync` — awaitable music-volume fade.
+- `AudioAsyncExtensions.FadeOutMusicAsync` — awaitable fade-to-zero + stop.
+- Hard dependency on `com.cysharp.unitask` declared in `package.json`.
+
+## [0.5.0] - 2026-05-17
+
 ### Fixed
 
 - AudioCollection lookups no longer throw when clip arrays are unassigned.

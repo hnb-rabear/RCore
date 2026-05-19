@@ -6,7 +6,8 @@
     "RevCore.Audio.Runtime",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner",
-    "RevCore.Inspector.Runtime"
+    "RevCore.Inspector.Runtime",
+    "UniTask"
   ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
