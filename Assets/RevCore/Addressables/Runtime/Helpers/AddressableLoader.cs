@@ -27,7 +27,15 @@ namespace RevCore
 		public static async UniTask<T> LoadAssetAsync<T>(string address, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
 		{
 			ct.ThrowIfCancellationRequested();
-			var handle = Addressables.LoadAssetAsync<T>(address);
+			AsyncOperationHandle<T> handle;
+			try
+			{
+				handle = Addressables.LoadAssetAsync<T>(address);
+			}
+			catch (Exception ex)
+			{
+				throw new AddressableLoadException(address, AsyncOperationStatus.Failed, ex);
+			}
 			return await AwaitOrThrow(handle, address, progress, ct);
 		}
 
