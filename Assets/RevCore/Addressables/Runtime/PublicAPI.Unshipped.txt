@@ -1,1 +1,5 @@
 #nullable enable
+RevCore.AddressableLoadException
+RevCore.AddressableLoadException.AddressableLoadException(object key, UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus status, System.Exception inner) -> void
+RevCore.AddressableLoadException.Key.get -> object
+RevCore.AddressableLoadException.Status.get -> UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus
