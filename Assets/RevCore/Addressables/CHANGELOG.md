@@ -11,3 +11,4 @@
 - `AddressableLoader.LoadAssetsAsync`, `InstantiateAsync`, `LoadResourceLocationsAsync`, `Release`, `ReleaseInstance`.
 - `AddressableDownloader` with `GetDownloadSizeAsync`, `DownloadDependenciesAsync`, `ClearDependencyCacheAsync`.
 - `AddressableCatalog.CheckForCatalogUpdatesAsync`, `UpdateCatalogsAsync`.
+- `AddressableScene.LoadSceneAsync`, `UnloadSceneAsync`.
