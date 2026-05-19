@@ -46,3 +46,15 @@ RevCore.KeyedAssetRef<TKey, T>
 RevCore.KeyedAssetRef<TKey, T>.KeyedAssetRef() -> void
 RevCore.KeyedAssetRef<TKey, T>.Key.get -> TKey
 RevCore.KeyedAssetRef<TKey, T>.Key.set -> void
+RevCore.PrefabRef<TComponent>
+RevCore.PrefabRef<TComponent>.PrefabRef() -> void
+RevCore.PrefabRef<TComponent>.PrefabRef(string guid) -> void
+RevCore.PrefabRef<TComponent>.Reference.get -> RevCore.ComponentRef<TComponent>
+RevCore.PrefabRef<TComponent>.DefaultParent.get -> UnityEngine.Transform
+RevCore.PrefabRef<TComponent>.DefaultParent.set -> void
+RevCore.PrefabRef<TComponent>.Asset.get -> TComponent
+RevCore.PrefabRef<TComponent>.Instance.get -> TComponent
+RevCore.PrefabRef<TComponent>.IsInstantiated.get -> bool
+RevCore.PrefabRef<TComponent>.LoadAsync(System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<TComponent>
+RevCore.PrefabRef<TComponent>.InstantiateAsync(UnityEngine.Transform parent = null, bool defaultActive = true, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<TComponent>
+RevCore.PrefabRef<TComponent>.Release() -> void

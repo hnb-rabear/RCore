@@ -15,3 +15,4 @@
 - `AssetRef<T>` serializable wrapper with cached `Asset`, `IsLoading`, `IsLoaded`, `LoadAsync`, `Release`.
 - `KeyedAssetRef<TKey, T>` — generic keyed variant of `AssetRef<T>`.
 - `ComponentRef<TComponent>` serializable reference resolving to a `Component` on a prefab.
+- `PrefabRef<TComponent>` — `ComponentRef` + parent transform + cached instance.
