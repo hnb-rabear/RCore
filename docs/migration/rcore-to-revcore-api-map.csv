@@ -370,3 +370,24 @@ UI,CanvasResolutionFixerEditor,class,GAP,UI,,no RevCore equivalent found — por
 UI,UIGridScaler,class,GAP,UI,,no RevCore equivalent found — port or drop?
 UI,ScaleType,enum,GAP,UI,,no RevCore equivalent found — port or drop?
 UI,VerticalSnapScrollView,class,GAP,UI,,no RevCore equivalent found — port or drop?
+Addressable,AddressableUtil.LoadAssetAsync<T>(string),method,REPLACED,Addressables,AddressableLoader.LoadAssetAsync<T>(string),Now throws AddressableLoadException on failure
+Addressable,AddressableUtil.LoadAssetAsync<T>(AssetReference),method,REPLACED,Addressables,AddressableLoader.LoadAssetAsync<T>(AssetReference),Same semantics
+Addressable,AddressableUtil.LoadAssetAsync<T>(AssetReferenceT<T>),method,REPLACED,Addressables,AddressableLoader.LoadAssetAsync<T>(AssetReferenceT<T>),Strongly-typed overload
+Addressable,AddressableUtil.LoadAssetsAsync<T>,method,REPLACED,Addressables,AddressableLoader.LoadAssetsAsync<T>,Batch surface unchanged
+Addressable,AddressableUtil.InstantiateAsync,method,REPLACED,Addressables,AddressableLoader.InstantiateAsync,Returns UniTask<GameObject>
+Addressable,AddressableUtil.LoadSceneAsync,method,REPLACED,Addressables,AddressableScene.LoadSceneAsync,Moved to dedicated helper
+Addressable,AddressableUtil.UnloadSceneAsync,method,REPLACED,Addressables,AddressableScene.UnloadSceneAsync,Moved to dedicated helper
+Addressable,AddressableUtil.GetDownloadSizeAsync,method,REPLACED,Addressables,AddressableDownloader.GetDownloadSizeAsync,Returns long bytes
+Addressable,AddressableUtil.DownloadDependenciesAsync,method,REPLACED,Addressables,AddressableDownloader.DownloadDependenciesAsync,Throws on failure
+Addressable,AddressableUtil.ClearDependencyCacheAsync,method,REPLACED,Addressables,AddressableDownloader.ClearDependencyCacheAsync,Returns UniTask<bool>
+Addressable,AddressableUtil.CheckForCatalogUpdatesAsync,method,REPLACED,Addressables,AddressableCatalog.CheckForCatalogUpdatesAsync,Returns List<string>
+Addressable,AddressableUtil.UpdateCatalogsAsync,method,REPLACED,Addressables,AddressableCatalog.UpdateCatalogsAsync,Returns List<IResourceLocator>
+Addressable,AssetBundleRef<M>,class,REPLACED,Addressables,AssetRef<T>,Single generic
+Addressable,"AssetBundleWithEnumKey<T,M>",class,REPLACED,Addressables,"KeyedAssetRef<TKey,T>",Single generic replaces three RCore variants
+Addressable,"AssetBundleWith2EnumKeys<T1,T2,M>",class,DROPPED,—,—,Use struct/tuple key with KeyedAssetRef
+Addressable,AssetBundleWithIntKey<M>,class,REPLACED,Addressables,"KeyedAssetRef<int,T>",Single generic
+Addressable,AssetBundleWrap<T>,class,REPLACED,Addressables,PrefabRef<T>,Renamed; same shape
+Addressable,ComponentRef<TComponent>,class,REPLACED,Addressables,ComponentRef<TComponent>,Public fields → properties; ReleaseAsset → Release
+Addressable,ComponentRef_SpriteRenderer,class,DROPPED,Addressables,ComponentRef<SpriteRenderer>,Specialised subclass no longer needed
+Addressable,AssetRef_SpriteAtlas,class,DROPPED,—,—,Use AssetReferenceT<SpriteAtlas> in a serializable subclass
+Addressable,AssetRef_FontAsset,class,DROPPED,—,—,Use AssetReferenceT<TMP_FontAsset> in a serializable subclass
