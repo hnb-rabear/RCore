@@ -38,7 +38,7 @@ namespace RevCore
 		/// <summary>
 		/// Gets whether this wrapper currently owns a valid in-flight Addressables handle.
 		/// </summary>
-		public bool IsLoading => m_asset == null && m_handle.IsValid() && !m_handle.IsDone;
+		public bool IsLoading => m_asset == null && m_handle.IsValid();
 
 		/// <summary>
 		/// Gets whether this wrapper has a cached loaded asset.
@@ -78,22 +78,23 @@ namespace RevCore
 				throw new AddressableLoadException(m_reference.RuntimeKey, AsyncOperationStatus.Failed, ex);
 			}
 
+			var capturedHandle = m_handle;
 			try
 			{
-				m_asset = await m_handle.ToUniTask(progress, cancellationToken: ct);
+				m_asset = await capturedHandle.ToUniTask(progress, cancellationToken: ct);
 				return m_asset;
 			}
 			catch (OperationCanceledException)
 			{
-				ReleaseOnComplete(m_handle);
-				m_handle = default;
+				if (m_handle.Equals(capturedHandle)) m_handle = default;
+				ReleaseOnComplete(capturedHandle);
 				throw;
 			}
 			catch (Exception ex)
 			{
-				var status = m_handle.IsValid() ? m_handle.Status : AsyncOperationStatus.Failed;
-				if (m_handle.IsValid()) Addressables.Release(m_handle);
-				m_handle = default;
+				var status = capturedHandle.IsValid() ? capturedHandle.Status : AsyncOperationStatus.Failed;
+				if (capturedHandle.IsValid()) Addressables.Release(capturedHandle);
+				if (m_handle.Equals(capturedHandle)) m_handle = default;
 				throw new AddressableLoadException(m_reference.RuntimeKey, status, ex);
 			}
 		}
