@@ -1,5 +1,7 @@
 #nullable enable
 RevCore.AddressableLoadException
+RevCore.AddressableLoader
 RevCore.AddressableLoadException.AddressableLoadException(object key, UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus status, System.Exception inner) -> void
+static RevCore.AddressableLoader.LoadAssetAsync<T>(string address, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 RevCore.AddressableLoadException.Key.get -> object
 RevCore.AddressableLoadException.Status.get -> UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus
