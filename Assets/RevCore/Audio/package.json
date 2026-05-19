@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.revcore.audio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "RevCore.Audio",
   "description": "Audio management — clip repository, SFX pooling, music playback, volume fading, optional Addressables and DOTween support",
   "unity": "2022.3",
@@ -14,7 +14,8 @@
   "dependencies": {
     "com.rabear.revcore.foundation": "1.0.0",
     "com.rabear.revcore.inspector": "1.0.0",
-    "com.rabear.revcore.prefs": "1.0.0"
+    "com.rabear.revcore.prefs": "1.0.0",
+    "com.cysharp.unitask": "2.5.10"
   },
   "samples": [
     {

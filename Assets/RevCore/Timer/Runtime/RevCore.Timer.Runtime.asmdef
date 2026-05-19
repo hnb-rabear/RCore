@@ -1,7 +1,7 @@
 {
   "name": "RevCore.Timer.Runtime",
   "rootNamespace": "RevCore",
-  "references": ["RevCore.Foundation.Runtime"],
+  "references": ["RevCore.Foundation.Runtime", "UniTask"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

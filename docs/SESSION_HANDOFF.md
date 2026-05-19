@@ -46,10 +46,12 @@ The `Shipped.txt` files still serve as a committed paper trail for PR review. Re
 
 ## 3. Branch + git state
 
-- **Working branch at session end**: `docs/post-v1.0-updates`. Open as PR (see below).
-- **Main**: `main` at commit `30950b0` (merge of PR #12 `release/v1.0.0`).
-- **Tag**: `v1.0.0` pushed.
-- **Open PR**: documentation polish on top of v1.0 — `docs/post-v1.0-updates`. After merge, no in-flight work.
+- **Working branch at session end**: `feat/timer-audio-unitask-v1.1`.
+- **Base**: `origin/main` at commit `f394ff0` (PR #13 docs/post-v1.0 updates merged).
+- **Latest commit**: `cc800e3 feat(timer,audio): UniTask async API (v1.1.0)`.
+- **Pushed branch**: `origin/feat/timer-audio-unitask-v1.1`.
+- **PR status**: branch pushed, but PR creation failed because `gh` is not authenticated (`gh auth login` needed). Create PR manually from `feat/timer-audio-unitask-v1.1` into `main`.
+- **Local caveat**: worktree still shows unrelated line-ending drift in `Assets/SheetXExample/Scripts/Generated/*`; those files were deliberately left unstaged and are not in commit `cc800e3`.
 
 PR history this session:
 
@@ -60,11 +62,34 @@ PR history this session:
 | 10 | `perf/eventbus-zero-alloc-publish` | perf(eventbus): zero-alloc Publish via cached listener count |
 | 11 | `docs/migration-plan-phase-8` | Phase 8 — consumer migration plan + GAP categorisation |
 | 12 | `release/v1.0.0` | Phase 9 release cut |
-| 13 (this session) | `docs/post-v1.0-updates` | Post-v1.0 doc updates |
+| 13 | `docs/post-v1.0-updates` | Post-v1.0 doc updates |
+| 14 (pending merge) | `feat/timer-audio-unitask-v1.1` | UniTask async API for Timer + Audio (v1.1.0) |
 
 ---
 
-## 4. Future work (none gated, all opportunistic)
+## 4. Current v1.1.0 PR-A state
+
+Implemented UniTask async API for Timer + Audio per `docs/superpowers/plans/2026-05-17-revcore-unitask-timer-audio-implementation.md`.
+
+Shipped in commit `cc800e3`:
+
+- `RevCore.Timer`: `Timers.DelayAsync`, `Timers.WaitForConditionAsync`, `Timers.WaitForFramesAsync` in `Core/TimersAsync.cs`; `Timers` made `partial`.
+- `RevCore.Audio`: `AudioAsyncExtensions.FadeMusicAsync` and `FadeOutMusicAsync`.
+- Runtime/test asmdefs reference `UniTask` for Timer and Audio.
+- Timer and Audio `package.json` bumped to `1.1.0` and declare `com.cysharp.unitask` `2.5.10`.
+- PublicAPI.Unshipped entries added for all new public members.
+- Root/module CHANGELOGs updated; Unity `.meta` files added for all new scripts.
+
+Verification run:
+
+```powershell
+python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json
+# Public members: 963; Documented: 963; Undocumented: 0; Coverage: 100.00%
+```
+
+Not run in shell: Unity compile and Unity Test Runner EditMode. PR body should keep these as manual checklist items. Expected test delta: +18 tests (12 TimerAsyncTests + 6 AudioAsyncTests).
+
+## 5. Future work (none gated, all opportunistic)
 
 Original plan declined / deferred entries that may resurface as consumer demand:
 
@@ -80,7 +105,7 @@ No blockers. No outstanding bugs. The framework is at a clean v1.0 state.
 
 ---
 
-## 5. Memory & conventions
+## 6. Memory & conventions
 
 Auto-memory is stored at `C:\Users\Adminn\.claude\projects\e--Projects---RCore\memory\MEMORY.md`. Key entries:
 
