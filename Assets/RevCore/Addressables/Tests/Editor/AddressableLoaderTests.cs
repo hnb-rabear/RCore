@@ -5,6 +5,7 @@ using NUnit.Framework;
 using RevCore;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.TestTools;
 
 namespace RevCore.Tests
 {
@@ -60,5 +61,22 @@ namespace RevCore.Tests
 				Assert.Fail("Expected exception, got " + handle);
 			});
 		}
+
+		[Test]
+		public void load_assets_async_with_unknown_address_in_batch_throws()
+		{
+			Assert.ThrowsAsync<AddressableLoadException>(async () =>
+			{
+				await AddressableLoader.LoadAssetsAsync<Texture2D>(new[] { "missing-a", "missing-b" });
+			});
+		}
+
+		[UnityTest]
+		public System.Collections.IEnumerator load_resource_locations_async_returns_empty_for_unknown_key() => UniTask.ToCoroutine(async () =>
+		{
+			var locations = await AddressableLoader.LoadResourceLocationsAsync("definitely-not-a-key", typeof(Texture2D));
+			Assert.IsNotNull(locations);
+			Assert.AreEqual(0, locations.Count);
+		});
 	}
 }

@@ -6,5 +6,10 @@ static RevCore.AddressableLoader.LoadAssetAsync<T>(string address, System.IProgr
 static RevCore.AddressableLoader.LoadAssetAsync<T>(UnityEngine.AddressableAssets.AssetReference reference, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 static RevCore.AddressableLoader.LoadAssetAsync<T>(UnityEngine.AddressableAssets.AssetReferenceT<T> reference, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 static RevCore.AddressableLoader.LoadAssetWithHandleAsync<T>(string address, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<T>>
+static RevCore.AddressableLoader.LoadAssetsAsync<T>(System.Collections.Generic.IList<string> addresses, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<System.Collections.Generic.IList<T>>
+static RevCore.AddressableLoader.InstantiateAsync(string address, UnityEngine.Transform parent, bool worldPositionStays = false, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<UnityEngine.GameObject>
+static RevCore.AddressableLoader.LoadResourceLocationsAsync(object key, System.Type type = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<System.Collections.Generic.IList<UnityEngine.ResourceManagement.ResourceLocations.IResourceLocation>>
+static RevCore.AddressableLoader.Release<T>(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<T> handle) -> void
+static RevCore.AddressableLoader.ReleaseInstance(UnityEngine.GameObject instance) -> bool
 RevCore.AddressableLoadException.Key.get -> object
 RevCore.AddressableLoadException.Status.get -> UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus

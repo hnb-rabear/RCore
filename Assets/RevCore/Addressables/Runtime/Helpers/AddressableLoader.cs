@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using Object = UnityEngine.Object;
 
 namespace RevCore
@@ -123,5 +124,80 @@ namespace RevCore
 				throw new AddressableLoadException(address, status, ex);
 			}
 		}
+		/// <summary>Loads multiple assets in parallel by address list. Throws if any single load fails.</summary>
+		public static async UniTask<System.Collections.Generic.IList<T>> LoadAssetsAsync<T>(System.Collections.Generic.IList<string> addresses, CancellationToken ct = default) where T : Object
+		{
+			if (addresses == null) throw new ArgumentNullException(nameof(addresses));
+			var tasks = new UniTask<T>[addresses.Count];
+			for (int i = 0; i < addresses.Count; i++)
+				tasks[i] = LoadAssetAsync<T>(addresses[i], progress: null, ct: ct);
+			return await UniTask.WhenAll(tasks);
+		}
+
+		/// <summary>Asynchronously instantiates an Addressables prefab. Throws on failure.</summary>
+		public static async UniTask<GameObject> InstantiateAsync(string address, Transform parent, bool worldPositionStays = false, CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+			AsyncOperationHandle<GameObject> handle;
+			try
+			{
+				handle = Addressables.InstantiateAsync(address, parent, worldPositionStays);
+			}
+			catch (Exception ex)
+			{
+				throw new AddressableLoadException(address, AsyncOperationStatus.Failed, ex);
+			}
+			try
+			{
+				return await handle.ToUniTask(cancellationToken: ct);
+			}
+			catch (OperationCanceledException)
+			{
+				if (handle.IsValid())
+				{
+					if (handle.IsDone && handle.Result != null) Addressables.ReleaseInstance(handle.Result);
+					else handle.Completed += op => { if (op.Result != null) Addressables.ReleaseInstance(op.Result); };
+				}
+				throw;
+			}
+			catch (Exception ex)
+			{
+				var status = handle.IsValid() ? handle.Status : AsyncOperationStatus.Failed;
+				throw new AddressableLoadException(address, status, ex);
+			}
+		}
+
+		/// <summary>Queries the Addressables catalog for resource locations matching <paramref name="key"/>.</summary>
+		public static async UniTask<System.Collections.Generic.IList<IResourceLocation>> LoadResourceLocationsAsync(object key, Type type = null, CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+			AsyncOperationHandle<System.Collections.Generic.IList<IResourceLocation>> handle;
+			try
+			{
+				handle = Addressables.LoadResourceLocationsAsync(key, type);
+			}
+			catch (Exception ex)
+			{
+				throw new AddressableLoadException(key, AsyncOperationStatus.Failed, ex);
+			}
+			try { return await handle.ToUniTask(cancellationToken: ct); }
+			catch (OperationCanceledException) { if (handle.IsValid()) handle.Completed += op => Addressables.Release(op); throw; }
+			catch (Exception ex)
+			{
+				var status = handle.IsValid() ? handle.Status : AsyncOperationStatus.Failed;
+				if (handle.IsValid()) Addressables.Release(handle);
+				throw new AddressableLoadException(key, status, ex);
+			}
+		}
+
+		/// <summary>Releases a previously loaded asset handle. Safe no-op if the handle is invalid.</summary>
+		public static void Release<T>(AsyncOperationHandle<T> handle)
+		{
+			if (handle.IsValid()) Addressables.Release(handle);
+		}
+
+		/// <summary>Releases an instantiated game object created via <see cref="InstantiateAsync"/>.</summary>
+		public static bool ReleaseInstance(GameObject instance)
+			=> instance != null && Addressables.ReleaseInstance(instance);
 	}
 }
