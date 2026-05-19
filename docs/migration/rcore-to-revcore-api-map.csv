@@ -383,9 +383,9 @@ Addressable,AddressableUtil.ClearDependencyCacheAsync,method,REPLACED,Addressabl
 Addressable,AddressableUtil.CheckForCatalogUpdatesAsync,method,REPLACED,Addressables,AddressableCatalog.CheckForCatalogUpdatesAsync,Returns List<string>
 Addressable,AddressableUtil.UpdateCatalogsAsync,method,REPLACED,Addressables,AddressableCatalog.UpdateCatalogsAsync,Returns List<IResourceLocator>
 Addressable,AssetBundleRef<M>,class,REPLACED,Addressables,AssetRef<T>,Single generic
-Addressable,AssetBundleWithEnumKey<T,M>,class,REPLACED,Addressables,KeyedAssetRef<TKey,T>,Single generic replaces three RCore variants
-Addressable,AssetBundleWith2EnumKeys<T1,T2,M>,class,DROPPED,—,—,Use struct/tuple key with KeyedAssetRef
-Addressable,AssetBundleWithIntKey<M>,class,REPLACED,Addressables,KeyedAssetRef<int,T>,Single generic
+Addressable,"AssetBundleWithEnumKey<T,M>",class,REPLACED,Addressables,"KeyedAssetRef<TKey,T>",Single generic replaces three RCore variants
+Addressable,"AssetBundleWith2EnumKeys<T1,T2,M>",class,DROPPED,—,—,Use struct/tuple key with KeyedAssetRef
+Addressable,AssetBundleWithIntKey<M>,class,REPLACED,Addressables,"KeyedAssetRef<int,T>",Single generic
 Addressable,AssetBundleWrap<T>,class,REPLACED,Addressables,PrefabRef<T>,Renamed; same shape
 Addressable,ComponentRef<TComponent>,class,REPLACED,Addressables,ComponentRef<TComponent>,Public fields → properties; ReleaseAsset → Release
 Addressable,ComponentRef_SpriteRenderer,class,DROPPED,Addressables,ComponentRef<SpriteRenderer>,Specialised subclass no longer needed
