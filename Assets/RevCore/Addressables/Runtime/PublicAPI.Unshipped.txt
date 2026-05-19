@@ -1,7 +1,10 @@
 #nullable enable
+RevCore.AddressableCatalog
 RevCore.AddressableLoadException
 RevCore.AddressableLoader
 RevCore.AddressableLoadException.AddressableLoadException(object key, UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus status, System.Exception inner) -> void
+static RevCore.AddressableCatalog.CheckForCatalogUpdatesAsync(bool autoReleaseHandle = true, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<System.Collections.Generic.List<string>>
+static RevCore.AddressableCatalog.UpdateCatalogsAsync(System.Collections.Generic.IEnumerable<string> catalogIds = null, bool autoReleaseHandle = true, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<System.Collections.Generic.List<UnityEngine.AddressableAssets.ResourceLocators.IResourceLocator>>
 static RevCore.AddressableLoader.LoadAssetAsync<T>(string address, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 static RevCore.AddressableLoader.LoadAssetAsync<T>(UnityEngine.AddressableAssets.AssetReference reference, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 static RevCore.AddressableLoader.LoadAssetAsync<T>(UnityEngine.AddressableAssets.AssetReferenceT<T> reference, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
