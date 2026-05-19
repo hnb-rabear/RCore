@@ -12,3 +12,4 @@
 - `AddressableDownloader` with `GetDownloadSizeAsync`, `DownloadDependenciesAsync`, `ClearDependencyCacheAsync`.
 - `AddressableCatalog.CheckForCatalogUpdatesAsync`, `UpdateCatalogsAsync`.
 - `AddressableScene.LoadSceneAsync`, `UnloadSceneAsync`.
+- `AssetRef<T>` serializable wrapper with cached `Asset`, `IsLoading`, `IsLoaded`, `LoadAsync`, `Release`.

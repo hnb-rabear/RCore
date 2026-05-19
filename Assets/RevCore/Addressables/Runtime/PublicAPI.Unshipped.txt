@@ -23,3 +23,11 @@ RevCore.AddressableDownloader
 static RevCore.AddressableDownloader.GetDownloadSizeAsync(object key, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<long>
 static RevCore.AddressableDownloader.DownloadDependenciesAsync(object key, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask
 static RevCore.AddressableDownloader.ClearDependencyCacheAsync(object key, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<bool>
+RevCore.AssetRef<T>
+RevCore.AssetRef<T>.AssetRef() -> void
+RevCore.AssetRef<T>.Reference.get -> UnityEngine.AddressableAssets.AssetReferenceT<T>
+RevCore.AssetRef<T>.Asset.get -> T
+RevCore.AssetRef<T>.IsLoading.get -> bool
+RevCore.AssetRef<T>.IsLoaded.get -> bool
+RevCore.AssetRef<T>.LoadAsync(System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
+RevCore.AssetRef<T>.Release() -> void
