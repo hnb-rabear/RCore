@@ -13,3 +13,7 @@ static RevCore.AddressableLoader.Release<T>(UnityEngine.ResourceManagement.Async
 static RevCore.AddressableLoader.ReleaseInstance(UnityEngine.GameObject instance) -> bool
 RevCore.AddressableLoadException.Key.get -> object
 RevCore.AddressableLoadException.Status.get -> UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus
+RevCore.AddressableDownloader
+static RevCore.AddressableDownloader.GetDownloadSizeAsync(object key, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<long>
+static RevCore.AddressableDownloader.DownloadDependenciesAsync(object key, System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask
+static RevCore.AddressableDownloader.ClearDependencyCacheAsync(object key, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<bool>
