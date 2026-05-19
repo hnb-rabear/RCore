@@ -48,6 +48,16 @@ namespace RevCore
 		public TComponent Instance => m_instance;
 
 		/// <summary>
+		/// Gets whether the wrapped reference is currently loading its prefab asset.
+		/// </summary>
+		public bool IsLoading => m_reference != null && m_reference.IsLoading;
+
+		/// <summary>
+		/// Gets whether the wrapped reference has loaded its prefab asset.
+		/// </summary>
+		public bool IsLoaded => m_reference != null && m_reference.IsLoaded;
+
+		/// <summary>
 		/// Gets whether this reference currently has a cached instantiated component.
 		/// </summary>
 		public bool IsInstantiated => m_instance != null;
@@ -98,7 +108,7 @@ namespace RevCore
 		/// <returns>The cached or newly instantiated component.</returns>
 		/// <exception cref="AddressableLoadException">Thrown when the wrapped component reference is missing or the load fails.</exception>
 		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
-		public async UniTask<TComponent> InstantiateAsync(Transform parent = null, bool defaultActive = true, CancellationToken ct = default)
+		public async UniTask<TComponent> InstantiateAsync(Transform parent = null, bool defaultActive = false, CancellationToken ct = default)
 		{
 			if (m_instance != null) return m_instance;
 
