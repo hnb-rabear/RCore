@@ -1,4 +1,1 @@
 #nullable enable
-RevCore.AudioAsyncExtensions
-static RevCore.AudioAsyncExtensions.FadeMusicAsync(this RevCore.BaseAudioManager manager, float targetVolume, float duration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask
-static RevCore.AudioAsyncExtensions.FadeOutMusicAsync(this RevCore.BaseAudioManager manager, float duration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask

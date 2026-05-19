@@ -40,7 +40,10 @@ RevCore.Timers
 static RevCore.Timers.ActiveCount.get -> int
 static RevCore.Timers.Cancel(int id) -> void
 static RevCore.Timers.Clear() -> void
+static RevCore.Timers.DelayAsync(float seconds, bool unscaledTime = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask
 static RevCore.Timers.Tick(float deltaTime, float unscaledDeltaTime) -> void
+static RevCore.Timers.WaitForConditionAsync(System.Func<bool> predicate, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask
+static RevCore.Timers.WaitForFramesAsync(int frameCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Cysharp.Threading.Tasks.UniTask
 virtual RevCore.TimerDriver.Awake() -> void
 virtual RevCore.TimerDriver.LateUpdate() -> void
 ~RevCore.ITimerScheduler.Cancel(RevCore.ITimerHandle handle) -> void
