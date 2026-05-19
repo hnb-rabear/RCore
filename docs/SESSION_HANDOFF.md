@@ -1,123 +1,197 @@
-# Session Handoff — Post v1.0.0 cut (2026-05-17)
+# Session Handoff — RevCore.Addressables v1.0.0 branch (2026-05-19)
 
-Written at the end of the local Claude Code session that completed Phases 6.3 → 9 of the RevCore hardening plan and tagged `v1.0.0`. Read this first in any new session.
-
-> **First action for the new session**: skim sections 0–3 of this document, then `CHANGELOG.md` `[1.0.0]` entry, then this session's memory under `C:\Users\Adminn\.claude\projects\e--Projects---RCore\memory\MEMORY.md`.
+Read this first in any new Claude Code session. This repo houses two Unity frameworks side by side: **RCore** (legacy, `Assets/RCore/`, frozen and still used by production consumer projects) and **RevCore** (`Assets/RevCore/`, next-generation modular UPM framework). Active work stays in RevCore; do not edit RCore unless the user explicitly asks.
 
 ---
 
-## 0. Project context (one paragraph)
+## 0. Project context
 
-The repo houses two Unity frameworks side by side: **RCore** (legacy, `Assets/RCore/`, in production across 4+ consumer projects, frozen and untouched) and **RevCore** (`Assets/RevCore/`, the next-generation rewrite, now at **v1.0.0**). Solo maintainer. Distribution is UPM git URL with semver tags. The maintainer's working language is Vietnamese + English mix and the working style is "tỉ mỉ, không gấp, không được phạm sai sót" — careful, no rush, high quality bar.
+RevCore is maintained as independent UPM packages. Quality bar is company-framework level: public API paper trail, 100% XML doc coverage, CHANGELOG entry per PR-sized change, no hidden cross-package dependencies.
 
-The 10-phase hardening plan (Phases 0–9) is **complete**. Future work is incremental on top of v1.0.
-
----
-
-## 1. What shipped in v1.0.0
-
-Released as git tag `v1.0.0`, GitHub Release published via `release.yml`. Same-day cut as v0.5.0 — the v0.5.0 release was the pre-1.0 baseline, v1.0.0 is the cleanup.
-
-**Stage cleanup (removed):**
-
-- `MathHelper.Ded2Rad`, `MathHelper.Tad2Deg` (typos) → use `Deg2Rad` / `Rad2Deg`.
-- `TransformHelper.CovertAnchoredPosFromChildToParent` (both overloads, typo) → use `ConvertAnchoredPosFromChildToParent`.
-- `PoolsContainer<T>.GetActiveList()`, `GetAllItems()` (allocating) → use `ForEachActive` / `ForEachItem` / `CopyActiveTo` / `CopyAllTo`.
-- `JObjectDB.collections` (public obsolete property) deleted; `s_collections` stays private. Use the accessor methods.
-- `Result<T>.Value` moved from public `[Obsolete]` to `internal`. Public read API is `TryGetValue` / `ValueOr`. Tests access via `[InternalsVisibleTo("RevCore.Foundation.Tests")]` added to `Result.cs`.
-
-**Public surface committed:** 1337 entries across the 8 runtime modules populated into per-module `PublicAPI.Shipped.txt` (Audio 74, Data 139, Foundation 391, Inspector 40, Pool 85, Prefs 42, Timer 70, UI 496). The `Unshipped.txt` files are header-only and become the staging lane for v1.0.1+ additions.
-
-**Version:** all nine `package.json` files bumped from `0.5.0` to `1.0.0`.
-
-**Tests / coverage:** 160 EditMode tests pass. XML doc coverage 956 / 956 (100%). Delta -7 versus v0.5.0 matches the deleted symbols exactly.
+Current focus: **RevCore.Addressables v1.0.0**, a new standalone package replacing the RCore Addressables helper/wrapper family by design, not by copy-paste.
 
 ---
 
-## 2. Analyzer status — important
+## 1. Branch + PR state
 
-`Microsoft.CodeAnalysis.PublicApiAnalyzers` ships in `Assets/RevCore/_Analyzers/` but is **dormant**: the `RoslynAnalyzer` asset label is NOT set on either DLL. Unity loads any labelled analyzer project-wide; that would fire `RS0016` on legacy `Assets/RCore.Archives/` and `Assets/RCore.LXLite/` and `Assets/RCore.SheetX/` — none carry asmdefs, none track PublicAPI, the maintainer explicitly does not touch them. Editorconfig-based scoping (path globs, nested `.editorconfig`) does not suppress these in practice. Until Unity gains asmdef-level analyzer scoping, the analyzer cannot be live without polluting RCore compile.
+- **Current working branch**: `feat/addressables-v1.0`
+- **Base branch**: `main`
+- **Remote branch**: `origin/feat/addressables-v1.0`
+- **Push state**: pushed successfully.
+- **PR state**: not created from CLI because `gh` is not installed in Bash or PowerShell PATH.
+- **Manual PR URL**: `https://github.com/hnb-rabear/RCore/pull/new/feat/addressables-v1.0`
 
-The `Shipped.txt` files still serve as a committed paper trail for PR review. Reactivation procedure (for an audit pass) is documented in `docs/contributing/PUBLIC_API_GUIDE.md` "Analyzer wiring".
+Recommended PR title:
 
-`scripts/seal-public-api.py` is the idempotent helper that promotes `Unshipped` → `Shipped` at release-cut time. Used by `RELEASE_CHECKLIST` §3.
+```text
+feat(addressables): RevCore.Addressables v1.0.0
+```
+
+Recommended PR body:
+
+```markdown
+## Summary
+
+- New standalone package `com.rabear.revcore.addressables` v1.0.0.
+- Wraps Unity Addressables behind a UniTask-first API; throws `AddressableLoadException` on terminal failure; honours `CancellationToken` + `IProgress<float>` everywhere.
+- Adds serialisable wrappers (`AssetRef<T>`, `KeyedAssetRef<TKey,T>`, `ComponentRef<TComponent>`, `PrefabRef<TComponent>`) to replace RCore's `AssetBundleRef` family.
+- Zero dependency on other RevCore packages.
+
+See `docs/superpowers/specs/2026-05-19-revcore-addressables-design.md` for the design and `docs/migration/rcore-to-revcore-api-map.csv` for the row-by-row migration map.
+
+## Test plan
+
+- [ ] Unity EditMode tests pass (loader, downloader, catalog, wrappers — fake `IResourceLocator`) — skipped in CLI; Unity unavailable.
+- [ ] Unity PlayMode tests pass (instantiate, scene, prefab ref) — skipped in CLI; Unity unavailable.
+- [x] `python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json` reports 100% (`1015/1015`).
+- [x] PublicAPI surface sealed (`Unshipped.txt` empty except header).
+- [ ] Manual smoke: load a known address from a sample scene, instantiate, release, verify no leak in Addressables profiler.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
 
 ---
 
-## 3. Branch + git state
+## 2. What changed in RevCore.Addressables
 
-- **Working branch at session end**: `feat/timer-audio-unitask-v1.1`.
-- **Base**: `origin/main` at commit `f394ff0` (PR #13 docs/post-v1.0 updates merged).
-- **Latest commit**: `cc800e3 feat(timer,audio): UniTask async API (v1.1.0)`.
-- **Pushed branch**: `origin/feat/timer-audio-unitask-v1.1`.
-- **PR status**: branch pushed, but PR creation failed because `gh` is not authenticated (`gh auth login` needed). Create PR manually from `feat/timer-audio-unitask-v1.1` into `main`.
-- **Local caveat**: worktree still shows unrelated line-ending drift in `Assets/SheetXExample/Scripts/Generated/*`; those files were deliberately left unstaged and are not in commit `cc800e3`.
+New package path: `Assets/RevCore/Addressables/`
 
-PR history this session:
+Package metadata:
 
-| # | Branch | Subject |
-|---|---|---|
-| 8 | `spec/revcore-irevdiagnostics` | Phase 7.1 — IRevDiagnostics observability hooks |
-| 9 | `docs/prefs-no-encryption-policy` | docs(prefs): document no-encryption policy |
-| 10 | `perf/eventbus-zero-alloc-publish` | perf(eventbus): zero-alloc Publish via cached listener count |
-| 11 | `docs/migration-plan-phase-8` | Phase 8 — consumer migration plan + GAP categorisation |
-| 12 | `release/v1.0.0` | Phase 9 release cut |
-| 13 | `docs/post-v1.0-updates` | Post-v1.0 doc updates |
-| 14 (pending merge) | `feat/timer-audio-unitask-v1.1` | UniTask async API for Timer + Audio (v1.1.0) |
+- UPM ID: `com.rabear.revcore.addressables`
+- Version: `1.0.0`
+- Unity: `2022.3`
+- Dependencies:
+  - `com.unity.addressables` `1.22.0`
+  - `com.cysharp.unitask` `2.5.10`
+- Runtime asmdef: `RevCore.Addressables.Runtime`
+- Namespace: `RevCore`
+- RevCore package dependencies: none
+
+Runtime surface:
+
+- `AddressableLoadException`
+- `AddressableLoader`
+- `AddressableDownloader`
+- `AddressableCatalog`
+- `AddressableScene`
+- `AssetRef<T>`
+- `KeyedAssetRef<TKey, T>`
+- `ComponentRef<TComponent>`
+- `PrefabRef<TComponent>`
+
+Docs:
+
+- `Assets/RevCore/Addressables/README.md`
+- `Assets/RevCore/Addressables/CHANGELOG.md`
+- `docs/superpowers/specs/2026-05-19-revcore-addressables-design.md`
+- `docs/superpowers/plans/2026-05-19-revcore-addressables-implementation.md`
+- `docs/migration/rcore-to-revcore-api-map.csv`
+- `docs/migration/rcore-to-revcore-api-map.md`
 
 ---
 
-## 4. Current v1.1.0 PR-A state
+## 3. Contract decisions
 
-Implemented UniTask async API for Timer + Audio per `docs/superpowers/plans/2026-05-17-revcore-unitask-timer-audio-implementation.md`.
+- RCore remains frozen. Addressables work used RCore as anchor/reference only.
+- Addressables package is standalone. It must not depend on Foundation, Timer, Audio, Pool, Data, UI, Inspector, or Tools.
+- Helpers are stateless wrappers over Unity Addressables.
+- Wrappers own serialized references and cached runtime state.
+- All async public methods use UniTask.
+- Progress parameters use `IProgress<float> progress = null`.
+- Cancellation parameters use `CancellationToken ct = default`.
+- Terminal failures throw `AddressableLoadException` with key, status, and inner exception.
+- Cancellation does not eagerly release in-flight Addressables handles; cleanup is attached to completion.
+- `LoadAssetWithHandleAsync<T>` transfers handle ownership to caller.
+- `PrefabRef<TComponent>.InstantiateAsync` defaults `defaultActive = false`.
+- `PrefabRef<TComponent>` exposes `IsLoading` and `IsLoaded` through its inner `ComponentRef<TComponent>`.
 
-Shipped in commit `cc800e3`:
+---
 
-- `RevCore.Timer`: `Timers.DelayAsync`, `Timers.WaitForConditionAsync`, `Timers.WaitForFramesAsync` in `Core/TimersAsync.cs`; `Timers` made `partial`.
-- `RevCore.Audio`: `AudioAsyncExtensions.FadeMusicAsync` and `FadeOutMusicAsync`.
-- Runtime/test asmdefs reference `UniTask` for Timer and Audio.
-- Timer and Audio `package.json` bumped to `1.1.0` and declare `com.cysharp.unitask` `2.5.10`.
-- PublicAPI.Unshipped entries added for all new public members.
-- Root/module CHANGELOGs updated; Unity `.meta` files added for all new scripts.
+## 4. Verification state
 
-Verification run:
+Completed:
 
 ```powershell
 python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json
-# Public members: 963; Documented: 963; Undocumented: 0; Coverage: 100.00%
+# Public members: 1015; Documented: 1015; Undocumented: 0; Coverage: 100.00%
 ```
 
-Not run in shell: Unity compile and Unity Test Runner EditMode. PR body should keep these as manual checklist items. Expected test delta: +18 tests (12 TimerAsyncTests + 6 AudioAsyncTests).
+Also completed:
 
-## 5. Future work (none gated, all opportunistic)
+- PublicAPI sealed for Addressables.
+- Existing Audio and Timer `PublicAPI.Unshipped.txt` entries were also promoted by `scripts/seal-public-api.py --root Assets/RevCore` because the script processes all modules.
+- `docs/api-inventory.csv` refreshed after sealing.
+- Addressables README and changelog written.
+- Migration CSV extended with Addressables replacement rows.
 
-Original plan declined / deferred entries that may resurface as consumer demand:
+Not completed in shell:
 
-- **Migration tooling.** The migration map (`docs/migration/rcore-to-revcore-api-map.csv`) is audited and ready as input. A Python or Roslyn-based rewrite tool can be built when a consumer initiates migration. See `docs/migration/PLAN.md` §9 sketch.
-- **Schema versioning for `JObjectData`.** Declined in Phase 7.2 — the `JObjectModel<T>.OnPostLoad` hook covers the use case. Reopen if consumer reports cross-version save corruption.
-- **Encrypted PlayerPrefs.** Declined permanently per Phase 7.3. The "no encryption" policy is documented in `Assets/RevCore/Prefs/README.md` and `memory/project_no_encryption.md`. Do not reopen.
-- **PublicAPI analyzer live enforcement.** Awaits Unity asmdef-level analyzer scoping (see §2). Until then, paper-trail-only.
-- **GAP type ports.** 259 GAP types in `docs/migration/gap-categories.md` default to DROP / DEFER / REPLACE; zero default to PORT. Specific PORTs happen on consumer-driven feedback.
-- **Module-level CHANGELOG sync.** Per-module `Assets/RevCore/<Module>/CHANGELOG.md` files are inconsistent (mix of "1.0.0 - 2026-05-13" scaffold dates and unreleased sections). Could be brought into sync with framework versioning, but low priority — root `CHANGELOG.md` is the canonical source.
-- **`Assets/RCore.Archives/` cosmetic diffs.** Two files (`BuildSettings.cs`, `BuilderWindow.cs`) had a Rider Code Cleanup pass run on them during the v1.0 cut. Excluded from PR #12 to respect the "do not touch RCore" mandate. User can `git checkout Assets/RCore.Archives/` to revert if they want.
+- Unity EditMode tests.
+- Unity PlayMode tests.
+- Manual Addressables smoke test.
 
-No blockers. No outstanding bugs. The framework is at a clean v1.0 state.
+Reason: Unity Editor/Test Runner unavailable in CLI environment.
 
 ---
 
-## 6. Memory & conventions
+## 5. Current docs update
 
-Auto-memory is stored at `C:\Users\Adminn\.claude\projects\e--Projects---RCore\memory\MEMORY.md`. Key entries:
+After Addressables implementation, docs were updated to avoid stale v1.0-only references:
 
-- `user_revcore_context.md` — solo maintainer hardening RevCore for ship to 5+ teams.
-- `feedback_commit_granularity.md` — split commits by scope, name red→green tests in body.
-- `project_phase_status.md` — UPDATED this session: now reflects v1.0.0 complete.
-- `project_no_encryption.md` — RevCore ships no value encryption. Do not propose re-adding.
+- `docs/ARCHITECTURE.md` now includes RevCore.Addressables as runtime package, clarifies UniTask is optional for core but required by Addressables, updates XML doc coverage to `1015/1015`, and links the Addressables README.
+- `docs/migration/README.md` now documents REPLACED/DROPPED Addressables rows and marks CSV as migration tooling source of truth.
+- `docs/migration/rcore-to-revcore-api-map.md` regenerated from CSV so it includes `REPLACED` and `DROPPED` sections.
 
-Critical conventions reminder (also in `CLAUDE.md`):
+---
 
-- Private instance fields: `m_camelCase`. Static: `s_camelCase`.
-- `.cs` files use tabs + CRLF. Other files spaces + LF.
+## 6. Recent commit stack on `feat/addressables-v1.0`
+
+```text
+2db5687 release(addressables): v1.0.0
+a50ed4a chore(release): seal PublicAPI and refresh api-inventory
+76e5a22 fix(migration): quote CSV cells with generic type params containing commas
+a8abacf docs(migration): add RCore→RevCore Addressables row map
+1c6e219 docs(addressables): production README with quickstart, surface table, lifetime contract
+70ede3c fix(addressables): align PrefabRef with design spec
+d16b48d feat(addressables): PrefabRef<TComponent>
+068f853 feat(addressables): ComponentRef<TComponent>
+e6cac0c feat(addressables): KeyedAssetRef<TKey, T>
+7506565 fix(addressables): AssetRef<T> IsLoading gap and concurrent-LoadAsync handle capture
+b81d03e feat(addressables): AssetRef<T> serializable wrapper
+62ac5f1 feat(addressables): AddressableScene (load/unload)
+e29bdf1 feat(addressables): AddressableCatalog (check + update)
+c5d1b15 feat(addressables): AddressableDownloader (size/download/clear-cache)
+351fbfd docs(addressables): complete AddressableLoader XML docs
+ad112d6 docs(addressables): expand AddressableLoader XML docs for batch and instance APIs
+6f3bca8 feat(addressables): AddressableLoader batch + instantiate + locations + release
+74ae954 fix(addressables): wrap sync throw in LoadAssetAsync(string) consistent with reference overloads
+088a319 fix(addressables): wrap sync throws in LoadAssetAsync(AssetReference) and LoadAssetWithHandleAsync
+adf1a1a feat(addressables): AddressableLoader reference overloads + handle variant
+bb8640a feat(addressables): AddressableLoader.LoadAssetAsync(string) (red→green: load_asset_async_*)
+931e60d test(addressables): add FakeResourceLocator + AddressableTestFixture base
+2c01e7e feat(addressables): add AddressableLoadException (red→green: constructor_populates_key_status_and_inner_exception)
+70789ba chore(addressables): add Unity meta files for scaffold
+39c3e8b feat(addressables): scaffold RevCore.Addressables package (v1.0.0)
+```
+
+---
+
+## 7. Important conventions
+
+- Private instance fields: `m_camelCase`.
+- Private static fields: `s_camelCase`.
+- Public members: `PascalCase`.
+- `.cs` files: tabs + CRLF.
+- Other text files: spaces + LF.
 - Test methods: `snake_case_descriptive`.
-- Adding public surface: line in module `PublicAPI.Unshipped.txt`, promoted via `seal-public-api.py` at release.
-- Every public member: XML `/// <summary>`. Coverage gate at 100%.
+- Public API additions go into module `Runtime/PublicAPI.Unshipped.txt`, then get promoted at release cut.
+- Every public member needs XML docs.
+- Each PR-sized change gets a CHANGELOG entry.
+- Do not stage unrelated dirty Unity/project files.
+
+---
+
+## 8. Known local state caveat
+
+Repo has unrelated dirty/untracked files outside Addressables work (Unity Addressable group assets, editor layout, local `.claude` / `.understand-anything` / `.vscode`, project settings, docs drafts). Preserve them unless user explicitly asks otherwise.

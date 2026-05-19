@@ -1,560 +1,321 @@
 # RevCore — Tài Liệu Kiến Trúc
 
-> Tài liệu này mô tả kiến trúc, triết lý thiết kế, và cách làm việc với RevCore.
-> Dành cho developer mới tham gia và developer đang đóng góp vào framework.
+> Phiên bản: **v1.1.0** (cập nhật 2026-05-19 — thêm RevCore.Addressables v1.0.0 + UniTask async API)
+> Dành cho team review để quyết định có nên áp dụng RevCore cho dự án hay không.
+> Tài liệu trình bày ý tưởng, modules, cách thiết kế, luồng hoạt động, điểm mạnh và điểm yếu — không lặp lại chi tiết API (xem README từng package).
 
 ---
 
 ## Mục lục
 
-1. [Tổng quan](#1-tổng-quan)
-2. [Triết lý thiết kế](#2-triết-lý-thiết-kế)
-3. [Cấu trúc gói và sơ đồ phụ thuộc](#3-cấu-trúc-gói-và-sơ-đồ-phụ-thuộc)
-4. [Quy ước thư mục và Assembly](#4-quy-ước-thư-mục-và-assembly)
-5. [Các mẫu kiến trúc cốt lõi](#5-các-mẫu-kiến-trúc-cốt-lõi)
-6. [Luồng hoạt động theo tầng](#6-luồng-hoạt-động-theo-tầng)
-7. [Onboarding — Học RevCore theo thứ tự](#7-onboarding--học-revcore-theo-thứ-tự)
-8. [Hướng dẫn đóng góp](#8-hướng-dẫn-đóng-góp)
-9. [Di chuyển từ RCore](#9-di-chuyển-từ-rcore)
+1. [RevCore là gì](#1-revcore-là-gì)
+2. [Mục tiêu thiết kế](#2-mục-tiêu-thiết-kế)
+3. [Modules và sơ đồ phụ thuộc](#3-modules-và-sơ-đồ-phụ-thuộc)
+4. [Triết lý thiết kế](#4-triết-lý-thiết-kế)
+5. [Mẫu kiến trúc cốt lõi](#5-mẫu-kiến-trúc-cốt-lõi)
+6. [Luồng hoạt động](#6-luồng-hoạt-động)
+7. [Điểm mạnh](#7-điểm-mạnh)
+8. [Điểm yếu và điều cần cân nhắc](#8-điểm-yếu-và-điều-cần-cân-nhắc)
+9. [Khuyến nghị áp dụng](#9-khuyến-nghị-áp-dụng)
+10. [Tài liệu liên quan](#10-tài-liệu-liên-quan)
 
 ---
 
-## 1. Tổng quan
+## 1. RevCore là gì
 
-RevCore là thế hệ kế tiếp của RCore — một Unity game framework nội bộ. Thay vì một monolith duy nhất, RevCore được thiết kế như một bộ **UPM packages độc lập**, mỗi package có thể được cài đặt riêng lẻ mà không kéo theo phụ thuộc không cần thiết.
+RevCore là thế hệ kế tiếp của RCore — một Unity game framework nội bộ, được rebuild thành **bộ UPM packages độc lập** thay vì một monolith. Mỗi package cài riêng lẻ qua git URL hoặc local path, không kéo theo dependency thừa.
 
-**Mục tiêu:**
-- Đưa vào dự án chỉ đúng thứ cần dùng, không hơn.
-- Developer mới học được từng phần riêng lẻ theo thứ tự.
-- Có thể test từng package không cần Unity scene.
-- Hỗ trợ cùng tồn tại với RCore trong quá trình chuyển đổi dần.
+Trạng thái hiện tại:
 
-**Unity version:** 2022.3 LTS  
-**Ngôn ngữ:** C#, tab width 4  
-**Package prefix:** `com.rabear.revcore.*`
+| Hạng mục | Giá trị |
+| --- | --- |
+| Phiên bản | v1.1.0 docs line; RevCore.Addressables v1.0.0 package branch ready for PR |
+| Số packages | 9 runtime + 1 editor-only (Tools) |
+| Unity version | 2022.3 LTS (đã verify Unity 6 ở Phase 9) |
+| EditMode tests | 160 baseline; Addressables test suite added but Unity CLI unavailable in shell |
+| XML doc coverage | 1015 / 1015 (100%) |
+| Public API entries | 1404 sealed entries after Addressables + Timer/Audio async promotion |
+| Benchmark suite | Có (Unity.PerformanceTesting), tolerance 5% so với baseline |
 
----
-
-## 2. Triết lý thiết kế
-
-### 2.1 Zero cross-dependency
-
-Mỗi package phải hoạt động hoàn toàn độc lập. Không có package nào được phép biết về package khác ngoài những phụ thuộc đã được khai báo rõ trong `package.json`. Điều này được thực thi qua asmdef — Unity sẽ báo lỗi compile nếu vi phạm.
-
-> **Ví dụ vi phạm:** `Pool` không được `using RevCore.Audio`, dù cả hai đều nằm trong cùng một project.
-
-### 2.2 Tầng Foundation là lá cây
-
-`Foundation` là package duy nhất không phụ thuộc vào ai. Tất cả các package khác đều có thể phụ thuộc vào Foundation, nhưng Foundation không biết gì về chúng. Đây là nơi chứa các giao thức (interface) và tiện ích chung nhất: EventBus, ServiceLocator, Result, Logger.
-
-### 2.3 Interface trước, implementation sau
-
-Mọi service đều được trừu tượng hóa qua interface trước khi implement. Điều này cho phép:
-- Test bằng mock/fake không cần Unity.
-- Swap implementation trong production (ví dụ: custom logger cho Firebase Crashlytics).
-- Các package cấp trên phụ thuộc vào interface của Foundation, không phụ thuộc vào concrete class.
-
-### 2.4 Không UniTask
-
-RevCore không dùng UniTask (đây là phụ thuộc của RCore cũ). Async được giải quyết bằng callback pattern thông qua Timer, hoặc coroutine thuần nếu cần. Điều này giảm rào cản cài đặt.
-
-### 2.5 Addressables là tùy chọn
-
-Audio package hỗ trợ Addressables qua `#if ADDRESSABLES` — define này được kích hoạt tự động khi `com.unity.addressables` có mặt trong project, thông qua `versionDefines` trong asmdef. Nếu không cài Addressables, code vẫn compile bình thường.
-
-### 2.6 Editor code tách biệt runtime
-
-Mỗi package có asmdef riêng cho Runtime và Editor. Drawers, custom editors, tool windows không bao giờ được đưa vào runtime assembly. Build player không bao giờ chứa Editor code.
+RCore (legacy) vẫn được giữ nguyên trong cùng repo (`Assets/RCore/`), không có hạn chót migration.
 
 ---
 
-## 3. Cấu trúc gói và sơ đồ phụ thuộc
+## 2. Mục tiêu thiết kế
 
-```
-Foundation  (zero deps)
-├── Inspector  (zero deps)
-├── Timer      → Foundation
-├── Prefs      → Foundation
-├── Pool       → Foundation, Timer
-├── Audio      → Foundation, Inspector, Prefs
-├── Data       → Foundation, Inspector, Timer, Prefs, Newtonsoft JSON
-├── UI         → Foundation, Inspector, Pool, TMP
-└── Tools      (editor-only, zero deps — optional, standalone)
-```
-
-**Đọc sơ đồ này:** Mũi tên `→` nghĩa là "phụ thuộc vào". `Foundation` không có mũi tên nào chỉ ra ngoài — đây là lý do nó là lá cây.
-
-### Tóm tắt từng package
-
-| Package | UPM ID | Mục đích |
-|---|---|---|
-| Foundation | `com.rabear.revcore.foundation` | EventBus, ServiceLocator, Result\<T\>, Logger, BigNumber, helpers |
-| Inspector | `com.rabear.revcore.inspector` | Attributes cho Unity Inspector (`[ReadOnly]`, `[ShowIf]`, `[AutoFill]`…) |
-| Timer | `com.rabear.revcore.timer` | Callback sau N giây, condition wait, debounce event |
-| Prefs | `com.rabear.revcore.prefs` | Typed wrapper cho `PlayerPrefs` và `EditorPrefs` |
-| Pool | `com.rabear.revcore.pool` | Object pooling cho Component/GameObject |
-| Audio | `com.rabear.revcore.audio` | AudioCollection, BaseAudioManager, SFX/BGM, Addressables |
-| Data | `com.rabear.revcore.data` | JObjectDB — lưu game data dạng JSON vào PlayerPrefs |
-| UI | `com.rabear.revcore.ui` | PanelStack, typed buttons, scroll views, HoledLayerMask |
-| Tools | `com.rabear.revcore.tools` | Editor tools hub (Navigate, Search, Generators, UI Tools, Utility) |
+- **Cài đúng cái cần.** Không monolith. Dự án chỉ cần `Pool` thì không phải kéo `Audio`, `UI`, hay `Data`.
+- **Học theo module.** Mỗi package có README + samples riêng. Onboarding tuần tự được, không phải nuốt cả framework.
+- **Test plain C#.** Foundation / Timer / EventBus / Result chạy không cần Unity scene → headless CI khả thi.
+- **Cùng tồn tại với RCore.** Khác namespace (`RevCore` flat vs `RCore.*` nested), không compile collision. Migrate dần được.
+- **Contract ổn định.** Public surface có paper trail, breaks phải major bump kèm deprecation window.
 
 ---
 
-## 4. Quy ước thư mục và Assembly
+## 3. Modules và sơ đồ phụ thuộc
 
-Mỗi package tại `Assets/RevCore/<Package>/` theo cấu trúc sau:
+```text
+Foundation  ──────────►  (Inspector)        (Tools — editor-only, standalone)
+   ▲   ▲   ▲   ▲                 ▲
+   │   │   │   │                 │
+ Timer  Prefs  │                 │
+   ▲     ▲    │                 │
+   │     │    │                 │
+   │   Pool ──┘                  │
+   │     ▲                       │
+   │     │                       │
+   ├── Audio ──────────► Inspector + Prefs
+   ├── Data  ──────────► Timer + Prefs + Inspector + Newtonsoft JSON
+   └── UI    ──────────► Inspector + Pool + TMP
 
-```
-<Package>/
-├── Runtime/             → RevCore.<Package>.Runtime.asmdef
-│   └── ...              rootNamespace: "RevCore"
-├── Editor/              → RevCore.<Package>.Editor.asmdef
-│   └── ...              (Editor platform only)
-├── Tests/               → RevCore.<Package>.Tests.asmdef
-│   └── ...              (UNITY_INCLUDE_TESTS constraint)
-├── Samples~/            → UPM samples (ẩn khỏi Unity cho đến khi import)
-├── package.json
-├── README.md
-└── CHANGELOG.md
-```
-
-### Quy tắc asmdef quan trọng
-
-| Quy tắc | Lý do |
-|---|---|
-| Runtime asmdef: `includePlatforms: []` (trống) | Chạy trên mọi platform |
-| Editor asmdef: `includePlatforms: ["Editor"]` | Không compile vào player build |
-| Test asmdef: `overrideReferences: true` + `"nunit.framework.dll"` | NUnit cần override để Unity tìm thấy |
-| Sample asmdef: `autoReferenced: false` | Sample không tự động thêm vào project |
-| Sample asmdef: `rootNamespace: "RevCore.Samples"` | Consistent namespace cho tất cả sample |
-
-### Namespace
-
-Tất cả code runtime dùng namespace `RevCore` (flat, không nested). Ví dụ:
-
-```csharp
-namespace RevCore { public class EventBus : IEventBus { } }
-namespace RevCore { public class ServiceLocator : IServiceLocator { } }
-namespace RevCore { public class TimerScheduler : ITimerScheduler { } }
+Addressables  ──────────►  Unity Addressables + UniTask   (standalone, zero RevCore deps)
 ```
 
-Tools editor dùng `RevCore.Tools.Editor`. UI samples dùng `RevCore.UI.Samples`.
+Mũi tên `A → B` đọc là "A phụ thuộc vào B". Foundation và Inspector không phụ thuộc package nào khác → đây là các package gốc (zero-dependency base). Tools đứng riêng.
+
+### Bảng tóm tắt từng package
+
+| Package | UPM ID | Mục đích | Phụ thuộc runtime |
+| --- | --- | --- | --- |
+| Foundation | `com.rabear.revcore.foundation` | EventBus, ServiceLocator, Result\<T\>, Log, BigNumber, IRevDiagnostics, helpers | none |
+| Inspector | `com.rabear.revcore.inspector` | Attributes Inspector: `[ReadOnly]`, `[ShowIf]`, `[AutoFill]`, `[InspectorButton]`, ... | none |
+| Timer | `com.rabear.revcore.timer` | Countdown / condition wait / debounce, plain C# scheduler + Unity driver + UniTask async API | Foundation, UniTask |
+| Prefs | `com.rabear.revcore.prefs` | Typed wrappers PlayerPrefs / EditorPrefs (bool, List, Dictionary) | Foundation |
+| Pool | `com.rabear.revcore.pool` | `RevPool<T>`, `PoolsContainer<T>`, zero-alloc iteration, delayed release | Foundation, Timer |
+| Audio | `com.rabear.revcore.audio` | AudioCollection, BaseAudioManager, SFX pool, music fade. Addressables + DOTween optional. | Foundation, Inspector, Prefs, UniTask |
+| Data | `com.rabear.revcore.data` | JObjectDB V2 — Model–Collection–Manager, `[Inject]` cross-model DI | Foundation, Timer, Prefs, Inspector, Newtonsoft JSON |
+| UI | `com.rabear.revcore.ui` | PanelStack, JustButton / JustToggle, OptimizedScrollView, HoledLayerMask | Foundation, Inspector, Pool, TMP |
+| Addressables | `com.rabear.revcore.addressables` | UniTask-first Addressables helpers, downloads/catalogs/scenes, serialisable asset/component/prefab wrappers | Unity Addressables, UniTask |
+| Tools | `com.rabear.revcore.tools` | Editor hub: Navigate / Search / Generators / UI Tools / Utility | none (editor-only) |
 
 ---
 
-## 5. Các mẫu kiến trúc cốt lõi
+## 4. Triết lý thiết kế
 
-### 5.1 EventBus — Giao tiếp decoupled
+### 4.1 Zero cross-dependency
 
-EventBus cho phép các hệ thống giao tiếp mà không cần biết nhau tồn tại. Thay vì gọi thẳng `healthSystem.TakeDamage(10)`, sender publish một event, receiver subscribe và xử lý.
+Mỗi package chỉ biết những phụ thuộc đã khai báo trong `package.json` + asmdef references. Vi phạm gây compile error chứ không qua review. `Pool` không được `using RevCore.Audio` dù cùng project.
 
-```csharp
-// Định nghĩa event — chỉ là một struct
-public readonly struct DamageEvent : IEvent
-{
-    public readonly int Amount;
-    public DamageEvent(int amount) { Amount = amount; }
-}
+### 4.2 Foundation là gốc
 
-// Sender — không biết ai đang lắng nghe
-Events.Publish(new DamageEvent(10));
+Foundation chứa interface và utility chung nhất. Mọi package khác xây trên Foundation; Foundation không biết gì về chúng. Đây là bất biến quan trọng nhất của dependency graph.
 
-// Receiver — subscribe và xử lý
-public class HealthPresenter
-{
-    public void Enable()  => Events.Subscribe<DamageEvent>(OnDamage);
-    public void Disable() => Events.Unsubscribe<DamageEvent>(OnDamage);
+### 4.3 Interface trước, implementation sau
 
-    private void OnDamage(DamageEvent evt)
-    {
-        Log.Info($"Nhận sát thương: {evt.Amount}");
-    }
-}
-```
+Mọi service public đều có interface (`IEventBus`, `ITimerScheduler`, `IAudioService`, ...). Cho phép mock/fake trong test, swap implementation trong production (ví dụ: logger gắn Crashlytics).
 
-**Khi nào dùng EventBus:**
-- Thông báo sự kiện xuyên hệ thống (damage, level up, scene loaded).
-- Khi sender không nên có reference đến receiver.
-- Thay thế cho `UnityEvent` khi không cần wire-up trong Inspector.
+### 4.4 UniTask — bắt buộc cho Timer, Audio, Addressables
 
-**Khi nào KHÔNG dùng EventBus:**
-- Truy vấn có giá trị trả về — dùng ServiceLocator thay thế.
-- Giao tiếp trong cùng một MonoBehaviour — gọi method trực tiếp.
+Foundation / Pool / Data / UI không phụ thuộc UniTask. Timer v1.1.0 và Audio v1.1.0 khai báo `com.cysharp.unitask` là hard dependency — consumer cần cài UniTask để dùng hai package này. Addressables v1.0.0 là UniTask-first vì API native của Addressables vốn dĩ async. Nếu project chỉ dùng Foundation/Pool/Data/UI và không cần async scheduler, có thể bỏ UniTask.
 
-**Scoped vs Global:**
+### 4.5 Addressables / DOTween là optional
 
-```csharp
-// Global — dùng cho game-wide events
-Events.Publish(new LevelUpEvent());
+Kích hoạt qua `versionDefines` trong asmdef + `#if ADDRESSABLES` / `#if DOTWEEN`. Không cài thì code vẫn compile, dùng fallback (coroutine lerp thay tween, direct reference thay address).
 
-// Scoped — dùng cho một feature cụ thể (ví dụ: battle system)
-var battleBus = new EventBus();
-battleBus.Subscribe<DamageEvent>(OnDamage);
-battleBus.Clear(); // Cleanup khi battle kết thúc
-```
+### 4.6 Editor tách Runtime
+
+Mỗi package có asmdef riêng cho Runtime và Editor. Build player không bao giờ chứa Editor code. Không dùng `#if UNITY_EDITOR` trong runtime assembly.
+
+### 4.7 No encryption cho PlayerPrefs
+
+Quyết định cố ý — hardcoded-key obfuscation chỉ chặn PlayerPrefs editor, không chặn được ai có binary. Sensitive state phải validate server-side. Không reopen.
 
 ---
 
-### 5.2 ServiceLocator — Dependency Injection đơn giản
+## 5. Mẫu kiến trúc cốt lõi
 
-ServiceLocator là registry để tra cứu service theo type. Không dùng reflection, không dùng string key.
+Phần này tóm tắt khái niệm. Chi tiết API + ví dụ code xem README từng package.
 
-```csharp
-// Đăng ký — thường trong khởi tạo (Awake/Start/Init)
-Services.Global.Register<IAudioService>(audioManager);
-Services.Global.Register<IDataService>(dataManager);
+### 5.1 EventBus — pub/sub type-safe
 
-// Tra cứu — bất cứ đâu trong code
-if (Services.Global.TryGet<IAudioService>(out var audio))
-    audio.PlaySfx(soundId);
-```
+Type là key, không string. Hỗ trợ global (`Events.Publish/Subscribe`) hoặc scoped (`new EventBus()` cho battle, level, ...). Post-v1.0 đã zero-alloc trên `Publish` hot path.
 
-**Khi nào dùng ServiceLocator:**
-- Singleton service cần truy cập từ nhiều nơi (Audio, Data, Analytics).
-- Thay thế cho `FindObjectOfType<T>()` đắt tiền.
-- Khi muốn swap implementation dễ dàng (production vs test fake).
+> Dùng khi: thông báo cross-system, decoupled sender/receiver.
+> Không dùng khi: query có giá trị trả về (→ ServiceLocator), giao tiếp nội bộ một MonoBehaviour (→ method call thẳng).
 
-**Scoped ServiceLocator** hữu ích trong scene phức tạp:
+### 5.2 ServiceLocator — DI nhẹ
 
-```csharp
-var battleServices = new ServiceLocator();
-battleServices.Register<IBattleRules>(hardModeRules);
-// Truyền battleServices xuống battle systems thay vì dùng global
-```
+Registry tra cứu service theo Type. Không reflection, không string key. Global hoặc scoped. Thay thế `FindObjectOfType<T>` đắt tiền và `Singleton<T>` cứng nhắc.
 
----
+### 5.3 Result\<T\> — error model không exception
 
-### 5.3 Result\<T\> — Xử lý lỗi không exception
+Trả về `Result<T>.Ok(value)` hoặc `Result<T>.Fail(message)` cho expected failure. Public read API là `TryGetValue(out T value)` hoặc `ValueOr(T fallback)`. Caller bắt buộc xử lý cả hai nhánh — không crash silent.
 
-Thay vì throw exception cho lỗi có thể lường trước, trả về `Result<T>`:
+### 5.4 Timer — async bằng callback
 
-```csharp
-public Result<PlayerData> LoadPlayer(string id)
-{
-    if (string.IsNullOrEmpty(id))
-        return Result<PlayerData>.Fail("ID không hợp lệ");
+Scheduler plain C# (`ITimerScheduler`) + Unity driver. Hỗ trợ countdown, condition wait, debounce. Không tự chạy — cần driver gọi `Tick(deltaTime, unscaledDeltaTime)`. `GlobalTimers.Instance` cho persistent, `SceneTimers` cho scene-scoped.
 
-    var data = database.Find(id);
-    if (data == null)
-        return Result<PlayerData>.Fail("Không tìm thấy player");
+### 5.5 JObjectDB V2 — game data persistence
 
-    return Result<PlayerData>.Ok(data);
-}
+Model–Collection–Manager:
 
-// Caller xử lý tường minh
-var result = LoadPlayer(playerId);
-if (result.IsOk)
-    ShowPlayer(result.Value);
-else
-    Log.Warn(result.Error);
-```
+- `JObjectData` (POCO) ─ raw data
+- `JObjectModel<T>` (ScriptableObject) ─ data + business logic + lifecycle hooks (`Init`, `OnPostLoad`, `OnUpdate`, `OnPause`, `OnPreSave`)
+- `JObjectModelCollection` ─ aggregator, resolve `[Inject]` cross-model
+- `JObjectDBManager<T>` (MonoBehaviour) ─ wire lifecycle với app pause/quit, auto-save throttled
 
-**Lợi ích:**
-- Không crash silent từ unhandled exception.
-- Caller bắt buộc xử lý cả success lẫn failure.
-- Dễ unit test — không cần try/catch trong test.
+Backend là PlayerPrefs lưu JSON (Newtonsoft). `SaveForced()` bypass throttle ở `OnApplicationPause/Quit` để không mất data cuối session.
+
+### 5.6 Pool
+
+- `RevPool<T>` ─ một loại prefab, LIFO, pre-warm + auto-relocate
+- `PoolsContainer<T>` ─ pool-of-pools, tự tạo pool mỗi loại prefab
+- Delayed release qua Timer
+- Iteration zero-alloc: `ForEachActive` / `ForEachItem` (không cấp phát `List<T>` mỗi call)
+
+### 5.7 IRevDiagnostics — observability opt-in
+
+10 hooks ở hot path: Timer (scheduled / cancelled / completed), EventBus (subscribed / unsubscribed / published), Pool (spawn / release), Audio (PlaySFX / PlayMusic). Default không listener → cost = 1 null check per hook. Wire một implementation qua `RevDiagnostics.Listener` ở startup. Payload metadata-only (không giữ object ref → không kéo dài GC lifetime).
+
+Ba reference listener kèm Foundation samples: `CrashBufferDiagnostics`, `DebugOverlayDiagnostics`, `UnityLogDiagnostics`.
 
 ---
 
-### 5.4 Timer — Async không cần coroutine
+## 6. Luồng hoạt động
 
-Timer giải quyết "làm gì sau N giây" và "làm gì khi condition đúng" bằng callback thuần.
+### Khởi động game
 
-```csharp
-// Đợi 2 giây rồi spawn
-Timers.WaitForSeconds(2f, SpawnWave);
+```text
+GameDataManager.Awake
+    └─► JObjectDB.RegisterCollection(GameCollection)
 
-// Đợi cho đến khi data load xong
-Timers.WaitForCondition(() => dataManager.IsReady, OnDataReady);
+GameDataManager.Start → Init
+    └─► GameCollection.Load
+            ├─► CreateModel(playerModel, "PlayerData")  ─ load JSON từ PlayerPrefs
+            ├─► CreateModel(shopModel,   "ShopData")    ─ load JSON từ PlayerPrefs
+            └─► CreateModel(sessionModel)               ─ tính offline time
 
-// Debounce — gom nhiều event trong 0.2s thành 1
-Timers.Debounce(new InventoryChangedEvent(), 0.2f);
+PlayerModel.OnPostLoad(utcNow, offlineSec)
+    └─► xử lý offline rewards, validate
 
-// Hủy timer
-ITimerHandle handle = Timers.WaitForSeconds(5f, OnTimeout);
-handle.Cancel();
-```
-
-**Quan trọng:** Timer không tự chạy. Cần một driver để gọi `Tick`:
-
-```csharp
-// Option 1: Dùng GlobalTimers (tự động, persistent)
-GlobalTimers.Instance.WaitForSeconds(1f, OnDone);
-
-// Option 2: Manual tick trong Update của bạn
-Timers.Tick(Time.deltaTime, Time.unscaledDeltaTime);
-```
-
----
-
-### 5.5 JObjectDB — Lưu game data
-
-JObjectDB là hệ thống lưu trữ game data theo mô hình Model-Collection. Data được serialized thành JSON và lưu trong `PlayerPrefs`.
-
-**Luồng khởi tạo:**
-
-```
-GameDataManager (MonoBehaviour)
-    └── GameCollection (ScriptableObject)
-            ├── PlayerModel → PlayerData (JSON)
-            ├── ShopModel   → ShopData (JSON)
-            └── SessionModel (built-in offline tracking)
-```
-
-**Lifecycle của một JObjectModel:**
-
-```
-Init() → Load() → OnPostLoad() → [gameplay] → OnUpdate() → OnPause() → OnPreSave() → Save()
-```
-
-**Dependency injection trong Data:**
-
-```csharp
-public class ShopModel : JObjectModel<ShopData>
-{
-    [Inject] private PlayerModel m_player; // tự động resolve từ collection
-
-    public bool CanAfford(int price) => m_player.Data.coins >= price;
-}
-```
-
----
-
-### 5.6 Pool — Tái sử dụng GameObject
-
-```csharp
-// Khởi tạo pool
-var pool = new RevPool<PoolObject>(bulletPrefab, initialCount: 10, parent: transform);
-
-// Spawn và release
-var bullet = pool.Spawn(position);
-pool.Release(bullet, delay: 2f); // tự động release sau 2 giây (dùng Timer)
-```
-
-`PoolsContainer<T>` quản lý nhiều prefab, tự tạo pool cho mỗi loại:
-
-```csharp
-var pools = new PoolsContainer<PoolObject>("EnemyPools", 5);
-var enemy = pools.Spawn(enemyPrefab, spawnPoint.position);
-pools.Release(enemy);
-```
-
----
-
-## 6. Luồng hoạt động theo tầng
-
-### Khởi động game (startup flow)
-
-```
-1. GameDataManager.Awake()
-        └── JObjectDB.RegisterCollection(GameCollection)
-
-2. GameDataManager.Start() → Init()
-        └── GameCollection.Load()
-                ├── CreateModel(playerModel, "PlayerData")  → Load JSON từ PlayerPrefs
-                ├── CreateModel(shopModel, "ShopData")      → Load JSON từ PlayerPrefs
-                └── CreateModel(sessionModel)               → Tính offline time
-
-3. PlayerModel.OnPostLoad(utcNow, offlineSec)
-        └── Xử lý offline rewards, validate data
-
-4. Services.Global.Register<IDataService>(gameDataManager)
-        └── Các hệ thống khác có thể tra cứu data service
+Services.Global.Register<IDataService>(gameDataManager)
+    └─► các hệ thống khác truy cập qua ServiceLocator
 ```
 
 ### Gameplay loop (per frame)
 
-```
-TimerDriver.LateUpdate()
-    └── TimerScheduler.Tick(deltaTime, unscaledDeltaTime)
-            ├── Countdown timers → callback khi hết giờ
-            ├── Condition timers → callback khi predicate == true
-            └── Debounce queue  → flush accumulated events
-```
-
-### Xử lý sự kiện (event flow)
-
-```
-Sender (bất kỳ hệ thống nào)
-    └── Events.Publish(new DamageEvent(10))
-            └── EventBus.Publish<DamageEvent>()
-                    ├── HealthPresenter.OnDamage(evt)
-                    ├── AchievementTracker.OnDamage(evt)
-                    └── AnalyticsReporter.OnDamage(evt)
+```text
+TimerDriver.LateUpdate
+    └─► TimerScheduler.Tick(dt, unscaledDt)
+            ├─► countdown callbacks
+            ├─► condition callbacks
+            └─► debounce flush
 ```
 
-### Lưu dữ liệu (save flow)
+### Event dispatch
 
+```text
+Events.Publish(new DamageEvent(10))
+    └─► EventBus.Publish<DamageEvent>
+            ├─► HealthPresenter.OnDamage
+            ├─► AchievementTracker.OnDamage
+            └─► AnalyticsReporter.OnDamage
 ```
-Model.Data.coins += reward;
-model.Save();           // đặt dirty, delay 3 giây
-                        // hoặc
-model.Save(now: true);  // debounce 200ms
 
-// Khi app pause / OnApplicationQuit:
-JObjectDB.SaveAll();    // flush tất cả dirty models
-PlayerPrefContainer.SaveChanges(); // flush tất cả PlayerPref wrappers
+### Save flow
+
+```text
+model.Data.coins += reward
+model.Save()              ─ dirty + throttle 3s (hoặc Save(now: true) → debounce 200ms)
+
+OnApplicationPause / OnApplicationQuit:
+    JObjectDB.SaveAll          ─ flush mọi dirty model
+    JObjectDBManager.SaveForced ─ bypass throttle, không mất data cuối
 ```
 
 ---
 
-## 7. Onboarding — Học RevCore theo thứ tự
+## 7. Điểm mạnh
 
-### Bước 1: Foundation (1-2 giờ)
-
-Đọc `Assets/RevCore/Foundation/README.md`. Nắm được:
-- `IEvent` + `Events.Subscribe/Publish` — cơ chế giao tiếp cốt lõi.
-- `Services.Global.Register/TryGet` — tra cứu service.
-- `Result<T>.Ok/Fail` — xử lý lỗi.
-- `Log.Info/Warn/Error` — logging.
-
-Viết một event bus test đơn giản (không cần MonoBehaviour, không cần scene).
-
-### Bước 2: Inspector (30 phút)
-
-Đọc `Assets/RevCore/Inspector/README.md`. Nắm được:
-- `[ReadOnly]`, `[ShowIf]`, `[AutoFill]`, `[InspectorButton]`.
-- Thêm attributes vào một MonoBehaviour có sẵn, xem kết quả trong Inspector.
-
-### Bước 3: Timer (1 giờ)
-
-Đọc `Assets/RevCore/Timer/README.md`. Hiểu:
-- `Timers.WaitForSeconds` vs `GlobalTimers.Instance.WaitForSeconds`.
-- `TimerScheduler` là plain C# — có thể test không cần Unity.
-- Cần driver để Tick.
-
-Thực hành: tạo `SceneTimers.Instance.WaitForCondition(() => loaded, OnLoaded)`.
-
-### Bước 4: Prefs + Pool (1 giờ)
-
-Prefs — đơn giản nhất: `PlayerPrefInt`, `PlayerPrefBool`, `PlayerPrefContainer.SaveChanges()`.
-
-Pool — `RevPool<T>` cho một loại prefab, `PoolsContainer<T>` cho nhiều loại. Nhớ cần Timer để delayed release hoạt động.
-
-### Bước 5: Data (2-3 giờ)
-
-Đây là package phức tạp nhất. Đọc kỹ README, sau đó:
-
-1. Tạo một `JObjectData` POCO cho một hệ thống cụ thể (ví dụ: player currency).
-2. Tạo `JObjectModel<T>` và implement các lifecycle hooks.
-3. Tạo `JObjectModelCollection` và `JObjectDBManager<T>`.
-4. Kiểm tra dữ liệu lưu/load trong Editor (`RevCore/Data/Log` menu).
-
-Hiểu `[Inject]` — cho phép model A truy cập model B mà không cần DI container phức tạp.
-
-### Bước 6: Audio (1 giờ)
-
-Tạo `AudioCollection` ScriptableObject, thêm clips. Implement `BaseAudioManager`. Gọi `PlaySfx` và `PlayBgm`. Xem demo trong Inspector.
-
-### Bước 7: UI (2 giờ)
-
-Nắm cơ chế `PanelStack` — push/pop panels như một stack. `JustButton` và `JustToggle` thay thế `Button` + boilerplate thủ công. `OptimizedScrollView` cho danh sách lớn.
-
-### Bước 8: Tools
-
-Mở `RevCore > Tools Hub`. Làm quen với từng tool. Khi cần viết tool mới, kế thừa `RevCoreTool` và override `DrawGUI()`.
+1. **Modular UPM thực sự.** 9 packages, mỗi cái có README + samples + tests + CHANGELOG riêng. Cài đúng cái cần, không bị kéo dependency.
+2. **Semver stable từ v1.0.0.** Breaks cần major bump + deprecation window 3-stage. Consumer pin được `?path=Assets/RevCore/{Module}#v1.0.0` ổn định.
+3. **Public API có paper trail.** 1404 entries trong `PublicAPI.Shipped.txt` per-module (1337 lúc v1.0.0 + 67 từ Timer/Audio async API và Addressables). PR diff thấy mọi addition / removal — review bằng mắt khả thi.
+4. **Plain C# core test-friendly.** Foundation / Timer / EventBus / Result / Pool scheduler chạy unit test không cần Unity scene → CI headless khả thi.
+5. **Hot path zero-alloc.** `EventBus.Publish`, `Pool.Spawn`, `TimerScheduler.Cancel`, `ListenerCount` đã đo đạc và optimize. Benchmark suite + regression check (5% tolerance) ngăn quay đầu.
+6. **Observability không xâm phạm.** `IRevDiagnostics` opt-in, default no-listener cost = 1 null check. Wire vào crash reporter hoặc HUD chỉ vài dòng.
+7. **Coverage doc nghiêm.** 1015/1015 XML doc (100%). Gate `check-xmldoc-coverage.py` chặn regression ở local trước push.
+8. **Coexist với RCore.** Khác namespace, không conflict. Migrate feature mới sang RevCore, giữ tính năng cũ ở RCore — không cần flag-day rewrite.
+9. **Pattern decoupled.** EventBus + ServiceLocator + `[Inject]` cho phép tổ chức code low-coupling mà không kéo DI container nặng (Zenject / VContainer).
+10. **Tooling Editor có sẵn.** Tools hub gom Navigate / Search / Generators / UI / Utility, mở rộng được qua kế thừa `RevCoreTool`.
+11. **Addressables tách riêng.** `com.rabear.revcore.addressables` thay thế nhóm `AddressableUtil` / `AssetBundleRef` của RCore bằng package standalone, UniTask-first, không phụ thuộc package RevCore nào khác.
 
 ---
 
-## 8. Hướng dẫn đóng góp
+## 8. Điểm yếu và điều cần cân nhắc
 
-### Quy tắc bắt buộc khi thêm code vào RevCore
-
-**1. Không vi phạm dependency graph.**
-Trước khi thêm `using` hoặc asmdef reference mới, kiểm tra sơ đồ phụ thuộc ở Mục 3. Nếu thêm dependency mà tạo ra cycle hoặc đi ngược chiều → từ chối và tìm cách khác.
-
-**2. Mọi public API phải có interface.**
-Nếu thêm một service mới, định nghĩa interface ở Runtime assembly trước. Implementation có thể thay đổi; interface phải ổn định.
-
-**3. Runtime không được chứa UnityEditor code.**
-Dùng asmdef split. Không dùng `#if UNITY_EDITOR` trong Runtime assembly.
-
-**4. Test phải pass trước khi merge.**
-Mỗi package có Tests assembly. Chạy:
-```
-Unity.exe -runTests -batchmode -projectPath . -testResults results.xml -testPlatform EditMode
-```
-
-**5. Cập nhật CHANGELOG.md của package.**
-Mỗi thay đổi public cần một entry trong `CHANGELOG.md` theo format `[version] - YYYY-MM-DD`.
-
-### Thêm tính năng mới vào package có sẵn
-
-1. Tạo interface trước nếu cần (`IMyFeature`).
-2. Implement trong `Runtime/`.
-3. Nếu cần Editor support, thêm vào `Editor/`.
-4. Viết test trong `Tests/`.
-5. Cập nhật `README.md` (API Reference table, ví dụ code).
-6. Cập nhật `CHANGELOG.md`.
-
-### Tạo package mới
-
-1. Tạo thư mục `Assets/RevCore/<NewPackage>/` với cấu trúc chuẩn.
-2. Tạo `package.json` với tên `com.rabear.revcore.<name>`, khai báo đúng dependencies.
-3. Tạo asmdef cho Runtime, Editor, Tests theo quy ước đặt tên.
-4. Cập nhật sơ đồ phụ thuộc trong tài liệu này.
-5. Thêm meta file cho từng file mới (Unity tự tạo khi import).
-
-### Cấm tuyệt đối
-
-- Modify `Assets/RCore/` mà không có phê duyệt rõ ràng.
-- Thêm dependency ngược chiều trong sơ đồ (ví dụ: Foundation → Timer).
-- Dùng UniTask trong RevCore.
-- Hard-code Addressables dependency — phải dùng `versionDefines` và `#if`.
-- Commit file `UserSettings/`, `ProjectSettings/`, `.meta` của Addressable groups trừ khi thay đổi có chủ ý.
+1. **PublicAPI analyzer dormant.** Lý do: Unity load analyzer project-wide → RS0016 nổ trên legacy RCore folders không track PublicAPI. Editorconfig scoping không khắc phục được. Hậu quả: contract enforcement phụ thuộc human review, không phải compile-time. Reactivate chỉ trong audit pass qua hướng dẫn trong `Assets/RevCore/_Analyzers/README.md`.
+2. **CI tối thiểu.** Chỉ `release.yml` (trigger tag `v*`). Tests, benchmark, doc coverage chạy local trước push. Hoạt động tốt với solo maintainer + team kỷ luật cao, nhưng team lớn cần thêm PR-time gates.
+3. **UniTask không phải core-wide, nhưng là hard dependency của Timer/Audio/Addressables.** Foundation / Pool / Data / UI không cần UniTask. Timer v1.1.0, Audio v1.1.0 và Addressables v1.0.0 cần UniTask — consumer phải cài nếu chọn các package này.
+4. **JObjectDB lưu PlayerPrefs.** Không phù hợp save lớn (GB-scale). Không schema versioning (declined chủ ý — `OnPostLoad` hook xử lý migration thủ công). Cross-version save corruption phải tự xử lý.
+5. **No encryption.** Sensitive state (currency mua bằng tiền thật, anti-cheat) phải validate server-side. Không có lớp obfuscation in-box.
+6. **Phụ thuộc 3rd-party có giới hạn.** Data cần Newtonsoft JSON, UI cần TMP — đều là Unity package chính thống. Optional: DOTween, Addressables.
+7. **Tools chỉ Editor.** Không scriptable từ runtime build. Editor-only by design.
+8. **Migration tool chưa ship.** Map mechanical (`docs/migration/rcore-to-revcore-api-map.csv`) sẵn sàng làm input. Addressables rows đã được bổ sung cho nhóm `AddressableUtil` / `AssetBundleRef`; GAP types còn lại đã phân loại trong `gap-categories.md`. Build tool khi consumer initiate — chấp nhận chi phí mỗi project tự migrate manual.
+9. **Module-level CHANGELOG không sync.** Root `CHANGELOG.md` là canonical. Per-module CHANGELOG nhiều chỗ là scaffold cũ. Low-priority cleanup.
+10. **Service locator anti-pattern risk.** ServiceLocator dễ bị abuse thành global state nếu team không kỷ luật. Cần convention: register ở startup, dùng scoped khi feature lifecycle ngắn.
+11. **Học EventBus + ServiceLocator cùng lúc.** Hai pattern có overlap. Cần convention rõ: query có return value → ServiceLocator; fire-and-forget notification → EventBus.
 
 ---
 
-## 9. Di chuyển từ RCore
+## 9. Khuyến nghị áp dụng
 
-RevCore và RCore **cùng tồn tại**. Không cần migrate toàn bộ cùng lúc.
+| Tình huống | Khuyến nghị |
+| --- | --- |
+| Dự án mới | Dùng RevCore. Tận dụng full feature set + contract ổn định. |
+| Dự án đang chạy RCore, vẫn ship được | Không bắt buộc migrate. Tính năng mới viết bằng RevCore, tính năng cũ giữ RCore. |
+| Cần API contract ổn định, có deprecation policy | Migrate sang RevCore. RCore không có cam kết semver. |
+| Cần encryption tích hợp / save backend khác PlayerPrefs | RevCore không phù hợp ngay. Cần custom layer trên Data, hoặc viết module riêng. |
+| Team đã có DI container (Zenject / VContainer) | Cân nhắc dùng song song ServiceLocator + DI, hoặc thay ServiceLocator bằng adapter. |
+| Team phụ thuộc nặng UniTask | Cân nhắc chi phí adapt sang callback pattern. |
 
-### Chiến lược migration
+### Adoption checklist
 
-```
-Dự án hiện tại (RCore)
-    ↓
-Tính năng mới → viết bằng RevCore
-Tính năng cũ → giữ nguyên RCore, migrate dần từng phần
-    ↓
-Theo thời gian RCore giảm dần, RevCore tăng dần
-```
-
-### Bảng ánh xạ nhanh
-
-| RCore | RevCore |
-|---|---|
-| `EventDispatcher.Raise(e)` | `Events.Publish(e)` |
-| `BaseEvent` | `IEvent` (struct) |
-| `TimerEventsGlobal.Instance.WaitForSeconds` | `GlobalTimers.Instance.WaitForSeconds` |
-| `RPlayerPrefBool` | `PlayerPrefBool` |
-| `CustomPool<T>` | `RevPool<T>` |
-| `JObjectDBManagerV2<T>` | `JObjectDBManager<T>` |
-| `using RCore.Inspector;` | `using RevCore;` |
-| `[RCore.Inspector.ReadOnly]` | `[ReadOnly]` |
-| `Debug.Log(msg)` | `Log.Info(msg)` |
-| Exceptions cho expected failures | `Result<T>.Fail(message)` |
-
-### Tương thích namespace
-
-RevCore dùng namespace `RevCore` (flat). RCore dùng `RCore.*` (nested). Không có conflict — cả hai có thể `using` trong cùng file.
+1. Đọc `Assets/RevCore/Foundation/README.md` → nắm EventBus + ServiceLocator + Result.
+2. Review dependency graph ở Mục 3 → quyết định module nào cần.
+3. Mở Unity Test Runner → chạy EditMode tests (~25s). Verify 160 baseline tests green (Addressables tests thêm vào khi package được merge vào main).
+4. Chạy Performance category → feed `Library/PerformanceTestResults.json` vào `scripts/check-benchmark-regression.py` → verify 5% tolerance.
+5. Pilot 1-2 feature nhỏ trước khi commit toàn dự án.
+6. Thiết lập convention nội bộ cho EventBus vs ServiceLocator vs `[Inject]` để tránh inconsistency.
 
 ---
 
-## Phụ lục: Các lệnh hữu ích
+## 10. Tài liệu liên quan
 
-```bash
-# Chạy tất cả tests
-Unity.exe -runTests -batchmode -projectPath . -testResults results.xml -testPlatform EditMode
+- `docs/SESSION_HANDOFF.md` — trạng thái post-v1.0, future-work, branch/tag.
+- `CHANGELOG.md` — keep-a-changelog format, `[1.0.0]` chi tiết.
+- `docs/contributing/README.md` — quick rules, branches, issue templates.
+- `docs/contributing/API_DESIGN_GUIDELINES.md` — naming, nullability, threading, error model.
+- `docs/contributing/SEMVER_POLICY.md` — khi nào bump MAJOR / MINOR / PATCH.
+- `docs/contributing/DEPRECATION_POLICY.md` — 3-stage deprecation flow.
+- `docs/contributing/PUBLIC_API_GUIDE.md` — `Shipped.txt` / `Unshipped.txt` + analyzer wiring.
+- `docs/contributing/RELEASE_CHECKLIST.md` — hard gate ở mỗi tag cut.
+- `docs/contributing/CI_SETUP.md` — bảng local check, analyzer dormant rationale.
+- `docs/migration/README.md` — kế hoạch RCore → RevCore (planning-only, no tooling).
+- `Assets/RevCore/<Module>/README.md` — API reference + samples từng package.
+- `Assets/RevCore/Addressables/README.md` — quickstart + lifetime contract cho package Addressables standalone.
+- `Assets/RevCore/_Analyzers/README.md` — analyzer dormant + reactivate procedure.
 
-# Chạy test cho một package cụ thể
-Unity.exe -runTests -batchmode -projectPath . -testResults results.xml -testPlatform EditMode -testFilter "RevCore.Tests"
+### Lệnh hữu ích
 
-# Build
-Unity.exe -batchmode -quit -projectPath . -buildTarget Android -executeMethod BuildScript.Build
+```powershell
+# Doc coverage gate (phải 0 regression)
+
+python scripts/check-xmldoc-coverage.py --root Assets/RevCore --baseline scripts/xmldoc-baseline.json
+
+# Refresh API inventory
+
+python scripts/extract-api-surface.py --out docs/api-inventory.csv
+
+# Benchmark regression check (sau Unity Performance run)
+
+python scripts/check-benchmark-regression.py --results Library/ --baseline scripts/benchmark-baseline.json
+
+# Promote PublicAPI Unshipped → Shipped ở release cut
+
+python scripts/seal-public-api.py
 ```
 
-**Editor menus hữu ích:**
+### Menu Editor
+
 - `RevCore > Tools Hub` — tất cả editor tools
 - `RevCore > Audio > Generate IDs` — tạo constants cho audio clips
 - `RevCore > Data > Log` — xem data đang lưu trong PlayerPrefs

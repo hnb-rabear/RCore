@@ -17,11 +17,12 @@ Do **not** migrate an existing shipping project on a whim. RCore and RevCore can
 ## Documents
 
 | Doc | Purpose |
-|---|---|
-| [`PLAN.md`](PLAN.md) | The full step-by-step migration playbook. Read this before touching any code. |
+| --- | --- |
+| [`GUIDE.md`](GUIDE.md) | Hướng dẫn migration chi tiết bằng tiếng Việt — inventory, thứ tự module, mapping, rollback, checklist. Đọc cái này trước. |
+| [`PLAN.md`](PLAN.md) | Migration playbook gốc tiếng Anh — module-by-module, gap replacement rationale, rollback, future automation sketch. |
 | [`gap-categories.md`](gap-categories.md) | The 250 RCore types with no RevCore equivalent, grouped into ~14 buckets with a recommended action per bucket. |
-| [`rcore-to-revcore-api-map.md`](rcore-to-revcore-api-map.md) | Auto-generated type-by-type rename map. PORTED (97) and RENAMED (15) are mechanical; LIKELY (0 after audit) are gone; GAP (259 after audit) point at `gap-categories.md`. |
-| [`rcore-to-revcore-api-map.csv`](rcore-to-revcore-api-map.csv) | Same data as the .md, machine-readable. The source any future migration tool reads. |
+| [`rcore-to-revcore-api-map.md`](rcore-to-revcore-api-map.md) | Type-by-type migration map (regenerated from CSV on 2026-05-19). PORTED (97) + RENAMED (15) are mechanical; REPLACED (17) have deliberate RevCore equivalents (all in `com.rabear.revcore.addressables`); DROPPED (4) are intentionally absent; LIKELY (0) all resolved in Phase 8 audit; GAP (259) point at `gap-categories.md`. |
+| [`rcore-to-revcore-api-map.csv`](rcore-to-revcore-api-map.csv) | Same data as the .md, machine-readable. The source any future migration tool reads. Addressables rows (`AddressableUtil`, `AssetBundleRef` family, `ComponentRef`) were appended on 2026-05-19. |
 | [`../gap-analysis.md`](../gap-analysis.md) | Per-type decision template (PORT / DROP / REPLACE / DEFER). Fills in over time; see `gap-categories.md` for the bulk rationale. |
 
 ## Tooling status
@@ -38,4 +39,8 @@ The shape of a future tool is sketched in [`PLAN.md`](PLAN.md) §6.
 
 This document set was produced in **Phase 8** of the RevCore hardening plan — documentation only, no migration tooling.
 
-**Plan complete.** Phase 9 (v1.0 cut) shipped as `v1.0.0` on 2026-05-17: Stage 1 deprecations cleared, package versions bumped to 1.0.0, full RevCore public surface committed to per-module `PublicAPI.Shipped.txt`. RevCore is now a stable framework. Migration tooling remains intentionally absent — consumer projects continue to run on RCore and there is no concrete demand for auto-rewrites yet. When a consumer initiates migration, the inputs documented here (`rcore-to-revcore-api-map.csv`, `gap-categories.md`) become the source-of-truth for any tooling built then.
+**Phase 9 complete.** Phase 9 (v1.0 cut) shipped as `v1.0.0` on 2026-05-17: Stage 1 deprecations cleared, package versions bumped to 1.0.0, full RevCore public surface committed to per-module `PublicAPI.Shipped.txt`.
+
+**Phase 10 in progress (2026-05-19).** `feat/addressables-v1.0` branch adds `RevCore.Addressables v1.0.0` — a new standalone package replacing the RCore `AddressableUtil` / `AssetBundleRef` family. This branch is pushed but not yet merged to main. The Addressables rows in `rcore-to-revcore-api-map.csv` reflect the mapping from this branch.
+
+RevCore is a stable framework. Migration tooling remains intentionally absent — consumer projects continue to run on RCore and there is no concrete demand for auto-rewrites yet. When a consumer initiates migration, the inputs documented here (`rcore-to-revcore-api-map.csv`, `gap-categories.md`) become the source-of-truth for any tooling built then.
