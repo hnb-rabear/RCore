@@ -71,6 +71,14 @@ namespace RevCore
 		}
 
 		/// <summary>Asynchronously loads an asset via an <see cref="AssetReference"/>.</summary>
+		/// <typeparam name="T">The asset type to load.</typeparam>
+		/// <param name="reference">The Addressables asset reference to load.</param>
+		/// <param name="progress">Optional progress reporter (0–1).</param>
+		/// <param name="ct">Cancellation token. On cancellation the handle is auto-released when it completes.</param>
+		/// <returns>The loaded asset.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="reference"/> is null.</exception>
+		/// <exception cref="AddressableLoadException">Thrown when the load operation fails.</exception>
+		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
 		public static async UniTask<T> LoadAssetAsync<T>(AssetReference reference, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
 		{
 			if (reference == null) throw new ArgumentNullException(nameof(reference));
@@ -88,6 +96,14 @@ namespace RevCore
 		}
 
 		/// <summary>Asynchronously loads a strongly-typed asset via an <see cref="AssetReferenceT{TObject}"/>.</summary>
+		/// <typeparam name="T">The asset type to load.</typeparam>
+		/// <param name="reference">The strongly-typed asset reference to load.</param>
+		/// <param name="progress">Optional progress reporter (0–1).</param>
+		/// <param name="ct">Cancellation token. On cancellation the handle is auto-released when it completes.</param>
+		/// <returns>The loaded asset.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="reference"/> is null.</exception>
+		/// <exception cref="AddressableLoadException">Thrown when the load operation fails.</exception>
+		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
 		public static UniTask<T> LoadAssetAsync<T>(AssetReferenceT<T> reference, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
 			=> LoadAssetAsync<T>((AssetReference)reference, progress, ct);
 
@@ -95,6 +111,13 @@ namespace RevCore
 		/// Loads an asset and returns the underlying <see cref="AsyncOperationHandle{TObject}"/>. The caller owns the
 		/// handle and is responsible for calling <see cref="Addressables.Release{TObject}"/> when finished.
 		/// </summary>
+		/// <typeparam name="T">The asset type to load.</typeparam>
+		/// <param name="address">The Addressables key/address.</param>
+		/// <param name="progress">Optional progress reporter (0–1).</param>
+		/// <param name="ct">Cancellation token. On cancellation the handle is auto-released when it completes.</param>
+		/// <returns>The completed Addressables handle. Caller owns release.</returns>
+		/// <exception cref="AddressableLoadException">Thrown when the load operation fails.</exception>
+		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
 		public static async UniTask<AsyncOperationHandle<T>> LoadAssetWithHandleAsync<T>(string address, IProgress<float> progress = null, CancellationToken ct = default) where T : Object
 		{
 			ct.ThrowIfCancellationRequested();
