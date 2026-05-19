@@ -125,6 +125,13 @@ namespace RevCore
 			}
 		}
 		/// <summary>Loads multiple assets in parallel by address list. Throws if any single load fails.</summary>
+		/// <typeparam name="T">The asset type to load.</typeparam>
+		/// <param name="addresses">The Addressables keys/addresses to load.</param>
+		/// <param name="ct">Cancellation token. On cancellation each in-flight handle is auto-released when it completes.</param>
+		/// <returns>The loaded assets, in the same order as <paramref name="addresses"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="addresses"/> is null.</exception>
+		/// <exception cref="AddressableLoadException">Thrown when any load operation fails.</exception>
+		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
 		public static async UniTask<System.Collections.Generic.IList<T>> LoadAssetsAsync<T>(System.Collections.Generic.IList<string> addresses, CancellationToken ct = default) where T : Object
 		{
 			if (addresses == null) throw new ArgumentNullException(nameof(addresses));
@@ -135,6 +142,13 @@ namespace RevCore
 		}
 
 		/// <summary>Asynchronously instantiates an Addressables prefab. Throws on failure.</summary>
+		/// <param name="address">The Addressables key/address of the prefab.</param>
+		/// <param name="parent">Transform to parent the new instance under, or <c>null</c> for scene root.</param>
+		/// <param name="worldPositionStays">When <c>true</c>, the world position is preserved when re-parenting.</param>
+		/// <param name="ct">Cancellation token. On cancellation the handle is auto-released and any completed instance is destroyed.</param>
+		/// <returns>The instantiated <see cref="GameObject"/>.</returns>
+		/// <exception cref="AddressableLoadException">Thrown when the instantiation operation fails.</exception>
+		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
 		public static async UniTask<GameObject> InstantiateAsync(string address, Transform parent, bool worldPositionStays = false, CancellationToken ct = default)
 		{
 			ct.ThrowIfCancellationRequested();
@@ -168,6 +182,12 @@ namespace RevCore
 		}
 
 		/// <summary>Queries the Addressables catalog for resource locations matching <paramref name="key"/>.</summary>
+		/// <param name="key">The Addressables key, label, or location query.</param>
+		/// <param name="type">Optional asset type filter.</param>
+		/// <param name="ct">Cancellation token. On cancellation the handle is auto-released when it completes.</param>
+		/// <returns>Resource locations matching <paramref name="key"/>.</returns>
+		/// <exception cref="AddressableLoadException">Thrown when the location query operation fails.</exception>
+		/// <exception cref="OperationCanceledException">Thrown when <paramref name="ct"/> is cancelled.</exception>
 		public static async UniTask<System.Collections.Generic.IList<IResourceLocation>> LoadResourceLocationsAsync(object key, Type type = null, CancellationToken ct = default)
 		{
 			ct.ThrowIfCancellationRequested();
@@ -191,12 +211,16 @@ namespace RevCore
 		}
 
 		/// <summary>Releases a previously loaded asset handle. Safe no-op if the handle is invalid.</summary>
+		/// <typeparam name="T">The asset type owned by the handle.</typeparam>
+		/// <param name="handle">The Addressables handle to release.</param>
 		public static void Release<T>(AsyncOperationHandle<T> handle)
 		{
 			if (handle.IsValid()) Addressables.Release(handle);
 		}
 
 		/// <summary>Releases an instantiated game object created via <see cref="InstantiateAsync"/>.</summary>
+		/// <param name="instance">The instantiated <see cref="GameObject"/> to release.</param>
+		/// <returns><c>true</c> if the instance was released; <c>false</c> if it was null.</returns>
 		public static bool ReleaseInstance(GameObject instance)
 			=> instance != null && Addressables.ReleaseInstance(instance);
 	}
