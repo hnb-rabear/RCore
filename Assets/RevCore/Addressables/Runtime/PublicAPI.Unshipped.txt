@@ -31,3 +31,7 @@ RevCore.AssetRef<T>.IsLoading.get -> bool
 RevCore.AssetRef<T>.IsLoaded.get -> bool
 RevCore.AssetRef<T>.LoadAsync(System.IProgress<float> progress = null, System.Threading.CancellationToken ct = default) -> Cysharp.Threading.Tasks.UniTask<T>
 RevCore.AssetRef<T>.Release() -> void
+RevCore.KeyedAssetRef<TKey, T>
+RevCore.KeyedAssetRef<TKey, T>.KeyedAssetRef() -> void
+RevCore.KeyedAssetRef<TKey, T>.Key.get -> TKey
+RevCore.KeyedAssetRef<TKey, T>.Key.set -> void

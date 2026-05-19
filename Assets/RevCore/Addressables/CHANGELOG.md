@@ -13,3 +13,4 @@
 - `AddressableCatalog.CheckForCatalogUpdatesAsync`, `UpdateCatalogsAsync`.
 - `AddressableScene.LoadSceneAsync`, `UnloadSceneAsync`.
 - `AssetRef<T>` serializable wrapper with cached `Asset`, `IsLoading`, `IsLoaded`, `LoadAsync`, `Release`.
+- `KeyedAssetRef<TKey, T>` — generic keyed variant of `AssetRef<T>`.
