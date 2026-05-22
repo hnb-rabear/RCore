@@ -536,7 +536,6 @@ namespace RCore.UI
 			ScrollToIndex(b, true);
 		}
 
-#if DOTWEEN
 		//=========================================================================
 		// Animate Item Move — Smooth Scrolling Snapshot VFX
 		//=========================================================================
@@ -827,6 +826,5 @@ namespace RCore.UI
 		{
 			StopAnimateItemMove();
 		}
-#endif
 	}
 }

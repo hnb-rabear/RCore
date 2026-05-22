@@ -79,21 +79,13 @@ namespace RevCore.UI
         public SnapScrollItem FocusedItem => m_Items[m_FocusedItemIndex];
 
         private void Start()
-        {
-            float parentWidth = m_ScrollView.viewport.rect.width;
-            foreach (var item in m_Items)
-            {
-                var itemRectTransform = item.GetComponent<RectTransform>();
-                if (itemRectTransform != null)
-                    itemRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, parentWidth);
-            }
+		{
+			Validate();
+			m_PreviousItemIndex = m_StartIndex;
+			MoveToItem(m_StartIndex, true);
+		}
 
-            Validate();
-            m_PreviousItemIndex = m_StartIndex;
-            MoveToItem(m_StartIndex, true);
-        }
-
-        private void OnEnable()
+		private void OnEnable()
         {
             m_checkBoundary = m_ScrollView.movementType == ScrollRect.MovementType.Unrestricted;
         }
@@ -269,12 +261,19 @@ namespace RevCore.UI
         /// <summary>Recomputes content bounds, item positions, and focused index. Called once after item set changes.</summary>
         public void Validate()
         {
-            SnapScrollItem focusedItem = null;
-            if (m_Items != null && m_FocusedItemIndex >= 0 && m_FocusedItemIndex < m_Items.Length)
-                focusedItem = m_Items[m_FocusedItemIndex];
+			float parentWidth = m_ScrollView.viewport.rect.width;
+			foreach (var item in m_Items)
+			{
+				var itemRectTransform = item.GetComponent<RectTransform>();
+				if (itemRectTransform != null)
+					itemRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, parentWidth);
+			}
+			SnapScrollItem focusedItem = null;
+			if (m_Items != null && m_FocusedItemIndex >= 0 && m_FocusedItemIndex < m_Items.Length)
+				focusedItem = m_Items[m_FocusedItemIndex];
 
-            m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
-            if (focusedItem != null)
+			m_Items = gameObject.GetComponentsInChildren<SnapScrollItem>();
+			if (focusedItem != null)
             {
                 int index = Array.IndexOf(m_Items, focusedItem);
                 if (index != -1)
