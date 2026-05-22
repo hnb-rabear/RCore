@@ -123,15 +123,6 @@ namespace RCore.UI
 		/// </summary>
 		private void Start()
 		{
-			// Ensure all items have the same width as the viewport for a consistent layout.
-			float parentWidth = m_ScrollView.viewport.rect.width;
-			foreach (var item in m_Items)
-			{
-				var itemRectTransform = item.GetComponent<RectTransform>();
-				if (itemRectTransform != null)
-					itemRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, parentWidth);
-			}
-			
 			// Perform validation to set up required variables.
 			Validate();
 
@@ -369,6 +360,14 @@ namespace RCore.UI
 		/// </summary>
 		public void Validate()
 		{
+			// Ensure all items have the same width as the viewport for a consistent layout.
+			float parentWidth = m_ScrollView.viewport.rect.width;
+			foreach (var item in m_Items)
+			{
+				var itemRectTransform = item.GetComponent<RectTransform>();
+				if (itemRectTransform != null)
+					itemRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, parentWidth);
+			}
 			SnapScrollItem focusedItem = null;
 			if (m_Items != null && m_FocusedItemIndex >= 0 && m_FocusedItemIndex < m_Items.Length)
 				focusedItem = m_Items[m_FocusedItemIndex];
