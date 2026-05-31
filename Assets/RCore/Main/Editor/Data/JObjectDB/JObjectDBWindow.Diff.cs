@@ -88,7 +88,8 @@ namespace RCore.Editor.Data.JObject
 			if (!m_diffEnabled || m_diffBaseToken == null || string.IsNullOrEmpty(m_selectedKey))
 				return;
 
-			if (!m_parsedData.TryGetValue(m_selectedKey, out var currentToken))
+			var currentToken = GetParsed(m_selectedKey);
+			if (currentToken == null)
 				return;
 
 			CompareDiffTokens(currentToken, m_diffBaseToken, "");

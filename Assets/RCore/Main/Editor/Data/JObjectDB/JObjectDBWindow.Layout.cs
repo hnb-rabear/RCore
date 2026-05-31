@@ -220,9 +220,17 @@ namespace RCore.Editor.Data.JObject
 		{
 			EditorGUILayout.BeginVertical();
 
-			if (string.IsNullOrEmpty(m_selectedKey) || !m_parsedData.ContainsKey(m_selectedKey))
+			if (string.IsNullOrEmpty(m_selectedKey))
 			{
 				EditorGUILayout.HelpBox("Select a collection from the left panel.", MessageType.Info);
+				EditorGUILayout.EndVertical();
+				return;
+			}
+
+			var token = GetParsed(m_selectedKey);
+			if (token == null)
+			{
+				EditorGUILayout.HelpBox($"'{m_selectedKey}' is empty or contains invalid JSON.", MessageType.Warning);
 				EditorGUILayout.EndVertical();
 				return;
 			}
@@ -243,7 +251,7 @@ namespace RCore.Editor.Data.JObject
 
 			if (GUILayout.Button(new GUIContent(" Copy JSON", m_iconCopy?.image), GUILayout.Width(95)))
 			{
-				string json = m_parsedData[m_selectedKey].ToString(Formatting.Indented);
+				string json = token.ToString(Formatting.Indented);
 				EditorGUIUtility.systemCopyBuffer = json;
 				SetStatus("✓ JSON copied to clipboard");
 			}
@@ -270,7 +278,7 @@ namespace RCore.Editor.Data.JObject
 
 			if (GUILayout.Button(new GUIContent(" Edit Raw", m_iconEdit?.image), GUILayout.Width(85)))
 			{
-				string json = m_parsedData[m_selectedKey].ToString(Formatting.Indented);
+				string json = token.ToString(Formatting.Indented);
 				TextEditorWindow.ShowWindow(json, result =>
 				{
 					try
@@ -311,7 +319,6 @@ namespace RCore.Editor.Data.JObject
 			// Tree view
 			m_treeScrollPos = EditorGUILayout.BeginScrollView(m_treeScrollPos);
 			{
-				var token = m_parsedData[m_selectedKey];
 				DrawTreeNode(m_selectedKey, "", token, 0);
 
 				// Show removed fields at the end

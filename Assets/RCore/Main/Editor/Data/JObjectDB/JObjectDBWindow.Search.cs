@@ -35,7 +35,8 @@ namespace RCore.Editor.Data.JObject
 			m_searchMatchedPaths = new HashSet<string>();
 			m_searchAncestorPaths = new HashSet<string>();
 
-			if (string.IsNullOrEmpty(m_selectedKey) || !m_parsedData.TryGetValue(m_selectedKey, out var token))
+			var token = GetParsed(m_selectedKey);
+			if (token == null)
 				return;
 
 			string query = m_appliedSearchQuery.ToLowerInvariant();

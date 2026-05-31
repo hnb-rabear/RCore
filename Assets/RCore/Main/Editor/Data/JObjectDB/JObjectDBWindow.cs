@@ -190,8 +190,9 @@ namespace RCore.Editor.Data.JObject
 
 		private void OnFocus()
 		{
-			// Auto-refresh when window regains focus
-			if (!m_isResizingSplitter)
+			// Auto-refresh on focus, but not while dragging the splitter or when there are unsaved
+			// edits — a refresh rebuilds from PlayerPrefs and would silently discard those edits.
+			if (!m_isResizingSplitter && m_dirtyKeys.Count == 0)
 				RefreshData();
 		}
 
@@ -202,20 +203,8 @@ namespace RCore.Editor.Data.JObject
 		private void RefreshData()
 		{
 			m_rawData = JObjectDB.GetAllData();
-			m_parsedData = new Dictionary<string, JToken>();
+			m_parsedData = new Dictionary<string, JToken>(); // parsed lazily per collection via GetParsed
 			m_sortedKeys = m_rawData.Keys.OrderBy(k => k).ToList();
-
-			foreach (var pair in m_rawData)
-			{
-				try
-				{
-					m_parsedData[pair.Key] = JToken.Parse(pair.Value);
-				}
-				catch (Exception ex)
-				{
-					Debug.LogError($"[JObjectDB] Failed to parse JSON for key '{pair.Key}': {ex.Message}");
-				}
-			}
 
 			// Auto-select first collection if none selected
 			if (string.IsNullOrEmpty(m_selectedKey) && m_sortedKeys.Count > 0)
@@ -226,9 +215,39 @@ namespace RCore.Editor.Data.JObject
 			Repaint();
 		}
 
+		/// <summary>
+		/// Returns the parsed JToken tree for a collection, parsing and caching it on first access so a
+		/// large database is never fully parsed up-front. Returns null when the raw JSON is missing or
+		/// fails to parse (the null result is cached to avoid re-parsing a broken value on every repaint).
+		/// </summary>
+		private JToken GetParsed(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+				return null;
+			if (m_parsedData.TryGetValue(key, out var token))
+				return token;
+
+			token = null;
+			if (m_rawData != null && m_rawData.TryGetValue(key, out var raw))
+			{
+				try
+				{
+					token = JToken.Parse(raw);
+				}
+				catch (Exception ex)
+				{
+					Debug.LogError($"[JObjectDB] Failed to parse JSON for key '{key}': {ex.Message}");
+				}
+			}
+
+			m_parsedData[key] = token;
+			return token;
+		}
+
 		private void SaveCollection(string key)
 		{
-			if (!m_parsedData.TryGetValue(key, out var token))
+			var token = GetParsed(key);
+			if (token == null)
 				return;
 
 			string json = token.ToString(Formatting.None);
