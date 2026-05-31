@@ -423,6 +423,20 @@ namespace RCore.Editor.Data.JObject
 						if (m_diffEnabled) ClearDiff();
 					}
 
+					// Per-collection reset: clears data back to type defaults but keeps the key in the list.
+					if (GUILayout.Button(new GUIContent("⟲", "Reset this collection to default values"), EditorStyles.label, GUILayout.Width(18)))
+					{
+						if (EditorUtility.DisplayDialog("Reset Collection",
+							    $"Reset '{key}' to default values?\nIts saved data will be cleared. The collection stays in the list.",
+							    "Reset", "Cancel"))
+						{
+							JObjectDB.Reset(key);
+							RefreshData();
+							SetStatus($"✓ Reset '{key}' to defaults");
+							GUIUtility.ExitGUI(); // m_sortedKeys was rebuilt; bail out of this OnGUI pass safely.
+						}
+					}
+
 					EditorGUILayout.EndHorizontal();
 				}
 			}
