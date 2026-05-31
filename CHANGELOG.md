@@ -4,6 +4,10 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- `RevCore.JObjectDB.Reset(string key)` — resets a single collection's data to its type defaults while keeping the key registered in the index (companion to `Delete`/`DeleteAll`). Surfaced in the Editor via a per-collection "Reset" button on the `JObjectDBManager` inspector.
+
 - **RevCore.Addressables v1.0.0** — new standalone package: UniTask-first helpers (`AddressableLoader`, `AddressableDownloader`, `AddressableCatalog`, `AddressableScene`), serialisable wrappers (`AssetRef<T>`, `KeyedAssetRef<TKey,T>`, `ComponentRef<TComponent>`, `PrefabRef<TComponent>`), and `AddressableLoadException`. Replaces RCore's `AddressableUtil` + asset-ref family. See module README and `docs/migration/rcore-to-revcore-api-map.csv`.
 
 ## [1.1.0] - 2026-05-19

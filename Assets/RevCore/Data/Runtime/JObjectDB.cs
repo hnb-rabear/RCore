@@ -127,6 +127,28 @@ namespace RevCore
             s_collections.Remove(key);
         }
 
+        /// <summary>
+        /// Resets a single collection's data to its type defaults while keeping the key registered in the index.
+        /// Persists an empty JSON object to PlayerPrefs (which loads as the type's default field values); when the
+        /// collection is currently loaded in memory, its live instance is reset to those defaults too.
+        /// </summary>
+        public static void Reset(string key)
+        {
+            var keys = GetSavedCollectionKeys();
+            if (!keys.Contains(key))
+                return;
+
+            var col = GetCollection(key);
+            if (col != null)
+            {
+                var fresh = (JObjectData)Activator.CreateInstance(col.GetType());
+                col.Load(fresh.ToJson());
+            }
+
+            PlayerPrefs.SetString(key, "{}");
+            PlayerPrefs.Save();
+        }
+
         /// <summary>Deletes every persisted key (data + key list) and clears the in-memory registry. Factory-reset.</summary>
         public static void DeleteAll()
         {

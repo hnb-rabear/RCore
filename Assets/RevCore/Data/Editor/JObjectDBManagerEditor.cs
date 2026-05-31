@@ -57,6 +57,32 @@ namespace RevCore.Editor
             }
 
             EditorGUILayout.EndVertical();
+
+            // Per-collection reset: clears one collection's data back to type defaults, keeping its key registered.
+            var keys = JObjectDB.GetCollectionKeys();
+            if (keys.Count > 0)
+            {
+                GUILayout.Space(5);
+                EditorGUILayout.BeginVertical("box");
+                EditorGUILayout.LabelField("Collections", EditorStyles.boldLabel);
+
+                foreach (string key in keys)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(key);
+                    if (GUILayout.Button("Reset", GUILayout.Width(60)) &&
+                        EditorUtility.DisplayDialog("Reset Collection",
+                            $"Reset '{key}' to default values? Its saved data will be cleared (the key stays registered).",
+                            "Reset", "Cancel"))
+                    {
+                        JObjectDB.Reset(key);
+                        GUIUtility.ExitGUI();
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
         }
     }
 }

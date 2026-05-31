@@ -59,6 +59,42 @@ namespace RevCore.Tests
         }
 
         [Test]
+        public void Reset_clears_loaded_data_to_defaults_but_keeps_key()
+        {
+            var col = JObjectDB.CreateCollection<TestData>(Prefix + "score");
+            col.value = 55;
+            col.Save();
+
+            JObjectDB.Reset(Prefix + "score");
+
+            // Key stays registered, live instance resets to the type default, data is emptied.
+            Assert.IsTrue(JObjectDB.GetCollectionKeys().Contains(Prefix + "score"));
+            Assert.AreEqual(0, col.value);
+            Assert.AreEqual("{}", PlayerPrefs.GetString(Prefix + "score"));
+        }
+
+        [Test]
+        public void Reset_empties_unloaded_collection_and_keeps_key()
+        {
+            // Register the key in the persisted index, then drop the in-memory instance.
+            JObjectDB.CreateCollection<TestData>(Prefix + "score").Save();
+            JObjectDB.ClearInMemoryForTests();
+
+            JObjectDB.Reset(Prefix + "score");
+
+            Assert.IsTrue(JObjectDB.GetCollectionKeys().Contains(Prefix + "score"));
+            Assert.AreEqual("{}", PlayerPrefs.GetString(Prefix + "score"));
+        }
+
+        [Test]
+        public void Reset_ignores_unknown_key()
+        {
+            // No throw, and nothing is persisted for a key that was never registered.
+            Assert.DoesNotThrow(() => JObjectDB.Reset(Prefix + "missing"));
+            Assert.IsFalse(PlayerPrefs.HasKey(Prefix + "missing"));
+        }
+
+        [Test]
         public void GetCollectionKeys_returns_registered_keys()
         {
             JObjectDB.CreateCollection<TestData>(Prefix + "score");
