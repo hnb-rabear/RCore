@@ -221,6 +221,31 @@ namespace RCore.Data.JObject
 		}
 
 		/// <summary>
+		/// Resets a single collection's data to its type's default values, while keeping its key registered in the master index.
+		/// Persists an empty JSON object to PlayerPrefs, which initializes to the type's default field values on the next load.
+		/// If the collection is currently loaded in memory, its live instance is also reset to those defaults.
+		/// </summary>
+		/// <param name="key">The key of the collection to reset.</param>
+		public static void Reset(string key)
+		{
+			var keys = GetSavedCollectionKeys();
+			if (!keys.Contains(key))
+				return;
+
+			// If the collection is loaded in memory, reset the live instance to its type defaults.
+			var collection = GetCollection(key);
+			if (collection != null)
+			{
+				var fresh = (JObjectData)Activator.CreateInstance(collection.GetType());
+				collection.Load(fresh.ToJson());
+			}
+
+			// Persist an empty object; on the next load this yields the type's default values.
+			PlayerPrefs.SetString(key, "{}");
+			PlayerPrefs.Save();
+		}
+
+		/// <summary>
 		/// Imports data from a JSON string. The string should represent a dictionary of collection keys and their JSON data.
 		/// This will overwrite any existing data in PlayerPrefs.
 		/// </summary>
