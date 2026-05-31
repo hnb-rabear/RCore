@@ -78,6 +78,19 @@ namespace RevCore.Editor
                         JObjectDB.Reset(key);
                         GUIUtility.ExitGUI();
                     }
+                    // Delete removes the key entirely; restricted to edit mode since a live model still
+                    // references its data object and would re-persist it on the next save.
+                    using (new EditorGUI.DisabledScope(Application.isPlaying))
+                    {
+                        if (GUILayout.Button("Delete", GUILayout.Width(60)) &&
+                            EditorUtility.DisplayDialog("Delete Collection",
+                                $"Delete '{key}' entirely? Its key and data are removed from the database.",
+                                "Delete", "Cancel"))
+                        {
+                            JObjectDB.Delete(key);
+                            GUIUtility.ExitGUI();
+                        }
+                    }
                     EditorGUILayout.EndHorizontal();
                 }
 
