@@ -203,6 +203,7 @@ namespace RCore.Data.JObject
 				PlayerPrefs.DeleteKey(saverKeys[i]);
 			PlayerPrefs.DeleteKey(COLLECTIONS); // Also delete the master index
 			collections.Clear();
+			PlayerPrefs.Save();
 		}
 
 		/// <summary>
@@ -218,6 +219,7 @@ namespace RCore.Data.JObject
 				PlayerPrefs.DeleteKey(key);
 			}
 			collections.Remove(key);
+			PlayerPrefs.Save();
 		}
 
 		/// <summary>

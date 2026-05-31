@@ -233,6 +233,7 @@ namespace RCore.Editor.Data.JObject
 
 			string json = token.ToString(Formatting.None);
 			PlayerPrefs.SetString(key, json);
+			PlayerPrefs.Save();
 			m_rawData[key] = json;
 
 			// Sync runtime data if playing
@@ -434,6 +435,21 @@ namespace RCore.Editor.Data.JObject
 							RefreshData();
 							SetStatus($"✓ Reset '{key}' to defaults");
 							GUIUtility.ExitGUI(); // m_sortedKeys was rebuilt; bail out of this OnGUI pass safely.
+						}
+					}
+
+					// Per-collection delete: removes the key and its data from the database entirely.
+					if (GUILayout.Button(new GUIContent("✕", "Delete this collection entirely"), EditorStyles.label, GUILayout.Width(16)))
+					{
+						if (EditorUtility.DisplayDialog("Delete Collection",
+							    $"Delete '{key}' entirely?\nIts key and data are removed from the database.",
+							    "Delete", "Cancel"))
+						{
+							JObjectDB.Delete(key);
+							if (m_selectedKey == key) m_selectedKey = null;
+							RefreshData();
+							SetStatus($"✓ Deleted '{key}'");
+							GUIUtility.ExitGUI();
 						}
 					}
 
@@ -1619,21 +1635,40 @@ namespace RCore.Editor.Data.JObject
 		private static bool IsTimestampField(string fieldName)
 		{
 			if (string.IsNullOrEmpty(fieldName)) return false;
-			string lower = fieldName.ToLowerInvariant().TrimStart('[').TrimEnd(']');
-			
-			// Suffix match: fields ending with common timestamp suffixes
+			string name = fieldName.TrimStart('[').TrimEnd(']');
+
+			// Suffix match on a word boundary (camelCase "createdAt" / snake_case "created_at"),
+			// so unrelated names like "format", "seat" or "stat" are not mistaken for timestamps.
 			foreach (string suffix in TIMESTAMP_SUFFIXES)
 			{
-				if (lower.EndsWith(suffix))
+				if (EndsWithWord(name, suffix))
 					return true;
 			}
-			
-			// Contains match: fields containing time-related keywords
-			if (lower.Contains("time") || lower.Contains("timestamp") || lower.Contains("expired")
+
+			// Keyword match anywhere in the name.
+			string lower = name.ToLowerInvariant();
+			if (lower.Contains("timestamp") || lower.Contains("expired")
 			    || lower.Contains("lastactive") || lower.Contains("firstactive"))
 				return true;
-			
+
 			return false;
+		}
+
+		/// <summary>
+		/// Returns true if <paramref name="name"/> ends with <paramref name="suffix"/> (case-insensitive)
+		/// at a word boundary — the match is the whole name, starts right after an underscore, or starts
+		/// at a camelCase hump (uppercase letter). Prevents "format" from matching the "at" suffix.
+		/// </summary>
+		private static bool EndsWithWord(string name, string suffix)
+		{
+			if (name.Length < suffix.Length) return false;
+			int idx = name.Length - suffix.Length;
+			if (string.Compare(name, idx, suffix, 0, suffix.Length, StringComparison.OrdinalIgnoreCase) != 0)
+				return false;
+			if (idx == 0) return true; // whole word
+			char start = name[idx];
+			char before = name[idx - 1];
+			return char.IsUpper(start) || before == '_' || !char.IsLetter(before);
 		}
 	}
 
