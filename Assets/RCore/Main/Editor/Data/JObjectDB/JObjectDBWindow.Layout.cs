@@ -41,6 +41,7 @@ namespace RCore.Editor.Data.JObject
 					m_appliedSearchQuery = "";
 					m_searchMatchedPaths = null;
 					m_searchAncestorPaths = null;
+					m_searchMatchedCollections = null;
 					GUI.FocusControl(null);
 				}
 			}
@@ -48,6 +49,15 @@ namespace RCore.Editor.Data.JObject
 			// Search mode toggle
 			EditorGUI.BeginChangeCheck();
 			m_searchMode = (SearchMode)EditorGUILayout.EnumPopup(m_searchMode, EditorStyles.toolbarDropDown, GUILayout.Width(55));
+			if (EditorGUI.EndChangeCheck() && !string.IsNullOrEmpty(m_appliedSearchQuery))
+			{
+				RebuildSearchCache();
+				Repaint();
+			}
+
+			// Search scope toggle (selected collection vs all collections)
+			EditorGUI.BeginChangeCheck();
+			m_searchScope = (SearchScope)EditorGUILayout.EnumPopup(m_searchScope, EditorStyles.toolbarDropDown, GUILayout.Width(65));
 			if (EditorGUI.EndChangeCheck() && !string.IsNullOrEmpty(m_appliedSearchQuery))
 			{
 				RebuildSearchCache();
@@ -101,7 +111,11 @@ namespace RCore.Editor.Data.JObject
 		private void DrawLeftPanel()
 		{
 			EditorGUILayout.BeginVertical(GUILayout.Width(m_leftPanelWidth));
-			EditorGUILayout.LabelField($"Collections ({m_sortedKeys?.Count ?? 0})", EditorStyles.boldLabel);
+			int totalCollections = m_sortedKeys?.Count ?? 0;
+			string collectionsHeader = m_searchMatchedCollections != null
+				? $"Collections ({m_searchMatchedCollections.Count}/{totalCollections} match)"
+				: $"Collections ({totalCollections})";
+			EditorGUILayout.LabelField(collectionsHeader, EditorStyles.boldLabel);
 
 			m_leftScrollPos = EditorGUILayout.BeginScrollView(m_leftScrollPos);
 
@@ -109,6 +123,10 @@ namespace RCore.Editor.Data.JObject
 			{
 				foreach (string key in m_sortedKeys)
 				{
+					// Global search: show only collections that contain a match (always keep the selected one visible).
+					if (m_searchMatchedCollections != null && !m_searchMatchedCollections.Contains(key) && key != m_selectedKey)
+						continue;
+
 					bool isSelected = key == m_selectedKey;
 					bool isDirty = m_dirtyKeys.Contains(key);
 					bool isLoaded = Application.isPlaying && JObjectDB.collections.ContainsKey(key);
@@ -134,6 +152,8 @@ namespace RCore.Editor.Data.JObject
 						m_selectedKey = key;
 						m_treeScrollPos = Vector2.zero;
 						if (m_diffEnabled) ClearDiff();
+						// Recompute per-collection highlights for the newly selected collection.
+						if (!string.IsNullOrEmpty(m_appliedSearchQuery)) RebuildSearchCache();
 					}
 
 					// Per-collection reset: clears data back to type defaults but keeps the key in the list.

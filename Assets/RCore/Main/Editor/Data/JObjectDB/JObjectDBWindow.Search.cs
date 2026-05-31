@@ -29,18 +29,74 @@ namespace RCore.Editor.Data.JObject
 			{
 				m_searchMatchedPaths = null;
 				m_searchAncestorPaths = null;
+				m_searchMatchedCollections = null;
 				return;
 			}
 
+			string query = m_appliedSearchQuery.ToLowerInvariant();
+
+			// Detailed highlight paths for the selected collection.
 			m_searchMatchedPaths = new HashSet<string>();
 			m_searchAncestorPaths = new HashSet<string>();
-
 			var token = GetParsed(m_selectedKey);
-			if (token == null)
-				return;
+			if (token != null)
+				SearchRecursive(token, "", query);
 
-			string query = m_appliedSearchQuery.ToLowerInvariant();
-			SearchRecursive(token, "", query);
+			// Global scope: collect which collections contain at least one match.
+			if (m_searchScope == SearchScope.All && m_sortedKeys != null)
+			{
+				m_searchMatchedCollections = new HashSet<string>();
+				foreach (string key in m_sortedKeys)
+				{
+					var t = GetParsed(key);
+					if (t != null && TokenHasMatch(t, query))
+						m_searchMatchedCollections.Add(key);
+				}
+			}
+			else
+			{
+				m_searchMatchedCollections = null;
+			}
+		}
+
+		/// <summary>
+		/// Lightweight existence check: returns true as soon as any field name (Key mode) or leaf value
+		/// (Value mode) under <paramref name="token"/> matches <paramref name="query"/>. Used by global
+		/// search to decide which collections to surface, without building per-path highlight sets.
+		/// </summary>
+		private bool TokenHasMatch(JToken token, string query)
+		{
+			if (token.Type == JTokenType.Object)
+			{
+				foreach (var prop in ((NJObject)token).Properties())
+				{
+					if (m_searchMode == SearchMode.Key)
+					{
+						if (prop.Name.ToLowerInvariant().Contains(query))
+							return true;
+					}
+					else if (IsLeafValueMatch(prop.Value, query))
+					{
+						return true;
+					}
+
+					if (TokenHasMatch(prop.Value, query))
+						return true;
+				}
+			}
+			else if (token.Type == JTokenType.Array)
+			{
+				var arr = (NJArray)token;
+				for (int i = 0; i < arr.Count; i++)
+				{
+					if (m_searchMode == SearchMode.Value && IsLeafValueMatch(arr[i], query))
+						return true;
+					if (TokenHasMatch(arr[i], query))
+						return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <summary>

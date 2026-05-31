@@ -25,6 +25,7 @@ namespace RCore.Editor.Data.JObject
 	public partial class JObjectDBWindow : EditorWindow
 	{
 		private enum SearchMode { Key, Value }
+		private enum SearchScope { Current, All }
 
 		//==========================================================================
 		// Constants
@@ -83,6 +84,8 @@ namespace RCore.Editor.Data.JObject
 		private SearchMode m_searchMode = SearchMode.Key;
 		private HashSet<string> m_searchMatchedPaths;           // exact paths that match search query
 		private HashSet<string> m_searchAncestorPaths;          // parent paths to auto-expand/show
+		private SearchScope m_searchScope = SearchScope.Current; // search the selected collection or all of them
+		private HashSet<string> m_searchMatchedCollections;     // global search: collections with >=1 match (null = not global)
 
 		// Diff
 		private bool m_diffEnabled;
