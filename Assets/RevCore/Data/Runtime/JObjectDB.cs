@@ -125,6 +125,7 @@ namespace RevCore
                 PlayerPrefs.DeleteKey(key);
             }
             s_collections.Remove(key);
+            PlayerPrefs.Save();
         }
 
         /// <summary>
@@ -156,6 +157,7 @@ namespace RevCore
                 PlayerPrefs.DeleteKey(key);
             PlayerPrefs.DeleteKey(CollectionsKey);
             s_collections.Clear();
+            PlayerPrefs.Save();
         }
 
         /// <summary>
