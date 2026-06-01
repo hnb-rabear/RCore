@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.8]
+### Added
+- **JObjectDB — `Reset(key)` API**: Clears a single collection's data back to its type's default values while keeping the key registered in the master index, then persists and flushes (`PlayerPrefs.Save`). Resets the live in-memory instance when the collection is loaded.
+- **JObjectDB Editor — Per-collection Reset & Delete**: Added left-panel per-row buttons (with confirmation) to reset a collection to defaults or delete it outright; the collection tree refreshes afterward.
+- **JObjectDB Editor — Global Search**: Added a search-scope toggle (Current / All). In *All* scope the window scans every collection, filters the left panel to those containing a match (the selected collection stays visible) and shows an `n/total match` count in the header; in-tree highlights are recomputed when a matching collection is selected.
+
+### Changed
+- **JObjectDB — Persistence flush**: `Delete` and `DeleteAll` now call `PlayerPrefs.Save()` so removals are committed to disk immediately.
+- **JObjectDB Editor — Lazy parsing**: Collections are now parsed on demand rather than all upfront, and `OnFocus` no longer reloads the database over unsaved edits.
+- **JObjectDB Editor — Internal refactor**: Split the monolithic `JObjectDBWindow` into focused partial classes (core + Diff / Import / Layout / Presets / Search / Tree) for maintainability; behavior preserving.
+- **JObjectDB Editor — Unified asset-create drawer**: Merged three near-identical "Create asset" property drawers into a single `JObjectCreateAssetDrawer`.
+
 ## [1.1.7]
 ### Added
 - **JObjectDB — Dependency Injection**: Introduced `[Inject]` attribute and reflection-based DI system in `JObjectModelCollection`. `InjectDependencies()` auto-wires model fields after creation; `Get<T>()` resolves models or their data by type/interface with O(1) cached lookups.
