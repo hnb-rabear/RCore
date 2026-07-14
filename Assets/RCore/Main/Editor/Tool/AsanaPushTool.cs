@@ -44,6 +44,11 @@ namespace RCore.Editor.Tool
 		private int m_CompletedSteps;
 		private PushMode m_PushMode = PushMode.Update;
 
+		// Custom field "Estimated time" auto-fill (discovered once per push from parent task)
+		private static readonly string[] ESTIMATE_FIELD_NAMES = { "estimated time", "estimate time" };
+		private readonly List<string> m_EstimateFieldGids = new List<string>();
+		private string m_ProjectGid;
+
 		[MenuItem("RCore/Tools/Push to Asana", priority = 110 + 7)]
 		public static void ShowWindow()
 		{
@@ -61,7 +66,7 @@ namespace RCore.Editor.Tool
 		{
 			EditorGUILayout.Space(8);
 			EditorGUILayout.LabelField("Asana Push Tool", EditorStyles.boldLabel);
-			EditorGUILayout.HelpBox("Push markdown tasklists to Asana as hierarchical subtasks.\nModes: Replace All (delete + recreate) | Update (smart sync)", MessageType.Info);
+			EditorGUILayout.HelpBox("Push markdown tasklists to Asana as hierarchical subtasks.\nModes: Replace All (delete + recreate) | Update (smart sync)\nAuto-fills 'Estimated time' custom field from 'Est Xh' in task name.", MessageType.Info);
 			EditorGUILayout.Space(4);
 
 			// --- Settings ---
@@ -187,6 +192,7 @@ namespace RCore.Editor.Tool
 		{
 			public string Name;
 			public bool Completed;
+			public float EstimateHours = -1f; // -1 = no estimate parsed
 			public List<TaskNode> Children = new List<TaskNode>();
 		}
 
@@ -225,9 +231,21 @@ namespace RCore.Editor.Tool
 				{
 					bool completed = itemMatch.Groups[1].Value.ToLower() == "x";
 					string name = itemMatch.Groups[2].Value.Trim();
-					currentSection.Children.Add(new TaskNode { Name = name, Completed = completed });
+					float hours = ParseEstimateHours(name);
+					currentSection.Children.Add(new TaskNode { Name = name, Completed = completed, EstimateHours = hours });
 				}
 			}
+		}
+
+		// Parse "Est 3h" / "Est 1.5h" / "est 5 h" from task name → hours. Returns -1 if not found.
+		private float ParseEstimateHours(string name)
+		{
+			if (string.IsNullOrEmpty(name))
+				return -1f;
+			var m = Regex.Match(name, @"\best\s*([\d]+(?:\.[\d]+)?)\s*h\b", RegexOptions.IgnoreCase);
+			if (m.Success && float.TryParse(m.Groups[1].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float hours))
+				return hours;
+			return -1f;
 		}
 
 		private int CountAllTasks()
@@ -248,7 +266,8 @@ namespace RCore.Editor.Tool
 			GUILayout.Space(indent * 20);
 			string prefix = indent == 0 ? "📁" : "  •";
 			string status = node.Completed ? " ✅" : "";
-			EditorGUILayout.LabelField($"{prefix} {node.Name}{status}");
+			string est = node.EstimateHours >= 0f ? $"  ⏱ {node.EstimateHours.ToString(System.Globalization.CultureInfo.InvariantCulture)}h" : "";
+			EditorGUILayout.LabelField($"{prefix} {node.Name}{status}{est}");
 			EditorGUILayout.EndHorizontal();
 
 			foreach (var child in node.Children)
@@ -307,6 +326,8 @@ namespace RCore.Editor.Tool
 		{
 			Log("🔄 REPLACE ALL: Fetching existing subtasks...");
 
+			yield return DiscoverEstimateField();
+
 			// Step 1: Fetch existing level 1 subtasks
 			var fetchReq = GetSubtasks(m_ParentTaskId);
 			yield return WaitForRequest(fetchReq);
@@ -359,6 +380,8 @@ namespace RCore.Editor.Tool
 		private IEnumerator UpdateFlow()
 		{
 			Log("📝 UPDATE: Fetching existing subtasks...");
+
+			yield return DiscoverEstimateField();
 
 			// Step 1: Fetch existing level 1 subtasks
 			var fetchReq = GetSubtasks(m_ParentTaskId);
@@ -421,11 +444,13 @@ namespace RCore.Editor.Tool
 						var childReq = CreateSubtask(newId, child.Name, child.Completed);
 						yield return WaitForRequest(childReq);
 
-						if (ExtractGid(childReq) == null)
+						string childId = ExtractGid(childReq);
+						if (childId == null)
 						{
 							LogRequestError("Failed to create: " + child.Name, childReq);
 							yield break;
 						}
+						yield return SetEstimate(childId, child.EstimateHours);
 						m_CompletedSteps++;
 						Log($"  🆕 [{m_CompletedSteps}/{m_TotalSteps}] Created: {child.Name}");
 					}
@@ -484,17 +509,20 @@ namespace RCore.Editor.Tool
 					{
 						Log($"  ✓ [{m_CompletedSteps + 1}/{m_TotalSteps}] Unchanged: {mdChild.Name}");
 					}
+					yield return SetEstimate(match.Id, mdChild.EstimateHours);
 				}
 				else
 				{
 					var createReq = CreateSubtask(parentId, mdChild.Name, mdChild.Completed);
 					yield return WaitForRequest(createReq);
 
-					if (ExtractGid(createReq) == null)
+					string newChildId = ExtractGid(createReq);
+					if (newChildId == null)
 					{
 						LogRequestError("Failed to create: " + mdChild.Name, createReq);
 						yield break;
 					}
+					yield return SetEstimate(newChildId, mdChild.EstimateHours);
 					Log($"  🆕 [{m_CompletedSteps + 1}/{m_TotalSteps}] Created: {mdChild.Name}");
 				}
 				m_CompletedSteps++;
@@ -542,11 +570,13 @@ namespace RCore.Editor.Tool
 					var req2 = CreateSubtask(sectionId, item.Name, item.Completed);
 					yield return WaitForRequest(req2);
 
-					if (ExtractGid(req2) == null)
+					string childId = ExtractGid(req2);
+					if (childId == null)
 					{
 						LogRequestError("Failed to create: " + item.Name, req2);
 						yield break;
 					}
+					yield return SetEstimate(childId, item.EstimateHours);
 					m_CompletedSteps++;
 					Log($"  ✅ [{m_CompletedSteps}/{m_TotalSteps}] {item.Name}");
 				}
@@ -576,6 +606,103 @@ namespace RCore.Editor.Tool
 			public string Id;
 			public string Name;
 			public bool Completed;
+		}
+
+		// Discover estimate custom-field gids + project gid from the parent task (once per push).
+		// custom_fields is a dynamic gid-keyed object → parse via regex, not JsonUtility.
+		private IEnumerator DiscoverEstimateField()
+		{
+			m_EstimateFieldGids.Clear();
+			m_ProjectGid = null;
+
+			string url = $"{API_BASE}/tasks/{m_ParentTaskId}?opt_fields=projects,custom_fields.name,custom_fields.type,custom_fields.resource_subtype";
+			var req = SendRequest("GET", url, null);
+			yield return WaitForRequest(req);
+
+			if (req.result != UnityWebRequest.Result.Success)
+			{
+				Log("⚠️ Cannot read parent custom fields — estimate fill skipped");
+				yield break;
+			}
+
+			string body = req.downloadHandler.text;
+
+			// project gid (first one)
+			var projMatch = Regex.Match(body, "\"projects\"\\s*:\\s*\\[\\s*\\{\\s*\"gid\"\\s*:\\s*\"(\\d+)\"");
+			if (projMatch.Success)
+				m_ProjectGid = projMatch.Groups[1].Value;
+
+			// each custom field object: {"gid":"..","name":"..","type":"..",..}
+			foreach (Match fm in Regex.Matches(body, "\\{[^{}]*?\"gid\"\\s*:\\s*\"(\\d+)\"[^{}]*?\\}"))
+			{
+				string block = fm.Value;
+				var nameM = Regex.Match(block, "\"name\"\\s*:\\s*\"([^\"]*)\"");
+				if (!nameM.Success)
+					continue;
+				string fieldName = UnescapeJson(nameM.Groups[1].Value).Trim().ToLowerInvariant();
+				if (Array.IndexOf(ESTIMATE_FIELD_NAMES, fieldName) >= 0)
+				{
+					string gid = fm.Groups[1].Value;
+					if (!m_EstimateFieldGids.Contains(gid))
+						m_EstimateFieldGids.Add(gid);
+				}
+			}
+
+			if (m_EstimateFieldGids.Count > 0)
+				Log($"🔎 Estimate field(s) found: {m_EstimateFieldGids.Count}" + (m_ProjectGid != null ? $" | project {m_ProjectGid}" : ""));
+			else
+				Log("⚠️ No 'Estimated time' custom field on parent — estimate fill skipped");
+		}
+
+		// Set estimate hours on a task. Tries direct PUT; if field is project-scoped and the
+		// subtask isn't in the project yet, adds it to the project then retries once.
+		private IEnumerator SetEstimate(string taskId, float hours)
+		{
+			if (taskId == null || hours < 0f || m_EstimateFieldGids.Count == 0)
+				yield break;
+
+			var setReq = UpdateCustomFields(taskId, hours);
+			yield return WaitForRequest(setReq);
+
+			if (setReq.result == UnityWebRequest.Result.Success)
+				yield break;
+
+			// Field likely project-local → attach subtask to project, retry.
+			if (m_ProjectGid != null)
+			{
+				var addReq = AddTaskToProject(taskId, m_ProjectGid);
+				yield return WaitForRequest(addReq);
+
+				var retryReq = UpdateCustomFields(taskId, hours);
+				yield return WaitForRequest(retryReq);
+				if (retryReq.result != UnityWebRequest.Result.Success)
+					Log($"  ⚠️ Estimate set failed for {taskId}: HTTP {retryReq.responseCode}");
+			}
+			else
+			{
+				Log($"  ⚠️ Estimate set failed for {taskId}: HTTP {setReq.responseCode}");
+			}
+		}
+
+		private UnityWebRequest UpdateCustomFields(string taskId, float hours)
+		{
+			string num = hours.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			var sb = new StringBuilder();
+			for (int i = 0; i < m_EstimateFieldGids.Count; i++)
+			{
+				if (i > 0) sb.Append(",");
+				sb.Append($"\"{m_EstimateFieldGids[i]}\":{num}");
+			}
+			string url = $"{API_BASE}/tasks/{taskId}";
+			string json = $"{{\"data\":{{\"custom_fields\":{{{sb}}}}}}}";
+			return SendRequest("PUT", url, json);
+		}
+
+		private UnityWebRequest AddTaskToProject(string taskId, string projectGid)
+		{
+			string url = $"{API_BASE}/tasks/{taskId}/addProject";
+			string json = $"{{\"data\":{{\"project\":\"{projectGid}\"}}}}";
+			return SendRequest("POST", url, json);
 		}
 
 		private UnityWebRequest CreateSubtask(string parentTaskId, string name, bool completed)

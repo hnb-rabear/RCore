@@ -58,9 +58,9 @@ Foundation  ──────────►  (Inspector)        (Tools — edi
    ▲   ▲   ▲   ▲                 ▲
    │   │   │   │                 │
  Timer  Prefs  │                 │
-   ▲     ▲    │                 │
-   │     │    │                 │
-   │   Pool ──┘                  │
+   ▲     ▲     │                 │
+   │     │     │                 │
+   │   Pool ── ┘                 │
    │     ▲                       │
    │     │                       │
    ├── Audio ──────────► Inspector + Prefs

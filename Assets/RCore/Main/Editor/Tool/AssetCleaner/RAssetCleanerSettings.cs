@@ -44,6 +44,11 @@ namespace RCore.Editor.AssetCleaner
             ".overrideController", ".anim", ".json", ".txt"
         };
         
+        public List<string> leakIgnoreExtensions = new List<string>()
+        {
+            ".cs", ".asmdef", ".dll"
+        };
+
         public Color unusedColor = new Color(1f, 0.3f, 0.3f, 1f);
         public bool showSize = true;
         public bool showRedOverlay = true;

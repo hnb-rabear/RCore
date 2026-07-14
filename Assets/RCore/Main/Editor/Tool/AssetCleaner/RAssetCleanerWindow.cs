@@ -16,8 +16,28 @@ namespace RCore.Editor.AssetCleaner
 			window.Show();
 		}
 
+		[MenuItem("Assets/Asset Cleaner/Scan Leaks", false, 2000)]
+		private static void ScanLeaksContextMenu()
+		{
+			var selectionPaths = RAssetCleanerLeak.GetValidSelection(out _, out _);
+
+			var window = GetWindow<RAssetCleanerWindow>();
+			window.titleContent = new GUIContent("Asset Cleaner");
+			window.m_tabIndex = 2;
+			window.m_leakLastSelection = selectionPaths;
+			window.RunLeakScan(selectionPaths);
+			window.Show();
+			window.Repaint();
+		}
+
+		[MenuItem("Assets/Asset Cleaner/Scan Leaks", true)]
+		private static bool ScanLeaksContextMenuValidate()
+		{
+			return RAssetCleanerLeak.GetValidSelection(out _, out _).Count > 0;
+		}
+
 		private int m_tabIndex;
-		private string[] m_tabs = { "Cleaner", "Reference Finder", "Settings" };
+		private string[] m_tabs = { "Cleaner", "Reference Finder", "Leak Checker", "Settings" };
 
         private class UsageInfo
         {
@@ -30,6 +50,25 @@ namespace RCore.Editor.AssetCleaner
 
         private Dictionary<string, bool> m_foldoutStates = new Dictionary<string, bool>();
         private Dictionary<string, List<UsageInfo>> m_usageDetails = new Dictionary<string, List<UsageInfo>>();
+
+        private string GetFriendlyDisplayName(SerializedProperty sp)
+        {
+            // Unity's default displayName for array elements is just "Element N" with no field name.
+            // Derive "fieldName[N]" from propertyPath instead, e.g. "m_popups.Array.data[3]" -> "m_popups[3]".
+            string path = sp.propertyPath;
+            const string arrayMarker = ".Array.data[";
+            int markerIndex = path.LastIndexOf(arrayMarker, System.StringComparison.Ordinal);
+            if (markerIndex >= 0 && path.EndsWith("]"))
+            {
+                string fieldName = path.Substring(0, markerIndex);
+                int lastDot = fieldName.LastIndexOf('.');
+                if (lastDot >= 0)
+                    fieldName = fieldName.Substring(lastDot + 1);
+                string index = path.Substring(markerIndex + arrayMarker.Length);
+                return $"{fieldName}[{index}";
+            }
+            return sp.displayName;
+        }
 
         private List<UsageInfo> FindUsageDetails(string referrerPath, Object target)
         {
@@ -68,7 +107,7 @@ namespace RCore.Editor.AssetCleaner
                                  {
                                      hostObject = obj,
                                      propertyPath = sp.propertyPath,
-                                     propertyDisplayName = sp.displayName,
+                                     propertyDisplayName = GetFriendlyDisplayName(sp),
                                      serializedObject = so,
                                      property = so.FindProperty(sp.propertyPath)
                                  });
@@ -97,7 +136,7 @@ namespace RCore.Editor.AssetCleaner
                          {
                              hostObject = asset,
                              propertyPath = sp.propertyPath,
-                             propertyDisplayName = sp.displayName,
+                             propertyDisplayName = GetFriendlyDisplayName(sp),
                              serializedObject = so,
                              property = so.FindProperty(sp.propertyPath)
                          });
@@ -187,6 +226,18 @@ namespace RCore.Editor.AssetCleaner
 		private List<Object> m_history = new List<Object>();
 		private int m_historyIndex = -1;
 
+		// Leak Checker State
+		private List<LeakEntry> m_leakedIn = new List<LeakEntry>();
+		private List<LeakEntry> m_leakedOut = new List<LeakEntry>();
+		private Vector2 m_leakScrollPos;
+		private bool m_leakScanned;
+		private bool m_leakedInExpanded = true;
+		private bool m_leakedOutExpanded = true;
+		private Dictionary<string, bool> m_leakFoldouts = new Dictionary<string, bool>();
+		private List<string> m_leakLastSelection = new List<string>();
+		private int m_leakInGroupIndex;
+		private int m_leakOutGroupIndex;
+
 		// Settings/Style
 		private GUIStyle m_boxStyle;
 
@@ -249,6 +300,10 @@ namespace RCore.Editor.AssetCleaner
 					}
 				}
 			}
+			else if (m_tabIndex == 2)
+			{
+				Repaint();
+			}
 		}
 
 		private void OnGUI()
@@ -261,7 +316,8 @@ namespace RCore.Editor.AssetCleaner
 			{
 				case 0: DrawCleanerTab(); break;
 				case 1: DrawReferenceFinderTab(); break;
-				case 2: DrawSettingsTab(); break;
+				case 2: DrawLeakCheckerTab(); break;
+				case 3: DrawSettingsTab(); break;
 			}
 		}
 
@@ -546,6 +602,153 @@ namespace RCore.Editor.AssetCleaner
 			}
 		}
 
+		private void DrawLeakCheckerTab()
+		{
+			var selectionPaths = RAssetCleanerLeak.GetValidSelection(out int folderCount, out int prefabCount);
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUI.BeginDisabledGroup(selectionPaths.Count == 0);
+			if (GUILayout.Button("Scan Leaks", GUILayout.Height(30)))
+			{
+				m_leakLastSelection = selectionPaths;
+				RunLeakScan(m_leakLastSelection);
+			}
+			EditorGUI.EndDisabledGroup();
+			EditorGUI.BeginDisabledGroup(m_leakLastSelection.Count == 0);
+			if (GUILayout.Button("Rescan", GUILayout.Width(70), GUILayout.Height(30)))
+			{
+				RunLeakScan(m_leakLastSelection);
+			}
+			EditorGUI.EndDisabledGroup();
+			if (GUILayout.Button("Rebuild Cache", GUILayout.Width(110), GUILayout.Height(30)))
+			{
+				RAssetCleaner.BuildCache();
+			}
+			EditorGUILayout.EndHorizontal();
+
+			if (selectionPaths.Count == 0)
+			{
+				EditorGUILayout.HelpBox("Select one or more folders or prefabs in the Project window, then press Scan Leaks.", MessageType.Info);
+			}
+			else
+			{
+				GUILayout.Label($"Selection: {folderCount} folder(s), {prefabCount} prefab(s)");
+			}
+
+			if (!m_leakScanned)
+				return;
+
+			GUILayout.Space(10);
+			m_leakScrollPos = GUILayout.BeginScrollView(m_leakScrollPos);
+
+			var leakedInPaths = m_leakedIn.Select(l => l.assetPath).ToList();
+			m_leakedInExpanded = EditorGUILayout.Foldout(m_leakedInExpanded,
+				$"Leaked In ({m_leakedIn.Count}) - {RAssetCleaner.GetTotalSizeFormatted(leakedInPaths)} - referenced from outside selection", true);
+			if (m_leakedInExpanded)
+				DrawLeakSection(m_leakedIn, "Referenced by", ref m_leakInGroupIndex);
+
+			GUILayout.Space(10);
+			var leakedOutPaths = m_leakedOut.Select(l => l.assetPath).ToList();
+			m_leakedOutExpanded = EditorGUILayout.Foldout(m_leakedOutExpanded,
+				$"Leaked Out ({m_leakedOut.Count}) - {RAssetCleaner.GetTotalSizeFormatted(leakedOutPaths)} - external assets pulled into selection", true);
+			if (m_leakedOutExpanded)
+				DrawLeakSection(m_leakedOut, "Pulled in by", ref m_leakOutGroupIndex);
+
+			GUILayout.EndScrollView();
+		}
+
+		private void RunLeakScan(List<string> pSelectionPaths)
+		{
+			if (RAssetCleaner.ReferenceCache.Count == 0)
+				RAssetCleaner.BuildCache();
+
+			var boundary = RAssetCleanerLeak.BuildBoundary(pSelectionPaths);
+			var leaks = RAssetCleanerLeak.DetectLeaks(boundary);
+			m_leakedIn = leaks.Where(l => l.direction == LeakDirection.LeakedIn).ToList();
+			m_leakedOut = leaks.Where(l => l.direction == LeakDirection.LeakedOut).ToList();
+			m_leakFoldouts.Clear();
+			m_leakInGroupIndex = 0;
+			m_leakOutGroupIndex = 0;
+			m_leakScanned = true;
+		}
+
+		private void DrawLeakSection(List<LeakEntry> pEntries, string pRelatedLabel, ref int pGroupIndex)
+		{
+			if (pEntries.Count == 0)
+			{
+				EditorGUILayout.HelpBox("No leaks found.", MessageType.Info);
+				return;
+			}
+
+			var groups = pEntries.GroupBy(e => GetAssetType(e.assetPath)).OrderBy(g => g.Key.ToString()).ToList();
+			string[] tabLabels = groups.Select(g => $"{g.Key} ({g.Count()})").ToArray();
+			pGroupIndex = Mathf.Clamp(pGroupIndex, 0, groups.Count - 1);
+			pGroupIndex = GUILayout.Toolbar(pGroupIndex, tabLabels);
+			GUILayout.Space(5);
+			DrawLeakEntries(groups[pGroupIndex].ToList(), pRelatedLabel);
+		}
+
+		private void DrawLeakEntries(List<LeakEntry> pEntries, string pRelatedLabel)
+		{
+			if (pEntries.Count == 0)
+			{
+				EditorGUILayout.HelpBox("No leaks found.", MessageType.Info);
+				return;
+			}
+
+			for (int i = 0; i < pEntries.Count; i++)
+			{
+				var entry = pEntries[i];
+				Rect rowRect = EditorGUILayout.GetControlRect(false, 20);
+
+				if (i % 2 == 0)
+					EditorGUI.DrawRect(rowRect, new Color(0, 0, 0, 0.1f));
+
+				string foldKey = entry.direction + entry.assetPath;
+				if (!m_leakFoldouts.ContainsKey(foldKey))
+					m_leakFoldouts[foldKey] = false;
+				bool isExpanded = m_leakFoldouts[foldKey];
+
+				Rect foldoutRect = new Rect(rowRect.x, rowRect.y, 25, rowRect.height);
+				Rect iconRect = new Rect(rowRect.x + 25, rowRect.y, 20, 20);
+				Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 130, rowRect.height);
+				Rect sizeRect = new Rect(rowRect.width - 125, rowRect.y, 60, rowRect.height);
+				Rect btnRect = new Rect(rowRect.width - 60, rowRect.y, 55, 18);
+
+				if (GUI.Button(foldoutRect, isExpanded ? "▼" : "▶", EditorStyles.label))
+					m_leakFoldouts[foldKey] = !isExpanded;
+
+				var icon = AssetDatabase.GetCachedIcon(entry.assetPath);
+				if (icon != null) GUI.Label(iconRect, icon);
+				GUI.Label(pathRect, entry.assetPath);
+				GUI.Label(sizeRect, EditorUtility.FormatBytes(RAssetCleaner.GetAssetSize(entry.assetPath)));
+
+				if (GUI.Button(btnRect, "Select"))
+				{
+					var obj = AssetDatabase.LoadAssetAtPath<Object>(entry.assetPath);
+					Selection.activeObject = obj;
+					EditorGUIUtility.PingObject(obj);
+				}
+
+				if (isExpanded)
+				{
+					foreach (var related in entry.relatedPaths)
+					{
+						EditorGUILayout.BeginHorizontal();
+						GUILayout.Space(50);
+						GUILayout.Label($"{pRelatedLabel}: {related}");
+						if (GUILayout.Button("Select", GUILayout.Width(55)))
+						{
+							var obj = AssetDatabase.LoadAssetAtPath<Object>(related);
+							Selection.activeObject = obj;
+							EditorGUIUtility.PingObject(obj);
+						}
+						EditorGUILayout.EndHorizontal();
+					}
+				}
+			}
+		}
+
 		private void AddToHistory(Object obj)
 		{
 			if (m_historyIndex >= 0 && m_historyIndex < m_history.Count && m_history[m_historyIndex] == obj)
@@ -644,6 +847,26 @@ namespace RCore.Editor.AssetCleaner
 					settings.deepSearchExtensions.Add(".json");
 				}
 				GUILayout.Space(10);
+			}
+
+			GUILayout.Space(10);
+			GUILayout.Label("Leak Checker - Ignored Extensions", EditorStyles.boldLabel);
+			EditorGUILayout.HelpBox("Dependencies with these extensions are excluded from leak reports (scripts compile into the build and are not asset leaks).", MessageType.Info);
+
+			for (int i = 0; i < settings.leakIgnoreExtensions.Count; i++)
+			{
+				EditorGUILayout.BeginHorizontal();
+				settings.leakIgnoreExtensions[i] = EditorGUILayout.TextField(settings.leakIgnoreExtensions[i]);
+				if (GUILayout.Button("-", GUILayout.Width(25)))
+				{
+					settings.leakIgnoreExtensions.RemoveAt(i);
+					i--;
+				}
+				EditorGUILayout.EndHorizontal();
+			}
+			if (GUILayout.Button("Add Extension", GUILayout.Width(120)))
+			{
+				settings.leakIgnoreExtensions.Add(".cs");
 			}
 
 			GUILayout.Space(10);

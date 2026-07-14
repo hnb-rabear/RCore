@@ -27,6 +27,7 @@ namespace RCore.UI
         public Image imgProgressValue;
         public TextMeshProUGUI txtValue;
         public TextMeshProUGUI txtRank;
+        public RectTransform marker;
         /// <summary>
         /// False: image can fill, 
         /// Tue: image cannot fill, we have to use delta size
@@ -157,6 +158,36 @@ namespace RCore.UI
             {
                 imgProgressValue.fillAmount = pValue;
             }
+
+            UpdateMarker(pValue);
+        }
+
+        /// <summary>
+        /// Moves marker along bar per current fill ratio.
+        /// </summary>
+        protected virtual void UpdateMarker(float pValue)
+        {
+            if (marker == null)
+                return;
+
+            var barSize = fillByBarSize ? BarSize() : imgProgressValue.rectTransform.rect.size;
+            var pos = marker.anchoredPosition;
+            switch (fillDirection)
+            {
+                case FillDirection.Left:
+                    pos.x = -barSize.x * 0.5f + barSize.x * pValue;
+                    break;
+                case FillDirection.Right:
+                    pos.x = barSize.x * 0.5f - barSize.x * pValue;
+                    break;
+                case FillDirection.Bottom:
+                    pos.y = -barSize.y * 0.5f + barSize.y * pValue;
+                    break;
+                case FillDirection.Top:
+                    pos.y = barSize.y * 0.5f - barSize.y * pValue;
+                    break;
+            }
+            marker.anchoredPosition = pos;
         }
 
         /// <summary>

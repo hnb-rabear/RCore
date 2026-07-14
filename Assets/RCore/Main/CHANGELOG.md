@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.9]
+
+### Added
+
+- **Asset Cleaner — Leak Checker**: New tab that detects cross-boundary asset dependencies — assets inside a selection referenced from outside (Leaked In) and external assets pulled in as dependencies (Leaked Out). Configurable ignore extensions in settings.
+- **UI — MirrorFlipImage**: Image subclass supporting horizontal flip and edge-preserving mirror (Horizontal / Vertical / Both) with sliced-sprite support and a context-menu swap between Image and MirrorFlipImage.
+- **UI — EdgeAlignedHorizontalLayoutGroup**: Layout group that pins first and last children flush to container edges with equal gaps between remaining children. Rebuilds immediately in Edit mode.
+- **UI — ProgressBar marker**: Optional marker RectTransform that tracks the current fill ratio along all four fill directions.
+
 ## [1.1.8]
 ### Added
 - **JObjectDB — `Reset(key)` API**: Clears a single collection's data back to its type's default values while keeping the key registered in the master index, then persists and flushes (`PlayerPrefs.Save`). Resets the live in-memory instance when the collection is loaded.
