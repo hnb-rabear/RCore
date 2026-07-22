@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0]
+
+### Added
+
+- **General Asset Linker**: Key-based asset catalog (`AssetCatalog` ScriptableObject) for sprites, textures, and audio clips with lazy dictionary cache and no hard prefab references. Runtime linker components (`GeneralSpriteLinker`, `GeneralTextureLinker`, `GeneralAudioLinker`) resolve assets by string key at runtime. Editor tooling includes a catalog management window (add/delete/rename/categorize/Addressables marking), a relink panel for batch-migrating direct asset references in prefabs to catalog-key linker components, a usage report panel, and an asset picker window.
+
 ## [1.1.9]
 
 ### Added
