@@ -6,6 +6,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Cysharp.Threading.Tasks;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -88,7 +90,8 @@ namespace RCore.UI
 		{
 			base.OnAnyChildShow(pPanel);
 
-			ToggleDimmerOverlay();
+			if (pPanel.needDimmerOverlay)
+				ToggleDimmerOverlay();
 			
 			onAnyPanelShow?.Invoke(pPanel);
 		}
@@ -154,8 +157,9 @@ namespace RCore.UI
 		/// <summary>
 		/// Pushes the next panel from the queue onto the stack if conditions are met.
 		/// </summary>
-		public virtual void PushPanelInQueue()
+		public virtual async void PushPanelInQueue()
 		{
+			await UniTask.Yield();
 			if (m_panelsInQueue.Count <= 0 || IsBusy() || m_blockQueue)
 				return;
 			var panel = m_panelsInQueue[0];
