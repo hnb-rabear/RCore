@@ -2,9 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- **UI — AddressableImage inspector**: Supports multi-object editing with a shared **Preserve Aspect** toggle that dirties each `Image` and repaints canvases and scene views.
+- **`RPlayerPrefDict<TKey, TVal>`**: Added `ContainsKey` and `TryGetValue`; `Contain` now delegates to `ContainsKey`.
+
 ### Fixed
 
 - **General Asset Linker - `GeneralSpriteLinker`**: `Reset()` now caches its `Image` before reading `Image.sprite`, so a newly added component picks up the matching catalog key.
+- **UI — AddressableImage inspector**: No longer captures sprite references on enable and repaint; it only refreshes the editor preview, leaving capture to runtime `OnValidate`.
+- **`RPlayerPrefDict<TKey, TVal>`**: Dirty flag now tracks real mutations only — equal assignments are skipped, a null collection assignment falls back to an empty dictionary, `Clear()` no-ops when already empty, and `SaveChange()` returns early when unchanged so an untouched empty collection no longer deletes its `PlayerPrefs` key.
 - `[AutoFill]` now fills null references and empty arrays/lists through explicit, undoable **RCore Auto Fill** context-menu action. Removed unsafe inspector-draw mutation that could corrupt multi-object edits, overwrite manual arrays, repeatedly query AssetDatabase, or choose nondeterministic assets.
 
 ## [1.3.0]
