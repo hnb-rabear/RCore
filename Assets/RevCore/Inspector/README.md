@@ -55,7 +55,7 @@ public class Player : MonoBehaviour
 
 ### Conditional
 - `[ShowIf("boolFieldOrMethod")]` — show field only when condition is true
-- `[AutoFill]` / `[AutoFill("path")]` — auto-assign Component or ScriptableObject refs
+- `[AutoFill]` / `[AutoFill("path")]` — mark a field fillable by the **RevCore Auto Fill** context menu (Component or ScriptableObject refs, including empty arrays and lists)
 - `[InspectorButton]` / `[InspectorButton("label")]` — draw button for a method
 
 ### Field Type
@@ -82,7 +82,7 @@ public class Player : MonoBehaviour
 | `Comment` | Field | Any |
 | `Highlight` | Field | Any |
 | `ShowIf` | Field | Any |
-| `AutoFill` | Field | Component, ScriptableObject, arrays |
+| `AutoFill` | Field | Component, ScriptableObject, arrays, lists |
 | `InspectorButton` | Method | N/A |
 | `DisplayEnum` | Field | int |
 | `SingleLayer` | Field | int |
@@ -112,7 +112,11 @@ public bool enableDebug;
 ```csharp
 [AutoFill] public Rigidbody body;
 [AutoFill("Canvas/Panel")] public RectTransform panel;
+[AutoFill] public Collider[] colliders;
+[AutoFill("Assets/Data/Items")] public System.Collections.Generic.List<ItemConfig> items;
 ```
+
+Filling is explicit: right-click the component (or ScriptableObject) header and choose **RevCore Auto Fill**. Only null references and empty collections are written, so manual entries are never overwritten. The operation is undoable.
 
 ### Method buttons
 
@@ -147,6 +151,8 @@ All attribute names and constructor signatures match RCore. Migration is a names
 |---|---|
 | Attribute not drawing | Ensure RevCore.Inspector.Editor asmdef is in project |
 | ShowIf field always visible | Condition member name must be exact, case-sensitive |
+| AutoFill not filling anything | Run **RevCore Auto Fill** from the component's or ScriptableObject's context menu; it never runs during a normal inspector draw |
 | AutoFill not finding component | Check path string matches child transform name |
+| AutoFill not finding assets | For ScriptableObject fields the path must be a real project folder (e.g. `Assets/Data/Items`) |
 | InspectorButton not appearing | Method must be on a MonoBehaviour, not ScriptableObject |
 | Compile error on build | Drawers are Editor-only; verify no Runtime code references Editor namespace |

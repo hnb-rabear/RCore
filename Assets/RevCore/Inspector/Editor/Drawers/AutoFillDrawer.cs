@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,89 +13,128 @@ namespace RevCore.Editor
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			EditorGUI.PropertyField(position, property, label, true);
-
-			if (property.isArray)
-				HandleArrayProperty(property);
-			else
-				HandleObjectReferenceProperty(property);
 		}
 
-		private void HandleObjectReferenceProperty(SerializedProperty property)
+		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			if (property.propertyType != SerializedPropertyType.ObjectReference) return;
-			if (property.objectReferenceValue != null) return;
+			return EditorGUI.GetPropertyHeight(property, label, true);
+		}
+	}
 
-			var go = (property.serializedObject.targetObject as Component)?.gameObject;
-			if (go == null) return;
-
-			var attr = (AutoFillAttribute)attribute;
-			var fieldType = fieldInfo.FieldType;
-
-			if (typeof(Component).IsAssignableFrom(fieldType))
-			{
-				Component found = string.IsNullOrEmpty(attr.Path)
-					? go.GetComponentInChildren(fieldType, true)
-					: FindComponentAtPath(go, attr.Path, fieldType);
-				if (found != null)
-				{
-					property.objectReferenceValue = found;
-					property.serializedObject.ApplyModifiedProperties();
-				}
-			}
-			else if (typeof(ScriptableObject).IsAssignableFrom(fieldType))
-			{
-				string[] guids = AssetDatabase.FindAssets($"t:{fieldType.Name}");
-				if (guids.Length > 0)
-				{
-					string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-					property.objectReferenceValue = AssetDatabase.LoadAssetAtPath(path, fieldType);
-					property.serializedObject.ApplyModifiedProperties();
-				}
-			}
+	internal static class AutoFillContextMenu
+	{
+		[MenuItem("CONTEXT/Component/RevCore Auto Fill", true)]
+		private static bool ValidateComponent(MenuCommand command)
+		{
+			return HasAutoFillFields(command.context as Component);
 		}
 
-		private void HandleArrayProperty(SerializedProperty property)
+		[MenuItem("CONTEXT/Component/RevCore Auto Fill")]
+		private static void FillComponent(MenuCommand command)
 		{
-			if (property.arraySize > 0) return;
-
-			var go = (property.serializedObject.targetObject as Component)?.gameObject;
-			if (go == null) return;
-
-			var elementType = fieldInfo.FieldType.IsArray
-				? fieldInfo.FieldType.GetElementType()
-				: fieldInfo.FieldType.GetGenericArguments().Length > 0
-					? fieldInfo.FieldType.GetGenericArguments()[0]
-					: null;
-
-			if (elementType == null) return;
-
-			if (typeof(Component).IsAssignableFrom(elementType))
-			{
-				var components = go.GetComponentsInChildren(elementType, true);
-				if (components.Length == 0) return;
-				property.arraySize = components.Length;
-				for (int i = 0; i < components.Length; i++)
-					property.GetArrayElementAtIndex(i).objectReferenceValue = components[i];
-				property.serializedObject.ApplyModifiedProperties();
-			}
-			else if (typeof(ScriptableObject).IsAssignableFrom(elementType))
-			{
-				string[] guids = AssetDatabase.FindAssets($"t:{elementType.Name}");
-				if (guids.Length == 0) return;
-				property.arraySize = guids.Length;
-				for (int i = 0; i < guids.Length; i++)
-				{
-					string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-					property.GetArrayElementAtIndex(i).objectReferenceValue = AssetDatabase.LoadAssetAtPath(path, elementType);
-				}
-				property.serializedObject.ApplyModifiedProperties();
-			}
+			Fill(command.context as Component);
 		}
 
-		private static Component FindComponentAtPath(GameObject root, string path, Type type)
+		[MenuItem("CONTEXT/ScriptableObject/RevCore Auto Fill", true)]
+		private static bool ValidateScriptableObject(MenuCommand command)
 		{
-			var child = root.transform.Find(path);
-			return child != null ? child.GetComponent(type) : null;
+			return HasAutoFillFields(command.context as ScriptableObject);
+		}
+
+		[MenuItem("CONTEXT/ScriptableObject/RevCore Auto Fill")]
+		private static void FillScriptableObject(MenuCommand command)
+		{
+			Fill(command.context as ScriptableObject);
+		}
+
+		private static bool HasAutoFillFields(UnityEngine.Object target)
+		{
+			return target != null && GetFields(target.GetType()).Any(field => field.GetCustomAttribute<AutoFillAttribute>() != null);
+		}
+
+		private static void Fill(UnityEngine.Object target)
+		{
+			if (target == null) return;
+
+			var serializedObject = new SerializedObject(target);
+			var targetComponent = target as Component;
+			var changed = false;
+
+			foreach (var field in GetFields(target.GetType()))
+			{
+				var autoFill = field.GetCustomAttribute<AutoFillAttribute>();
+				if (autoFill == null) continue;
+
+				var property = serializedObject.FindProperty(field.Name);
+				if (property == null) continue;
+
+				var elementType = GetElementType(field.FieldType);
+				if (elementType != null)
+				{
+					if (property.arraySize != 0) continue;
+					var matches = FindMatches(autoFill.Path, elementType, targetComponent);
+					if (matches.Length == 0) continue;
+
+					property.arraySize = matches.Length;
+					for (int i = 0; i < matches.Length; i++)
+						property.GetArrayElementAtIndex(i).objectReferenceValue = matches[i];
+					changed = true;
+					continue;
+				}
+
+				if (property.propertyType != SerializedPropertyType.ObjectReference || property.objectReferenceValue != null) continue;
+				var match = FindMatches(autoFill.Path, field.FieldType, targetComponent).FirstOrDefault();
+				if (match == null) continue;
+
+				property.objectReferenceValue = match;
+				changed = true;
+			}
+
+			// ApplyModifiedProperties registers the undo entry and dirties the target.
+			if (changed) serializedObject.ApplyModifiedProperties();
+		}
+
+		private static Type GetElementType(Type fieldType)
+		{
+			if (fieldType.IsArray) return fieldType.GetElementType();
+			return fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>)
+				? fieldType.GetGenericArguments()[0]
+				: null;
+		}
+
+		private static UnityEngine.Object[] FindMatches(string path, Type type, Component targetComponent)
+		{
+			if (typeof(Component).IsAssignableFrom(type))
+			{
+				if (targetComponent == null) return new UnityEngine.Object[0];
+				if (string.IsNullOrEmpty(path)) return targetComponent.GetComponentsInChildren(type, true);
+
+				var transform = targetComponent.transform.Find(path);
+				var component = transform != null ? transform.GetComponent(type) : null;
+				return component != null ? new UnityEngine.Object[] { component } : new UnityEngine.Object[0];
+			}
+
+			if (!typeof(ScriptableObject).IsAssignableFrom(type)) return new UnityEngine.Object[0];
+			if (!string.IsNullOrEmpty(path) && !AssetDatabase.IsValidFolder(path)) return new UnityEngine.Object[0];
+
+			var guids = string.IsNullOrEmpty(path)
+				? AssetDatabase.FindAssets($"t:{type.Name}")
+				: AssetDatabase.FindAssets($"t:{type.Name}", new[] { path });
+			return guids.Select(AssetDatabase.GUIDToAssetPath)
+				.OrderBy(assetPath => assetPath, StringComparer.Ordinal)
+				.Select(assetPath => AssetDatabase.LoadAssetAtPath(assetPath, type))
+				.Where(asset => asset != null)
+				.ToArray();
+		}
+
+		private static IEnumerable<FieldInfo> GetFields(Type type)
+		{
+			while (type != null && type != typeof(object))
+			{
+				foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+					yield return field;
+				type = type.BaseType;
+			}
 		}
 	}
 }

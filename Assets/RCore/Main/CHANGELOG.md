@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `[AutoFill]` now fills null references and empty arrays/lists through explicit, undoable **RCore Auto Fill** context-menu action. Removed unsafe inspector-draw mutation that could corrupt multi-object edits, overwrite manual arrays, repeatedly query AssetDatabase, or choose nondeterministic assets.
+
 ## [1.3.0]
 
 ### Added
