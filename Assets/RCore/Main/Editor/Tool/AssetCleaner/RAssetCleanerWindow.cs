@@ -36,6 +36,125 @@ namespace RCore.Editor.AssetCleaner
 			return RAssetCleanerLeak.GetValidSelection(out _, out _).Count > 0;
 		}
 
+		[MenuItem("Assets/Asset Cleaner/Select Assets Used by Addressables", false, 2001)]
+		private static void SelectAssetsUsedByAddressables()
+		{
+			Selection.objects = FindAddressableDependencyAssets(GetSelectedFolders());
+		}
+
+		[MenuItem("Assets/Asset Cleaner/Select Assets Used by Addressables", true)]
+		private static bool SelectAssetsUsedByAddressablesValidate()
+		{
+			return GetSelectedFolders().Count > 0;
+		}
+
+		private static List<string> GetSelectedFolders()
+		{
+			var folders = new List<string>();
+			foreach (var obj in Selection.objects)
+			{
+				if (obj == null)
+					continue;
+				string path = AssetDatabase.GetAssetPath(obj);
+				if (!string.IsNullOrEmpty(path) && AssetDatabase.IsValidFolder(path))
+					folders.Add(path);
+			}
+			return folders;
+		}
+
+		private static Object[] FindAddressableDependencyAssets(List<string> pFolders)
+		{
+			if (pFolders == null || pFolders.Count == 0)
+				return new Object[0];
+
+			var scope = new HashSet<string>();
+			foreach (var folder in pFolders)
+			{
+				var guids = AssetDatabase.FindAssets("", new[] { folder });
+				foreach (var guid in guids)
+				{
+					string path = AssetDatabase.GUIDToAssetPath(guid);
+					if (!string.IsNullOrEmpty(path) && !AssetDatabase.IsValidFolder(path))
+						scope.Add(path);
+				}
+			}
+			if (scope.Count == 0)
+			{
+				EditorUtility.DisplayDialog("Select Assets Used by Addressables",
+					"No assets found in the selected folder(s).", "OK");
+				return new Object[0];
+			}
+
+			var addressablePaths = new List<string>();
+#if ADDRESSABLES
+			var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+			if (settings != null)
+			{
+				var total = settings.groups.Count;
+				for (int i = 0; i < total; i++)
+				{
+					var group = settings.groups[i];
+					if (group == null)
+						continue;
+					bool cancelled = EditorUtility.DisplayCancelableProgressBar(
+						"Select Assets Used by Addressables",
+						"Scanning group " + group.Name,
+						(float)i / Mathf.Max(1, total));
+					if (cancelled)
+						break;
+					foreach (var entry in group.entries)
+					{
+						if (entry == null || string.IsNullOrEmpty(entry.AssetPath))
+							continue;
+						string guid = entry.guid;
+						if (RCore.Editor.AddressableEditorHelper.IncludedInBuild(guid))
+							addressablePaths.Add(entry.AssetPath);
+					}
+				}
+				EditorUtility.ClearProgressBar();
+			}
+#endif
+
+			var matches = new HashSet<string>();
+#if ADDRESSABLES
+			if (addressablePaths.Count > 0)
+			{
+				for (int i = 0; i < addressablePaths.Count; i++)
+				{
+					if (EditorUtility.DisplayCancelableProgressBar(
+						"Select Assets Used by Addressables",
+						"Resolving dependencies of " + Path.GetFileName(addressablePaths[i]),
+						(float)i / addressablePaths.Count))
+						break;
+					foreach (var dep in AssetDatabase.GetDependencies(addressablePaths[i], true))
+					{
+						if (!string.IsNullOrEmpty(dep) &&
+							dep != addressablePaths[i] &&
+							scope.Contains(dep))
+							matches.Add(dep);
+					}
+				}
+				EditorUtility.ClearProgressBar();
+			}
+#endif
+
+			if (matches.Count == 0)
+			{
+				EditorUtility.DisplayDialog("Select Assets Used by Addressables",
+					"No assets in the selected folder(s) are used by any Addressable asset.", "OK");
+				return new Object[0];
+			}
+
+			var result = new List<Object>();
+			foreach (var path in matches)
+			{
+				var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+				if (asset != null)
+					result.Add(asset);
+			}
+			return result.ToArray();
+		}
+
 		private int m_tabIndex;
 		private string[] m_tabs = { "Cleaner", "Reference Finder", "Leak Checker", "Settings" };
 
@@ -181,6 +300,36 @@ namespace RCore.Editor.AssetCleaner
             return match;
         }
 
+        private bool TryFindFirstComponentAssetReference(GameObject pGameObject, out Object pAsset)
+        {
+            pAsset = null;
+            if (pGameObject == null)
+                return false;
+
+            foreach (var component in pGameObject.GetComponents<Component>())
+            {
+                if (component == null)
+                    continue;
+
+                var serializedObject = new SerializedObject(component);
+                var property = serializedObject.GetIterator();
+                while (property.Next(true))
+                {
+                    if (property.propertyType != SerializedPropertyType.ObjectReference || property.name == "m_Script")
+                        continue;
+
+                    var asset = property.objectReferenceValue;
+                    if (asset == null || string.IsNullOrEmpty(AssetDatabase.GetAssetPath(asset)))
+                        continue;
+
+                    pAsset = asset;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 		// Cleaner State
 		private List<string> m_unusedAssets = new List<string>();
 		private List<string> m_filteredAssets = new List<string>();
@@ -222,9 +371,14 @@ namespace RCore.Editor.AssetCleaner
 		// Reference Finder State
 		private Object m_selectedAsset;
 		private List<string> m_referencingAssets = new List<string>();
+		private List<string> m_referenceFilteredAssets = new List<string>();
+		private List<List<string>> m_addressableChains = new List<List<string>>();
+		private int m_referenceFilterIndex;
 		private Vector2 m_refScrollPos;
 		private List<Object> m_history = new List<Object>();
 		private int m_historyIndex = -1;
+		private bool m_referenceFinderLocked;
+		private bool m_autoFindAddressableChain;
 
 		// Leak Checker State
 		private List<LeakEntry> m_leakedIn = new List<LeakEntry>();
@@ -247,6 +401,8 @@ namespace RCore.Editor.AssetCleaner
 		private void OnEnable()
 		{
 			IsOpen = true;
+			RAssetCleaner.CacheInvalidated += OnCacheInvalidated;
+			RAssetCleaner.CacheChanged += OnCacheChanged;
 			// Load cache
 			var cached = RAssetCleaner.LoadCache();
 			if (cached != null)
@@ -266,13 +422,80 @@ namespace RCore.Editor.AssetCleaner
 					m_typeFilters[type] = true;
 			}
 			EditorApplication.RepaintProjectWindow();
+			m_autoFindAddressableChain = EditorPrefs.GetBool("RAssetCleaner_AutoFindAddrChain", false);
 		}
 
 		private void OnDisable()
 		{
 			IsOpen = false;
+			RAssetCleaner.CacheInvalidated -= OnCacheInvalidated;
+			RAssetCleaner.CacheChanged -= OnCacheChanged;
+			EditorApplication.delayCall -= RefreshAfterCacheChange;
 			Selection.selectionChanged -= OnSelectionChange;
 			EditorApplication.RepaintProjectWindow();
+		}
+
+		/// <summary>Queues incremental-cache view refresh outside Unity's asset-import callback.</summary>
+		private void OnCacheChanged()
+		{
+			EditorApplication.delayCall -= RefreshAfterCacheChange;
+			EditorApplication.delayCall += RefreshAfterCacheChange;
+		}
+
+		private void RefreshAfterCacheChange()
+		{
+			EditorApplication.delayCall -= RefreshAfterCacheChange;
+			if (this == null)
+				return;
+
+			if (RAssetCleaner.HasUnusedData)
+			{
+				m_unusedAssets = new List<string>(RAssetCleaner.UnusedAssetsCache);
+				CalculateTypeStats();
+				m_filteredAssets.Clear();
+				m_pageCacheList.Clear();
+				m_cachedPage = -1;
+				m_currentPage = 0;
+			}
+
+			if (!m_referenceFinderLocked && m_selectedAsset != null)
+				FindReferences(true);
+
+			// Leak reports derive from dependency edges and cannot survive an incremental graph update.
+			m_leakedIn.Clear();
+			m_leakedOut.Clear();
+			m_leakFoldouts.Clear();
+			m_leakScanned = false;
+			m_leakInGroupIndex = 0;
+			m_leakOutGroupIndex = 0;
+
+			Repaint();
+		}
+
+		/// <summary>Cached scan results are gone, so every view derived from them must reset.</summary>
+		private void OnCacheInvalidated()
+		{
+			m_unusedAssets.Clear();
+			m_filteredAssets.Clear();
+			m_pageCacheList.Clear();
+			m_typeStats.Clear();
+			m_selectedAsset = null;
+			m_referencingAssets.Clear();
+			m_addressableChains.Clear();
+			m_referenceFinderLocked = false;
+			m_referenceFilterIndex = 0;
+			m_referenceFilteredAssets = m_referencingAssets;
+			m_usageDetails.Clear();
+			m_foldoutStates.Clear();
+			m_leakedIn.Clear();
+			m_leakedOut.Clear();
+			m_leakFoldouts.Clear();
+			m_leakLastSelection.Clear();
+			m_leakScanned = false;
+			m_scanned = false;
+			m_currentPage = 0;
+			m_cachedPage = -1;
+			Repaint();
 		}
 
 		private void OnSelectionChange()
@@ -284,11 +507,23 @@ namespace RCore.Editor.AssetCleaner
 			// But checking if window is focused is hard. 
 			// Checking tab index is reasonable.
 
-			if (m_tabIndex == 1 && Selection.activeObject != null)
+			if (m_tabIndex == 1 && !m_referenceFinderLocked && Selection.activeObject != null)
 			{
 				// Check if it's an asset (not scene object) - though checking scene objects is fine too if we support it.
 				// AssetDatabase.Contains checks if it's an asset.
-				if (AssetDatabase.Contains(Selection.activeObject))
+				if (Selection.activeObject is GameObject gameObject &&
+                        !AssetDatabase.Contains(gameObject) &&
+                        RAssetCleanerSettings.Instance.scanFirstComponentAssetReference &&
+                        TryFindFirstComponentAssetReference(gameObject, out var asset))
+                    {
+                        m_selectedAsset = asset;
+                        AddToHistory(m_selectedAsset);
+                        FindReferences(true);
+                        Repaint();
+                        return;
+                    }
+
+                    if (AssetDatabase.Contains(Selection.activeObject))
 				{
 					// Avoid refreshing if selecting the same object (unless we want to force refresh)
 					if (m_selectedAsset != Selection.activeObject)
@@ -414,10 +649,30 @@ namespace RCore.Editor.AssetCleaner
 					{
 						if (EditorUtility.DisplayDialog("Delete Asset", $"Are you sure you want to delete {item.path}?", "Delete", "Cancel"))
 						{
-							AssetDatabase.DeleteAsset(item.path);
-							m_unusedAssets.RemoveAll(x => x == item.path);
-							CalculateTypeStats();
-							BuildPageCache(startIndex, endIndex);
+							// Deleting from this list keeps the cache correct, so skip the import-driven invalidation.
+							bool deleted;
+							RAssetCleaner.BeginInternalAssetEdit();
+							try
+							{
+								deleted = AssetDatabase.DeleteAsset(item.path);
+							}
+							finally
+							{
+								RAssetCleaner.EndInternalAssetEdit();
+							}
+
+							if (!deleted)
+							{
+								Debug.LogWarning($"Asset Cleaner could not delete {item.path}.");
+							}
+							else
+							{
+								RAssetCleaner.ForgetAsset(item.path);
+								m_unusedAssets = new List<string>(RAssetCleaner.UnusedAssetsCache);
+								RAssetCleaner.SaveCache(m_unusedAssets);
+								CalculateTypeStats();
+								BuildPageCache(startIndex, endIndex);
+							}
 						}
 					}
 					
@@ -463,9 +718,18 @@ namespace RCore.Editor.AssetCleaner
 			}
 			EditorGUILayout.EndHorizontal();
 			
-			GUILayout.Label("Find References", EditorStyles.boldLabel);
-			
 			EditorGUILayout.BeginHorizontal();
+			GUILayout.Label("Find References", EditorStyles.boldLabel);
+			GUILayout.FlexibleSpace();
+			bool wasLocked = m_referenceFinderLocked;
+			m_referenceFinderLocked = GUILayout.Toggle(m_referenceFinderLocked, m_referenceFinderLocked ? "Results Locked" : "Lock Results", GUILayout.Width(100));
+			EditorGUILayout.EndHorizontal();
+
+			if (wasLocked && !m_referenceFinderLocked)
+				OnSelectionChange();
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUI.BeginDisabledGroup(m_referenceFinderLocked);
 			EditorGUI.BeginChangeCheck();
 			m_selectedAsset = EditorGUILayout.ObjectField("Asset", m_selectedAsset, typeof(Object), false);
 			if (EditorGUI.EndChangeCheck())
@@ -486,7 +750,7 @@ namespace RCore.Editor.AssetCleaner
 					FindReferences();
 				}
 			}
-
+			EditorGUI.EndDisabledGroup();
 			EditorGUILayout.EndHorizontal();
 
 
@@ -496,7 +760,68 @@ namespace RCore.Editor.AssetCleaner
 			if (m_selectedAsset != null)
 			{
 				GUILayout.Space(5);
+				string selectedPath = AssetDatabase.GetAssetPath(m_selectedAsset);
+				string selectedGroupLabel = GetAddressableGroupLabel(selectedPath);
+				GUILayout.Label($"Addressable Status: {selectedGroupLabel}");
 				GUILayout.Label($"Used by {m_referencingAssets.Count} assets:");
+				GUILayout.Space(5);
+
+				EditorGUILayout.BeginHorizontal();
+				var newAutoChain = EditorGUILayout.ToggleLeft("Auto-find Addressable Chain", m_autoFindAddressableChain);
+				if (newAutoChain != m_autoFindAddressableChain)
+				{
+					m_autoFindAddressableChain = newAutoChain;
+					EditorPrefs.SetBool("RAssetCleaner_AutoFindAddrChain", newAutoChain);
+					if (newAutoChain && m_selectedAsset != null && m_addressableChains.Count == 0)
+					{
+						string p = AssetDatabase.GetAssetPath(m_selectedAsset);
+						var chain = RAssetCleaner.FindAddressableReferenceChain(p);
+						if (chain.Count > 0)
+							m_addressableChains.Add(chain);
+					}
+				}
+				if (!m_autoFindAddressableChain && m_addressableChains.Count == 0 && m_selectedAsset != null)
+				{
+					if (GUILayout.Button("Find Addressable Chain", GUILayout.Width(170)))
+					{
+						string p = AssetDatabase.GetAssetPath(m_selectedAsset);
+						var chain = RAssetCleaner.FindAddressableReferenceChain(p);
+						if (chain.Count > 0)
+							m_addressableChains.Add(chain);
+					}
+				}
+				EditorGUILayout.EndHorizontal();
+
+				var visibleChains = m_addressableChains.Where(c => c.Count > 1).ToList();
+				if (visibleChains.Count > 0)
+				{
+					GUILayout.Label("Also used by these ADDRESSABLE assets (transitively):", EditorStyles.boldLabel);
+					var chainLabelStyle = new GUIStyle(EditorStyles.label) { richText = true };
+					string addrColor = EditorGUIUtility.isProSkin ? "#7FB4FF" : "#1F4FD8";
+					string viaColor = EditorGUIUtility.isProSkin ? "#C8C8C8" : "#606060";
+					foreach (var chain in visibleChains)
+					{
+						string addressableAsset = chain[chain.Count - 1];
+						string text = $"<color={addrColor}>{addressableAsset}</color>   via   <color={viaColor}>{string.Join(" → ", chain.GetRange(0, chain.Count - 1))}</color>";
+						EditorGUILayout.BeginHorizontal();
+						GUILayout.Label(text, chainLabelStyle);
+						if (GUILayout.Button("Select", GUILayout.Width(55)))
+						{
+							var addrObj = AssetDatabase.LoadAssetAtPath<Object>(addressableAsset);
+							if (addrObj != null) Selection.activeObject = addrObj;
+						}
+						EditorGUILayout.EndHorizontal();
+					}
+					GUILayout.Space(5);
+				}
+
+				GUILayout.Label("Reference Assets", EditorStyles.boldLabel);
+				DrawReferenceFilterToolbar();
+				GUILayout.Space(5);
+
+				int filteredCount = m_referenceFilteredAssets.Count;
+				string filterName = m_referenceFilterIndex == 0 ? "all" : m_referenceFilterIndex == 1 ? "non-addressable" : "addressable";
+				GUILayout.Label($"{filteredCount} referencing {filterName} assets:");
 				GUILayout.Space(5);
 
 				// Header
@@ -504,14 +829,16 @@ namespace RCore.Editor.AssetCleaner
 				GUILayout.Label("", GUILayout.Width(25)); // Foldout
 				GUILayout.Label("", GUILayout.Width(20)); // Icon
 				GUILayout.Label("Referencing Asset", GUILayout.ExpandWidth(true));
+				GUILayout.Label("Type", GUILayout.Width(90));
+				GUILayout.Label("Addressable", GUILayout.Width(130));
 				GUILayout.Label("Action", GUILayout.Width(60));
 				EditorGUILayout.EndHorizontal();
 
 				m_refScrollPos = GUILayout.BeginScrollView(m_refScrollPos);
 				
-				for (int i = 0; i < m_referencingAssets.Count; i++)
+				for (int i = 0; i < m_referenceFilteredAssets.Count; i++)
 				{
-					var refPath = m_referencingAssets[i];
+					var refPath = m_referenceFilteredAssets[i];
 					var asset = AssetDatabase.LoadAssetAtPath<Object>(refPath);
 					
 					if (asset == null) continue;
@@ -528,7 +855,9 @@ namespace RCore.Editor.AssetCleaner
 					
 					Rect foldoutRect = new Rect(rowRect.x, rowRect.y, 25, rowRect.height);
 					Rect iconRect = new Rect(rowRect.x + 25, rowRect.y, 20, 20);
-					Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 65, rowRect.height);
+					Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 65 - 90 - 130, rowRect.height);
+					Rect typeRect = new Rect(rowRect.width - 60 - 130 - 90, rowRect.y, 85, rowRect.height);
+					Rect addressableRect = new Rect(rowRect.width - 60 - 130, rowRect.y, 125, rowRect.height);
 					Rect btnRect = new Rect(rowRect.width - 60, rowRect.y, 55, 18);
 
 					if (GUI.Button(foldoutRect, isExpanded ? "▼" : "▶", EditorStyles.label))
@@ -543,7 +872,9 @@ namespace RCore.Editor.AssetCleaner
 					var icon = AssetDatabase.GetCachedIcon(refPath);
 					if (icon != null) GUI.Label(iconRect, icon);
 					GUI.Label(pathRect, refPath);
-					
+					GUI.Label(typeRect, asset.GetType().Name);
+					GUI.Label(addressableRect, GetAddressableGroupLabel(refPath));
+
 					if (GUI.Button(btnRect, "Select"))
 					{
 						Selection.activeObject = asset;
@@ -602,6 +933,18 @@ namespace RCore.Editor.AssetCleaner
 			}
 		}
 
+		private void DrawReferenceFilterToolbar()
+		{
+			var filterLabels = new[] { "All Assets", "Non-Addressable Assets", "Addressable Assets" };
+			var nextFilterIndex = GUILayout.Toolbar(m_referenceFilterIndex, filterLabels);
+			if (nextFilterIndex == m_referenceFilterIndex)
+				return;
+
+			m_referenceFilterIndex = nextFilterIndex;
+			UpdateReferenceFilter();
+			m_refScrollPos = Vector2.zero;
+		}
+
 		private void DrawLeakCheckerTab()
 		{
 			var selectionPaths = RAssetCleanerLeak.GetValidSelection(out int folderCount, out int prefabCount);
@@ -622,7 +965,16 @@ namespace RCore.Editor.AssetCleaner
 			EditorGUI.EndDisabledGroup();
 			if (GUILayout.Button("Rebuild Cache", GUILayout.Width(110), GUILayout.Height(30)))
 			{
-				RAssetCleaner.BuildCache();
+				m_unusedAssets = RAssetCleaner.FindUnusedAssets(RAssetCleanerSettings.Instance.ignorePaths);
+				RAssetCleaner.SaveCache(m_unusedAssets);
+				CalculateTypeStats();
+				m_currentPage = 0;
+				m_scanned = true;
+				m_leakedIn.Clear();
+				m_leakedOut.Clear();
+				m_leakFoldouts.Clear();
+				m_leakScanned = false;
+				EditorApplication.RepaintProjectWindow();
 			}
 			EditorGUILayout.EndHorizontal();
 
@@ -659,7 +1011,7 @@ namespace RCore.Editor.AssetCleaner
 
 		private void RunLeakScan(List<string> pSelectionPaths)
 		{
-			if (RAssetCleaner.ReferenceCache.Count == 0)
+			if (!RAssetCleaner.HasReferenceData)
 				RAssetCleaner.BuildCache();
 
 			var boundary = RAssetCleanerLeak.BuildBoundary(pSelectionPaths);
@@ -778,7 +1130,7 @@ namespace RCore.Editor.AssetCleaner
 			// Standard Dependency Search
 			if (auto)
 			{
-				if (RAssetCleaner.ReferenceCache.Count > 0)
+				if (RAssetCleaner.HasReferenceData)
 				{
 					references.UnionWith(RAssetCleaner.FindReferences(path, true));
 				}
@@ -790,7 +1142,7 @@ namespace RCore.Editor.AssetCleaner
 			}
 			else
 			{
-				if (RAssetCleaner.ReferenceCache.Count == 0 && !EditorUtility.DisplayDialog("Cache Missing", "The Reference Graph is not built. Searching without cache is slower. Continue?", "Run Slow Search", "Cancel"))
+				if (!RAssetCleaner.HasReferenceData && !EditorUtility.DisplayDialog("Cache Missing", "The Reference Graph is not built. Searching without cache is slower. Continue?", "Run Slow Search", "Cancel"))
 				{
 					// user cancelled
 				}
@@ -812,6 +1164,60 @@ namespace RCore.Editor.AssetCleaner
 			}
 
 			m_referencingAssets = references.OrderBy(x => x).ToList();
+			UpdateReferenceFilter();
+
+			m_addressableChains.Clear();
+			if (m_autoFindAddressableChain)
+			{
+				var chain = RAssetCleaner.FindAddressableReferenceChain(path);
+				if (chain.Count > 0)
+					m_addressableChains.Add(chain);
+			}
+		}
+
+		private void UpdateReferenceFilter()
+		{
+			switch (m_referenceFilterIndex)
+			{
+				case 1:
+					m_referenceFilteredAssets = m_referencingAssets.Where(x => !IsAddressableAsset(x)).ToList();
+					break;
+				case 2:
+					m_referenceFilteredAssets = m_referencingAssets.Where(IsAddressableAsset).ToList();
+					break;
+				default:
+					m_referenceFilteredAssets = m_referencingAssets;
+					break;
+			}
+		}
+
+		private bool IsAddressableAsset(string path)
+		{
+#if ADDRESSABLES
+			string guid = AssetDatabase.AssetPathToGUID(path);
+			if (string.IsNullOrEmpty(guid))
+				return false;
+			return RCore.Editor.AddressableEditorHelper.IncludedInBuild(guid);
+#else
+			return false;
+#endif
+		}
+
+		private string GetAddressableGroupLabel(string path)
+		{
+#if ADDRESSABLES
+			string guid = AssetDatabase.AssetPathToGUID(path);
+			if (string.IsNullOrEmpty(guid))
+				return "Not Addressable";
+
+			var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+			var entry = settings?.FindAssetEntry(guid, true);
+			if (!RCore.Editor.AddressableEditorHelper.IncludedInBuild(guid) || entry?.parentGroup == null)
+				return "Not Addressable";
+			return entry.parentGroup.Name;
+#else
+			return "Not Addressable";
+#endif
 		}
 
 		private void DrawSettingsTab()
@@ -819,15 +1225,24 @@ namespace RCore.Editor.AssetCleaner
 			GUILayout.Label("Settings", EditorStyles.boldLabel);
 			var settings = RAssetCleanerSettings.Instance;
 
+			EditorGUI.BeginChangeCheck();
+
 			settings.showRedOverlay = EditorGUILayout.Toggle("Red Overlay (Unused)", settings.showRedOverlay);
 			settings.unusedColor = EditorGUILayout.ColorField("Overlay Color", settings.unusedColor);
 			settings.showSize = EditorGUILayout.Toggle("Show Assets Size", settings.showSize);
+			settings.showReferenceCount = EditorGUILayout.Toggle("Show Reference Count", settings.showReferenceCount);
 
 			GUILayout.Space(10);
 			GUILayout.Label("Advanced Search", EditorStyles.boldLabel);
 			settings.deepSearch = EditorGUILayout.Toggle(new GUIContent("Deep Search (Slow)", "Scan text contents of assets to find hidden or addressable references."), settings.deepSearch);
 			EditorGUILayout.HelpBox("Enable this to find indirect references (e.g. Addressables, AssetBundleWraps) by scanning file contents. This process is slower than standard dependency tracking.", MessageType.Info);
 			
+            settings.scanFirstComponentAssetReference = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Reference Finder: Scan First Component Asset",
+                    "When Reference Finder is active, selecting a GameObject searches references for its first serialized component asset reference."),
+                settings.scanFirstComponentAssetReference);
+
 			if (settings.deepSearch)
 			{
 				GUILayout.Label("File Extensions to Scan:", EditorStyles.label);
@@ -889,7 +1304,7 @@ namespace RCore.Editor.AssetCleaner
 				settings.ignorePaths.Add("Assets/");
 			}
 
-			if (GUI.changed)
+			if (EditorGUI.EndChangeCheck())
 			{
 				RAssetCleanerSettings.Save();
 				EditorApplication.RepaintProjectWindow();

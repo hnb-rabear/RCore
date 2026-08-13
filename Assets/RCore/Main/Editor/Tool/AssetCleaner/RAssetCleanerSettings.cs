@@ -7,33 +7,45 @@ namespace RCore.Editor.AssetCleaner
     //[CreateAssetMenu(fileName = "RAssetCleanerSettings", menuName = "RCore/Tool/AssetCleaner Settings")]
     public class RAssetCleanerSettings : ScriptableObject
     {
+        private const string EDITOR_PREFS_KEY = "RCore.AssetCleaner.Settings";
+
         private static RAssetCleanerSettings m_instance;
+        private static bool m_instanceIsAsset;
+
         public static RAssetCleanerSettings Instance
         {
             get
             {
                 if (m_instance == null)
                 {
-                    var guids = AssetDatabase.FindAssets("t:RAssetCleanerSettings");
-                    if (guids.Length > 0)
+                    if (TryLoadAsset(out var asset))
                     {
-                        var path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                        m_instance = AssetDatabase.LoadAssetAtPath<RAssetCleanerSettings>(path);
+                        m_instance = asset;
+                        m_instanceIsAsset = true;
                     }
                     else
                     {
+                        // No settings asset in the project: keep the values local to this machine
+                        // instead of losing them on the next domain reload.
                         m_instance = CreateInstance<RAssetCleanerSettings>();
-                        // Ideally we save this to a file, but for now we might just keep it in memory 
-                        // or let the user save it. 
-                        // Better to save it automatically if it doesn't exist? 
-                        // For now let's assume it might not be persistent if not created manually.
-                        // Actually, let's try to save it in RCore default location if possible, 
-                        // but to be safe and simple for now, we'll let it be created via menu or on first access if we want to force persistence.
-                        // Let's just return the instance. 
+                        m_instance.hideFlags = HideFlags.HideAndDontSave;
+                        m_instanceIsAsset = false;
+                        LoadFromEditorPrefs(m_instance);
                     }
                 }
                 return m_instance;
             }
+        }
+
+        private static bool TryLoadAsset(out RAssetCleanerSettings settings)
+        {
+            settings = null;
+            var guids = AssetDatabase.FindAssets("t:RAssetCleanerSettings");
+            if (guids.Length == 0)
+                return false;
+
+            settings = AssetDatabase.LoadAssetAtPath<RAssetCleanerSettings>(AssetDatabase.GUIDToAssetPath(guids[0]));
+            return settings != null;
         }
         
         public List<string> ignorePaths = new List<string>();
@@ -51,15 +63,38 @@ namespace RCore.Editor.AssetCleaner
 
         public Color unusedColor = new Color(1f, 0.3f, 0.3f, 1f);
         public bool showSize = true;
+        public bool showReferenceCount = true;
         public bool showRedOverlay = true;
         public bool deepSearch = false;
-        
+        public bool scanFirstComponentAssetReference = false;
+
         public static void Save()
         {
-            if (m_instance != null)
+            if (m_instance == null)
+                return;
+
+            if (m_instanceIsAsset)
             {
                 EditorUtility.SetDirty(m_instance);
-                //AssetDatabase.SaveAssets(); // Careful with auto saving
+                AssetDatabase.SaveAssetIfDirty(m_instance);
+                return;
+            }
+
+            EditorPrefs.SetString(EDITOR_PREFS_KEY, JsonUtility.ToJson(m_instance));
+        }
+
+        private static void LoadFromEditorPrefs(RAssetCleanerSettings settings)
+        {
+            if (!EditorPrefs.HasKey(EDITOR_PREFS_KEY))
+                return;
+
+            try
+            {
+                JsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EDITOR_PREFS_KEY), settings);
+            }
+            catch
+            {
+                // Invalid local preference data must not block Asset Cleaner from using defaults.
             }
         }
     }
