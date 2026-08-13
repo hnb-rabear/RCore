@@ -29,11 +29,17 @@ namespace RCore.Config
 			set => m_Image.preserveAspect = value;
 		}
 
+		private void CacheTarget()
+		{
+			if (m_Image == null)
+				m_Image = GetComponent<Image>();
+		}
+
 		private void Awake()
 		{
 			if (m_AutoActive)
 			{
-				m_Image ??= GetComponent<Image>();
+				CacheTarget();
 				var sprite = AssetCatalog.Instance != null ? AssetCatalog.Instance.GetSprite(m_Key) : null;
 				if (sprite != null)
 					m_Image.sprite = sprite;
@@ -51,6 +57,7 @@ namespace RCore.Config
 
 		private void Reset()
 		{
+			CacheTarget();
 			if (m_Image == null || m_Image.sprite == null || AssetCatalog.Instance == null)
 				return;
 
@@ -75,7 +82,7 @@ namespace RCore.Config
 		{
 			if (Application.isPlaying)
 				return;
-			m_Image = GetComponent<Image>();
+			CacheTarget();
 			if (m_Image == null)
 				return;
 			var sprite = AssetCatalog.Instance != null ? AssetCatalog.Instance.GetSprite(m_Key) : null;
