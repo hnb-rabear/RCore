@@ -13,6 +13,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- `RCore.UI.AddressableImage` editor capture and migration tools now compile in `rcore.editor`, which references `Unity.Addressables.Editor`; `rcore.runtime` remains free of editor-only Addressables dependencies.
 - `JObjectDB.Delete` and `JObjectDB.DeleteAll` now flush `PlayerPrefs.Save()` so deletions persist immediately (previously only `Import`/`Reset` flushed).
 
 ## [1.1.0] - 2026-05-19
