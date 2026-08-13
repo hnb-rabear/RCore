@@ -9,8 +9,9 @@ using UnityEngine;
 namespace RCore.Inspector
 {
 	/// <summary>
-	/// Attribute for a Material field that displays a dropdown of all materials
-	/// associated with a TMP_FontAsset found on the same GameObject.
+	/// Attribute for a Material field that displays a dropdown of TextMeshPro materials.
+	/// On a Component, the dropdown lists materials of the TMP_FontAsset found on the same GameObject.
+	/// On a ScriptableObject, the dropdown lists every TextMeshPro material in the project.
 	/// This is useful for easily switching between font presets (e.g., outline, glow).
 	/// </summary>
 	public class TMPFontMaterialsAttribute : PropertyAttribute { }
@@ -23,6 +24,7 @@ namespace RCore.Inspector
 	public class TMPFontMaterialsDrawer : PropertyDrawer
 	{
 		private static Dictionary<int, Material[]> s_materialCache = new Dictionary<int, Material[]>();
+		private static Material[] s_projectMaterialCache;
 
 		/// <summary>
 		/// Renders the property as a dropdown of available font materials.
@@ -40,9 +42,22 @@ namespace RCore.Inspector
 			}
 			
 			var fontAsset = GetFontAsset(property);
-			if (fontAsset != null)
+			var materials = fontAsset != null
+				? FindMaterialReferences(fontAsset)
+				: property.serializedObject.targetObject is ScriptableObject
+					? FindProjectMaterials()
+					: null;
+
+			if (materials == null)
 			{
-				var materials = FindMaterialReferences(fontAsset);
+				EditorGUI.LabelField(position, label.text, "TMP_FontAsset not found on this GameObject.");
+			}
+			else if (materials.Length == 0)
+			{
+				EditorGUI.LabelField(position, label.text, "No TextMeshPro materials found in project.");
+			}
+			else
+			{
 				var options = materials.Select(mat => mat.name).ToArray();
 				int currentIndex = System.Array.IndexOf(materials, property.objectReferenceValue as Material);
 
@@ -52,10 +67,6 @@ namespace RCore.Inspector
 				{
 					property.objectReferenceValue = materials[newIndex];
 				}
-			}
-			else
-			{
-				EditorGUI.LabelField(position, label.text, "TMP_FontAsset not found on this GameObject.");
 			}
 
 			EditorGUI.EndProperty();
@@ -77,6 +88,24 @@ namespace RCore.Inspector
 				}
 			}
 			return null;
+		}
+
+		/// <summary>
+		/// Finds every project material using a TextMeshPro shader.
+		/// </summary>
+		private static Material[] FindProjectMaterials()
+		{
+			if (s_projectMaterialCache != null)
+			{
+				return s_projectMaterialCache;
+			}
+
+			s_projectMaterialCache = AssetDatabase.FindAssets("t:Material")
+				.Select(AssetDatabase.GUIDToAssetPath)
+				.Select(AssetDatabase.LoadAssetAtPath<Material>)
+				.Where(material => material != null && material.shader != null && material.shader.name.StartsWith("TextMeshPro/"))
+				.ToArray();
+			return s_projectMaterialCache;
 		}
 
 		/// <summary>
@@ -130,13 +159,19 @@ namespace RCore.Inspector
 		[InitializeOnLoadMethod]
 		private static void ClearCacheOnReload()
 		{
-			s_materialCache.Clear();
+			ClearCaches();
 			EditorApplication.playModeStateChanged += (state) => {
 				if (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode)
 				{
-					s_materialCache.Clear();
+					ClearCaches();
 				}
 			};
+		}
+
+		private static void ClearCaches()
+		{
+			s_materialCache.Clear();
+			s_projectMaterialCache = null;
 		}
 	}
 #endif

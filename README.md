@@ -214,7 +214,7 @@ Custom attributes for enhancing the Unity Inspector:
 | `[SpriteBox]` | Sprite field with preview thumbnail |
 | `[TagSelector]` | Tag dropdown for string fields |
 | `[TimeStamp]` | Unix timestamp with date/time picker |
-| `[TMPFontMaterials]` | TMP font material dropdown |
+| `[TMPFontMaterials]` | TMP font material dropdown (component: same font atlas; ScriptableObject: all project TMP materials) |
 
 ---
 
