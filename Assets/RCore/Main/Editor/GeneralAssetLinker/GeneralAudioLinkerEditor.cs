@@ -37,18 +37,33 @@ namespace RCore.Editor
 
 			var catalog = AssetCatalog.Instance;
 			var clip = catalog != null ? catalog.GetAudioClip(m_Target.Key) : null;
+			var src = m_Target.GetComponent<AudioSource>();
+			using (new EditorGUI.DisabledScope(clip == null || src == null))
+			{
+				if (GUILayout.Button("Restore Original Component"))
+				{
+					Undo.RecordObject(m_Target, "Restore Audio Component");
+					Undo.RecordObject(src, "Restore Audio Component");
+					src.clip = clip;
+					m_Target.Key = string.Empty;
+					EditorUtility.SetDirty(src);
+					EditorUtility.SetDirty(m_Target);
+
+					if (EditorUtility.DisplayDialog(
+						"Remove GeneralAudioLinker",
+						"Audio restored. Remove GeneralAudioLinker component?",
+						"Yes",
+						"No"))
+					{
+						Undo.DestroyObjectImmediate(m_Target);
+						return;
+					}
+				}
+			}
+
 			if (clip != null)
 			{
-				var assetPath = AssetDatabase.GetAssetPath(clip);
-				if (!string.IsNullOrEmpty(assetPath))
-				{
-					EditorGUILayout.BeginHorizontal();
-					var displayPath = assetPath.StartsWith("Assets/") ? assetPath.Substring(7) : assetPath;
-					EditorGUILayout.LabelField("Path", displayPath, EditorStyles.miniLabel);
-					if (GUILayout.Button("Ping", GUILayout.Width(40)))
-						EditorGUIUtility.PingObject(clip);
-					EditorGUILayout.EndHorizontal();
-				}
+				AssetCatalogEditorGui.DrawAssetPath(clip);
 
 				EditorGUILayout.LabelField("Resolved Clip (inspector-only — not applied in edit mode)", clip.name);
 
@@ -72,56 +87,21 @@ namespace RCore.Editor
 				if (!string.IsNullOrEmpty(m_Target.Key))
 					EditorGUILayout.HelpBox($"AudioClip key '{m_Target.Key}' not found in AssetCatalog.", MessageType.Warning);
 
-				var src = m_Target.GetComponent<AudioSource>();
 				if (catalog != null && src != null && src.clip != null)
 				{
-					EditorGUILayout.Space();
-					if (!m_ShowQuickAdd)
+					var sourceClip = src.clip;
+					if (AssetCatalogEditorGui.DrawQuickAdd(catalog, CatalogAssetType.AudioClip, ref m_ShowQuickAdd, ref m_QuickAddCategory, sourceClip.name))
 					{
-						if (GUILayout.Button($"Add '{src.clip.name}' to AssetCatalog", GUILayout.Height(30)))
-						{
-							m_ShowQuickAdd = true;
-						}
-					}
-					else
-					{
-						EditorGUILayout.BeginVertical("box");
-						EditorGUILayout.LabelField("Quick Add to Catalog", EditorStyles.boldLabel);
-						m_QuickAddCategory = EditorGUILayout.TextField("Category", m_QuickAddCategory);
+						catalog.EditorAddAudioClip(sourceClip.name, m_QuickAddCategory, sourceClip);
 
-						var existingCats = catalog.EditorGetDistinctCategories(CatalogAssetType.AudioClip);
-						if (existingCats.Length > 0)
-						{
-							EditorGUILayout.BeginHorizontal();
-							EditorGUILayout.LabelField("Existing:", GUILayout.Width(EditorGUIUtility.labelWidth - 4));
-							foreach (var cat in existingCats)
-							{
-								if (GUILayout.Button(cat, EditorStyles.miniButton))
-									m_QuickAddCategory = cat;
-							}
-							EditorGUILayout.EndHorizontal();
-						}
+						Undo.RecordObject(m_Target, "Quick Add Audio");
+						Undo.RecordObject(src, "Quick Add Audio");
 
-						EditorGUILayout.Space();
-						EditorGUILayout.BeginHorizontal();
-						if (GUILayout.Button("Confirm Add"))
-						{
-							catalog.EditorAddAudioClip(src.clip.name, m_QuickAddCategory, src.clip);
-
-							Undo.RecordObject(m_Target, "Quick Add Audio");
-							Undo.RecordObject(src, "Quick Add Audio");
-
-							m_Target.Key = src.clip.name;
-							src.clip = null; // Clear serialized field (AudioLinker is runtime-only)
-								EditorUtility.SetDirty(src);
-
-							EditorUtility.SetDirty(m_Target);
-							m_ShowQuickAdd = false;
-						}
-						if (GUILayout.Button("Cancel"))
-							m_ShowQuickAdd = false;
-						EditorGUILayout.EndHorizontal();
-						EditorGUILayout.EndVertical();
+						m_Target.Key = sourceClip.name;
+						src.clip = null; // Clear serialized field (AudioLinker is runtime-only)
+						EditorUtility.SetDirty(src);
+						EditorUtility.SetDirty(m_Target);
+						m_ShowQuickAdd = false;
 					}
 				}
 			}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RCore.Config;
+using RCore.UI;
 using UnityEditor;
 using UnityEngine;
 
@@ -132,11 +133,7 @@ namespace RCore.Editor
 		private void DrawRow(PickerRow pRow)
 		{
 			EditorGUILayout.BeginHorizontal("box");
-			var preview = GetPreview(pRow);
-			if (preview != null)
-				GUILayout.Label(preview, GUILayout.Width(32), GUILayout.Height(32));
-			else if (pRow.type != CatalogAssetType.AudioClip)
-				GUILayout.Space(36);
+			DrawPreview(pRow);
 
 			EditorGUILayout.BeginVertical();
 			GUILayout.Label(pRow.key, EditorStyles.boldLabel);
@@ -144,7 +141,7 @@ namespace RCore.Editor
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label(pRow.category, EditorStyles.miniLabel);
 			if (!string.IsNullOrEmpty(pRow.assetPath))
-				GUILayout.Label(pRow.assetPath, EditorStyles.miniLabel);
+				GUILayout.Label(AssetCatalogEditorGui.StripAssetsPrefix(pRow.assetPath), EditorStyles.miniLabel);
 			EditorGUILayout.EndHorizontal();
 
 			DrawUsageSummary(pRow);
@@ -160,6 +157,23 @@ namespace RCore.Editor
 			EditorGUILayout.EndHorizontal();
 		}
 
+		private void DrawPreview(PickerRow pRow)
+		{
+			const float previewSize = 32f;
+			if (pRow.asset is Sprite sprite)
+			{
+				var previewRect = GUILayoutUtility.GetRect(previewSize, previewSize, GUILayout.Width(previewSize), GUILayout.Height(previewSize));
+				if (TryDrawSpritePreview(previewRect, sprite))
+					return;
+			}
+
+			var preview = GetPreview(pRow);
+			if (preview != null)
+				GUILayout.Label(preview, GUILayout.Width(previewSize), GUILayout.Height(previewSize));
+			else if (pRow.type != CatalogAssetType.AudioClip)
+				GUILayout.Space(36f);
+		}
+
 		private Texture GetPreview(PickerRow pRow)
 		{
 			if (pRow.asset == null)
@@ -171,6 +185,32 @@ namespace RCore.Editor
 				? AssetDatabase.GetCachedIcon(pRow.assetPath)
 				: AssetPreview.GetAssetPreview(pRow.asset);
 			return pRow.preview;
+		}
+
+		private static bool TryDrawSpritePreview(Rect pRect, Sprite pSprite)
+		{
+			if (pSprite == null || pSprite.texture == null ||
+				(pSprite.packed && pSprite.packingMode == SpritePackingMode.Tight))
+				return false;
+
+			var textureRect = pSprite.textureRect;
+			if (textureRect.width <= 0f || textureRect.height <= 0f ||
+				pSprite.texture.width <= 0 || pSprite.texture.height <= 0)
+				return false;
+
+			var scale = Mathf.Min(pRect.width / textureRect.width, pRect.height / textureRect.height);
+			var spriteRect = new Rect(
+				pRect.x + (pRect.width - textureRect.width * scale) * 0.5f,
+				pRect.y + (pRect.height - textureRect.height * scale) * 0.5f,
+				textureRect.width * scale,
+				textureRect.height * scale);
+			var texCoords = new Rect(
+				textureRect.x / pSprite.texture.width,
+				textureRect.y / pSprite.texture.height,
+				textureRect.width / pSprite.texture.width,
+				textureRect.height / pSprite.texture.height);
+			GUI.DrawTextureWithTexCoords(spriteRect, pSprite.texture, texCoords, true);
+			return true;
 		}
 
 		private void DrawUsageSummary(PickerRow pRow)
@@ -276,6 +316,15 @@ namespace RCore.Editor
 
 					var spriteLinkers = root.GetComponentsInChildren<GeneralSpriteLinker>(true);
 					foreach (var linker in spriteLinkers)
+					{
+						if (string.IsNullOrEmpty(linker.Key)) continue;
+						if (!spriteEntryMap.TryGetValue(linker.Key, out var entries)) continue;
+						foreach (var entry in entries)
+							AddUsage(entry.prefabUsages, path);
+					}
+
+					var spriteRendererLinkers = root.GetComponentsInChildren<GeneralSpriteRendererLinker>(true);
+					foreach (var linker in spriteRendererLinkers)
 					{
 						if (string.IsNullOrEmpty(linker.Key)) continue;
 						if (!spriteEntryMap.TryGetValue(linker.Key, out var entries)) continue;

@@ -1,12 +1,11 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace RCore.Config
 {
-	[RequireComponent(typeof(RawImage))]
-	public class GeneralTextureLinker : MonoBehaviour
+	[RequireComponent(typeof(SpriteRenderer))]
+	public class GeneralSpriteRendererLinker : MonoBehaviour
 	{
-		[SerializeField] private RawImage m_RawImage;
+		[SerializeField] private SpriteRenderer m_SpriteRenderer;
 		[SerializeField] private string m_Key;
 		[SerializeField] private bool m_AutoActive = true;
 
@@ -14,6 +13,12 @@ namespace RCore.Config
 		{
 			get => m_Key;
 			set => m_Key = value;
+		}
+
+		public bool AutoActive
+		{
+			get => m_AutoActive;
+			set => m_AutoActive = value;
 		}
 
 		private void Awake()
@@ -34,26 +39,26 @@ namespace RCore.Config
 		{
 			if (!Application.isPlaying)
 				return;
-			if (m_RawImage != null)
-				m_RawImage.texture = null;
+			if (m_SpriteRenderer != null)
+				m_SpriteRenderer.sprite = null;
 		}
 
 		private void CacheTarget()
 		{
-			if (m_RawImage == null)
-				m_RawImage = GetComponent<RawImage>();
+			if (m_SpriteRenderer == null)
+				m_SpriteRenderer = GetComponent<SpriteRenderer>();
 		}
 
 		public void Refresh()
 		{
-			if (m_RawImage == null || !Application.isPlaying)
+			if (m_SpriteRenderer == null || !Application.isPlaying)
 				return;
-			var texture = AssetCatalog.Instance != null ? AssetCatalog.Instance.GetTexture(m_Key) : null;
-			if (texture != null)
-				m_RawImage.texture = texture;
+			var sprite = AssetCatalog.Instance != null ? AssetCatalog.Instance.GetSprite(m_Key) : null;
+			if (sprite != null)
+				m_SpriteRenderer.sprite = sprite;
 		}
 
-		// Deliberately no OnValidate/edit-mode assignment: RawImage.texture has no
+		// Deliberately no OnValidate/edit-mode assignment: SpriteRenderer.sprite has no
 		// non-serialized override equivalent, so assigning it outside Play mode
 		// would bake a hard reference into the prefab.
 
@@ -61,19 +66,19 @@ namespace RCore.Config
 		private void Reset()
 		{
 			CacheTarget();
-			var texture = m_RawImage != null ? m_RawImage.texture as Texture2D : null;
-			if (texture == null || AssetCatalog.Instance == null)
+			if (m_SpriteRenderer == null || m_SpriteRenderer.sprite == null || AssetCatalog.Instance == null)
 				return;
 
-			if (AssetCatalog.Instance.GetTexture(texture.name) == null)
+			var sprite = m_SpriteRenderer.sprite;
+			if (AssetCatalog.Instance.GetSprite(sprite.name) == null)
 				return;
 
-			UnityEditor.Undo.RecordObject(this, "Initialize Texture Linker");
-			UnityEditor.Undo.RecordObject(m_RawImage, "Initialize Texture Linker");
-			m_Key = texture.name;
-			m_RawImage.texture = null;
+			UnityEditor.Undo.RecordObject(this, "Initialize Sprite Renderer Linker");
+			UnityEditor.Undo.RecordObject(m_SpriteRenderer, "Initialize Sprite Renderer Linker");
+			m_Key = sprite.name;
+			m_SpriteRenderer.sprite = null;
 			UnityEditor.EditorUtility.SetDirty(this);
-			UnityEditor.EditorUtility.SetDirty(m_RawImage);
+			UnityEditor.EditorUtility.SetDirty(m_SpriteRenderer);
 		}
 
 		private void OnValidate()

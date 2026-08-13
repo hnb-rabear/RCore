@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RCore.Config;
+using RCore.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -130,7 +131,7 @@ namespace RCore.Editor
 			var icon = AssetDatabase.GetCachedIcon(pPath);
 			if (icon != null)
 				GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
-			GUI.Label(pathRect, pPath, EditorStyles.miniLabel);
+			GUI.Label(pathRect, AssetCatalogEditorGui.StripAssetsPrefix(pPath), EditorStyles.miniLabel);
 
 			if (GUI.Button(buttonRect, "Select"))
 			{
@@ -379,7 +380,9 @@ namespace RCore.Editor
 			switch (m_Type)
 			{
 				case CatalogAssetType.Sprite:
-					return UpdateComponents(EditorHelper.FindComponents<GeneralSpriteLinker>(new[] { pRoot }, ComponentHasOldKey));
+					var count = UpdateComponents(EditorHelper.FindComponents<GeneralSpriteLinker>(new[] { pRoot }, ComponentHasOldKey));
+					count += UpdateComponents(EditorHelper.FindComponents<GeneralSpriteRendererLinker>(new[] { pRoot }, ComponentHasOldKey));
+					return count;
 				case CatalogAssetType.Texture2D:
 					return UpdateComponents(EditorHelper.FindComponents<GeneralTextureLinker>(new[] { pRoot }, ComponentHasOldKey));
 				case CatalogAssetType.AudioClip:

@@ -1,4 +1,6 @@
 using RCore.Config;
+using RCore.Editor;
+using RCore.UI;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,43 +23,78 @@ namespace RCore.Editor
 		{
 			base.OnInspectorGUI();
 
+			var img = m_Target.GetComponent<UnityEngine.UI.Image>();
+			if (img != null)
+			{
+				EditorGUI.BeginChangeCheck();
+				var preserveAspect = EditorGUILayout.Toggle("Preserve Aspect", m_Target.PreserveAspect);
+				if (EditorGUI.EndChangeCheck())
+				{
+					Undo.RecordObject(img, "Set Preserve Aspect");
+					m_Target.PreserveAspect = preserveAspect;
+					EditorUtility.SetDirty(img);
+				}
+			}
+
 			EditorGUILayout.Space(4);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Key", m_Target.Key);
-			if (GUILayout.Button("Browse...", GUILayout.Width(80)))
+			using (new EditorGUI.DisabledScope(AssetCatalog.Instance == null))
 			{
-				AssetCatalogPickerWindow.Open(CatalogAssetType.Sprite, pickedKey =>
+				if (GUILayout.Button("Browse...", GUILayout.Width(80)))
 				{
-					var img = m_Target.GetComponent<UnityEngine.UI.Image>();
-					Undo.RecordObject(m_Target, "Set Sprite Key");
-					if (img != null)
-						Undo.RecordObject(img, "Set Sprite Key");
-					m_Target.Key = pickedKey;
-					if (img != null && img.sprite != null)
+					AssetCatalogPickerWindow.Open(CatalogAssetType.Sprite, pickedKey =>
 					{
-						img.sprite = null;
-						EditorUtility.SetDirty(img);
-					}
-					m_Target.Refresh();
-					EditorUtility.SetDirty(m_Target);
-				});
+						var catalog = AssetCatalog.Instance;
+						if (catalog == null)
+							return;
+						var img = m_Target.GetComponent<UnityEngine.UI.Image>();
+						Undo.RecordObject(m_Target, "Set Sprite Key");
+						if (img != null)
+							Undo.RecordObject(img, "Set Sprite Key");
+						m_Target.Key = pickedKey;
+						m_Target.AutoActive = catalog.EditorGetSpriteAutoActive(pickedKey);
+						if (img != null && img.sprite != null)
+						{
+							img.sprite = null;
+							EditorUtility.SetDirty(img);
+						}
+						m_Target.Refresh();
+						EditorUtility.SetDirty(m_Target);
+					});
+				}
 			}
 			EditorGUILayout.EndHorizontal();
 
 			var catalog = AssetCatalog.Instance;
 			var sprite = catalog != null ? catalog.GetSprite(m_Target.Key) : null;
+			using (new EditorGUI.DisabledScope(sprite == null || img == null))
+			{
+				if (GUILayout.Button("Restore Original Component"))
+				{
+					Undo.RecordObject(m_Target, "Restore Sprite Component");
+					Undo.RecordObject(img, "Restore Sprite Component");
+					img.sprite = sprite;
+					img.overrideSprite = null;
+					m_Target.Key = string.Empty;
+					EditorUtility.SetDirty(img);
+					EditorUtility.SetDirty(m_Target);
+
+					if (EditorUtility.DisplayDialog(
+						"Remove GeneralSpriteLinker",
+						"Sprite restored. Remove GeneralSpriteLinker component?",
+						"Yes",
+						"No"))
+					{
+						Undo.DestroyObjectImmediate(m_Target);
+						return;
+					}
+				}
+			}
+
 			if (sprite != null)
 			{
-				var assetPath = AssetDatabase.GetAssetPath(sprite);
-				if (!string.IsNullOrEmpty(assetPath))
-				{
-					EditorGUILayout.BeginHorizontal();
-					var displayPath = assetPath.StartsWith("Assets/") ? assetPath.Substring(7) : assetPath;
-					EditorGUILayout.LabelField("Path", displayPath, EditorStyles.miniLabel);
-					if (GUILayout.Button("Ping", GUILayout.Width(40)))
-						EditorGUIUtility.PingObject(sprite);
-					EditorGUILayout.EndHorizontal();
-				}
+				AssetCatalogEditorGui.DrawAssetPath(sprite);
 
 				EditorGUILayout.LabelField("Size", $"{sprite.rect.width} x {sprite.rect.height}", EditorStyles.miniLabel);
 
@@ -80,67 +117,46 @@ namespace RCore.Editor
 				EditorGUILayout.Space(4);
 				EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
 				var rect = GUILayoutUtility.GetRect(96, 96, GUILayout.ExpandWidth(false));
-				var preview = AssetPreview.GetAssetPreview(sprite);
-				if (preview != null)
-					GUI.DrawTexture(rect, preview, ScaleMode.ScaleToFit);
+				var texture = sprite.texture;
+				if (texture != null)
+				{
+					var textureRect = sprite.textureRect;
+					var texCoords = new Rect(
+						textureRect.x / texture.width,
+						textureRect.y / texture.height,
+						textureRect.width / texture.width,
+						textureRect.height / texture.height);
+					var scale = Mathf.Min(rect.width / textureRect.width, rect.height / textureRect.height);
+					var previewRect = new Rect(
+						rect.x + (rect.width - textureRect.width * scale) * 0.5f,
+						rect.y + (rect.height - textureRect.height * scale) * 0.5f,
+						textureRect.width * scale,
+						textureRect.height * scale);
+					GUI.DrawTextureWithTexCoords(previewRect, texture, texCoords, true);
+				}
 			}
 			else
 			{
 				if (!string.IsNullOrEmpty(m_Target.Key))
 					EditorGUILayout.HelpBox($"Sprite key '{m_Target.Key}' not found in AssetCatalog.", MessageType.Warning);
 
-				var img = m_Target.GetComponent<UnityEngine.UI.Image>();
 				if (catalog != null && img != null && img.sprite != null)
 				{
-					EditorGUILayout.Space();
-					if (!m_ShowQuickAdd)
+					var sourceSprite = img.sprite;
+					if (AssetCatalogEditorGui.DrawQuickAdd(catalog, CatalogAssetType.Sprite, ref m_ShowQuickAdd, ref m_QuickAddCategory, sourceSprite.name))
 					{
-						if (GUILayout.Button($"Add '{img.sprite.name}' to AssetCatalog", GUILayout.Height(30)))
-						{
-							m_ShowQuickAdd = true;
-						}
-					}
-					else
-					{
-						EditorGUILayout.BeginVertical("box");
-						EditorGUILayout.LabelField("Quick Add to Catalog", EditorStyles.boldLabel);
-						m_QuickAddCategory = EditorGUILayout.TextField("Category", m_QuickAddCategory);
+						catalog.EditorAddSprite(sourceSprite.name, m_QuickAddCategory, sourceSprite);
 
-						var existingCats = catalog.EditorGetDistinctCategories(CatalogAssetType.Sprite);
-						if (existingCats.Length > 0)
-						{
-							EditorGUILayout.BeginHorizontal();
-							EditorGUILayout.LabelField("Existing:", GUILayout.Width(EditorGUIUtility.labelWidth - 4));
-							foreach (var cat in existingCats)
-							{
-								if (GUILayout.Button(cat, EditorStyles.miniButton))
-									m_QuickAddCategory = cat;
-							}
-							EditorGUILayout.EndHorizontal();
-						}
+						Undo.RecordObject(m_Target, "Quick Add Sprite");
+						Undo.RecordObject(img, "Quick Add Sprite");
 
-						EditorGUILayout.Space();
-						EditorGUILayout.BeginHorizontal();
-						if (GUILayout.Button("Confirm Add"))
-						{
-							catalog.EditorAddSprite(img.sprite.name, m_QuickAddCategory, img.sprite);
-
-							Undo.RecordObject(m_Target, "Quick Add Sprite");
-							Undo.RecordObject(img, "Quick Add Sprite");
-
-							m_Target.Key = img.sprite.name;
-							var s = img.sprite;
-							img.sprite = null;
-							img.overrideSprite = s; // Immediately take over
-								EditorUtility.SetDirty(img);
-
-							EditorUtility.SetDirty(m_Target);
-							m_ShowQuickAdd = false;
-						}
-						if (GUILayout.Button("Cancel"))
-							m_ShowQuickAdd = false;
-						EditorGUILayout.EndHorizontal();
-						EditorGUILayout.EndVertical();
+						m_Target.Key = sourceSprite.name;
+						m_Target.AutoActive = catalog.EditorGetSpriteAutoActive(sourceSprite.name);
+						img.sprite = null;
+						img.overrideSprite = sourceSprite; // Immediately take over
+						EditorUtility.SetDirty(img);
+						EditorUtility.SetDirty(m_Target);
+						m_ShowQuickAdd = false;
 					}
 				}
 			}

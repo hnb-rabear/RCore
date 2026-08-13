@@ -36,18 +36,33 @@ namespace RCore.Editor
 
 			var catalog = AssetCatalog.Instance;
 			var texture = catalog != null ? catalog.GetTexture(m_Target.Key) : null;
+			var raw = m_Target.GetComponent<UnityEngine.UI.RawImage>();
+			using (new EditorGUI.DisabledScope(texture == null || raw == null))
+			{
+				if (GUILayout.Button("Restore Original Component"))
+				{
+					Undo.RecordObject(m_Target, "Restore Texture Component");
+					Undo.RecordObject(raw, "Restore Texture Component");
+					raw.texture = texture;
+					m_Target.Key = string.Empty;
+					EditorUtility.SetDirty(raw);
+					EditorUtility.SetDirty(m_Target);
+
+					if (EditorUtility.DisplayDialog(
+						"Remove GeneralTextureLinker",
+						"Texture restored. Remove GeneralTextureLinker component?",
+						"Yes",
+						"No"))
+					{
+						Undo.DestroyObjectImmediate(m_Target);
+						return;
+					}
+				}
+			}
+
 			if (texture != null)
 			{
-				var assetPath = AssetDatabase.GetAssetPath(texture);
-				if (!string.IsNullOrEmpty(assetPath))
-				{
-					EditorGUILayout.BeginHorizontal();
-					var displayPath = assetPath.StartsWith("Assets/") ? assetPath.Substring(7) : assetPath;
-					EditorGUILayout.LabelField("Path", displayPath, EditorStyles.miniLabel);
-					if (GUILayout.Button("Ping", GUILayout.Width(40)))
-						EditorGUIUtility.PingObject(texture);
-					EditorGUILayout.EndHorizontal();
-				}
+				AssetCatalogEditorGui.DrawAssetPath(texture);
 
 				EditorGUILayout.Space(4);
 				EditorGUILayout.LabelField("Preview (inspector-only — not applied in edit mode)", EditorStyles.boldLabel);
@@ -59,57 +74,21 @@ namespace RCore.Editor
 				if (!string.IsNullOrEmpty(m_Target.Key))
 					EditorGUILayout.HelpBox($"Texture key '{m_Target.Key}' not found in AssetCatalog.", MessageType.Warning);
 
-				var raw = m_Target.GetComponent<UnityEngine.UI.RawImage>();
 				var tex = raw != null ? raw.texture as Texture2D : null;
 				if (catalog != null && tex != null)
 				{
-					EditorGUILayout.Space();
-					if (!m_ShowQuickAdd)
+					if (AssetCatalogEditorGui.DrawQuickAdd(catalog, CatalogAssetType.Texture2D, ref m_ShowQuickAdd, ref m_QuickAddCategory, tex.name))
 					{
-						if (GUILayout.Button($"Add '{tex.name}' to AssetCatalog", GUILayout.Height(30)))
-						{
-							m_ShowQuickAdd = true;
-						}
-					}
-					else
-					{
-						EditorGUILayout.BeginVertical("box");
-						EditorGUILayout.LabelField("Quick Add to Catalog", EditorStyles.boldLabel);
-						m_QuickAddCategory = EditorGUILayout.TextField("Category", m_QuickAddCategory);
+						catalog.EditorAddTexture(tex.name, m_QuickAddCategory, tex);
 
-						var existingCats = catalog.EditorGetDistinctCategories(CatalogAssetType.Texture2D);
-						if (existingCats.Length > 0)
-						{
-							EditorGUILayout.BeginHorizontal();
-							EditorGUILayout.LabelField("Existing:", GUILayout.Width(EditorGUIUtility.labelWidth - 4));
-							foreach (var cat in existingCats)
-							{
-								if (GUILayout.Button(cat, EditorStyles.miniButton))
-									m_QuickAddCategory = cat;
-							}
-							EditorGUILayout.EndHorizontal();
-						}
+						Undo.RecordObject(m_Target, "Quick Add Texture");
+						Undo.RecordObject(raw, "Quick Add Texture");
 
-						EditorGUILayout.Space();
-						EditorGUILayout.BeginHorizontal();
-						if (GUILayout.Button("Confirm Add"))
-						{
-							catalog.EditorAddTexture(tex.name, m_QuickAddCategory, tex);
-
-							Undo.RecordObject(m_Target, "Quick Add Texture");
-							Undo.RecordObject(raw, "Quick Add Texture");
-
-							m_Target.Key = tex.name;
-							raw.texture = null; // Clear serialized field (TextureLinker is runtime-only)
-								EditorUtility.SetDirty(raw);
-
-							EditorUtility.SetDirty(m_Target);
-							m_ShowQuickAdd = false;
-						}
-						if (GUILayout.Button("Cancel"))
-							m_ShowQuickAdd = false;
-						EditorGUILayout.EndHorizontal();
-						EditorGUILayout.EndVertical();
+						m_Target.Key = tex.name;
+						raw.texture = null; // Clear serialized field (TextureLinker is runtime-only)
+						EditorUtility.SetDirty(raw);
+						EditorUtility.SetDirty(m_Target);
+						m_ShowQuickAdd = false;
 					}
 				}
 			}

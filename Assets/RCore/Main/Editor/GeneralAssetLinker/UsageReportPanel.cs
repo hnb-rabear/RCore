@@ -138,7 +138,7 @@ namespace RCore.Editor
 			var icon = AssetDatabase.GetCachedIcon(pUsage.prefabPath);
 			if (icon != null)
 				GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
-			GUI.Label(pathRect, pUsage.prefabPath, EditorStyles.miniLabel);
+			GUI.Label(pathRect, AssetCatalogEditorGui.StripAssetsPrefix(pUsage.prefabPath), EditorStyles.miniLabel);
 			GUI.Label(componentRect, pUsage.componentType, EditorStyles.miniLabel);
 
 			if (GUI.Button(actionRect, "Select"))

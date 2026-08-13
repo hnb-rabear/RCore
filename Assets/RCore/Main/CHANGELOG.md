@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0]
+
+### Added
+
+- **General Asset Linker — Catalog workflow**: Searchable, sortable asset grid with multi-select category editing, path display, quick add, sprite activation control, direct-reference usage indexing, and prefab linker usage scanning.
+- **General Asset Linker — Restore workflow**: Restore catalog-linked audio, sprite, texture, and `SpriteRenderer` references in prefabs, preview affected linkers before changes, and report skipped or failed assets.
+- **General Asset Linker — `GeneralSpriteRendererLinker`**: New runtime component resolves `SpriteRenderer.sprite` by catalog key; supports automatic component activation and exposes `Refresh()`.
+- **Inspector previews**: Show source asset paths and sprite regions for sprites, textures, and UI Images.
+- **Asset Cleaner — Incremental cache**: Detect imports, moves, and deletions through an asset postprocessor; remap cached references on moves; persist versioned cache state; and scan serialized text references for direct usage results.
+
+### Changed
+
+- **Asset Cleaner**: Replaced duplicate RevCore editor implementation with RCore.Main tooling.
+
 ## [1.2.0]
 
 ### Added

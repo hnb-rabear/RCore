@@ -18,6 +18,7 @@ namespace RCore.Config
 		public string key;
 		public string category;
 		[SpriteBox] public Sprite asset;
+		public bool autoActive = true;
 #if UNITY_EDITOR
 		[System.NonSerialized] public List<string> prefabUsages;
 		[System.NonSerialized] public List<string> sceneUsages;
@@ -53,6 +54,8 @@ namespace RCore.Config
 	{
 		[SerializeField] private List<SpriteCatalogEntry> m_Sprites = new List<SpriteCatalogEntry>();
 		[SerializeField] private List<TextureCatalogEntry> m_Textures = new List<TextureCatalogEntry>();
+		[SerializeField] private int m_SchemaVersion;
+		private const int CURRENT_SCHEMA_VERSION = 1;
 		[SerializeField] private List<AudioCatalogEntry> m_AudioClips = new List<AudioCatalogEntry>();
 
 		private Dictionary<string, Sprite> m_SpriteLookup;
@@ -136,12 +139,36 @@ namespace RCore.Config
 		}
 
 #if UNITY_EDITOR
-		public IReadOnlyList<SpriteCatalogEntry> EditorSprites => m_Sprites;
+		public void EditorMigrateSchema()
+		{
+			if (m_SchemaVersion >= CURRENT_SCHEMA_VERSION)
+				return;
+
+			UnityEditor.Undo.RecordObject(this, "Migrate AssetCatalog Schema");
+			foreach (var entry in m_Sprites)
+			{
+				if (entry != null)
+					entry.autoActive = true;
+			}
+
+			m_SchemaVersion = CURRENT_SCHEMA_VERSION;
+			UnityEditor.EditorUtility.SetDirty(this);
+		}
+
+		public IReadOnlyList<SpriteCatalogEntry> EditorSprites
+		{
+			get
+			{
+				EditorMigrateSchema();
+				return m_Sprites;
+			}
+		}
 		public IReadOnlyList<TextureCatalogEntry> EditorTextures => m_Textures;
 		public IReadOnlyList<AudioCatalogEntry> EditorAudioClips => m_AudioClips;
 
 		public void EditorAddSprite(string key, string category, Sprite asset)
 		{
+			EditorMigrateSchema();
 			UnityEditor.Undo.RecordObject(this, "Quick Add Asset");
 			foreach (var e in m_Sprites)
 			{
@@ -154,7 +181,7 @@ namespace RCore.Config
 					return;
 				}
 			}
-			m_Sprites.Add(new SpriteCatalogEntry { key = key, category = category, asset = asset });
+			m_Sprites.Add(new SpriteCatalogEntry { key = key, category = category, asset = asset, autoActive = true });
 			InvalidateLookupCache();
 			UnityEditor.EditorUtility.SetDirty(this);
 		}
@@ -199,6 +226,7 @@ namespace RCore.Config
 
 		public string[] EditorGetDistinctCategories(CatalogAssetType type)
 		{
+			EditorMigrateSchema();
 			var set = new HashSet<string>();
 			switch (type)
 			{
@@ -220,6 +248,7 @@ namespace RCore.Config
 
 		public bool EditorHasKey(CatalogAssetType pType, string pKey)
 		{
+			EditorMigrateSchema();
 			if (string.IsNullOrEmpty(pKey))
 				return false;
 
@@ -252,6 +281,7 @@ namespace RCore.Config
 
 		public bool EditorTryRenameKey(CatalogAssetType pType, string pOldKey, string pNewKey, out string pError)
 		{
+			EditorMigrateSchema();
 			pError = null;
 			if (string.IsNullOrEmpty(pOldKey))
 			{
@@ -326,6 +356,7 @@ namespace RCore.Config
 
 		public void EditorDeleteEntry(CatalogAssetType pType, string pKey)
 		{
+			EditorMigrateSchema();
 			UnityEditor.Undo.RecordObject(this, "Delete AssetCatalog Entry");
 			switch (pType)
 			{
@@ -345,6 +376,7 @@ namespace RCore.Config
 
 		public void EditorUpdateSpriteCategory(string pKey, string pCategory)
 		{
+			EditorMigrateSchema();
 			UnityEditor.Undo.RecordObject(this, "Update Sprite Category");
 			foreach (var e in m_Sprites)
 			{
@@ -360,6 +392,7 @@ namespace RCore.Config
 
 		public void EditorUpdateSpriteAsset(string pKey, Sprite pAsset)
 		{
+			EditorMigrateSchema();
 			UnityEditor.Undo.RecordObject(this, "Update Sprite Asset");
 			foreach (var e in m_Sprites)
 			{
@@ -370,6 +403,39 @@ namespace RCore.Config
 					UnityEditor.EditorUtility.SetDirty(this);
 					return;
 				}
+			}
+		}
+
+		public bool EditorGetSpriteAutoActive(string pKey)
+		{
+			EditorMigrateSchema();
+			if (string.IsNullOrEmpty(pKey))
+				return true;
+
+			foreach (var entry in m_Sprites)
+			{
+				if (entry != null && entry.key == pKey)
+					return entry.autoActive;
+			}
+
+			return true;
+		}
+
+		public void EditorUpdateSpriteAutoActive(string pKey, bool pAutoActive)
+		{
+			EditorMigrateSchema();
+			if (string.IsNullOrEmpty(pKey))
+				return;
+
+			foreach (var entry in m_Sprites)
+			{
+				if (entry == null || entry.key != pKey || entry.autoActive == pAutoActive)
+					continue;
+
+				UnityEditor.Undo.RecordObject(this, "Update Sprite Auto Active");
+				entry.autoActive = pAutoActive;
+				UnityEditor.EditorUtility.SetDirty(this);
+				return;
 			}
 		}
 
@@ -433,8 +499,56 @@ namespace RCore.Config
 			}
 		}
 
+		public int EditorSetCategory(
+			CatalogAssetType pType,
+			IReadOnlyCollection<string> pKeys,
+			string pCategory)
+		{
+			EditorMigrateSchema();
+			UnityEditor.Undo.RecordObject(this, "Move AssetCatalog Entries to Category");
+			var keys = new HashSet<string>(pKeys, StringComparer.Ordinal);
+			int matched = 0;
+			switch (pType)
+			{
+				case CatalogAssetType.Sprite:
+					foreach (var e in m_Sprites)
+					{
+						if (keys.Contains(e.key))
+						{
+							e.category = pCategory;
+							matched++;
+						}
+					}
+					break;
+				case CatalogAssetType.Texture2D:
+					foreach (var e in m_Textures)
+					{
+						if (keys.Contains(e.key))
+						{
+							e.category = pCategory;
+							matched++;
+						}
+					}
+					break;
+				case CatalogAssetType.AudioClip:
+					foreach (var e in m_AudioClips)
+					{
+						if (keys.Contains(e.key))
+						{
+							e.category = pCategory;
+							matched++;
+						}
+					}
+					break;
+			}
+			InvalidateLookupCache();
+			UnityEditor.EditorUtility.SetDirty(this);
+			return matched;
+		}
+
 		public void EditorEnsureUsageCache()
 		{
+			EditorMigrateSchema();
 			foreach (var entry in m_Sprites)
 			{
 				entry.prefabUsages ??= new List<string>();
