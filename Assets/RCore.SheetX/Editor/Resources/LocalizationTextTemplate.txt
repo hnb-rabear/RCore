@@ -169,14 +169,26 @@ public class LOCALIZATION_CLASS_NAMEText : MonoBehaviour
 		LOCALIZATION_CLASS_NAME.Get(m_LocalizedIDString, ref localizedID);
 		if (localizedID == -1)
 		{
-			string path = name;
+			var hierarchyPath = gameObject.name;
 			var parent = transform.parent;
 			while (parent != null)
 			{
-				path = $"{parent.name}.{path}";
+				hierarchyPath = $"{parent.name}/{hierarchyPath}";
 				parent = parent.parent;
 			}
-			Debug.LogError($"{path}: not found {m_LocalizedIDString} in {nameof(LOCALIZATION_CLASS_NAME)}");
+
+			var source = AssetDatabase.GetAssetPath(this);
+			if (string.IsNullOrEmpty(source))
+			{
+				if (!gameObject.scene.IsValid())
+					source = "(no scene)";
+				else if (!string.IsNullOrEmpty(gameObject.scene.path))
+					source = gameObject.scene.path;
+				else
+					source = gameObject.scene.name;
+			}
+
+			Debug.LogError($"[{GetType().Name}] Missing ID '{m_LocalizedIDString}' in {nameof(LOCALIZATION_CLASS_NAME)}\n  GameObject: {gameObject.name}\n  Path: {hierarchyPath}\n  Source: {source}", this);
 		}
     }
 
