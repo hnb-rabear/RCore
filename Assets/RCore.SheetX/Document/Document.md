@@ -455,6 +455,16 @@ LocalizationsManager.CurrentLanguage = "jp";
 LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
 ```
 
+#### Switch Language in Scene View
+
+Switch generated localization text without entering Play Mode:
+
+1. Open **Scene View**.
+2. Enable **Localization** from **View > Overlays > Localization** if hidden.
+3. Select a language from the dropdown, or use `<` and `>` to move between languages.
+
+The overlay reloads generated localization data, then refreshes matching localization text components in all loaded scenes and open Prefab Mode. It requires generated SheetX localization classes; no template change or code regeneration is needed. If none exist, it shows `No localization class found`.
+
 - You can retrieve localized content using three different methods.
 
   1. **Key Retrieval:** Retrieve localized content using a Key. Note that the text will not automatically refresh when the language changes using this method.
