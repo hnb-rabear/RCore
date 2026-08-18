@@ -1,18 +1,25 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.0] - 2026-08-18
 
 ### Added
 
+- **UI - PanelStack**: Added UniTask addressable helpers for pushing panels, pushing panels to the top, queueing panels, and pushing panels to a root.
+- **General Asset Linker - `GeneralSpriteLinker`**: Added `PixelPerUnit` proxy for its linked `Image`.
+- **UI - `AddressableImage`**: Added `AutoActive` option for controlling automatic sprite loading.
 - **UI — AddressableImage inspector**: Supports multi-object editing with a shared **Preserve Aspect** toggle that dirties each `Image` and repaints canvases and scene views.
 - **`RPlayerPrefDict<TKey, TVal>`**: Added `ContainsKey` and `TryGetValue`; `Contain` now delegates to `ContainsKey`.
 
 ### Fixed
 
 - **General Asset Linker - `GeneralSpriteLinker`**: `Reset()` now caches its `Image` before reading `Image.sprite`, so a newly added component picks up the matching catalog key.
-- **UI — AddressableImage inspector**: No longer captures sprite references on enable and repaint; it only refreshes the editor preview, leaving capture to runtime `OnValidate`.
+- **UI — AddressableImage inspector**: No longer captures sprite references on enable and repaint; it only refreshes the editor preview, leaving capture to the explicit editor capture/migrate tooling.
+- **UI — `AddressableImage`**: Auto-load moved back to `OnEnable` so pooled or re-enabled objects retry their sprite load.
+- **UI — PanelStack**: Addressable panel loads now report ordinary failures as `null` instead of throwing, while cancellation still propagates to the caller.
+- **General Asset Linker - `GeneralSpriteLinker`**: `Refresh()` no longer clears the serialized `Image.sprite` without an undo entry, and only adopts a key the catalog knows.
+- **Inspector - `[FolderPath]`**: Folders picked outside the project's `Assets` folder are rejected with an error instead of producing a corrupt path.
 - **`RPlayerPrefDict<TKey, TVal>`**: Dirty flag now tracks real mutations only — equal assignments are skipped, a null collection assignment falls back to an empty dictionary, `Clear()` no-ops when already empty, and `SaveChange()` returns early when unchanged so an untouched empty collection no longer deletes its `PlayerPrefs` key.
-- `[AutoFill]` now fills null references and empty arrays/lists through explicit, undoable **RCore Auto Fill** context-menu action. Removed unsafe inspector-draw mutation that could corrupt multi-object edits, overwrite manual arrays, repeatedly query AssetDatabase, or choose nondeterministic assets.
+- `[AutoFill]` now fills null references and empty arrays/lists automatically after Inspector drawing, processing each selected object independently and avoiding repeated scene or AssetDatabase searches.
 
 ## [1.3.0]
 

@@ -6,7 +6,6 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 
-// AddressableImageEditor (rcore.editor) writes the sprite reference via the internal setter below.
 [assembly: InternalsVisibleTo("rcore.editor")]
 
 namespace RCore.UI
@@ -16,6 +15,7 @@ namespace RCore.UI
 	{
 		[SerializeField] private Image m_Image;
 		[SerializeField] private AssetReferenceSprite m_SpriteReference = new AssetReferenceSprite(string.Empty);
+		[SerializeField] private bool m_AutoActive = true;
 
 		private AsyncOperationHandle<Sprite> m_Handle;
 		private bool m_Loading;
@@ -40,6 +40,11 @@ namespace RCore.UI
 			}
 		}
 
+		/// <summary>
+		/// Gets whether the sprite reference loads automatically when this component is enabled.
+		/// </summary>
+		public bool AutoActive => m_AutoActive;
+
 		public bool HasReference()
 		{
 			return m_SpriteReference != null && !string.IsNullOrEmpty(m_SpriteReference.AssetGUID);
@@ -52,14 +57,12 @@ namespace RCore.UI
 		}
 #endif
 
-		private void Awake()
+		private void Start()
 		{
 			CacheImage();
-		}
 
-		private void OnEnable()
-		{
-			CacheImage();
+			if (!m_AutoActive)
+				return;
 
 			if (!HasReference())
 			{
@@ -133,12 +136,12 @@ namespace RCore.UI
 		}
 
 #if UNITY_EDITOR
-        // Sprite capture/preview lives in RCore.Editor.UI.AddressableImageEditor (rcore.editor assembly),
-        // driven from the custom inspector. The runtime assembly must not reference UnityEditor.AddressableAssets.
-        private void OnValidate()
-        {
-            m_Image = GetComponent<Image>();
-        }
+		// Sprite capture/preview lives in RCore.Editor.UI.AddressableImageEditor (rcore.editor assembly),
+		// driven from the custom inspector. The runtime assembly must not reference UnityEditor.AddressableAssets.
+		private void OnValidate()
+		{
+			m_Image = GetComponent<Image>();
+		}
 #endif
 	}
 }

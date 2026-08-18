@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 #if UNITY_EDITOR
@@ -153,6 +154,23 @@ namespace RCore.UI
 			if (!m_panelsInQueue.Contains(pPanel))
 				m_panelsInQueue.Add(pPanel);
 		}
+
+#if ADDRESSABLES
+		/// <summary>
+		/// Loads a panel prefab from an addressable reference, then adds it to the queue.
+		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pReference">The addressable reference to the panel prefab.</param>
+		/// <param name="pToken">Token used to cancel the load.</param>
+		/// <returns>The queued panel, or null if the prefab could not be loaded.</returns>
+		public async UniTask<T> AddPanelToQueueAsync<T>(ComponentRef<T> pReference, CancellationToken pToken = default) where T : PanelController
+		{
+			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
+			if (prefab == null)
+				return null;
+			return AddPanelToQueue(ref prefab);
+		}
+#endif
 
 		/// <summary>
 		/// Pushes the next panel from the queue onto the stack if conditions are met.
@@ -307,6 +325,28 @@ namespace RCore.UI
 			return @event.panel as T;
 		}
 		
+#if ADDRESSABLES
+		/// <summary>
+		/// Loads a panel prefab from an addressable reference, then pushes it to the root of the given type.
+		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="root">The type of the PanelRoot that should receive the panel.</param>
+		/// <param name="pReference">The addressable reference to the panel prefab.</param>
+		/// <param name="pPushMode">How the panel is added to the stack.</param>
+		/// <param name="pKeepCurrentAndReplace">Only used by <see cref="PushMode.Replacement"/>; keeps the current panel in the stack.</param>
+		/// <param name="pToken">Token used to cancel the load.</param>
+		/// <returns>The pushed panel, or null if the prefab could not be loaded.</returns>
+		public static async UniTask<T> PushOuterPanelAsync<T>(Type root, ComponentRef<T> pReference, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true,
+			CancellationToken pToken = default) where T : PanelController
+		{
+			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
+			if (prefab == null)
+				return null;
+
+			return PushOuterPanel(root, prefab, pPushMode, pKeepCurrentAndReplace);
+		}
+#endif
+
 		/// <summary>
 		/// Static helper method to push a panel that is defined as a field within the root.
 		/// </summary>

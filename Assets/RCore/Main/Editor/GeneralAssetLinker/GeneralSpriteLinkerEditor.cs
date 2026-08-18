@@ -34,6 +34,15 @@ namespace RCore.Editor
 					m_Target.PreserveAspect = preserveAspect;
 					EditorUtility.SetDirty(img);
 				}
+
+				EditorGUI.BeginChangeCheck();
+				var pixelPerUnit = EditorGUILayout.FloatField("Pixel Per Unit", m_Target.PixelPerUnit);
+				if (EditorGUI.EndChangeCheck())
+				{
+					Undo.RecordObject(img, "Set Pixel Per Unit");
+					m_Target.PixelPerUnit = pixelPerUnit;
+					EditorUtility.SetDirty(img);
+				}
 			}
 
 			EditorGUILayout.Space(4);

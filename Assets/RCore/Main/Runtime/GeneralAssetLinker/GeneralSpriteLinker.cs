@@ -23,10 +23,40 @@ namespace RCore.Config
 			get => m_AutoActive;
 		}
 
+		/// <summary>
+		/// Proxy for <see cref="Image.preserveAspect"/> on the linked Image component.
+		/// </summary>
 		public bool PreserveAspect
 		{
-			get => m_Image.preserveAspect;
-			set => m_Image.preserveAspect = value;
+			get
+			{
+				CacheTarget();
+				return m_Image != null && m_Image.preserveAspect;
+			}
+			set
+			{
+				CacheTarget();
+				if (m_Image != null)
+					m_Image.preserveAspect = value;
+			}
+		}
+
+		/// <summary>
+		/// Proxy for <see cref="Image.pixelsPerUnitMultiplier"/> on the linked Image component.
+		/// </summary>
+		public float PixelPerUnit
+		{
+			get
+			{
+				CacheTarget();
+				return m_Image != null ? m_Image.pixelsPerUnitMultiplier : 1f;
+			}
+			set
+			{
+				CacheTarget();
+				if (m_Image != null)
+					m_Image.pixelsPerUnitMultiplier = value;
+			}
 		}
 
 		private void CacheTarget()
@@ -85,6 +115,10 @@ namespace RCore.Config
 			CacheTarget();
 			if (m_Image == null)
 				return;
+			// Only adopt a key the catalog knows; Reset() owns the undoable sprite-to-key migration.
+			if (string.IsNullOrEmpty(m_Key) && m_Image.sprite != null && AssetCatalog.Instance != null
+				&& AssetCatalog.Instance.GetSprite(m_Image.sprite.name) != null)
+				m_Key = m_Image.sprite.name;
 			var sprite = AssetCatalog.Instance != null ? AssetCatalog.Instance.GetSprite(m_Key) : null;
 			if (sprite != null)
 				m_Image.overrideSprite = sprite;

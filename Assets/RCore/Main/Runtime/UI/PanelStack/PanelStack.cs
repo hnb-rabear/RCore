@@ -6,7 +6,10 @@
 using RCore.Editor;
 using UnityEditor;
 #endif
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace RCore.UI
@@ -399,6 +402,79 @@ namespace RCore.UI
 			panel.Show();
 			OnAnyChildShow(panel);
 		}
+
+#if ADDRESSABLES
+		/// <summary>
+		/// Loads a panel prefab from an addressable reference, then pushes it onto the stack.
+		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pReference">The addressable reference to the panel prefab.</param>
+		/// <param name="pKeepCurrentInStack">If true, the current top panel is kept in the stack but hidden.</param>
+		/// <param name="pOnlyInactivePanel">If true, the panel is only pushed if it's not already active.</param>
+		/// <param name="pInstantPopAndPush">If true, the transition happens instantly.</param>
+		/// <param name="pToken">Token used to cancel the load.</param>
+		/// <returns>The pushed panel, or null if the prefab could not be loaded.</returns>
+		public async UniTask<T> PushPanelAsync<T>(ComponentRef<T> pReference, bool pKeepCurrentInStack, bool pOnlyInactivePanel = true, bool pInstantPopAndPush = true,
+			CancellationToken pToken = default) where T : PanelController
+		{
+			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
+			if (prefab == null)
+				return null;
+			return PushPanel(ref prefab, pKeepCurrentInStack, pOnlyInactivePanel, pInstantPopAndPush);
+		}
+
+		/// <summary>
+		/// Loads a panel prefab from an addressable reference, then pushes it to the top of the stack.
+		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pReference">The addressable reference to the panel prefab.</param>
+		/// <param name="pHidePusher">If true, the panel that pushed this one will be hidden.</param>
+		/// <param name="pToken">Token used to cancel the load.</param>
+		/// <returns>The pushed panel, or null if the prefab could not be loaded.</returns>
+		public async UniTask<T> PushPanelToTopAsync<T>(ComponentRef<T> pReference, bool pHidePusher = false, CancellationToken pToken = default) where T : PanelController
+		{
+			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
+			if (prefab == null)
+				return null;
+			return PushPanelToTop(ref prefab, pHidePusher);
+		}
+
+		/// <summary>
+		/// Loads a panel prefab from an addressable reference, logging an error when the reference is unusable.
+		/// Cancellation is propagated to the caller; any other load failure is logged and reported as null.
+		/// </summary>
+		/// <typeparam name="T">The type of the panel.</typeparam>
+		/// <param name="pReference">The addressable reference to the panel prefab.</param>
+		/// <param name="pToken">Token used to cancel the load.</param>
+		/// <returns>The loaded prefab, or null if it could not be loaded.</returns>
+		protected static async UniTask<T> LoadPanelPrefabAsync<T>(ComponentRef<T> pReference, CancellationToken pToken) where T : PanelController
+		{
+			if (pReference == null || string.IsNullOrEmpty(pReference.AssetGUID))
+			{
+				Debug.LogError($"Addressable reference of panel {typeof(T).Name} is null or empty");
+				return null;
+			}
+
+			T prefab;
+			try
+			{
+				prefab = await pReference.LoadAssetAsync(pToken);
+			}
+			catch (OperationCanceledException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"Couldn't load addressable panel {typeof(T).Name}: {ex.Message}");
+				return null;
+			}
+
+			if (prefab == null)
+				Debug.LogError($"Couldn't load addressable panel {typeof(T).Name}");
+			return prefab;
+		}
+#endif
 
 #endregion
 

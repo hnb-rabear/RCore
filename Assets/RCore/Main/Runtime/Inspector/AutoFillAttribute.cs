@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -10,7 +9,7 @@ using UnityEngine;
 namespace RCore.Inspector
 {
 	/// <summary>
-	/// An attribute that marks a field for reference filling through Unity Editor context menus.
+	/// An attribute that marks a field to be filled automatically while its Inspector is drawn.
 	/// It supports single object references and empty arrays/lists of Components or ScriptableObjects.
 	/// </summary>
 	public class AutoFillAttribute : PropertyAttribute
@@ -36,17 +35,34 @@ namespace RCore.Inspector
 #if UNITY_EDITOR
 	/// <summary>
 	/// The custom property drawer for fields marked with the [AutoFill] attribute.
-	/// Use the RCore Auto Fill context menu on the owning Component or ScriptableObject to populate fields.
+	/// Empty references fill automatically for each inspected object.
 	/// </summary>
 	[CustomPropertyDrawer(typeof(AutoFillAttribute))]
 	public class AutoFillDrawer : PropertyDrawer
 	{
+		private static readonly HashSet<string> s_checked = new HashSet<string>();
+
+		static AutoFillDrawer()
+		{
+			Selection.selectionChanged += ClearChecks;
+			EditorApplication.hierarchyChanged += ClearChecks;
+			EditorApplication.projectChanged += ClearChecks;
+			Undo.undoRedoPerformed += ClearChecks;
+		}
+
 		/// <summary>
-		/// Draws the property without mutating serialized data during an inspector event.
+		/// Draws the property and schedules automatic filling after the current Inspector event.
 		/// </summary>
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
+			EditorGUI.BeginChangeCheck();
 			EditorGUI.PropertyField(position, property, label, true);
+			if (EditorGUI.EndChangeCheck())
+				ClearChecks(property.serializedObject.targetObjects, property.propertyPath);
+
+			if (Event.current.type == EventType.Repaint && fieldInfo != null
+				&& AutoFillResolver.NeedsFill(property, fieldInfo.FieldType))
+				ScheduleFill(property, fieldInfo.FieldType, ((AutoFillAttribute)attribute).Path);
 		}
 
 		/// <summary>
@@ -56,79 +72,113 @@ namespace RCore.Inspector
 		{
 			return EditorGUI.GetPropertyHeight(property, label, true);
 		}
-	}
 
-	internal static class AutoFillContextMenu
-	{
-		[MenuItem("CONTEXT/Component/RCore Auto Fill", true)]
-		private static bool ValidateComponent(MenuCommand command)
+		private static void ScheduleFill(SerializedProperty property, Type fieldType, string path)
 		{
-			return HasAutoFillFields(command.context as Component);
-		}
+			var propertyPath = property.propertyPath;
+			var targets = new List<UnityEngine.Object>();
+			var keys = new List<string>();
 
-		[MenuItem("CONTEXT/Component/RCore Auto Fill")]
-		private static void FillComponent(MenuCommand command)
-		{
-			Fill(command.context as Component);
-		}
-
-		[MenuItem("CONTEXT/ScriptableObject/RCore Auto Fill", true)]
-		private static bool ValidateScriptableObject(MenuCommand command)
-		{
-			return HasAutoFillFields(command.context as ScriptableObject);
-		}
-
-		[MenuItem("CONTEXT/ScriptableObject/RCore Auto Fill")]
-		private static void FillScriptableObject(MenuCommand command)
-		{
-			Fill(command.context as ScriptableObject);
-		}
-
-		private static bool HasAutoFillFields(UnityEngine.Object target)
-		{
-			return target != null && GetFields(target.GetType()).Any(field => field.GetCustomAttribute<AutoFillAttribute>() != null);
-		}
-
-		private static void Fill(UnityEngine.Object target)
-		{
-			if (target == null) return;
-
-			var serializedObject = new SerializedObject(target);
-			var targetComponent = target as Component;
-			var changed = false;
-
-			foreach (var field in GetFields(target.GetType()))
+			foreach (var target in property.serializedObject.targetObjects)
 			{
-				var autoFill = field.GetCustomAttribute<AutoFillAttribute>();
-				if (autoFill == null) continue;
+				if (target == null) continue;
+				var key = GetKey(target, propertyPath);
+				if (!s_checked.Add(key)) continue;
+				targets.Add(target);
+				keys.Add(key);
+			}
 
-				var property = serializedObject.FindProperty(field.Name);
-				if (property == null) continue;
+			if (targets.Count == 0) return;
+			EditorApplication.delayCall += () => Fill(targets, keys, propertyPath, fieldType, path);
+		}
 
-				var elementType = GetElementType(field.FieldType);
-				if (elementType != null)
+		private static void Fill(IReadOnlyList<UnityEngine.Object> targets, IReadOnlyList<string> keys,
+			string propertyPath, Type fieldType, string path)
+		{
+			for (int i = 0; i < targets.Count; i++)
+			{
+				if (!s_checked.Contains(keys[i])) continue;
+				var target = targets[i];
+				if (target == null) continue;
+
+				var serializedObject = new SerializedObject(target);
+				serializedObject.UpdateIfRequiredOrScript();
+				var property = serializedObject.FindProperty(propertyPath);
+				if (property == null || !AutoFillResolver.NeedsFill(property, fieldType))
 				{
-					if (property.arraySize != 0) continue;
-					var matches = FindMatches(autoFill.Path, elementType, targetComponent);
-					if (matches.Length == 0) continue;
-
-					property.arraySize = matches.Length;
-					for (int i = 0; i < matches.Length; i++)
-						property.GetArrayElementAtIndex(i).objectReferenceValue = matches[i];
-					changed = true;
+					s_checked.Remove(keys[i]);
 					continue;
 				}
 
-				if (property.propertyType != SerializedPropertyType.ObjectReference || property.objectReferenceValue != null) continue;
-				var match = FindMatches(autoFill.Path, field.FieldType, targetComponent).FirstOrDefault();
-				if (match == null) continue;
+				if (AutoFillResolver.TryFill(property, fieldType, path, target as Component))
+				{
+					serializedObject.ApplyModifiedProperties();
+					s_checked.Remove(keys[i]);
+				}
+			}
+		}
 
-				property.objectReferenceValue = match;
-				changed = true;
+		private static string GetKey(UnityEngine.Object target, string propertyPath)
+		{
+			return target.GetInstanceID() + "/" + propertyPath;
+		}
+
+		private static void ClearChecks()
+		{
+			s_checked.Clear();
+		}
+
+		private static void ClearChecks(IEnumerable<UnityEngine.Object> targets, string propertyPath)
+		{
+			foreach (var target in targets)
+				if (target != null)
+					s_checked.Remove(GetKey(target, propertyPath));
+		}
+	}
+
+	/// <summary>
+	/// Reference-resolution logic used by automatic Inspector filling.
+	/// </summary>
+	internal static class AutoFillResolver
+	{
+		/// <summary>
+		/// Returns whether the property is still empty, so a fill is worth attempting.
+		/// Cheap enough to call per repaint: it never touches the AssetDatabase or the scene.
+		/// </summary>
+		public static bool NeedsFill(SerializedProperty property, Type fieldType)
+		{
+			if (property.hasMultipleDifferentValues) return true;
+			if (GetElementType(fieldType) != null)
+				return property.isArray && property.arraySize == 0;
+			return property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue == null;
+		}
+
+		/// <summary>
+		/// Fills the property if it is still empty. Returns whether anything changed.
+		/// </summary>
+		public static bool TryFill(SerializedProperty property, Type fieldType, string path, Component owner)
+		{
+			var elementType = GetElementType(fieldType);
+			if (elementType != null)
+			{
+				// A collection field can still resolve to a non-array property (e.g. a serialized wrapper); skip it.
+				if (!property.isArray) return false;
+				if (property.arraySize != 0) return false;
+				var matches = FindMatches(path, elementType, owner);
+				if (matches.Length == 0) return false;
+
+				property.arraySize = matches.Length;
+				for (int i = 0; i < matches.Length; i++)
+					property.GetArrayElementAtIndex(i).objectReferenceValue = matches[i];
+				return true;
 			}
 
-			// ApplyModifiedProperties registers the undo entry and dirties the target.
-			if (changed) serializedObject.ApplyModifiedProperties();
+			if (property.propertyType != SerializedPropertyType.ObjectReference || property.objectReferenceValue != null) return false;
+			var match = FindMatches(path, fieldType, owner).FirstOrDefault();
+			if (match == null) return false;
+
+			property.objectReferenceValue = match;
+			return true;
 		}
 
 		private static Type GetElementType(Type fieldType)
@@ -162,16 +212,6 @@ namespace RCore.Inspector
 				.Select(assetPath => AssetDatabase.LoadAssetAtPath(assetPath, type))
 				.Where(asset => asset != null)
 				.ToArray();
-		}
-
-		private static IEnumerable<FieldInfo> GetFields(Type type)
-		{
-			while (type != null && type != typeof(object))
-			{
-				foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-					yield return field;
-				type = type.BaseType;
-			}
 		}
 	}
 #endif
