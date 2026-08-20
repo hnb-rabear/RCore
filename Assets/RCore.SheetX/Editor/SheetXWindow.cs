@@ -22,12 +22,14 @@ namespace RCore.SheetX.Editor
 
 		private Vector2 m_scrollPosition;
 
+		private SheetXSettings m_settings;
 		private ExcelSheetXWindow m_excelSheetXWindow;
 		private GoogleSheetXWindow m_googleSheetXWindow;
 		private SheetXSettingsWindow m_settingsWindow;
 
 		private void OnEnable()
 		{
+			m_settings = SheetXSettings.Init();
 			m_excelSheetXWindow ??= new ExcelSheetXWindow();
 			m_excelSheetXWindow.OnEnable();
 			m_excelSheetXWindow.editorWindow = this;
@@ -66,6 +68,26 @@ namespace RCore.SheetX.Editor
 			}
 
 			GUILayout.EndScrollView();
+		}
+
+		// Every tab mutates m_settings in place, so flush once on focus loss / close rather than
+		// after each individual edit. Both callbacks also fire during assembly reload, where an
+		// AssetDatabase write is unsafe — mark dirty here and let delayCall do the actual write.
+		private void OnLostFocus() => FlushSettings();
+
+		private void OnDisable() => FlushSettings();
+
+		private void FlushSettings()
+		{
+			if (m_settings == null)
+				return;
+			var settings = m_settings;
+			EditorUtility.SetDirty(settings);
+			EditorApplication.delayCall += () =>
+			{
+				if (settings != null)
+					AssetDatabase.SaveAssetIfDirty(settings);
+			};
 		}
 
 #if ASSETS_STORE

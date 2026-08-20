@@ -55,7 +55,10 @@ namespace RCore.SheetX.Editor
 #elif ASSETS_STORE && !SX_LOCALIZATION
 		private const string FILE_PATH = "Assets/SheetX/Editor/SheetXSettings.asset";
 #else
-		private const string FILE_PATH = "Assets/RCore.SheetX/Editor/SheetXSettings.asset";
+		// Must live in the consuming project's Assets/, never inside the package. When SheetX is
+		// installed via UPM git URL the package resolves into Library/PackageCache, which is
+		// gitignored and rebuilt from git on every re-resolve — any settings stored there are lost.
+		private const string FILE_PATH = "Assets/SheetX/SheetXSettings.asset";
 #endif
 
 		public ExcelSheetsPath excelSheetsPath;
@@ -84,7 +87,10 @@ namespace RCore.SheetX.Editor
 			var settings = AssetDatabase.LoadAssetAtPath(FILE_PATH, typeof(SheetXSettings)) as SheetXSettings;
 			if (settings != null)
 				return settings;
-			string[] guids = AssetDatabase.FindAssets($"t:SheetXSettings");
+			// Scoped to "Assets" on purpose. An unscoped FindAssets also searches Packages/, where it
+			// would find the copy shipped inside the SheetX package itself — that one lives in
+			// Library/PackageCache and is discarded whenever UPM re-resolves the package.
+			string[] guids = AssetDatabase.FindAssets($"t:SheetXSettings", new[] { "Assets" });
 			var assets = guids.Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<ScriptableObject>).ToArray();
 			if (assets.Length > 0)
 			{
@@ -94,6 +100,17 @@ namespace RCore.SheetX.Editor
 			settings = EditorHelper.CreateScriptableAsset<SheetXSettings>(FILE_PATH);
 			settings.ResetToDefault();
 			return settings;
+		}
+
+		/// <summary>
+		/// Writes any in-memory edits back to the settings asset on disk. The exporter windows mutate
+		/// this object directly (Excel paths, Google sheet lists, sheet selections), so without this
+		/// the edits live only until the next domain reload.
+		/// </summary>
+		public void SaveToDisk()
+		{
+			EditorUtility.SetDirty(this);
+			AssetDatabase.SaveAssetIfDirty(this);
 		}
 
 		/// <summary>

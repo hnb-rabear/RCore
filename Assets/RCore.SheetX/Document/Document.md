@@ -52,6 +52,10 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
 - **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
 - **Google Client Secret:** Enter your Google Secret (retrieved from Credentials in Google Console).
 
+Settings are stored in `Assets/SheetX/SheetXSettings.asset`, created on first use. Commit that
+asset to keep your Excel paths and Google spreadsheet lists across clones and across your team.
+Changes are written when the SheetX window loses focus or is closed.
+
 ## 4. Excel Sheets Exporter
 
 ### 4.1. Export Single Excel File
