@@ -67,7 +67,7 @@ Recorded so no one re-derives them mid-implementation.
 - Modify `Assets/RCore.SheetX/Editor/SheetXSettingsWindow.cs` — call the migration from `Load()`; default-encryption-key HelpBox only if option 6b is chosen.
 - Modify `Assets/RCore.SheetX/Editor/ExcelSheetHandler.cs` — `ExportIDs` flag fix; localization header NRE; null-sheet log NRE.
 - Modify `Assets/RCore.SheetX/Editor/GoogleSheetHandler.cs` — `ExportIDs` flag fix + hoist merged write out of the loop; localization ragged-row `IndexOutOfRangeException`; IDs/Constants `col + 1` bounds.
-- Modify `Assets/RCore.SheetX/Editor/SheetXHelper.cs` — `MonoBehaviour` → `static class`.
+- ~~Modify `Assets/RCore.SheetX/Editor/SheetXHelper.cs`~~ — dropped, see Task 4 Step 1.
 - Modify `Assets/RCore.SheetX/SheetXSettings.asset` — blank the two credential fields.
 - Modify `Assets/RCore.SheetX/CHANGELOG.md` — one entry per task.
 - Modify `Assets/RCore.SheetX/package.json` — version bump.
@@ -344,11 +344,11 @@ Both `ExportIDs` methods branch on `separateConstants` where they mean `separate
 
 Effect today: the "Export IDs" button honours the Constants toggle. A user with `separateIDs = false, separateConstants = true` gets one file per sheet instead of the merged `IDs.cs`, and "Export All" then produces a different layout than "Export IDs" from the same settings.
 
-- [ ] **Step 1: Excel**
+- [x] **Step 1: Excel**
 
 `ExcelSheetHandler.cs:68` and `:76` — change `m_settings.separateConstants` to `m_settings.separateIDs`. No other change; the structure is already correct (per-sheet writes inside the loop, merged write after it).
 
-- [ ] **Step 2: Google — flag *and* placement**
+- [x] **Step 2: Google — flag *and* placement**
 
 `GoogleSheetHandler.cs:79-119` has the same wrong flag plus a second defect: the merged-write block (`:108-118`) sits **inside** the `foreach`. So `IDs.cs` is rewritten once per ID sheet, each time with more accumulated content, and the surviving file depends on sheet iteration order.
 
@@ -390,7 +390,7 @@ if (!m_settings.separateIDs)
 }
 ```
 
-- [ ] **Step 3: Leave `ExportConstants` alone**
+- [x] **Step 3: Leave `ExportConstants` alone**
 
 `ExcelSheetHandler.cs:344`, `:349` (in `ExportConstants` at `:313`) and `GoogleSheetHandler.cs:420`, `:424` (in `ExportConstants` at `:376`) read `separateConstants` and are **correct** — that method is about Constants. Do not touch them.
 
@@ -409,7 +409,7 @@ Full inventory of the flag, so nothing is missed and nothing extra is changed:
 
 Four lines change in total. Everything else on this list stays.
 
-- [ ] **Step 4: CHANGELOG — call the behavior change out loudly**
+- [x] **Step 4: CHANGELOG — call the behavior change out loudly**
 
 This changes output for users who had the two toggles set differently. It is a fix, but it is observable.
 
@@ -434,7 +434,7 @@ This changes output for users who had the two toggles set differently. It is a f
 
 Five unguarded accesses. All are reachable from ordinary spreadsheets — a blank header cell or a short row is not malformed input, it is Tuesday.
 
-- [ ] **Step 1: Excel localization header — `NullReferenceException`**
+- [x] **Step 1: Excel localization header — `NullReferenceException`**
 
 `ExcelSheetHandler.cs:642`:
 
@@ -450,7 +450,7 @@ var fieldName = firstRow.GetCell(col).ToCellString();
 
 `SheetXExtension.ToCellString` (`SheetXHelper.cs:716`) returns the default for a null cell — verified. The existing `if (!string.IsNullOrEmpty(fieldName))` guard at `:648` then handles the empty case correctly.
 
-- [ ] **Step 2: Google localization row — `IndexOutOfRangeException`**
+- [x] **Step 2: Google localization row — `IndexOutOfRangeException`**
 
 `GoogleSheetHandler.cs:702-703`:
 
@@ -473,7 +473,7 @@ var fieldName = firstRow[col]?.ToString() ?? "";
 
 Use `firstRow` (already captured at `:691`) rather than re-indexing `rowsData[0]`, matching the Excel fix in Step 1.
 
-- [ ] **Step 3: Null-sheet log — `NullReferenceException`**
+- [x] **Step 3: Null-sheet log — `NullReferenceException`**
 
 `ExcelSheetHandler.cs:1043-1046`:
 
@@ -493,7 +493,7 @@ UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 
 `ExcelSheetHandler.cs:130` also reads `sheet.SheetName`, but it sits after the null guard returned, so it is safe. Leave it.
 
-- [ ] **Step 3b: Google IDs/Constants key-value pair — `ArgumentOutOfRangeException`**
+- [x] **Step 3b: Google IDs/Constants key-value pair — `ArgumentOutOfRangeException`**
 
 Two more sites the original survey missed. `GoogleSheetHandler.cs:158` (in `BuildContentOfFileIDs`) and `:322` (in `LoadIDsValues`) both do:
 
@@ -513,7 +513,7 @@ Nothing else changes — `:159` and `:323` handle `null` correctly already (`:15
 
 The Excel side does not need this: `ExcelSheetHandler` reads through `row.GetCell(col + 1)`, and NPOI's `GetCell` returns `null` for an out-of-range index rather than throwing. Verified — no Excel equivalent.
 
-- [ ] **Step 4: CHANGELOG**
+- [x] **Step 4: CHANGELOG**
 
 ```markdown
 ### Fixed
@@ -561,7 +561,7 @@ The two `ASSETS_STORE` branches (`:54`, `:56`) were left alone, as this step ins
 
 Delete `Assets/RCore.SheetX/Samples~/` entirely. `Document/Document.md` (531 lines) is the actual onboarding path. Adding a real sample is a separate piece of work with its own value; a directory that promises one and delivers a stray `.meta` is worse than nothing.
 
-- [ ] **Step 4: CHANGELOG**
+- [x] **Step 4: CHANGELOG**
 
 ```markdown
 ### Changed
