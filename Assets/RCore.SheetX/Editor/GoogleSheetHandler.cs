@@ -99,23 +99,23 @@ namespace RCore.SheetX.Editor
 				BuildContentOfFileIDs(sheet.name, values);
 
 				//Create IDs Files
-				if (m_settings.separateConstants)
+				if (m_settings.separateIDs)
 				{
 					var content = m_idsBuilderDict[sheet.name].ToString();
 					m_settings.CreateFileIDs(sheet.name, content);
 				}
+			}
 
-				if (!m_settings.separateConstants)
+			if (!m_settings.separateIDs)
+			{
+				var iDsBuilder = new StringBuilder();
+				foreach (var builder in m_idsBuilderDict)
 				{
-					var iDsBuilder = new StringBuilder();
-					foreach (var builder in m_idsBuilderDict)
-					{
-						var content = builder.Value.ToString();
-						iDsBuilder.Append(content);
-						iDsBuilder.AppendLine();
-					}
-					m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
+					var content = builder.Value.ToString();
+					iDsBuilder.Append(content);
+					iDsBuilder.AppendLine();
 				}
+				m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
 			}
 		}
 

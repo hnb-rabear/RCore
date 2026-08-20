@@ -4,6 +4,12 @@
 
 ### Fixed
 
+- `Export IDs` honoured the "Separate Constants Sheets" toggle instead of "Separate IDs
+  Sheets" in both the Excel and Google exporters. **If you had those two toggles set
+  differently, the IDs output layout changes with this release** — it now matches what
+  `Export All` already produced.
+- Google `Export IDs` wrote the merged `IDs.cs` inside the per-sheet loop, so the file was
+  rewritten once per sheet and the final content depended on sheet order.
 - Settings no longer disappear after a fresh clone or a UPM package re-resolve. Two causes:
   - `SheetXSettings.Init()` searched `Packages/` as well as `Assets/`, so on a project that
     installs SheetX via git URL it resolved the copy shipped inside the package — which lives in

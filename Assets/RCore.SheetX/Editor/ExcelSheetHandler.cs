@@ -65,7 +65,7 @@ namespace RCore.SheetX.Editor
 					BuildContentOfFileIDs(workBook, m.name);
 
 					//Create IDs Files
-					if (m_settings.separateConstants)
+					if (m_settings.separateIDs)
 					{
 						var content = m_idsBuilderDict[m.name].ToString();
 						m_settings.CreateFileIDs(m.name, content);
@@ -73,7 +73,7 @@ namespace RCore.SheetX.Editor
 				}
 			}
 
-			if (!m_settings.separateConstants)
+			if (!m_settings.separateIDs)
 			{
 				var iDsBuilder = new StringBuilder();
 				foreach (var builder in m_idsBuilderDict)
