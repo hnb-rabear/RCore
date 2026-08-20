@@ -639,7 +639,7 @@ namespace RCore.SheetX.Editor
 				for (int col = 0; col < maxCellNum; col++)
 				{
 					var cell = rowData.GetCell(col);
-					var fieldName = sheet.GetRow(0).GetCell(col).ToString();
+					var fieldName = firstRow.GetCell(col).ToCellString();
 					var fieldValue = cell.ToCellString();
 					if (cell != null && cell.IsMergedCell && !string.IsNullOrEmpty(fieldValue))
 						mergeCellValue = fieldValue;
@@ -1042,7 +1042,7 @@ namespace RCore.SheetX.Editor
 			var sheet = pWorkBook.GetSheet(pSheetName);
 			if (sheet == null || sheet.LastRowNum == 0)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {sheet.SheetName} is empty!");
+				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
 				return null;
 			}
 

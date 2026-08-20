@@ -10,6 +10,9 @@
   `Export All` already produced.
 - Google `Export IDs` wrote the merged `IDs.cs` inside the per-sheet loop, so the file was
   rewritten once per sheet and the final content depended on sheet order.
+- Localization export threw on a blank header cell (Excel) or a short row (Google Sheets).
+- Google IDs and Constants export threw on a row whose trailing value cell was blank.
+- Exporting an empty sheet threw instead of logging a warning.
 - Settings no longer disappear after a fresh clone or a UPM package re-resolve. Two causes:
   - `SheetXSettings.Init()` searched `Packages/` as well as `Assets/`, so on a project that
     installs SheetX via git URL it resolved the copy shipped inside the package — which lives in

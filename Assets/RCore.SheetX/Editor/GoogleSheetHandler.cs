@@ -155,7 +155,10 @@ namespace RCore.SheetX.Editor
 							continue;
 
 						//Value
-						var cellValue = rowData[col + 1];
+						// col steps by 3 but the loop bound is rowData.Count, so col + 1 is out of
+						// range whenever a row's trailing value cell is blank -- the API truncates
+						// each row at its last non-empty cell.
+						var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
 						if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						{
 							EditorUtility.DisplayDialog("Warning", $"Sheet {pSheetName}: Key {key} doesn't have value!", "OK");
@@ -319,7 +322,7 @@ namespace RCore.SheetX.Editor
 					string key = cellKey.ToString().Trim();
 					if (row <= 0 || string.IsNullOrEmpty(key))
 						continue;
-					var cellValue = rowData[col + 1];
+					var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
 					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						continue;
 					int value = int.Parse(cellValue.ToString().Trim());
@@ -699,8 +702,10 @@ namespace RCore.SheetX.Editor
 					continue;
 				for (int col = 0; col < maxCellNum; col++)
 				{
-					var fieldName = rowsData[0][col].ToString();
-					string fieldValue = rowData[col].ToString();
+					var fieldName = firstRow[col]?.ToString() ?? "";
+					// The Sheets API truncates each row at its last non-empty cell, so a row shorter
+					// than the header is the normal case, not malformed input.
+					string fieldValue = col < rowData.Count ? rowData[col]?.ToString() ?? "" : "";
 					bool isMergedCell = SheetXHelper.IsMergedCell(sheet, row, col);
 					if (isMergedCell && !string.IsNullOrEmpty(fieldValue))
 						mergeCellValue = fieldValue;
