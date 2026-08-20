@@ -66,3 +66,7 @@ crashlytics-build.properties
 __pycache__/
 *.pyc
 
+
+# Google OAuth token store written by SheetX (contains a live refresh_token)
+[Aa]ssets/Editor/Google.Apis.Auth.OAuth2.Responses.TokenResponse-*
+[Aa]ssets/Editor/Google.Apis.Auth.OAuth2.Responses.TokenResponse-*.meta
