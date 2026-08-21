@@ -555,7 +555,7 @@ The two `ASSETS_STORE` branches (`:54`, `:56`) were left alone, as this step ins
 
 **Consequence for Task 1:** the settings asset is now a file in the *consumer's* repository that the consumer is told to commit. That makes moving credentials to `EditorPrefs` more urgent, not less — see the storage-split note under Task 1.
 
-- [ ] **Step 3: Delete the empty samples folder**
+- [x] **Step 3: Delete the empty samples folder**
 
 `Samples~/BasicUsage/SheetXExample/` contains exactly one file: `Resources.meta`. There is no `samples` array in `package.json`, so Package Manager shows no Import button — the folder is invisible and empty at the same time.
 
@@ -579,7 +579,7 @@ Steps 1 and 2 are both off the table (dropped and already shipped), so this task
 - Modify: `Assets/RCore.SheetX/CHANGELOG.md`
 - Modify: `Assets/RCore.SheetX/Document/Document.md`
 
-- [ ] **Step 1: Bump to 1.1.0**
+- [x] **Step 1: Bump to 1.1.0**
 
 SheetX is at 1.0.2, so `docs/contributing/SEMVER_POLICY.md`'s **post-1.0** column governs: *MINOR must NOT break public API.* Two items originally broke it:
 
@@ -592,15 +592,15 @@ SheetX is at 1.0.2, so `docs/contributing/SEMVER_POLICY.md`'s **post-1.0** colum
 
 Task 1 is not a factor either way: no public symbol changes shape, and `[Obsolete]` on a field is additive.
 
-- [ ] **Step 2: Close out the CHANGELOG**
+- [x] **Step 2: Close out the CHANGELOG**
 
 Replace `[Unreleased]` with `## [1.1.0] - <ISO date>` (existing file format is `## [1.0.2] - 2026-01-02`). Order sections Security, Fixed, Changed. Add a `### Breaking` section for the Task 2 output-layout change with before/after, and name the semver exception explicitly — `SEMVER_POLICY.md` requires a migration note for breaking releases, and this one is shipping as MINOR by choice. Confirm the credential-rotation warning survived to the top — it is the one line a reader must not miss. The `34e5f5f` clone-persistence entry already sits under `[Unreleased]`; keep it under `### Fixed`.
 
-- [ ] **Step 3: Document credential setup**
+- [x] **Step 3: Document credential setup**
 
 In `Document/Document.md`, update the Google Sheets setup section: client ID and secret are entered in the Settings window and stored in `EditorPrefs`, per-machine, never committed. Each developer enters their own. State plainly that credentials must not be committed to a shared repository.
 
-- [ ] **Step 4: Follow the release checklist**
+- [x] **Step 4: Follow the release checklist**
 
 Work through `docs/contributing/RELEASE_CHECKLIST.md`. Confirm whether it applies to `Assets/RCore.SheetX` or only to RevCore packages; if only RevCore, note that and skip the RevCore-specific gates.
 
