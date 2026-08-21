@@ -51,6 +51,8 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
 - **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
 - **Google Client Secret:** Enter your Google Secret (retrieved from Credentials in Google Console).
 
+SheetX is one unified package. IDs, Constants, JSON, Localizations, and single- and multi-file exporters are always available for both Excel and Google Sheets. Old `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION` scripting defines no longer change SheetX; remove them from Player Settings.
+
 Settings are stored in `Assets/SheetX/SheetXSettings.asset`, created on first use. Commit that
 asset to keep your Excel paths and Google spreadsheet lists across clones and across your team.
 Changes are written when the SheetX window loses focus or is closed.
@@ -79,7 +81,7 @@ Key Functions:
 - **Export Localization:** Exports Localization Data, Localization Components, and Localization API.
 - **Export All:** Performs all the functions with a single click.
 
-### 4.2. Export Multiple Excel Files (PRO only)
+### 4.2. Export Multiple Excel Files
 
 ![tab_excel_2](https://github.com/user-attachments/assets/54b3632d-18f9-4053-b2fe-3feef6f71f92)
 ![tab_excel_2_edit](https://github.com/user-attachments/assets/d958d749-5410-416b-9095-a598f9fe5a82)
@@ -140,7 +142,7 @@ Enter the Google Sheet ID, then click the Download button. You can find the ID i
 https://docs.google.com/spreadsheets/d/[GOOGLE_SHEET_ID]/edit?......
 ```
 
-### 5.3. Export Multiple Google Spreadsheets (PRO only)
+### 5.3. Export Multiple Google Spreadsheets
 
 Click on **Add Google Spreadsheets**, then enter the Google Sheet ID in the popup that appears. Press **Download**, then select the sheets you want to process.
 
@@ -309,7 +311,7 @@ To define an attribute object type, the following rules should be followed:
 
 **Download and import the [Example](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)**
 
-First, open the excel file located at `/Assets/SheetX/Samples~/BasicUsage/Import/Excel/Example.xlsx` (Note: `Samples~` is a hidden folder). This is a sample Excel file identifying various types of data such as IDs, Constants, and Data Tables.
+After importing the example package, open the excel file located at `Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx`. This is a sample Excel file identifying various types of data such as IDs, Constants, and Data Tables.
 
 ![Excel File](https://github.com/user-attachments/assets/2b4c8fe3-3c58-42bc-a85b-dea33c8122cf)
 
