@@ -63,5 +63,22 @@ namespace RCore.SheetX.Tests
 				settings.SaveToDisk();
 			}
 		}
+
+		[Test]
+		public void no_legacy_flavor_defines_exist_in_editor_scripts()
+		{
+			var editorScripts = Directory.GetFiles("Assets/RCore.SheetX/Editor", "*.cs", SearchOption.AllDirectories);
+			var legacyDefines = new[] { "SX_LOCALIZATION", "SX_LITE", "SX_NO_LOCALIZATION" };
+
+			foreach (var file in editorScripts)
+			{
+				string content = File.ReadAllText(file);
+				foreach (var define in legacyDefines)
+				{
+					Assert.IsFalse(content.Contains(define),
+						$"File '{file}' still contains legacy define '{define}'. SheetX should be single-flavor.");
+				}
+			}
+		}
 	}
 }

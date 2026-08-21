@@ -32,11 +32,6 @@ namespace RCore.SheetX.Editor
 
 		public void OnGUI()
 		{
-#if SX_LITE
-			PageSingleFile();
-#elif SX_LOCALIZATION
-			PageMultiFiles();
-#else
 			EditorHelper.DrawLine();
 			var tab = EditorHelper.Tabs($"{nameof(GoogleSheetXWindow)}", "Export Single File", "Export Multi Files");
 			switch (tab)
@@ -51,10 +46,8 @@ namespace RCore.SheetX.Editor
 					EditorGUILayout.EndVertical();
 					break;
 			}
-#endif
 		}
 
-#if !SX_LOCALIZATION
 		private void PageSingleFile()
 		{
 			EditorGUILayout.BeginVertical("box");
@@ -134,19 +127,15 @@ namespace RCore.SheetX.Editor
 			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_googleSheetHandler.ExportJson();
-#if !SX_NO_LOCALIZATION
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 			{
 				m_googleSheetHandler.ExportLocalizations();
 				CompilationPipeline.RequestScriptCompilation();
 			}
-#endif
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndHorizontal();
 		}
-#endif
 
-#if !SX_LITE
 		private void PageMultiFiles()
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -256,7 +245,7 @@ namespace RCore.SheetX.Editor
 
 			return table;
 		}
-#endif
+
 		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
 		{
 			bool selectAll = sheets.Count > 0;

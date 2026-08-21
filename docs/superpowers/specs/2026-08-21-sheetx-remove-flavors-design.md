@@ -30,7 +30,7 @@ No asset migration. Existing `SheetXSettings.asset` field names and paths stay u
 
 ## Validation
 
-1. Search `Assets/RCore.SheetX` for all three symbols. Expected: zero results.
+1. Search `Assets/RCore.SheetX/Editor` for all three symbols. Expected: zero results. Changelogs may retain symbol names to document removal.
 2. Unity EditMode: Run All. Fix failures caused by change.
 3. Manual SheetX acceptance:
    - Open `SheetX` window.

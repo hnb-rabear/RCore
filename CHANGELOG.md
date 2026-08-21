@@ -4,6 +4,10 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Changed
+
+- `RCore.SheetX`: Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION` from editor scripts to unify into a single-flavor exporter.
+
 ### Added
 
 - `RevCore.JObjectDB.Reset(string key)` — resets a single collection's data to its type defaults while keeping the key registered in the index (companion to `Delete`/`DeleteAll`). Surfaced in the Editor via a per-collection "Reset" button on the `JObjectDBManager` inspector.

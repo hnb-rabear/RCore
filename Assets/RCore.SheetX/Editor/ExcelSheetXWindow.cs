@@ -36,11 +36,6 @@ namespace RCore.SheetX.Editor
 
 		public void OnGUI()
 		{
-#if SX_LITE
-			PageSingleFile();
-#elif SX_LOCALIZATION
-			PageMultiFiles();
-#else
 			EditorHelper.DrawLine();
 			var tab = EditorHelper.Tabs($"{nameof(ExcelSheetXWindow)}", "Export Single File", "Export Multi Files");
 			switch (tab)
@@ -55,7 +50,6 @@ namespace RCore.SheetX.Editor
 					GUILayout.EndVertical();
 					break;
 			}
-#endif
 		}
 
 		private bool ValidateExcelPath(string path, out string status)
@@ -75,7 +69,6 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
-#if !SX_LOCALIZATION
 		private void PageSingleFile()
 		{
 			GUILayout.BeginHorizontal("box");
@@ -175,19 +168,15 @@ namespace RCore.SheetX.Editor
 			}
 			if (EditorHelper.Button("Export Json", pHeight: 30))
 				m_excelSheetHandler.ExportJson();
-#if !SX_NO_LOCALIZATION
 			if (EditorHelper.Button("Export Localizations", pHeight: 30))
 			{
 				m_excelSheetHandler.ExportLocalizations();
 				CompilationPipeline.RequestScriptCompilation();
 			}
-#endif
 			EditorGUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 		}
-#endif
 
-#if !SX_LITE
 		private void PageMultiFiles()
 		{
 			GUILayout.BeginHorizontal();
@@ -325,7 +314,7 @@ namespace RCore.SheetX.Editor
 
 			return table;
 		}
-#endif
+
 		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
 		{
 			bool selectAll = sheets.Count > 0;

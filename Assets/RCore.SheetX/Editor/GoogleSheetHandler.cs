@@ -378,7 +378,6 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public void ExportConstants()
 		{
-#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -434,12 +433,10 @@ namespace RCore.SheetX.Editor
 				}
 				m_settings.CreateFileConstants(builder.ToString(), "Constants");
 			}
-#endif
 		}
 
 		private void LoadSheetConstantsData(string pSheetName, IList<IList<object>> rowsData)
 		{
-#if !SX_LOCALIZATION
 			if (rowsData == null || rowsData.Count == 0)
 			{
 				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
@@ -473,12 +470,10 @@ namespace RCore.SheetX.Editor
 			}
 			constants.Sort();
 			BuildContentOfFileConstants(constants, pSheetName);
-#endif
 		}
 
 		private void BuildContentOfFileConstants(List<ConstantBuilder> constants, string constantsSheet)
 		{
-#if !SX_LOCALIZATION
 			var constantsSB = new StringBuilder("");
 			for (int i = 0; i < constants.Count; i++)
 			{
@@ -585,7 +580,6 @@ namespace RCore.SheetX.Editor
 			else
 				m_constantsBuilderDict.Add(constantsSheet, new StringBuilder());
 			m_constantsBuilderDict[constantsSheet].Append(constantsSB);
-#endif
 		}
 
 #endregion
@@ -597,7 +591,6 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public void ExportLocalizations()
 		{
-#if !SX_NO_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
@@ -678,7 +671,6 @@ namespace RCore.SheetX.Editor
 			}
 
 			CreateLocalizationsManagerFile();
-#endif
 		}
 
 		private void LoadSheetLocalizationData(Google.Apis.Sheets.v4.Data.Sheet sheet, IList<IList<object>> rowsData, string pSheetName)
@@ -778,7 +770,6 @@ namespace RCore.SheetX.Editor
 
 		private void CreateLocalizationFile(List<string> pIdsString, Dictionary<string, List<string>> pLanguageTextDict, string pFileName)
 		{
-#if !SX_NO_LOCALIZATION
 			if (pLanguageTextDict.Count == 0 || pLanguageTextDict.Count == 0)
 				return;
 
@@ -887,12 +878,10 @@ namespace RCore.SheetX.Editor
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}Text.cs", fileContent);
 			UnityEngine.Debug.Log($"Exported {pFileName}Text.cs!");
-#endif
 		}
 
 		private void CreateLocalizationsManagerFile()
 		{
-#if !SX_NO_LOCALIZATION
 			//Create characters sets
 			if (m_langCharSets != null && m_langCharSets.Count > 0)
 			{
@@ -1024,7 +1013,6 @@ namespace RCore.SheetX.Editor
 				SheetXHelper.WriteFile(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent);
 				UnityEngine.Debug.Log($"Exported LocalizationsManager.cs!");
 			}
-#endif
 		}
 
 #endregion
@@ -1033,7 +1021,6 @@ namespace RCore.SheetX.Editor
 
 		public void ExportJson()
 		{
-#if !SX_LOCALIZATION
 			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
 			{
 				UnityEngine.Debug.LogError("Please setup the Json Output Folder!");
@@ -1101,23 +1088,18 @@ namespace RCore.SheetX.Editor
 				else
 					UnityEngine.Debug.Log($"Exported Json data to {mergedFileName}.txt.");
 			}
-#endif
 		}
 
 		private string ConvertSheetToJson(Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
 		{
-#if !SX_LOCALIZATION
 			var fieldValueTypes = SheetXHelper.GetFieldValueTypes(sheet, pValues);
 			if (fieldValueTypes == null)
 				return "{}";
 			return ConvertSheetToJson(sheet, pValues, pSheetName, pFileName, fieldValueTypes, pEncrypt, pWriteFile);
-#endif
-			return "{}";
 		}
 
 		private string ConvertSheetToJson(Google.Apis.Sheets.v4.Data.Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pOutputFile, List<FieldValueType> pFieldValueTypes, bool pEncrypt, bool pAutoWriteFile)
 		{
-#if !SX_LOCALIZATION
 			var persistentFields = m_settings.GetPersistentFields();
 
 			if (pValues == null || pValues.Count == 0)
@@ -1662,8 +1644,6 @@ namespace RCore.SheetX.Editor
 					UnityEngine.Debug.Log($"Exported Json data to {pOutputFile}.txt.");
 			}
 			return finalContent;
-#endif
-			return "{}";
 		}
 
 #endregion
@@ -1678,7 +1658,6 @@ namespace RCore.SheetX.Editor
 
 		public void ExportAllFiles()
 		{
-#if !SX_LITE
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
@@ -1792,7 +1771,6 @@ namespace RCore.SheetX.Editor
 						if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
 							m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
 					}
-#if !SX_NO_LOCALIZATION
 					//Load and write localizations
 					if (sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
 					{
@@ -1805,7 +1783,6 @@ namespace RCore.SheetX.Editor
 							m_localizedSheetsExported.Add(sheet.name);
 						}
 					}
-#endif
 				}
 			}
 
@@ -1840,8 +1817,6 @@ namespace RCore.SheetX.Editor
 				}
 				m_settings.CreateFileConstants(builder.ToString(), "Constants");
 			}
-
-#if !SX_NO_LOCALIZATION
 			//Create file contain all Localizations
 			if (!m_settings.separateLocalizations)
 			{
@@ -1861,13 +1836,11 @@ namespace RCore.SheetX.Editor
 				CreateLocalizationFile(localizationBuilder.idsString, localizationBuilder.languageTextDict, "Localization");
 				m_localizedSheetsExported.Add("Localization");
 			}
-#endif
 
 			//Create localization manager file
 			CreateLocalizationsManagerFile();
 
 			Debug.Log("Done!");
-#endif
 		}
 
 		public static string GetColumnLetter(int columnNumber)

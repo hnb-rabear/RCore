@@ -8,17 +8,8 @@ namespace RCore.SheetX.Editor
 	/// </summary>
 	public class SheetXWindow : EditorWindow
 	{
-#if !SX_LOCALIZATION
 		private const string NAME = "SheetX: Sheets Exporter";
-#if !SX_LITE
 		private const string MENU = "SheetX";
-#else
-		private const string MENU = "SheetX Lite";
-#endif
-#else
-		private const string NAME = "LocalizationX: Localization Exporter";
-		private const string MENU = "LocalizationX";
-#endif
 
 		private Vector2 m_scrollPosition;
 

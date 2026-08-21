@@ -18,11 +18,7 @@ namespace RCore.SheetX.Editor
 	/// </summary>
 	public static class SheetXConstants
 	{
-#if !SX_LOCALIZATION
 		public const string APPLICATION_NAME = "SheetX - Sheets Exporter";
-#else
-		public const string APPLICATION_NAME = "LocalizationX - Localization Exporter";
-#endif
 		public const string CONSTANTS_CS_TEMPLATE = "ConstantsTemplate";
 		public const string IDS_CS_TEMPLATE = "IDsTemplate";
 		public const string LOCALIZATION_MANAGER_TEMPLATE = "LocalizationsManagerTemplate";
@@ -50,9 +46,7 @@ namespace RCore.SheetX.Editor
 	/// </summary>
 	public class SheetXSettings : ScriptableObject
 	{
-#if ASSETS_STORE && SX_LOCALIZATION
-		private const string FILE_PATH = "Assets/LocalizationX/Editor/SheetXSettings.asset";
-#elif ASSETS_STORE && !SX_LOCALIZATION
+#if ASSETS_STORE
 		private const string FILE_PATH = "Assets/SheetX/Editor/SheetXSettings.asset";
 #else
 		// Must live in the consuming project's Assets/, never inside the package. When SheetX is

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Removed
+
+- Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION`. SheetX is now a unified single-flavor exporter (IDs, Constants, JSON, Localizations, Single & Multi-file, for both Excel and Google Sheets). `ASSETS_STORE` is unaffected — it still gates only the settings asset file path.
+
 ## [1.1.0] - 2026-08-21
 
 ### Breaking
