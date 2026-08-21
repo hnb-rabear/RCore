@@ -1,8 +1,8 @@
 {
   "name": "com.rabear.rcore.sheetx",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "displayName": "SheetX - Sheets Exporter",
-  "description": "This tool simplifies database design and management for game developers and designers, allowing easy modification of game statistics without needing developer help.\nAs game projects grow, so does the need for efficient data table, constant, and ID management. This tool centralizes the process, enabling easy search, modification, and updates.\nOriginally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.",
+  "description": "Editor-only Excel and Google Sheets exporter for Unity data tables, IDs, constants, JSON, and localizations. Use SheetX interactively through its Settings and exporter windows, or programmatically through SheetXExporter with caller-owned output and structured diagnostics.\nDeterministic, culture-invariant generated data keeps source spreadsheets reproducible across machines. Google OAuth credentials stay in EditorPrefs and authorization tokens stay under Library/SheetX, outside assets and version control.",
   "unity": "2022.3",
   "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.SheetX/CHANGELOG.md",
   "author": {

@@ -126,9 +126,7 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Google Spreadshe
 They are saved to `EditorPrefs` on this machine only, not to the settings asset. Each developer on
 the team repeats this step once with their own credentials.
 
-The OAuth token Google writes after you authorize is stored under `Assets/Editor/`. Add
-`Assets/Editor/Google.Apis.Auth.OAuth2.Responses.TokenResponse-*` to your `.gitignore` — that file
-holds a refresh token, which is an authorization already granted to your Google account.
+The OAuth token Google writes after you authorize is stored in `Library/SheetX`, outside Unity's asset pipeline and version control. Do not move token files under `Assets/`. Legacy token-cache filenames under `Assets/Editor` remain ignored by wildcard as a safeguard for old projects.
 
 ![tab_settings_2](https://github.com/user-attachments/assets/4140a3e8-05df-4bbe-a3b8-a2fb0576f1ee)
 
@@ -149,9 +147,41 @@ Click on **Add Google Spreadsheets**, then enter the Google Sheet ID in the popu
 ![tab_google_2](https://github.com/user-attachments/assets/f2ba3d93-7785-42b3-b33b-13b2687f699f)
 ![tab_google_2_edit](https://github.com/user-attachments/assets/3386dda3-a2ba-4f88-87d0-f25e43ebfa56)
 
-## 6. Rules in Spreadsheet
+## 6. Public Export API (for External Tooling)
 
-### 6.1. IDs
+`RCore.SheetX.Editor.SheetXExporter` runs an export without the Settings window, the `.sx` asset, or any `EditorPrefs` state. Use it when another Editor tool needs to trigger a SheetX export programmatically — for example a build pipeline or a project-specific config layer that owns its own settings UI.
+
+```cs
+using RCore.SheetX.Editor;
+
+var request = new SheetXExportRequest
+{
+    SpreadsheetPath = "Assets/Data/Game.xlsx",   // .xlsx path, or a Google spreadsheet ID for ExportGoogle
+    Sheets = null,                                 // null = every sheet; empty list = none
+    ConstantsOutputPath = "Assets/Generated/Scripts",
+    JsonOutputPath = "Assets/Generated/Json",
+    LocalizationOutputPath = "Assets/Generated/Localization",
+    Namespace = "MyGame.Data",
+};
+
+SheetXExportResult result = SheetXExporter.ExportExcel(request, myOutput);
+// or: SheetXExporter.ExportGoogle(request, myOutput) — also needs GoogleClientId/GoogleClientSecret
+
+if (!result.Success)
+    foreach (var error in result.Errors) Debug.LogError(error);
+```
+
+- **`ISheetXOutput.Write(relativePath, content)`** receives every finished artifact exactly once. The exporter never calls `EditorUtility.DisplayDialog`, `Debug.Log`, `File.WriteAllText`, or `AssetDatabase` — writing to disk, importing, or showing UI is entirely the caller's choice. An exception thrown from `Write` is caught and reported in `SheetXExportResult.Errors`; that path can be retried by calling the exporter again.
+- **`Sheets == null` exports every sheet in the workbook (or every sheet in the Google spreadsheet). An empty list exports none** — for Google, this also skips OAuth, the credential check, and any network call.
+- Nothing the exporter produces is thrown as an exception. Every problem the exporter can attribute — invalid JSON, a non-integer or conflicting ID, a missing template, a bad spreadsheet path — comes back as a warning or error on `SheetXExportResult`, never a dialog or a log line.
+- `SheetXExportRequest.GoogleClientId` / `GoogleClientSecret` are read only for that one call; the exporter does not read or write `EditorPrefs`, and does not touch the project's `SheetXSettings.asset`.
+- `SheetXExportResult.Files` lists every artifact written, tagged with a `SheetXExportFileType` (`Ids`, `Constants`, `Json`, `Localization`, `CharacterSet`, `LocalizationManager`) so a caller can route each one without parsing its path.
+
+This API is separate from, and does not replace, the Settings-window-driven exporters in sections 4 and 5 above — those remain the way to configure and run exports interactively for a single project.
+
+## 7. Rules in Spreadsheet
+
+### 7.1. IDs
 
 | Hero   |     |         | Building      |     |         | Pet      |     |         | Gender[enum]      |     |
 | ------ | --- | ------- | ------------- | --- | ------- | -------- | --- | ------- | ----------------- | --- |
@@ -181,7 +211,7 @@ ID Sheets, named with the suffix `IDs` are used to compile all IDs into Integer 
 | ----- | --- | ------- |
 ```
 
-### 6.2. Constants
+### 7.2. Constants
 
 | Name                  | Type        | Value              | Comment               |
 | --------------------- | ----------- | ------------------ | --------------------- |
@@ -215,7 +245,7 @@ Constants Sheets, named with the suffix `Constants` compile project constants. T
 | ---- | ---- | ----- | ------- |
 ```
 
-### 6.3. Localization
+### 7.3. Localization
 
 | idstring     | relativeId | english                   | spanish                        |
 | ------------ | ---------- | ------------------------- | ------------------------------ |
@@ -250,7 +280,7 @@ Localization Sheets are named with the prefix `Localization` and follow these ru
 | -------- | ---------- | ------- | ------- | ----- | ---- |
 ```
 
-### 6.4. Data Table - JSON Data
+### 7.4. Data Table - JSON Data
 
 #### Basic Data Type: Boolean, Number, String
 
@@ -307,7 +337,7 @@ To define an attribute object type, the following rules should be followed:
     Example 2: attribute1, value1[], increase1[], value1[], max1[].
     ```
 
-## 7. How to Integrate
+## 8. How to Integrate
 
 **Download and import the [Example](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)**
 
@@ -326,7 +356,7 @@ Example for exporting multiple files
 [**Example 3**](https://docs.google.com/spreadsheets/d/1i2CmDGYpAYuX_8vBUbHXBAhuWPKHi_gd52uwzsegLdY/edit?usp=drive_link)
 [**Example 4**](https://docs.google.com/spreadsheets/d/1kq0KaQxQ129f1OABm62x6GtfOKTg_3t4M8gODGHzSu8/edit?usp=drive_link)
 
-### 7.1. Create Folders for Exporting Files
+### 8.1. Create Folders for Exporting Files
 
 Create 3 directories to store the files that will be exported:
 
@@ -347,7 +377,7 @@ For this example I will create 3 folders:
 - `Assets\SheetXExample\DataConfig`: for Json data
 - `Assets\SheetXExample\Resources\Localizations`: for Localization data
 
-### 7.2. Scripting
+### 8.2. Scripting
 
 #### Create a ScriptableObject as Storage for Static Database
 
@@ -451,7 +481,7 @@ private void LoadData()
 
 ![Example Data Collection](https://github.com/user-attachments/assets/23e9aec3-cfbd-416c-8459-66cbb0e2fb58)
 
-### 7.3. Localization Integration
+### 8.3. Localization Integration
 
 - Initialization
 

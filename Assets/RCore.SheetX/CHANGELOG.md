@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-21
+
+### Added
+
+- `SheetXExporter` / `ISheetXOutput` / `SheetXExportRequest` / `SheetXExportResult` — public editor API for running an Excel or Google export without the Settings window, the `.sx` asset, or any `EditorPrefs` state. See `Document/Document.md` section 6. Every artifact travels through the caller's `ISheetXOutput.Write(relativePath, content)` exactly once; the exporter never calls `EditorUtility.DisplayDialog`, `Debug.Log`, `File.WriteAllText`, or `AssetDatabase`. `Sheets == null` exports every sheet, an empty list exports none (Google additionally skips OAuth and any network call).
+
+### Fixed
+
+- Culture-invariant numeric parsing and generated numeric text (previously used the current culture, so `"1,5"` could parse as a number under `de-DE`).
+- Deterministic longest-key-first, ordinal ID substitution in generated content.
+- Empty duplicate-name JSON columns now emit a valid `[]` instead of malformed JSON.
+- One workbook opened per Excel export instead of one per sheet.
+- A duplicate ID with a conflicting value now reports an error and keeps the first definition; it no longer appends a second `public const int` for the same key, which produced C# that failed to compile. Applies to both the Excel and Google handlers.
+- An `IDs` sheet containing only a header row no longer produces an artifact, in both the Excel and Google handlers.
+- Duplicate sheet names in a Google export request no longer produce duplicate artifacts for the same sheet.
+- The `encryptJson` default-key warning is preserved when a caller omits `EncryptionKey` on the public request.
+
+### Security
+
+- The Google OAuth token cache moved from `Assets/Editor/` to `Library/SheetX`, outside Unity's asset pipeline and outside version control. `SheetXHelper.GetSaveDirectory()` is deprecated in favor of `GetTokenStoreDirectory()`.
+- Google OAuth credentials are now keyed in `EditorPrefs` by project path instead of `Application.identifier`, which changes per build flavor and could silently split one team's credentials across keys. Existing values under the old key migrate on first read.
+
 ## [1.2.0] - 2026-08-21
 
 ### Removed
