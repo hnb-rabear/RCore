@@ -20,6 +20,8 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- `RCore.SheetX`: `SheetXExporter.ExportExcel` owns one named, read-only `MemoryStream` for the full export, so NPOI's lazy workbook reads no longer depend on garbage collection keeping the source stream alive.
+- `RCore.SheetX`: Generated localization C# is no longer tagged as localization data. `SheetXExportFileType` gains `LocalizationConstants` (`{file}.cs`) and `LocalizationComponent` (`{file}Text.cs`); language `.txt` data keeps `Localization`. Excel and Google handlers match; the regression test covers Excel only (Google needs OAuth and network).
 - `RCore.SheetX`: Export failures (invalid JSON, duplicate/non-integer IDs, missing templates) no longer open modal dialogs or throw on the public path — each becomes a warning or error in the returned result.
 - `RCore.SheetX`: Culture-invariant numeric parsing and generated numeric text, longest-key-first ordinal ID replacement, empty duplicate-name columns emitting `[]`, one workbook per Excel export, one deterministic Google aggregate write after all selected sheets, and the Google token cache moved from `Assets/Editor` to `Library/SheetX`.
 - `RCore.SheetX`: Google OAuth credentials now use a project-path-scoped `EditorPrefs` key instead of `Application.identifier`, which changes per build flavor; existing values migrate on first read.

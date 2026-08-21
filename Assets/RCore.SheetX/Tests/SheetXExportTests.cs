@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NPOI.XSSF.UserModel;
 using NUnit.Framework;
 using RCore.SheetX.Editor;
@@ -74,6 +75,82 @@ namespace RCore.SheetX.Tests
 
 				Assert.That(result.Success, Is.False);
 				Assert.That(result.Errors, Has.Exactly(1).Contains("Sheet: Data Field: Payload Row: 1"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void export_excel_reads_every_sheet_from_one_opened_workbook()
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			CreateDataSheet(workbook, "DataA", "dataa");
+			CreateDataSheet(workbook, "DataB", "datab");
+			CreateDataSheet(workbook, "DataC", "datac");
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+
+			try
+			{
+				var output = new MemoryOutput();
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+				}, output);
+
+				Assert.That(result.Success, Is.True);
+				Assert.That(result.Errors, Is.Empty);
+				Assert.That(output.Writes["Generated/DataA.txt"], Is.EqualTo("[{\"id\":\"dataa\"}]"));
+				Assert.That(output.Writes["Generated/DataB.txt"], Is.EqualTo("[{\"id\":\"datab\"}]"));
+				Assert.That(output.Writes["Generated/DataC.txt"], Is.EqualTo("[{\"id\":\"datac\"}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void export_excel_tags_localization_code_apart_from_localization_data()
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			var sheet = workbook.CreateSheet("LocalizationExample");
+			var header = sheet.CreateRow(0);
+			header.CreateCell(0).SetCellValue("idString");
+			header.CreateCell(1).SetCellValue("relativeId");
+			header.CreateCell(2).SetCellValue("english");
+			header.CreateCell(3).SetCellValue("spanish");
+			var row = sheet.CreateRow(1);
+			row.CreateCell(0).SetCellValue("greeting");
+			row.CreateCell(1).SetCellValue("");
+			row.CreateCell(2).SetCellValue("Hello");
+			row.CreateCell(3).SetCellValue("Hola");
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+
+			try
+			{
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					ConstantsOutputPath = "Generated",
+					LocalizationOutputPath = "Generated",
+					SeparateLocalizations = true,
+				}, new MemoryOutput());
+				var byType = result.Files.GroupBy(file => file.Type).ToDictionary(group => group.Key, group => group.ToList());
+
+				Assert.That(result.Success, Is.True);
+				Assert.That(byType[SheetXExportFileType.Localization], Has.Count.EqualTo(2));
+				Assert.That(byType[SheetXExportFileType.LocalizationConstants], Has.Count.EqualTo(1));
+				Assert.That(byType[SheetXExportFileType.LocalizationComponent], Has.Count.EqualTo(1));
+				Assert.That(result.Files.Where(file => file.RelativePath.EndsWith(".cs")),
+					Has.None.Matches<SheetXExportFile>(file => file.Type == SheetXExportFileType.Localization),
+					"A generated .cs artifact is still tagged as localization data.");
 			}
 			finally
 			{
@@ -253,6 +330,13 @@ namespace RCore.SheetX.Tests
 		{
 			row.CreateCell(0).SetCellValue(key);
 			row.CreateCell(1).SetCellValue(value);
+		}
+
+		private static void CreateDataSheet(XSSFWorkbook workbook, string sheetName, string value)
+		{
+			var sheet = workbook.CreateSheet(sheetName);
+			sheet.CreateRow(0).CreateCell(0).SetCellValue("id");
+			sheet.CreateRow(1).CreateCell(0).SetCellValue(value);
 		}
 
 		private static string CreateWorkbook(string sheetName, string[] headers, string[] values)

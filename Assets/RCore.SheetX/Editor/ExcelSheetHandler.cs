@@ -834,7 +834,7 @@ namespace RCore.SheetX.Editor
 			fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 			m_writer.Write(m_settings.constantsOutputFolder, $"{pFileName}.cs", fileContent,
-				SheetXExportFileType.Localization, $"Exported {pFileName}.cs!");
+				SheetXExportFileType.LocalizationConstants, $"Exported {pFileName}.cs!");
 
 			//Write file localized text component
 			if (!m_writer.TryLoadTemplate(SheetXConstants.LOCALIZATION_TEXT_TEMPLATE, out fileContent))
@@ -842,7 +842,7 @@ namespace RCore.SheetX.Editor
 			fileContent = fileContent.Replace("LOCALIZATION_CLASS_NAME", pFileName);
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 			m_writer.Write(m_settings.constantsOutputFolder, $"{pFileName}Text.cs", fileContent,
-				SheetXExportFileType.Localization, $"Exported {pFileName}Text.cs!");
+				SheetXExportFileType.LocalizationComponent, $"Exported {pFileName}Text.cs!");
 		}
 
 		private void CreateLocalizationsManagerFile()

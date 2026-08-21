@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `SheetXExporter.ExportExcel` now owns one named, read-only `MemoryStream` through the complete export. NPOI can read workbook parts lazily, so its source stream no longer depends on garbage collection or closes before later selected sheets are read.
+- Per-sheet localization artifacts now have distinct types: language `.txt` data remains `Localization`, `{file}.cs` is `LocalizationConstants`, and `{file}Text.cs` is `LocalizationComponent`. Excel and Google handlers route identically; regression coverage runs on Excel only because Google export requires OAuth and network access.
+
 ## [1.3.0] - 2026-08-21
 
 ### Added

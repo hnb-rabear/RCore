@@ -31,6 +31,12 @@ namespace RCore.SheetX.Editor
 
 		/// <summary>The generated localization manager C# file.</summary>
 		LocalizationManager,
+
+		/// <summary>Generated C# constants for one localization sheet's keys.</summary>
+		LocalizationConstants,
+
+		/// <summary>The generated localized-text component C# file for one localization sheet.</summary>
+		LocalizationComponent,
 	}
 
 	/// <summary>
@@ -228,10 +234,12 @@ namespace RCore.SheetX.Editor
 
 			try
 			{
-				// Memory-backed: the file handle is gone before NPOI's lazy reads start, and IWorkbook is
-				// not IDisposable in this NPOI build, so there is nothing left to close.
-				var workbook = NPOI.SS.UserModel.WorkbookFactory.Create(
-					new System.IO.MemoryStream(System.IO.File.ReadAllBytes(request.SpreadsheetPath), false));
+				// The source stream must outlive every NPOI read: WorkbookFactory reads parts lazily, so a
+				// stream closed before ExportAll finishes throws mid-export. Memory-backed rather than a
+				// FileStream so a spreadsheet edited during a long export cannot change under the reader.
+				using var stream = new System.IO.MemoryStream(
+					System.IO.File.ReadAllBytes(request.SpreadsheetPath), writable: false);
+				var workbook = NPOI.SS.UserModel.WorkbookFactory.Create(stream);
 				settings.excelSheetsPath = new ExcelSheetsPath
 				{
 					path = request.SpreadsheetPath,

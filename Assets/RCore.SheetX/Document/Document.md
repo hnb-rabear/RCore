@@ -175,7 +175,7 @@ if (!result.Success)
 - **`Sheets == null` exports every sheet in the workbook (or every sheet in the Google spreadsheet). An empty list exports none** — for Google, this also skips OAuth, the credential check, and any network call.
 - Nothing the exporter produces is thrown as an exception. Every problem the exporter can attribute — invalid JSON, a non-integer or conflicting ID, a missing template, a bad spreadsheet path — comes back as a warning or error on `SheetXExportResult`, never a dialog or a log line.
 - `SheetXExportRequest.GoogleClientId` / `GoogleClientSecret` are read only for that one call; the exporter does not read or write `EditorPrefs`, and does not touch the project's `SheetXSettings.asset`.
-- `SheetXExportResult.Files` lists every artifact written, tagged with a `SheetXExportFileType` (`Ids`, `Constants`, `Json`, `Localization`, `CharacterSet`, `LocalizationManager`) so a caller can route each one without parsing its path.
+- `SheetXExportResult.Files` lists every artifact written, tagged with a `SheetXExportFileType` (`Ids`, `Constants`, `Json`, `Localization`, `CharacterSet`, `LocalizationManager`, `LocalizationConstants`, `LocalizationComponent`) so a caller can route each one without parsing its path. `Localization` is per-language data only; the generated C# for one localization sheet is `LocalizationConstants` (its key constants) and `LocalizationComponent` (its text component).
 
 This API is separate from, and does not replace, the Settings-window-driven exporters in sections 4 and 5 above — those remain the way to configure and run exports interactively for a single project.
 
