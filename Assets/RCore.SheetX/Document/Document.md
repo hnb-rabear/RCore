@@ -56,6 +56,12 @@ Settings are stored in `Assets/SheetX/SheetXSettings.asset`, created on first us
 asset to keep your Excel paths and Google spreadsheet lists across clones and across your team.
 Changes are written when the SheetX window loses focus or is closed.
 
+**The two Google credentials are the exception, and are deliberately not stored in that asset.**
+They go to `EditorPrefs`, which is per-machine and never enters version control, so each developer
+enters their own once. Do not put them in a shared repository, a shared `.sx` file, or any other
+committed file: a credential in a git repository is a published credential, and obfuscating it
+does not change that. Saved `.sx` settings files contain no credentials.
+
 ## 4. Excel Sheets Exporter
 
 ### 4.1. Export Single Excel File
@@ -115,6 +121,13 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Google Spreadshe
 1. On the Google Sheets API screen, go to the **Credentials** tab, you will find the new Client ID.
 2. Click on the Edit button to find the Client ID and Client Secret.
 3. Copy the **Client ID** and **Client Secret**, and paste them into the corresponding settings in the **Sheets Exporter Settings** Window
+
+They are saved to `EditorPrefs` on this machine only, not to the settings asset. Each developer on
+the team repeats this step once with their own credentials.
+
+The OAuth token Google writes after you authorize is stored under `Assets/Editor/`. Add
+`Assets/Editor/Google.Apis.Auth.OAuth2.Responses.TokenResponse-*` to your `.gitignore` — that file
+holds a refresh token, which is an authorization already granted to your Google account.
 
 ![tab_settings_2](https://github.com/user-attachments/assets/4140a3e8-05df-4bbe-a3b8-a2fb0576f1ee)
 

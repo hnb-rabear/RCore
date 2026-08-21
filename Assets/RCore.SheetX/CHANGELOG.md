@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-21
+
+### Breaking
+
+- **`Export IDs` output layout changes if `Separate IDs Sheets` and `Separate Constants Sheets`
+  were set differently.** Both exporters read the wrong toggle, so `Export IDs` was laying out
+  its output by the Constants setting. It now honours `Separate IDs Sheets`, matching what
+  `Export All` already produced from the same settings.
+
+  | `Separate IDs Sheets` | `Separate Constants Sheets` | Before | After |
+  | --- | --- | --- | --- |
+  | false | true | one file per ID sheet | one merged `IDs.cs` |
+  | true | false | one merged `IDs.cs` | one file per ID sheet |
+
+  The other two combinations are unaffected. **Migration:** re-run `Export IDs` and commit the
+  regenerated files. If you preferred the old layout, flip `Separate IDs Sheets` to what
+  `Separate Constants Sheets` was.
+
+  *Semver note.* `docs/contributing/SEMVER_POLICY.md` classes an observable-behavior change that
+  callers reasonably depend on as breaking, which would call for 2.0.0. This ships as MINOR by
+  deliberate exception: no public symbol changes shape, and the alternative is a MAJOR bump for
+  every consumer over a bug fix that makes two buttons agree with each other.
+
 ### Security
+
+**Rotate your Google OAuth client secret when convenient.** If your `SheetXSettings.asset` was
+ever committed with credentials in it, those credentials are in your git history, and the
+obfuscation key is public. Blanking the asset does not un-publish them; only rotating in Google
+Cloud Console does.
 
 - Google OAuth client ID and secret now live in `EditorPrefs`, per machine, instead of as
   serialized fields on the settings asset. A serialized field on a committed asset is a file
@@ -24,10 +52,6 @@
 
 ### Fixed
 
-- `Export IDs` honoured the "Separate Constants Sheets" toggle instead of "Separate IDs
-  Sheets" in both the Excel and Google exporters. **If you had those two toggles set
-  differently, the IDs output layout changes with this release** — it now matches what
-  `Export All` already produced.
 - Google `Export IDs` wrote the merged `IDs.cs` inside the per-sheet loop, so the file was
   rewritten once per sheet and the final content depended on sheet order.
 - Localization export threw on a blank header cell (Excel) or a short row (Google Sheets).
@@ -40,6 +64,12 @@
     is now scoped to `Assets/`, and the default path is `Assets/SheetX/SheetXSettings.asset`.
   - Excel paths, Google sheet lists and sheet selections were mutated in memory but never written
     back to the asset. `SheetXWindow` now flushes on focus loss and on close.
+
+### Changed
+
+- Removed the empty `Samples~` folder — it contained one stray `.meta` file and no `samples`
+  entry in `package.json`, so Package Manager never offered it. `Document/Document.md` is the
+  onboarding path.
 
 ## [1.0.2] - 2026-01-02
 - Improved documentation
