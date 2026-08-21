@@ -143,7 +143,7 @@ Everything the asset holds after this task is safe to commit. That is the point 
 
 Keep the serialized fields in place — removing a serialized field from a `ScriptableObject` is a breaking change under `docs/contributing/SEMVER_POLICY.md`. They become a **one-time migration source only**, then get blanked.
 
-- [ ] **Step 1: Add the EditorPrefs-backed store**
+- [x] **Step 1: Add the EditorPrefs-backed store**
 
 In `SheetXSettings.cs`, add a project-scoped key prefix. `EditorPrefs` is machine-global, so the key must include a project discriminator or two projects on one machine will overwrite each other. The file already does exactly this at `SheetXSettingsWindow.cs:81` (`$"{Application.identifier}.RateClicked"`) — reuse that idiom rather than inventing a second one:
 
@@ -165,7 +165,7 @@ Same shape for `ObfGoogleClientSecret`. Delete the `m_obfGoogleClientId` / `m_ob
 
 **Watch the setter semantics.** The old setter guarded on the cache field, so a `set` from `EditorHelper.TextField` was cheap when unchanged. `EditorPrefs.SetString` on every OnGUI repaint is also cheap, but `EditorGUI.BeginChangeCheck` at `SheetXSettingsWindow.cs:27` still wraps these assignments — and since the credential no longer lives on the asset, an edit to it will trip `EditorUtility.SetDirty(m_sheetXSettings)` at `:60` without there being anything to save. Harmless. Do not add machinery to avoid it.
 
-- [ ] **Step 2: Add one-time migration**
+- [x] **Step 2: Add one-time migration**
 
 A user upgrading has their credential in the asset and nothing in `EditorPrefs`. Migrate once, then blank the asset field so the secret leaves their disk too.
 
@@ -240,7 +240,7 @@ Note the `|` (not `||`) in `MigrateCredentialsToEditorPrefs` — both fields mus
 
 `ResetToDefault():139-140` sets both legacy fields to `""`. Leave those two lines — they are correct and keep "Reset to default settings" from resurrecting a stale credential. But note that Reset no longer clears the *live* credential, since that now lives in `EditorPrefs`. That is the right behavior (a settings reset should not log you out of Google), so make no change.
 
-- [ ] **Step 3: Convert the four raw-field checks — this step is what keeps Google export working**
+- [x] **Step 3: Convert the four raw-field checks — this step is what keeps Google export working**
 
 `GoogleSheetHandler.cs` checks the raw serialized fields in **four** places: `:68` (`ExportIDs`), `:384` (`ExportConstants`), `:608` (`ExportLocalizations`), `:1037` (`ExportJson`). All four are identical:
 
@@ -260,13 +260,13 @@ After this step, grep `m_settings.googleClient` across `Editor/`: it must return
 
 **Steps 2 and 3 must land in the same commit.** Step 2 blanks the legacy fields; Step 3 is what teaches the four export gates to look somewhere else. Commit Step 2 alone and every Google export at that commit refuses with "Please setup the Client Id and Client Secret!" — a broken bisect point and a broken checkout for anyone who lands on it. Task 1 is one commit, not four.
 
-- [ ] **Step 3b: Plug the `.sx` save/load leak**
+- [x] **Step 3b: Plug the `.sx` save/load leak**
 
 `SheetXSettingsWindow.Save():113` writes `JsonUtility.ToJson(m_sheetXSettings)` to a user-chosen `.sx` file — which today includes both credential fields. Users share `.sx` files to sync settings across a team, so this is a second exfiltration path, not just a storage problem.
 
 Once Step 2 blanks the fields, `Save()` stops leaking on its own. But `Load():130` uses `JsonUtility.FromJsonOverwrite`, so loading an **old** `.sx` repopulates the legacy fields. Call `MigrateCredentialsToEditorPrefs()` at the end of `Load()` (make it `internal` rather than `private` so the window can reach it) so an old file's credentials land in `EditorPrefs` and are immediately cleared from the asset rather than silently re-committed.
 
-- [ ] **Step 4: Mark the legacy fields**
+- [x] **Step 4: Mark the legacy fields**
 
 ```csharp
 [HideInInspector, System.Obsolete("Legacy storage. Credentials live in EditorPrefs; this field is migration-only and is cleared on load.")]
@@ -275,7 +275,7 @@ public string googleClientId;
 
 Same for `googleClientSecret`. Unity still serializes `[Obsolete]` public fields, so nothing breaks; the attribute stops new call sites. Suppress the obsolete warning inside the migration method with `#pragma warning disable 618` / `restore 618`.
 
-- [ ] **Step 5: Blank the committed asset**
+- [x] **Step 5: Blank the committed asset**
 
 Edit `Assets/RCore.SheetX/SheetXSettings.asset` so lines 105-106 read:
 
@@ -284,7 +284,7 @@ Edit `Assets/RCore.SheetX/SheetXSettings.asset` so lines 105-106 read:
   googleClientSecret:
 ```
 
-- [ ] **Step 6: Warn about the shipped default encryption key**
+- [x] **Step 6: Warn about the shipped default encryption key**
 
 `encryptJson` is a legitimate feature and stays. But `ResetToDefault` sets `encryptionKey` to a key that is published in this repository, so JSON "encrypted" with the default key is decryptable by anyone.
 
@@ -318,7 +318,7 @@ Hoist the default key literal out of `ResetToDefault` into a `private static rea
 
 Do not do both. Do not block the export either way — just say it.
 
-- [ ] **Step 7: CHANGELOG**
+- [x] **Step 7: CHANGELOG**
 
 Add under a new `[Unreleased]` heading:
 

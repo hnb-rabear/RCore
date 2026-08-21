@@ -65,7 +65,7 @@ namespace RCore.SheetX.Editor
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
+			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
 			{
 				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
 				return;
@@ -384,7 +384,7 @@ namespace RCore.SheetX.Editor
 				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
+			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
 			{
 				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
 				return;
@@ -608,7 +608,7 @@ namespace RCore.SheetX.Editor
 				UnityEngine.Debug.LogError("Please setup the Localization Output Folder!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
+			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
 			{
 				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
 				return;
@@ -1039,7 +1039,7 @@ namespace RCore.SheetX.Editor
 				UnityEngine.Debug.LogError("Please setup the Json Output Folder!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.googleClientId) || string.IsNullOrEmpty(m_settings.googleClientSecret))
+			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
 			{
 				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
 				return;

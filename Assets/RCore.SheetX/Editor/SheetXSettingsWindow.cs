@@ -128,6 +128,9 @@ namespace RCore.SheetX.Editor
 				try
 				{
 					JsonUtility.FromJsonOverwrite(content, m_sheetXSettings);
+					// An .sx written before credentials moved to EditorPrefs still carries them, and
+					// FromJsonOverwrite repopulates the legacy fields. Drain them straight back out.
+					m_sheetXSettings.MigrateCredentialsToEditorPrefs();
 				}
 				catch (JsonException)
 				{

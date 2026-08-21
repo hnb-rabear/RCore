@@ -102,8 +102,8 @@ MonoBehaviour:
   separateLocalizations: 1
   langCharSets: 
   encryptJson: 0
-  googleClientId: nemLtHanO8yTvVCfcmm1olScbLHtgY0GJca44nzXxmm+JshTsX16Ez/egFrn7TyzyaG135y3q0bvEBeUXPKpLH90fSKzeOuk
-  googleClientSecret: 75P71h7NJajJuBH/E2OdrGSlUouv9IUberqj0EngjWqYGew=
+  googleClientId:
+  googleClientSecret:
   encryptionKey: 
   excelSheetsPath:
     selected: 1
