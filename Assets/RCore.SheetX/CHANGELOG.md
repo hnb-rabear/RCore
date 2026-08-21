@@ -2,9 +2,17 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-21
+
 ### Removed
 
 - Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION`. SheetX is now a unified single-flavor exporter (IDs, Constants, JSON, Localizations, Single & Multi-file, for both Excel and Google Sheets). `ASSETS_STORE` is unaffected — it still gates only the settings asset file path.
+
+  **If a project still defines any of the three symbols, that define is now inert** — no compile error, but the features it used to strip are present again. Every exporter, tab, and menu ships unconditionally. Remove the stale defines from `Player Settings > Scripting Define Symbols`; nothing replaces them.
+
+### Added
+
+- `SheetXSettingsTests.no_legacy_flavor_defines_exist_in_editor_scripts` — fails if any of the three symbols is reintroduced into `Assets/RCore.SheetX/Editor`.
 
 ## [1.1.0] - 2026-08-21
 

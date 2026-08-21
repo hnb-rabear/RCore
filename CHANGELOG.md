@@ -6,7 +6,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
-- `RCore.SheetX`: Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION` from editor scripts to unify into a single-flavor exporter.
+- `RCore.SheetX` **1.2.0**: Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION` from editor scripts to unify into a single-flavor exporter. Those defines are now inert — every exporter, tab, and menu ships unconditionally; `ASSETS_STORE` is unaffected. `Assets/RCore.SheetX/package.json` bumped 1.1.0 → 1.2.0; `Document/Document.md` drops the "PRO only" labels and the stale `Samples~` example path. SheetX still has no tag path through `.github/workflows/release.yml`, so this cut is committed and untagged.
 
 ### Added
 
