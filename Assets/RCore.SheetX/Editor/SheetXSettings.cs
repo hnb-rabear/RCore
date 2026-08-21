@@ -80,8 +80,77 @@ namespace RCore.SheetX.Editor
 		private static bool s_warnedDefaultKey;
 
 		// EditorPrefs is machine-global, so the key needs a project discriminator or two projects on
-		// one machine overwrite each other. Same idiom as SheetXSettingsWindow's "RateClicked" key.
-		private static string PrefKey(string field) => $"{Application.identifier}.SheetX.{field}";
+		// one machine overwrite each other. The discriminator is the project path, not
+		// Application.identifier: the bundle identifier is a shipping setting that changes per build
+		// flavor and defaults to the same "com.DefaultCompany.*" in every fresh project, so it both
+		// loses credentials on an unrelated edit and collides across projects.
+		private static string PrefKey(string field) => $"SheetX.{ProjectKey()}.{field}";
+
+		// The normalized project path itself, not a hash of it: string.GetHashCode carries no
+		// cross-process stability guarantee, and a hash that shifts between editor launches would
+		// silently orphan the stored credentials.
+		private static string ProjectKey()
+		{
+			return Path.GetFullPath(Path.Combine(Application.dataPath, ".."))
+				.Replace('\\', '/')
+				.TrimEnd('/')
+				.ToLowerInvariant();
+		}
+
+		private static string LegacyPrefKey(string field) => $"{Application.identifier}.SheetX.{field}";
+
+		// Reads through the current key, falling back once to the retired Application.identifier key so
+		// an existing install does not have to re-enter its credentials. Copy first, delete second —
+		// an interrupted migration must never lose the only copy.
+		private static string GetPref(string field)
+		{
+			string key = PrefKey(field);
+			// An empty stored value is indistinguishable from an unset one for a credential, so it
+			// falls through to the legacy key rather than shadowing it.
+			string current = EditorPrefs.GetString(key, "");
+			if (!string.IsNullOrEmpty(current))
+				return current;
+
+			string legacyKey = LegacyPrefKey(field);
+			string legacy = EditorPrefs.GetString(legacyKey, "");
+			if (string.IsNullOrEmpty(legacy))
+				return current;
+
+			EditorPrefs.SetString(key, legacy);
+			EditorPrefs.DeleteKey(legacyKey);
+			return legacy;
+		}
+
+		private static void SetPref(string field, string value)
+		{
+			EditorPrefs.SetString(PrefKey(field), value ?? "");
+			EditorPrefs.DeleteKey(LegacyPrefKey(field));
+		}
+
+		/// <summary>
+		/// Builds an in-memory settings object from one export request. Never loads, creates, or dirties
+		/// the settings asset, and never reads EditorPrefs — an external caller's export must not depend
+		/// on, or disturb, the consuming project's SheetX window state. Credentials stay in the request.
+		/// </summary>
+		internal static SheetXSettings CreateTransient(SheetXExportRequest request)
+		{
+			var settings = CreateInstance<SheetXSettings>();
+			settings.ResetToDefault();
+			settings.constantsOutputFolder = request.ConstantsOutputPath ?? "";
+			settings.jsonOutputFolder = request.JsonOutputPath ?? "";
+			settings.localizationOutputFolder = request.LocalizationOutputPath ?? "";
+			settings.@namespace = request.Namespace ?? "";
+			settings.separateConstants = request.SeparateConstants;
+			settings.separateIDs = request.SeparateIDs;
+			settings.separateLocalizations = request.SeparateLocalizations;
+			settings.combineJson = request.CombineJson;
+			settings.onlyEnumAsIDs = request.OnlyEnumAsIDs;
+			settings.persistentFields = request.PersistentFields ?? "";
+			settings.encryptJson = request.EncryptJson;
+			if (!string.IsNullOrEmpty(request.EncryptionKey))
+				settings.encryptionKey = request.EncryptionKey;
+			return settings;
+		}
 
 		public static SheetXSettings Init()
 		{
@@ -185,9 +254,15 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Gets the encryption object, creating it with the configured key if necessary.
 		/// </summary>
+		internal bool UsesDefaultEncryptionKey => encryptionKey == DEFAULT_ENCRYPTION_KEY;
+
+		// Set for a detached export: the console belongs to the editor windows, and a batch or CI
+		// caller learns the same things from its result instead.
+		internal bool silent;
+
 		public Encryption GetEncryption()
 		{
-			if (encryptJson && encryptionKey == DEFAULT_ENCRYPTION_KEY && !s_warnedDefaultKey)
+			if (!silent && encryptJson && UsesDefaultEncryptionKey && !s_warnedDefaultKey)
 			{
 				s_warnedDefaultKey = true;
 				UnityEngine.Debug.LogWarning(
@@ -202,34 +277,12 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Generates and saves a C# file containing ID constants based on the provided content.
 		/// </summary>
-		public void CreateFileIDs(string pFileName, string pContent)
-		{
-			if (string.IsNullOrEmpty(pContent))
-				return;
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.IDS_CS_TEMPLATE).text;
-			fileContent = fileContent.Replace("_IDS_CLASS_NAME_", pFileName);
-			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
-			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
-
-			SheetXHelper.WriteFile(constantsOutputFolder, $"{pFileName}.cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
-		}
+		public void CreateFileIDs(string pFileName, string pContent) => new SheetXWriter(this, null).CreateFileIDs(pFileName, pContent);
 
 		/// <summary>
 		/// Generates and saves a C# file containing general constants based on the provided content.
 		/// </summary>
-		public void CreateFileConstants(string pContent, string pFileName)
-		{
-			if (string.IsNullOrEmpty(pContent))
-				return;
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.CONSTANTS_CS_TEMPLATE).text;
-			fileContent = fileContent.Replace("_CONST_CLASS_NAME_", pFileName);
-			fileContent = fileContent.Replace("public const int _FIELDS_ = 0;", pContent);
-			fileContent = SheetXHelper.AddNamespace(fileContent, @namespace);
-
-			SheetXHelper.WriteFile(constantsOutputFolder, pFileName + ".cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
-		}
+		public void CreateFileConstants(string pContent, string pFileName) => new SheetXWriter(this, null).CreateFileConstants(pContent, pFileName);
 
 		/// <summary>
 		/// Adds a new Excel file to the list of tracked Excel files if it exists and isn't already added.
@@ -259,8 +312,8 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public string ObfGoogleClientId
 		{
-			get => EditorPrefs.GetString(PrefKey("GoogleClientId"), "");
-			set => EditorPrefs.SetString(PrefKey("GoogleClientId"), value ?? "");
+			get => GetPref("GoogleClientId");
+			set => SetPref("GoogleClientId", value);
 		}
 
 		/// <summary>
@@ -268,8 +321,8 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public string ObfGoogleClientSecret
 		{
-			get => EditorPrefs.GetString(PrefKey("GoogleClientSecret"), "");
-			set => EditorPrefs.SetString(PrefKey("GoogleClientSecret"), value ?? "");
+			get => GetPref("GoogleClientSecret");
+			set => SetPref("GoogleClientSecret", value);
 		}
 
 		/// <summary>
@@ -324,7 +377,7 @@ namespace RCore.SheetX.Editor
 				return false;
 			}
 
-			EditorPrefs.SetString(PrefKey(field), plain);
+			SetPref(field, plain);
 			legacy = "";
 			return true;
 		}

@@ -23,6 +23,12 @@ namespace RCore.SheetX.Editor
 	public class GoogleSheetHandler
 	{
 		private SheetXSettings m_settings;
+		private readonly SheetXWriter m_writer;
+		private readonly string m_googleClientId;
+		private readonly string m_googleClientSecret;
+		private readonly bool m_selectAllSheets;
+		private List<SheetPath> m_sheets;
+		private IEnumerable<SheetPath> Sheets => m_writer.Detached ? m_sheets ?? Enumerable.Empty<SheetPath>() : m_settings.googleSheetsPath.sheets;
 		private Dictionary<string, StringBuilder> m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, StringBuilder> m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, int> m_allIds = new Dictionary<string, int>();
@@ -36,9 +42,24 @@ namespace RCore.SheetX.Editor
 		private Dictionary<string, Spreadsheet> m_cachedSpreadsheet = new Dictionary<string, Spreadsheet>();
 
 		public GoogleSheetHandler(SheetXSettings settings)
+			: this(settings, null, null, null, false)
+		{
+		}
+
+		internal GoogleSheetHandler(SheetXSettings settings, SheetXExportContext context, string googleClientId, string googleClientSecret, bool selectAllSheets)
 		{
 			m_settings = settings;
+			m_writer = new SheetXWriter(settings, context);
+			m_googleClientId = googleClientId;
+			m_googleClientSecret = googleClientSecret;
+			m_selectAllSheets = selectAllSheets;
 		}
+
+		// A detached export takes its credentials from the request only: EditorPrefs holds the machine's
+		// SheetX window state, which an external caller neither set nor should depend on.
+		private string ClientId => m_writer.Detached ? m_googleClientId : m_settings.ObfGoogleClientId;
+
+		private string ClientSecret => m_writer.Detached ? m_googleClientSecret : m_settings.ObfGoogleClientSecret;
 
 		private Spreadsheet GetCacheMetadata(GoogleSheetsPath googleSheetsPath)
 		{
@@ -46,7 +67,13 @@ namespace RCore.SheetX.Editor
 				return metadata;
 			var service = GetService();
 			var sheetMetadata = service.Spreadsheets.Get(googleSheetsPath.id).Execute();
-			ValidateSheetPaths(sheetMetadata, googleSheetsPath);
+			// ValidateSheetPaths adds and removes entries in the settings' sheet list. That is right for
+			// the windows, which persist their selection, but a detached export must leave the caller's
+			// request untouched — so its selection is resolved into a throwaway list instead.
+			if (m_writer.Detached)
+				m_sheets = ResolveSheets(sheetMetadata, googleSheetsPath);
+			else
+				ValidateSheetPaths(sheetMetadata, googleSheetsPath);
 			m_cachedSpreadsheet[googleSheetsPath.id] = sheetMetadata;
 			return sheetMetadata;
 		}
@@ -60,23 +87,25 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public void ExportIDs()
 		{
-			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
+			if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
 			{
-				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
+				m_writer.Error("Please setup the Client Id and Client Secret!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
+			if (!Sheets.Any(x => x.selected && x.name.EndsWith(SheetXConstants.IDS_SHEET)))
+				return;
+			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+				m_writer.Error("Please setup the Constants Output Folder!");
 				return;
 			}
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
 
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
 
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in Sheets)
 			{
 				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
 					continue;
@@ -96,13 +125,11 @@ namespace RCore.SheetX.Editor
 				var values = response.Values;
 
 				//Load All IDs
-				BuildContentOfFileIDs(sheet.name, values);
-
-				//Create IDs Files
-				if (m_settings.separateIDs)
+				// An empty sheet builds nothing, so there is no builder to read back.
+				if (BuildContentOfFileIDs(sheet.name, values) && m_settings.separateIDs)
 				{
 					var content = m_idsBuilderDict[sheet.name].ToString();
-					m_settings.CreateFileIDs(sheet.name, content);
+					m_writer.CreateFileIDs(sheet.name, content);
 				}
 			}
 
@@ -115,15 +142,15 @@ namespace RCore.SheetX.Editor
 					iDsBuilder.Append(content);
 					iDsBuilder.AppendLine();
 				}
-				m_settings.CreateFileIDs("IDs", iDsBuilder.ToString());
+				m_writer.CreateFileIDs("IDs", iDsBuilder.ToString());
 			}
 		}
 
 		private bool BuildContentOfFileIDs(string pSheetName, IList<IList<object>> rowsData)
 		{
-			if (rowsData == null || rowsData.Count == 0)
+			if (rowsData == null || rowsData.Count <= 1)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return false;
 			}
 
@@ -161,12 +188,27 @@ namespace RCore.SheetX.Editor
 						var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
 						if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						{
-							EditorUtility.DisplayDialog("Warning", $"Sheet {pSheetName}: Key {key} doesn't have value!", "OK");
+							m_writer.Blocking("Warning", $"Sheet {pSheetName}: Key {key} doesn't have value!");
 							continue;
 						}
 
 						string valueStr = cellValue.ToString().Trim();
-						int.TryParse(valueStr, out int value);
+						// The parse result used to be discarded, so a mistyped value generated "= 0" and
+						// every consumer of that ID silently read the wrong number.
+						if (!SheetXHelper.TryParseInt(valueStr, out int value))
+						{
+							m_writer.Error($"Sheet {pSheetName}: ID {key} has a non-integer value '{valueStr}'.");
+							continue;
+						}
+						// The first definition wins. Appending a second "public const int" for the same
+						// key produced C# that does not compile, so a conflict is reported and the row skipped.
+						if (m_allIds.TryGetValue(key, out int existing))
+						{
+							if (existing != value)
+								m_writer.Blocking("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}");
+							continue;
+						}
+						m_allIds[key] = value;
 						sb.Append("\tpublic const int ");
 						sb.Append(key);
 						sb.Append(" = ");
@@ -181,15 +223,6 @@ namespace RCore.SheetX.Editor
 								sb.Append(" /* ").Append(cellComment).Append(" */");
 						}
 
-						if (m_allIds.TryGetValue(key, out int val))
-						{
-							if (val != value)
-								EditorUtility.DisplayDialog("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}", "OK");
-						}
-						else
-						{
-							m_allIds[key] = value;
-						}
 					}
 					//Header row
 					else
@@ -278,7 +311,7 @@ namespace RCore.SheetX.Editor
 			var ids = new Dictionary<string, IList<IList<object>>>();
 			var service = GetService();
 			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in Sheets)
 			{
 				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
 					continue;
@@ -303,9 +336,9 @@ namespace RCore.SheetX.Editor
 
 		private void LoadSheetIDsValues(IList<IList<object>> rowsData, string pSheetName)
 		{
-			if (rowsData == null || rowsData.Count == 0)
+			if (rowsData == null || rowsData.Count <= 1)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return;
 			}
 
@@ -325,9 +358,13 @@ namespace RCore.SheetX.Editor
 					var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
 					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						continue;
-					int value = int.Parse(cellValue.ToString().Trim());
+					if (!SheetXHelper.TryParseInt(cellValue.ToString().Trim(), out int value))
+					{
+						m_writer.Error($"Sheet {pSheetName}: ID {key} has a non-integer value '{cellValue}'.");
+						continue;
+					}
 					if (m_allIds.ContainsKey(key))
-						EditorUtility.DisplayDialog("Duplicated ID!", $@"ID {key} is duplicated in sheet {pSheetName}", "Ok");
+						m_writer.Blocking("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}");
 					m_allIds[key] = value;
 				}
 			}
@@ -339,12 +376,12 @@ namespace RCore.SheetX.Editor
 		{
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
 			{
-				m_allIDsSorted = m_allIds.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
+				m_allIDsSorted = SheetXHelper.SortIDsByLength(m_allIds);
 			}
 
 			if (!string.IsNullOrEmpty(pKey))
 			{
-				if (int.TryParse(pKey, out int value))
+				if (SheetXHelper.TryParseInt(pKey, out int value))
 				{
 					pFound = true;
 					return value;
@@ -378,14 +415,17 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public void ExportConstants()
 		{
-			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
+			if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
 			{
-				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
+				m_writer.Error("Please setup the Client Id and Client Secret!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
+			if (!Sheets.Any(x => x.selected && x.name.EndsWith(SheetXConstants.CONSTANTS_SHEET)))
+				return;
+			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+				m_writer.Error("Please setup the Constants Output Folder!");
 				return;
 			}
 
@@ -399,8 +439,7 @@ namespace RCore.SheetX.Editor
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in Sheets)
 			{
 				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
 					continue;
@@ -420,7 +459,7 @@ namespace RCore.SheetX.Editor
 				LoadSheetConstantsData(sheet.name, values);
 
 				if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
-					m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
+					m_writer.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
 			}
 
 			if (!m_settings.separateConstants)
@@ -431,7 +470,7 @@ namespace RCore.SheetX.Editor
 					builder.Append(b.Value);
 					builder.AppendLine();
 				}
-				m_settings.CreateFileConstants(builder.ToString(), "Constants");
+				m_writer.CreateFileConstants(builder.ToString(), "Constants");
 			}
 		}
 
@@ -439,7 +478,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return;
 			}
 
@@ -484,11 +523,11 @@ namespace RCore.SheetX.Editor
 				string fieldStr = "";
 
 				//Try to find references in ids list
-				if (valueType == "int" && !int.TryParse(value, out int _))
+				if (valueType == "int" && !SheetXHelper.TryParseInt(value, out int _))
 				{
 					int outValue = GetReferenceId(value, out bool found);
 					if (found)
-						value = outValue.ToString();
+						value = SheetXHelper.FormatInt(outValue);
 				}
 				if (valueType == "int-array")
 				{
@@ -496,14 +535,14 @@ namespace RCore.SheetX.Editor
 					for (int j = 0; j < strValues.Length; j++)
 					{
 						//Try to find references in ids list
-						if (int.TryParse(strValues[j].Trim(), out int _))
+						if (SheetXHelper.TryParseInt(strValues[j].Trim(), out int _))
 							continue;
 
 						int refVal = GetReferenceId(strValues[j], out bool found);
 						if (found)
 						{
-							value = value.Replace(strValues[j], refVal.ToString());
-							strValues[j] = refVal.ToString();
+							value = value.Replace(strValues[j], SheetXHelper.FormatInt(refVal));
+							strValues[j] = SheetXHelper.FormatInt(refVal);
 						}
 					}
 				}
@@ -514,18 +553,11 @@ namespace RCore.SheetX.Editor
 						fieldStr = $"\tpublic const int {name} = {value.Trim()};";
 						break;
 					case "float":
-						fieldStr = $"\tpublic const float {name} = {value.Trim()}f;";
+						fieldStr = $"\tpublic const float {name} = {SheetXHelper.FormatFloatLiteral(value)};";
 						break;
 					case "float-array":
-						string floatArrayStr = "";
 						string[] floatValues = SheetXHelper.SplitValueToArray(value);
-						for (int j = 0; j < floatValues.Length; j++)
-						{
-							if (j == floatValues.Length - 1)
-								floatArrayStr += floatValues[j] + "f";
-							else
-								floatArrayStr += floatValues[j] + "f, ";
-						}
+						string floatArrayStr = string.Join(", ", floatValues.Select(SheetXHelper.FormatFloatLiteral));
 						fieldStr = $"\tpublic static readonly float[] {name} = new float[{floatValues.Length}] {"{"} {floatArrayStr} {"}"};";
 						break;
 					case "int-array":
@@ -542,11 +574,11 @@ namespace RCore.SheetX.Editor
 						break;
 					case "vector2":
 						string[] vector2Values = SheetXHelper.SplitValueToArray(value);
-						fieldStr = $"\tpublic static readonly Vector2 {name} = new Vector2({vector2Values[0].Trim()}f, {vector2Values[1].Trim()}f);";
+						fieldStr = $"\tpublic static readonly Vector2 {name} = new Vector2({SheetXHelper.FormatFloatLiteral(vector2Values[0])}, {SheetXHelper.FormatFloatLiteral(vector2Values[1])});";
 						break;
 					case "vector3":
 						string[] vector3Values = SheetXHelper.SplitValueToArray(value);
-						fieldStr = $"\tpublic static readonly Vector3 {name} = new Vector3({vector3Values[0].Trim()}f, {vector3Values[1].Trim()}f, {vector3Values[2].Trim()}f);";
+						fieldStr = $"\tpublic static readonly Vector3 {name} = new Vector3({SheetXHelper.FormatFloatLiteral(vector3Values[0])}, {SheetXHelper.FormatFloatLiteral(vector3Values[1])}, {SheetXHelper.FormatFloatLiteral(vector3Values[2])});";
 						break;
 					case "string":
 						fieldStr = $"\tpublic const string {name} = \"{value.Trim()}\";";
@@ -591,19 +623,22 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		public void ExportLocalizations()
 		{
+			if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
+			{
+				m_writer.Error("Please setup the Client Id and Client Secret!");
+				return;
+			}
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
+			if (!Sheets.Any(x => x.selected && x.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET)))
+				return;
 			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Constants Output Folder!");
+				m_writer.Error("Please setup the Constants Output Folder!");
 				return;
 			}
 			if (string.IsNullOrEmpty(m_settings.localizationOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Localization Output Folder!");
-				return;
-			}
-			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
-			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+				m_writer.Error("Please setup the Localization Output Folder!");
 				return;
 			}
 
@@ -621,8 +656,7 @@ namespace RCore.SheetX.Editor
 			m_langCharSetsAll = new StringBuilder();
 
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in Sheets)
 			{
 				if (!sheet.selected || !sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
 					continue;
@@ -677,7 +711,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (rowsData == null || rowsData.Count == 0)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return;
 			}
 
@@ -721,7 +755,7 @@ namespace RCore.SheetX.Editor
 							foreach (var id in m_allIds)
 								if (id.Key.Trim() == fieldValue.Trim())
 								{
-									fieldValue = id.Value.ToString();
+									fieldValue = SheetXHelper.FormatInt(id.Value);
 									idStrings[idStrings.Count - 1] = $"{idStrings[idStrings.Count - 1]}_{id.Value}";
 									existId = true;
 									break;
@@ -833,8 +867,8 @@ namespace RCore.SheetX.Editor
 			foreach (var listText in pLanguageTextDict)
 			{
 				string json = JsonConvert.SerializeObject(listText.Value);
-				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"{pFileName}_{listText.Key}.txt", json);
-				UnityEngine.Debug.Log($"Exported Localization content to {pFileName}_{listText.Key}.txt!");
+				m_writer.Write(m_settings.localizationOutputFolder, $"{pFileName}_{listText.Key}.txt", json, SheetXExportFileType.Localization);
+				m_writer.Info($"Exported Localization content to {pFileName}_{listText.Key}.txt!");
 
 				if (m_settings.langCharSets != null && m_settings.langCharSets.Contains(listText.Key))
 				{
@@ -860,7 +894,8 @@ namespace RCore.SheetX.Editor
 			languagesDictBuilder.Append($"\tpublic static readonly string DefaultLanguage = \"{pLanguageTextDict.First().Key}\";");
 
 			//Write file localization constants
-			string fileContent = Resources.Load<TextAsset>(SheetXConstants.LOCALIZATION_TEMPLATE).text;
+			if (!m_writer.TryLoadTemplate(SheetXConstants.LOCALIZATION_TEMPLATE, out string fileContent))
+					return;
 			fileContent = fileContent.Replace("LOCALIZATION_CLASS_NAME", pFileName);
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_ENUM", idBuilder2.ToString());
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_CONST", idBuilder.ToString());
@@ -869,15 +904,16 @@ namespace RCore.SheetX.Editor
 			fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
 			fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
-			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}.cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {pFileName}.cs!");
+			m_writer.Write(m_settings.constantsOutputFolder, $"{pFileName}.cs", fileContent, SheetXExportFileType.Localization);
+			m_writer.Info($"Exported {pFileName}.cs!");
 
 			//Write file localized text component
-			fileContent = Resources.Load<TextAsset>(SheetXConstants.LOCALIZATION_TEXT_TEMPLATE).text;
+			if (!m_writer.TryLoadTemplate(SheetXConstants.LOCALIZATION_TEXT_TEMPLATE, out fileContent))
+					return;
 			fileContent = fileContent.Replace("LOCALIZATION_CLASS_NAME", pFileName);
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
-			SheetXHelper.WriteFile(m_settings.constantsOutputFolder, $"{pFileName}Text.cs", fileContent);
-			UnityEngine.Debug.Log($"Exported {pFileName}Text.cs!");
+			m_writer.Write(m_settings.constantsOutputFolder, $"{pFileName}Text.cs", fileContent, SheetXExportFileType.Localization);
+			m_writer.Info($"Exported {pFileName}Text.cs!");
 		}
 
 		private void CreateLocalizationsManagerFile()
@@ -888,15 +924,15 @@ namespace RCore.SheetX.Editor
 				var maps = SheetXHelper.GenerateCharacterSets(m_langCharSets);
 				foreach (var map in maps)
 				{
-					SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value);
-					Debug.Log($"Exported characters_set_{map.Key}.txt");
+					m_writer.Write(m_settings.localizationOutputFolder, $"characters_set_{map.Key}.txt", map.Value, SheetXExportFileType.CharacterSet);
+					m_writer.Info($"Exported characters_set_{map.Key}.txt");
 				}
 			}
 			if (!string.IsNullOrEmpty(m_langCharSetsAll.ToString()))
 			{
 				var characterSet = SheetXHelper.GenerateCharacterSet(m_langCharSetsAll.ToString());
-				SheetXHelper.WriteFile(m_settings.localizationOutputFolder, $"characters_set_all.txt", characterSet);
-				UnityEngine.Debug.Log($"Exported characters_set_all.txt!");
+				m_writer.Write(m_settings.localizationOutputFolder, "characters_set_all.txt", characterSet, SheetXExportFileType.CharacterSet);
+				m_writer.Info("Exported characters_set_all.txt!");
 			}
 
 			if (m_localizedSheetsExported.Count > 0)
@@ -1000,7 +1036,8 @@ namespace RCore.SheetX.Editor
 						useAddressable.Append(Environment.NewLine);
 				}
 
-				string fileContent = Resources.Load<TextAsset>(SheetXConstants.LOCALIZATION_MANAGER_TEMPLATE).text;
+				if (!m_writer.TryLoadTemplate(SheetXConstants.LOCALIZATION_MANAGER_TEMPLATE, out string fileContent))
+						return;
 				fileContent = fileContent.Replace("//LOCALIZATION_INIT_ASYNC", initAsynLines.ToString());
 				fileContent = fileContent.Replace("//LOCALIZATION_INIT", initLines.ToString());
 				fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY", languagesDictBuilder.ToString());
@@ -1010,8 +1047,8 @@ namespace RCore.SheetX.Editor
 				fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
 				fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
 				fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
-				SheetXHelper.WriteFile(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent);
-				UnityEngine.Debug.Log($"Exported LocalizationsManager.cs!");
+				m_writer.Write(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent, SheetXExportFileType.LocalizationManager);
+				m_writer.Info("Exported LocalizationsManager.cs!");
 			}
 		}
 
@@ -1021,14 +1058,17 @@ namespace RCore.SheetX.Editor
 
 		public void ExportJson()
 		{
-			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
+			if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
 			{
-				UnityEngine.Debug.LogError("Please setup the Json Output Folder!");
+				m_writer.Error("Please setup the Client Id and Client Secret!");
 				return;
 			}
-			if (string.IsNullOrEmpty(m_settings.ObfGoogleClientId) || string.IsNullOrEmpty(m_settings.ObfGoogleClientSecret))
+			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
+			if (!Sheets.Any(x => x.selected && SheetXHelper.IsJsonSheet(x.name)))
+				return;
+			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
 			{
-				UnityEngine.Debug.LogError("Please setup the Client Id and Client Secret!");
+				m_writer.Error("Please setup the Json Output Folder!");
 				return;
 			}
 
@@ -1042,8 +1082,7 @@ namespace RCore.SheetX.Editor
 			bool writeJsonFileForSingleSheet = !m_settings.combineJson;
 			var allJsons = new Dictionary<string, string>();
 			var service = GetService();
-			var sheetMetadata = GetCacheMetadata(m_settings.googleSheetsPath);
-			foreach (var sheet in m_settings.googleSheetsPath.sheets)
+			foreach (var sheet in Sheets)
 			{
 				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name))
 					continue;
@@ -1066,27 +1105,27 @@ namespace RCore.SheetX.Editor
 				string json = ConvertSheetToJson(sheetInfo, values, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
 
 				//Merge all json into a single file
-				if (m_settings.combineJson)
+				if (m_settings.combineJson && json != null)
 				{
 					if (allJsons.ContainsKey(fileName))
 					{
-						UnityEngine.Debug.LogError($"Could not create single json file {fileName}, because file {fileName} is already exists!");
+						m_writer.Error($"Could not create single json file {fileName}, because file {fileName} already exists!");
 						continue;
 					}
 					allJsons.Add(fileName, json);
 				}
 			}
-			if (m_settings.combineJson)
+			if (m_settings.combineJson && allJsons.Count > 0)
 			{
-				//Build json file for all jsons content
-				string mergedJson = JsonConvert.SerializeObject(allJsons);
+				//Build json file for all jsons content. Key-sorted so the output does not depend on sheet order.
+				string mergedJson = SheetXHelper.MergeJsonContents(allJsons);
 				string mergedFileName = sheetMetadata.Properties.Title.Replace(" ", "_");
-				SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
+				m_writer.Write(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson, SheetXExportFileType.Json);
 
 				if (m_settings.encryptJson)
-					UnityEngine.Debug.Log($"Exported encrypted Json data to {mergedFileName}.txt.");
+					m_writer.Info($"Exported encrypted Json data to {mergedFileName}.txt.");
 				else
-					UnityEngine.Debug.Log($"Exported Json data to {mergedFileName}.txt.");
+					m_writer.Info($"Exported Json data to {mergedFileName}.txt.");
 			}
 		}
 
@@ -1104,7 +1143,7 @@ namespace RCore.SheetX.Editor
 
 			if (pValues == null || pValues.Count == 0)
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return null;
 			}
 
@@ -1245,7 +1284,7 @@ namespace RCore.SheetX.Editor
 								j++;
 								if (!isArray)
 								{
-									if (!float.TryParse(fieldValue, out att.unlock))
+									if (!SheetXHelper.TryParseFloat(fieldValue, out att.unlock))
 										att.unlock = GetReferenceId(fieldValue, out found);
 								}
 								else
@@ -1254,7 +1293,7 @@ namespace RCore.SheetX.Editor
 									float[] outValues = new float[inValues.Length];
 									for (int t = 0; t < inValues.Length; t++)
 									{
-										if (!float.TryParse(inValues[t].Trim(), out outValues[t]))
+										if (!SheetXHelper.TryParseFloat(inValues[t].Trim(), out outValues[t]))
 											outValues[t] = GetReferenceId(inValues[t].Trim(), out found);
 									}
 									att.unlocks = outValues;
@@ -1266,7 +1305,7 @@ namespace RCore.SheetX.Editor
 								j++;
 								if (!isArray)
 								{
-									if (!float.TryParse(fieldValue, out att.increase))
+									if (!SheetXHelper.TryParseFloat(fieldValue, out att.increase))
 										att.increase = GetReferenceId(fieldValue, out found);
 								}
 								else
@@ -1275,7 +1314,7 @@ namespace RCore.SheetX.Editor
 									float[] outValues = new float[inValues.Length];
 									for (int t = 0; t < inValues.Length; t++)
 									{
-										if (!float.TryParse(inValues[t].Trim(), out outValues[t]))
+										if (!SheetXHelper.TryParseFloat(inValues[t].Trim(), out outValues[t]))
 											outValues[t] = GetReferenceId(inValues[t].Trim(), out found);
 									}
 									att.increases = outValues;
@@ -1287,7 +1326,7 @@ namespace RCore.SheetX.Editor
 								j++;
 								if (!isArray)
 								{
-									if (!float.TryParse(fieldValue, out att.value))
+									if (!SheetXHelper.TryParseFloat(fieldValue, out att.value))
 										att.value = GetReferenceId(fieldValue, out found);
 									if (!found)
 										att.valueString = fieldValue;
@@ -1298,7 +1337,7 @@ namespace RCore.SheetX.Editor
 									float[] outValues = new float[inValues.Length];
 									for (int t = 0; t < inValues.Length; t++)
 									{
-										if (!float.TryParse(inValues[t].Trim(), out outValues[t]))
+										if (!SheetXHelper.TryParseFloat(inValues[t].Trim(), out outValues[t]))
 											outValues[t] = GetReferenceId(inValues[t].Trim(), out found);
 									}
 									if (outValues.Length == 1 && outValues[0] == 0)
@@ -1312,7 +1351,7 @@ namespace RCore.SheetX.Editor
 								j++;
 								if (!isArray)
 								{
-									if (!float.TryParse(fieldValue, out att.max))
+									if (!SheetXHelper.TryParseFloat(fieldValue, out att.max))
 										att.max = GetReferenceId(fieldValue, out found);
 								}
 								else
@@ -1321,7 +1360,7 @@ namespace RCore.SheetX.Editor
 									float[] outValues = new float[inValues.Length];
 									for (int t = 0; t < inValues.Length; t++)
 									{
-										if (!float.TryParse(inValues[t].Trim(), out outValues[t]))
+										if (!SheetXHelper.TryParseFloat(inValues[t].Trim(), out outValues[t]))
 											outValues[t] = GetReferenceId(inValues[t].Trim(), out found);
 									}
 									att.maxes = outValues;
@@ -1352,7 +1391,7 @@ namespace RCore.SheetX.Editor
 								fieldType = ValueType.Number;
 								referencedId = true;
 							}
-							else if (int.TryParse(fieldValue, out int _))
+							else if (SheetXHelper.TryParseInt(fieldValue, out int _))
 							{
 								fieldType = ValueType.Number;
 								referencedId = true;
@@ -1385,7 +1424,7 @@ namespace RCore.SheetX.Editor
 										{
 											string val = splits[k].Trim();
 											if (referencedId)
-												val = GetReferenceId(val, out bool _).ToString();
+												val = SheetXHelper.FormatInt(GetReferenceId(val, out bool _));
 											if (k == 0) arrayStr += val;
 											else arrayStr += "," + val;
 										}
@@ -1483,7 +1522,7 @@ namespace RCore.SheetX.Editor
 								{
 									string val = splits[k].Trim();
 									if (referencedId)
-										val = GetReferenceId(val, out bool _).ToString();
+										val = SheetXHelper.FormatInt(GetReferenceId(val, out bool _));
 									if (k == 0) arrayStr += val;
 									else arrayStr += "," + val;
 								}
@@ -1569,12 +1608,12 @@ namespace RCore.SheetX.Editor
 								foreach (var id in m_allIDsSorted)
 								{
 									if (fieldValue.Contains(id.Key))
-										fieldValue = fieldValue.Replace(id.Key, id.Value.ToString());
+										fieldValue = fieldValue.Replace(id.Key, SheetXHelper.FormatInt(id.Value));
 								}
 								if (!SheetXHelper.IsValidJson(fieldValue))
 								{
-									EditorUtility.DisplayDialog("Error", $@"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}", "Ok");
-									UnityEngine.Debug.LogError($"Invalid data, Sheet: {pSheetName}, Field: {fieldNameTrim}, Row: {i + 1}");
+									m_writer.Blocking("Error", $"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
+									continue;
 								}
 								var tempObj = JsonConvert.DeserializeObject(fieldValue);
 								var tempJsonStr = JsonConvert.SerializeObject(tempObj);
@@ -1597,10 +1636,7 @@ namespace RCore.SheetX.Editor
 					}
 				}
 				foreach (var combinedCol in combinedCols)
-				{
-					string combinedValue = combinedCol.Value.Substring(0, combinedCol.Value.Length - 1);
-					fieldContentStr += $"{combinedValue}],";
-				}
+					fieldContentStr += $"{SheetXHelper.CloseCombinedColumn(combinedCol.Value)},";
 				if (nestedObjects.Count > 0)
 				{
 					var nestedObjectsJson = SheetXHelper.ConvertToNestedJson(nestedObjects);
@@ -1628,7 +1664,7 @@ namespace RCore.SheetX.Editor
 
 			if (content == "[]")
 			{
-				UnityEngine.Debug.LogWarning($"Sheet {pSheetName} is empty!");
+				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return null;
 			}
 			string finalContent = content;
@@ -1637,11 +1673,11 @@ namespace RCore.SheetX.Editor
 
 			if (pAutoWriteFile)
 			{
-				SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{pOutputFile}.txt", finalContent);
+				m_writer.Write(m_settings.jsonOutputFolder, $"{pOutputFile}.txt", finalContent, SheetXExportFileType.Json);
 				if (pEncrypt)
-					UnityEngine.Debug.Log($"Exported encrypted Json data to {pOutputFile}.txt.");
+					m_writer.Info($"Exported encrypted Json data to {pOutputFile}.txt.");
 				else
-					UnityEngine.Debug.Log($"Exported Json data to {pOutputFile}.txt.");
+					m_writer.Info($"Exported Json data to {pOutputFile}.txt.");
 			}
 			return finalContent;
 		}
@@ -1650,6 +1686,9 @@ namespace RCore.SheetX.Editor
 
 		public void ExportAll()
 		{
+			if (m_writer.Detached && !m_selectAllSheets && m_settings.googleSheetsPath.sheets.Count == 0)
+				return;
+
 			ExportIDs();
 			ExportConstants();
 			ExportJson();
@@ -1699,7 +1738,7 @@ namespace RCore.SheetX.Editor
 
 					// Build contents of file IDs and export to file if seperateIDs = true
 					if (BuildContentOfFileIDs(sheet.name, values) && m_settings.separateIDs)
-						m_settings.CreateFileIDs(sheet.name, m_idsBuilderDict[sheet.name].ToString());
+						m_writer.CreateFileIDs(sheet.name, m_idsBuilderDict[sheet.name].ToString());
 				}
 			}
 
@@ -1739,29 +1778,17 @@ namespace RCore.SheetX.Editor
 					{
 						string fileName = sheet.name.Trim().Replace(" ", "_");
 						string json = ConvertSheetToJson(sheetInfo, values, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
-						if (m_settings.combineJson)
+						if (m_settings.combineJson && json != null)
 						{
 							if (allJsons.ContainsKey(fileName))
 							{
-								UnityEngine.Debug.LogError($"Can not merge sheet {fileName}, because key {fileName} is already exists!");
+								m_writer.Error($"Could not create single json file {fileName}, because file {fileName} already exists!");
 								continue;
 							}
 							allJsons.Add(fileName, json);
 						}
 					}
 
-					if (m_settings.combineJson)
-					{
-						//Build json file for all jsons content
-						string mergedJson = JsonConvert.SerializeObject(allJsons);
-						string mergedFileName = ggSheetsMetadata.Properties.Title;
-						SheetXHelper.WriteFile(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson);
-
-						if (m_settings.encryptJson)
-							Debug.Log($"Exported encrypted Json data to {mergedFileName}.txt.");
-						else
-							Debug.Log($"Exported Json data to {mergedFileName}.txt.");
-					}
 
 					//Load and write constants
 					if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
@@ -1769,7 +1796,7 @@ namespace RCore.SheetX.Editor
 						LoadSheetConstantsData(sheet.name, values);
 
 						if (m_constantsBuilderDict.ContainsKey(sheet.name) && m_settings.separateConstants)
-							m_settings.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
+							m_writer.CreateFileConstants(m_constantsBuilderDict[sheet.name].ToString(), sheet.name);
 					}
 					//Load and write localizations
 					if (sheet.name.StartsWith(SheetXConstants.LOCALIZATION_SHEET))
@@ -1783,6 +1810,19 @@ namespace RCore.SheetX.Editor
 							m_localizedSheetsExported.Add(sheet.name);
 						}
 					}
+				}
+
+				if (m_settings.combineJson && allJsons.Count > 0)
+				{
+					//Build json file for all jsons content. Written once per spreadsheet after every
+					//selected sheet is read, and key-sorted, so the output does not depend on sheet order.
+					string mergedJson = SheetXHelper.MergeJsonContents(allJsons);
+					string mergedFileName = ggSheetsMetadata.Properties.Title.Replace(" ", "_");
+					m_writer.Write(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson, SheetXExportFileType.Json);
+
+					m_writer.Info(m_settings.encryptJson
+						? $"Exported encrypted Json data to {mergedFileName}.txt."
+						: $"Exported Json data to {mergedFileName}.txt.");
 				}
 			}
 
@@ -1799,7 +1839,7 @@ namespace RCore.SheetX.Editor
 						builder.AppendLine();
 					count++;
 				}
-				m_settings.CreateFileIDs("IDs", builder.ToString());
+				m_writer.CreateFileIDs("IDs", builder.ToString());
 			}
 
 			//Create file contain all Constants
@@ -1815,7 +1855,7 @@ namespace RCore.SheetX.Editor
 						builder.AppendLine();
 					count++;
 				}
-				m_settings.CreateFileConstants(builder.ToString(), "Constants");
+				m_writer.CreateFileConstants(builder.ToString(), "Constants");
 			}
 			//Create file contain all Localizations
 			if (!m_settings.separateLocalizations)
@@ -1862,10 +1902,32 @@ namespace RCore.SheetX.Editor
 		{
 			m_service ??= new SheetsService(new BaseClientService.Initializer()
 			{
-				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(m_settings.ObfGoogleClientId, m_settings.ObfGoogleClientSecret),
+				HttpClientInitializer = SheetXHelper.AuthenticateGoogleUser(ClientId, ClientSecret, m_writer.Detached ? (Action<string>)m_writer.Warn : null),
 				ApplicationName = SheetXConstants.APPLICATION_NAME,
 			});
 			return m_service;
+		}
+
+		// Builds the selection a detached export works from, without touching the request. A null sheet
+		// list in the request means "every sheet in the spreadsheet"; an empty one means "none", and a
+		// name that the spreadsheet does not have is reported rather than silently dropped.
+		private List<SheetPath> ResolveSheets(Spreadsheet sheetMetadata, GoogleSheetsPath pGoogleSheetsPath)
+		{
+			var available = sheetMetadata.Sheets.Select(x => x.Properties.Title).ToList();
+			if (m_selectAllSheets)
+				return available.Select(x => new SheetPath { name = x, selected = true }).ToList();
+
+			var result = new List<SheetPath>();
+			foreach (var sheet in pGoogleSheetsPath.sheets)
+			{
+				if (!available.Contains(sheet.name))
+				{
+					m_writer.Error($"Spreadsheet '{pGoogleSheetsPath.id}' has no sheet named '{sheet.name}'.");
+					continue;
+				}
+				result.Add(new SheetPath { name = sheet.name, selected = true });
+			}
+			return result;
 		}
 
 		private void ValidateSheetPaths(Spreadsheet sheetMetadata, GoogleSheetsPath pGoogleSheetsPath)

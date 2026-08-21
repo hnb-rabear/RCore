@@ -10,12 +10,18 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
+- `RCore.SheetX`: Added `SheetXExporter` / `ISheetXOutput` editor API for caller-owned exports without settings-window state or disk writes.
+
 - `RevCore.JObjectDB.Reset(string key)` — resets a single collection's data to its type defaults while keeping the key registered in the index (companion to `Delete`/`DeleteAll`). Surfaced in the Editor via a per-collection "Reset" button on the `JObjectDBManager` inspector.
 - Per-collection **Delete** button on the `JObjectDBManager` inspector (uses the existing `JObjectDB.Delete(key)`); restricted to edit mode.
 
 - **RevCore.Addressables v1.0.0** — new standalone package: UniTask-first helpers (`AddressableLoader`, `AddressableDownloader`, `AddressableCatalog`, `AddressableScene`), serialisable wrappers (`AssetRef<T>`, `KeyedAssetRef<TKey,T>`, `ComponentRef<TComponent>`, `PrefabRef<TComponent>`), and `AddressableLoadException`. Replaces RCore's `AddressableUtil` + asset-ref family. See module README and `docs/migration/rcore-to-revcore-api-map.csv`.
 
 ### Fixed
+
+- `RCore.SheetX`: Export failures (invalid JSON, duplicate/non-integer IDs, missing templates) no longer open modal dialogs or throw on the public path — each becomes a warning or error in the returned result.
+- `RCore.SheetX`: Culture-invariant numeric parsing and generated numeric text, longest-key-first ordinal ID replacement, empty duplicate-name columns emitting `[]`, one workbook per Excel export, one deterministic Google aggregate write after all selected sheets, and the Google token cache moved from `Assets/Editor` to `Library/SheetX`.
+- `RCore.SheetX`: Google OAuth credentials now use a project-path-scoped `EditorPrefs` key instead of `Application.identifier`, which changes per build flavor; existing values migrate on first read.
 
 - `RevCore.AutoFillAttribute`: filling moved out of the property drawer into an explicit, undoable **RevCore Auto Fill** context-menu command on the owning Component/ScriptableObject. Fixes collection fields (Unity never invokes a `PropertyAttribute` drawer for the array property itself, so empty arrays and lists could never be filled), multi-object edit corruption (search ran against `targetObject` while the write hit every selected target), per-repaint `AssetDatabase.FindAssets` calls, silent scene/prefab dirtying on selection, unconditional overwrite of manually-entered array elements, and nondeterministic asset pick. `AutoFillDrawer` is now render-only and overrides `GetPropertyHeight` so expanded collections no longer overlap neighbouring rows.
 - `RCore.Inspector.TMPFontMaterialsAttribute` now lists every `TextMeshPro/*` material asset when used on a `ScriptableObject`; component behavior remains filtered to materials sharing its TMP font atlas.

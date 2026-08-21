@@ -101,18 +101,18 @@ namespace RCore.SheetX.Editor
 			name = Path.GetFileNameWithoutExtension(path);
 		}
 		/// <summary>
-		/// Creates an NPOI Workbook object from the file path.
+		/// Creates an NPOI Workbook object from the file path, or null when the file is missing.
+		/// The caller reports the missing file — this type has no way to reach an export's result.
 		/// </summary>
 		public IWorkbook GetWorkBook()
 		{
 			if (!File.Exists(path))
-			{
-				UnityEngine.Debug.LogError($"{path} does not exist.");
 				return null;
-			}
 
-			using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-			return WorkbookFactory.Create(file);
+			// The workbook outlives this call, so it must not be backed by a stream disposed here —
+			// NPOI reads lazily and every later GetSheet() would hit a closed handle. A MemoryStream
+			// owns no unmanaged resource, so the returned workbook stays usable without a using scope.
+			return WorkbookFactory.Create(new MemoryStream(File.ReadAllBytes(path), false));
 		}
 		/// <summary>
 		/// Returns the number of sheets currently selected for processing.
@@ -273,11 +273,11 @@ namespace RCore.SheetX.Editor
 		{
 			var list = new List<string>();
 			list.Add($"\"id\":{id}");
-			if (value != 0) list.Add($"\"value\":{value}");
-			if (increase != 0) list.Add($"\"increase\":{increase}");
-			if (unlock != 0) list.Add($"\"unlock\":{unlock}");
-			if (max != 0) list.Add($"\"max\":{max}");
-			if (!string.IsNullOrEmpty(valueString) && valueString != value.ToString()) list.Add($"\"valueString\":\"{valueString}\"");
+			if (value != 0) list.Add($"\"value\":{SheetXHelper.FormatFloat(value)}");
+			if (increase != 0) list.Add($"\"increase\":{SheetXHelper.FormatFloat(increase)}");
+			if (unlock != 0) list.Add($"\"unlock\":{SheetXHelper.FormatFloat(unlock)}");
+			if (max != 0) list.Add($"\"max\":{SheetXHelper.FormatFloat(max)}");
+			if (!string.IsNullOrEmpty(valueString) && valueString != SheetXHelper.FormatFloat(value)) list.Add($"\"valueString\":\"{valueString}\"");
 			if (id == -1 && !string.IsNullOrEmpty(idString)) list.Add($"\"idString\":\"{idString}\"");
 			if (values != null) list.Add($"\"values\":{JsonConvert.SerializeObject(values)}");
 			if (increases != null) list.Add($"\"increases\":{JsonConvert.SerializeObject(increases)}");

@@ -28,7 +28,7 @@ namespace RCore.SheetX.Editor
 	/// <summary>
 	/// Provides utility methods for parsing, formatting, and handling various operations related to SheetX data processing.
 	/// </summary>
-	public class SheetXHelper : MonoBehaviour
+	public static class SheetXHelper
 	{
 		/// <summary>
 		/// Converts a cell's formula result into a string representation based on its cached result type (Numeric, String, Boolean).
@@ -62,6 +62,16 @@ namespace RCore.SheetX.Editor
 			using var sw = new StreamWriter(filePath, false, Encoding.UTF8);
 			sw.Write(pContent);
 			sw.Close();
+		}
+
+		/// <summary>
+		/// Parses a spreadsheet cell as a decimal using the invariant culture. Cell text is data, not
+		/// UI: under a comma-decimal culture the machine's own <c>decimal.TryParse</c> accepts "1,5" as
+		/// a number, and that raw comma then lands in generated JSON as invalid syntax.
+		/// </summary>
+		public static bool TryParseDecimal(string value, out decimal result)
+		{
+			return decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
 		}
 
 		/// <summary>
@@ -153,7 +163,7 @@ namespace RCore.SheetX.Editor
 						fieldValueType.type = ValueType.Text;
 					else
 					{
-						if (decimal.TryParse(filedValue, out decimal _))
+						if (TryParseDecimal(filedValue, out decimal _))
 							fieldValueType.type = ValueType.Number;
 						else if (bool.TryParse(filedValue.ToLower(), out bool _))
 							fieldValueType.type = ValueType.Bool;
@@ -183,7 +193,7 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.ArrayText;
 						else
 						{
-							if (decimal.TryParse(longestValue, out decimal _))
+							if (TryParseDecimal(longestValue, out decimal _))
 								fieldValueType.type = ValueType.ArrayNumber;
 							else if (bool.TryParse(longestValue.ToLower(), out bool _))
 								fieldValueType.type = ValueType.ArrayBool;
@@ -274,7 +284,7 @@ namespace RCore.SheetX.Editor
 						fieldValueType.type = ValueType.Text;
 					else
 					{
-						if (decimal.TryParse(fieldValue, out decimal _))
+						if (TryParseDecimal(fieldValue, out decimal _))
 							fieldValueType.type = ValueType.Number;
 						else if (bool.TryParse(fieldValue.ToLower(), out bool _))
 							fieldValueType.type = ValueType.Bool;
@@ -304,7 +314,7 @@ namespace RCore.SheetX.Editor
 							fieldValueType.type = ValueType.ArrayText;
 						else
 						{
-							if (decimal.TryParse(longestValue, out decimal _))
+							if (TryParseDecimal(longestValue, out decimal _))
 								fieldValueType.type = ValueType.ArrayNumber;
 							else if (bool.TryParse(longestValue.ToLower(), out bool _))
 								fieldValueType.type = ValueType.ArrayBool;
@@ -350,14 +360,12 @@ namespace RCore.SheetX.Editor
 					JToken.Parse(strInput);
 					return true;
 				}
-				catch (JsonReaderException jex)
+				catch (JsonReaderException)
 				{
-					Console.WriteLine(jex.Message);
 					return false;
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
-					Console.WriteLine(ex.ToString());
 					return false;
 				}
 			}
@@ -365,12 +373,85 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
-		/// Sorts a dictionary of IDs by key length.
+		/// Orders IDs so that string replacement never rewrites a longer key's prefix first: longest
+		/// keys come first, and equal-length keys are ordered by <see cref="StringComparer.Ordinal"/>
+		/// so the result is culture-independent.
 		/// </summary>
 		public static Dictionary<string, int> SortIDsByLength(Dictionary<string, int> dict)
 		{
-			var sortedDict = dict.OrderBy(x => x.Key.Length).ToDictionary(x => x.Key, x => x.Value);
-			return sortedDict;
+			return dict
+				.OrderByDescending(x => x.Key.Length)
+				.ThenBy(x => x.Key, StringComparer.Ordinal)
+				.ToDictionary(x => x.Key, x => x.Value);
+		}
+
+		/// <summary>
+		/// Closes a duplicate-name column group and returns the finished JSON member. A group that
+		/// collected no value still ends with its opening bracket, so the trailing comma may only be
+		/// trimmed when one exists — trimming unconditionally eats the '[' and emits a malformed
+		/// member instead of an empty array.
+		/// </summary>
+		public static string CloseCombinedColumn(string pOpenGroup)
+		{
+			if (string.IsNullOrEmpty(pOpenGroup))
+				return pOpenGroup;
+			return pOpenGroup.EndsWith("[", StringComparison.Ordinal)
+				? pOpenGroup + "]"
+				: pOpenGroup.Substring(0, pOpenGroup.Length - 1) + "]";
+		}
+
+		/// <summary>
+		/// Serializes the per-sheet JSON of one spreadsheet into a single combined document, keyed by
+		/// sheet file name. Keys are ordinally sorted so the output does not depend on the order the
+		/// source sheets happened to be read in.
+		/// </summary>
+		public static string MergeJsonContents(Dictionary<string, string> pJsonBySheet)
+		{
+			return JsonConvert.SerializeObject(pJsonBySheet
+				.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+				.ToDictionary(pair => pair.Key, pair => pair.Value));
+		}
+
+		/// <summary>
+		/// Parses an integer with invariant culture so exports do not depend on the editor's locale.
+		/// </summary>
+		public static bool TryParseInt(string value, out int result)
+		{
+			return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
+		}
+
+		/// <summary>
+		/// Parses a float with invariant culture so exports do not depend on the editor's locale.
+		/// </summary>
+		public static bool TryParseFloat(string value, out float result)
+		{
+			return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+		}
+
+		/// <summary>
+		/// Formats a float as a round-trippable invariant literal, so generated C# and JSON are
+		/// byte-identical on locales that use ',' as the decimal separator.
+		/// </summary>
+		public static string FormatFloat(float value)
+		{
+			return value.ToString("R", CultureInfo.InvariantCulture);
+		}
+
+		/// <summary>
+		/// Converts a raw spreadsheet cell into an invariant C# float literal.
+		/// </summary>
+		public static string FormatFloatLiteral(string raw)
+		{
+			string trimmed = (raw ?? "").Trim();
+			return TryParseFloat(trimmed, out float parsed) ? FormatFloat(parsed) + "f" : trimmed + "f";
+		}
+
+		/// <summary>
+		/// Formats an integer for generated source and JSON without editor-culture variation.
+		/// </summary>
+		public static string FormatInt(int value)
+		{
+			return value.ToString(CultureInfo.InvariantCulture);
 		}
 
 		/// <summary>
@@ -584,14 +665,52 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
-		/// Gets the 'Assets/Editor' directory path, creating it if it doesn't exist.
+		/// Gets the directory holding the Google OAuth token cache, creating it if it doesn't exist.
+		/// Lives in 'Library/SheetX', outside the asset pipeline: 'Library' is never committed and is
+		/// not included when 'Assets' is zipped, so a cached OAuth token cannot leak with the project.
 		/// </summary>
-		public static string GetSaveDirectory()
+		/// <param name="pWarn">Receives a best-effort migration failure. Null logs to the console.</param>
+		public static string GetTokenStoreDirectory(Action<string> pWarn = null)
 		{
-			var path = Path.Combine(Application.dataPath, "Editor");
+			var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Library", "SheetX"));
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
+			MigrateLegacyTokenStore(path, pWarn);
 			return path;
+		}
+
+		/// <summary>
+		/// Gets the directory holding the Google OAuth token cache.
+		/// </summary>
+		[Obsolete("Renamed to GetTokenStoreDirectory. The token cache no longer lives under Assets/Editor.")]
+		public static string GetSaveDirectory() => GetTokenStoreDirectory();
+
+		// A pre-existing token cache under Assets/Editor is a committed-secret risk, so move rather
+		// than leave it behind. Best-effort: a failure here only costs the user one re-authentication.
+		private static void MigrateLegacyTokenStore(string destination, Action<string> pWarn)
+		{
+			var legacyDir = Path.Combine(Application.dataPath, "Editor");
+			if (!Directory.Exists(legacyDir))
+				return;
+			foreach (string file in Directory.GetFiles(legacyDir, "Google.Apis.Auth.OAuth2.Responses.TokenResponse-*"))
+			{
+				try
+				{
+					string target = Path.Combine(destination, Path.GetFileName(file));
+					if (!File.Exists(target))
+						File.Move(file, target);
+					else
+						File.Delete(file);
+				}
+				catch (Exception ex)
+				{
+					string message = $"SheetX: could not move legacy token cache '{file}' out of Assets: {ex.Message}";
+					if (pWarn != null)
+						pWarn(message);
+					else
+						Debug.LogWarning(message);
+				}
+			}
 		}
 
 		/// <summary>
@@ -669,7 +788,8 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Authenticates the user with Google using Client ID and Secret, requesting SpreadsheetsReadonly scope.
 		/// </summary>
-		public static UserCredential AuthenticateGoogleUser(string googleClientId, string googleClientSecret)
+		/// <param name="pWarn">Receives token-cache migration failures. Null logs to the console.</param>
+		public static UserCredential AuthenticateGoogleUser(string googleClientId, string googleClientSecret, Action<string> pWarn = null)
 		{
 			var clientSecrets = new ClientSecrets();
 			clientSecrets.ClientId = googleClientId;
@@ -682,9 +802,8 @@ namespace RCore.SheetX.Editor
 				new[] { SheetsService.Scope.SpreadsheetsReadonly },
 				"user",
 				CancellationToken.None,
-				new FileDataStore(GetSaveDirectory(), true)).Result;
+				new FileDataStore(GetTokenStoreDirectory(pWarn), true)).Result;
 
-			Debug.Log("Credential file saved to: " + GetSaveDirectory());
 			return credential;
 		}
 

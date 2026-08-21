@@ -7,6 +7,7 @@ using System.IO;
 using NUnit.Framework;
 using RCore.SheetX.Editor;
 using UnityEditor;
+using UnityEngine;
 
 namespace RCore.SheetX.Tests
 {
@@ -61,6 +62,72 @@ namespace RCore.SheetX.Tests
 			{
 				settings.jsonOutputFolder = original;
 				settings.SaveToDisk();
+			}
+		}
+
+		[Test]
+		public void token_cache_lives_outside_the_asset_pipeline()
+		{
+			string dir = SheetXHelper.GetTokenStoreDirectory().Replace('\\', '/');
+			string assets = Application.dataPath.Replace('\\', '/').TrimEnd('/');
+
+			Assert.IsFalse(dir.StartsWith(assets + "/", System.StringComparison.OrdinalIgnoreCase),
+				$"Token cache resolved to '{dir}', inside Assets. A cached OAuth token there is committed " +
+				"by anyone whose .gitignore is stale, and ships with any zip of Assets.");
+			StringAssert.EndsWith("/Library/SheetX", dir);
+			Assert.IsTrue(Directory.Exists(dir), "GetTokenStoreDirectory() must create the directory it returns.");
+		}
+
+		[Test]
+		public void credential_pref_key_does_not_depend_on_bundle_identifier()
+		{
+			var settings = SheetXSettings.Init();
+			string original = settings.ObfGoogleClientId;
+			const string probe = "sheetx-probe-client-id";
+
+			try
+			{
+				settings.ObfGoogleClientId = probe;
+
+				// The bundle identifier is a shipping setting that changes per build flavor. If it were
+				// part of the key, a single Player Settings edit would orphan the stored credential.
+				string legacyKey = $"{Application.identifier}.SheetX.GoogleClientId";
+				Assert.IsFalse(EditorPrefs.HasKey(legacyKey),
+					$"Credential was written under '{legacyKey}', which is keyed by the bundle identifier.");
+				Assert.AreEqual(probe, settings.ObfGoogleClientId);
+			}
+			finally
+			{
+				settings.ObfGoogleClientId = original;
+			}
+		}
+
+		[Test]
+		public void credential_migrates_from_legacy_bundle_identifier_key()
+		{
+			var settings = SheetXSettings.Init();
+			string original = settings.ObfGoogleClientSecret;
+			string legacyKey = $"{Application.identifier}.SheetX.GoogleClientSecret";
+			const string legacyValue = "sheetx-legacy-secret";
+
+			try
+			{
+				// Simulate an install that authenticated before the key changed: clear the new-key value
+				// and seed only the old one.
+				settings.ObfGoogleClientSecret = "";
+				EditorPrefs.SetString(legacyKey, legacyValue);
+
+				Assert.AreEqual(legacyValue, settings.ObfGoogleClientSecret,
+					"An existing install must not silently lose its credential when the key scheme changes.");
+				Assert.IsFalse(EditorPrefs.HasKey(legacyKey),
+					"The legacy key must be removed once its value has been copied forward.");
+				Assert.AreEqual(legacyValue, settings.ObfGoogleClientSecret,
+					"The migrated value must persist under the new key, not just be returned once.");
+			}
+			finally
+			{
+				EditorPrefs.DeleteKey(legacyKey);
+				settings.ObfGoogleClientSecret = original;
 			}
 		}
 

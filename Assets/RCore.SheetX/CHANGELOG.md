@@ -57,8 +57,8 @@ Cloud Console does.
   key shipped with this package. That key is published here, so output encrypted with it is
   decryptable by anyone.
 - The Google OAuth token store (`Assets/Editor/Google.Apis.Auth.OAuth2.Responses.TokenResponse-user`)
-  is no longer tracked by git and is now covered by `.gitignore`. It holds a `refresh_token` —
-  an already-granted authorization, not a challenge — so it was the more sensitive of the two
+  is no longer tracked by git and is now covered by `.gitignore`. It holds an OAuth token cache,
+  an already-granted authorization rather than a challenge, so it was more sensitive of two
   exposures.
 
 ### Fixed
