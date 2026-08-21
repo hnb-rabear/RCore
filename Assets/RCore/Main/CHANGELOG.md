@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.4.0] - 2026-08-18
+
+### Added
+
+- **UI - PanelStack**: Added UniTask addressable helpers for pushing panels, pushing panels to the top, queueing panels, and pushing panels to a root.
+- **General Asset Linker - `GeneralSpriteLinker`**: Added `PixelPerUnit` proxy for its linked `Image`.
+- **UI - `AddressableImage`**: Added `AutoActive` option for controlling automatic sprite loading.
+- **UI — AddressableImage inspector**: Supports multi-object editing with a shared **Preserve Aspect** toggle that dirties each `Image` and repaints canvases and scene views.
+- **`RPlayerPrefDict<TKey, TVal>`**: Added `ContainsKey` and `TryGetValue`; `Contain` now delegates to `ContainsKey`.
+
+### Fixed
+
+- **General Asset Linker - `GeneralSpriteLinker`**: `Reset()` now caches its `Image` before reading `Image.sprite`, so a newly added component picks up the matching catalog key.
+- **UI — AddressableImage inspector**: No longer captures sprite references on enable and repaint; it only refreshes the editor preview, leaving capture to the explicit editor capture/migrate tooling.
+- **UI — `AddressableImage`**: Auto-load moved back to `OnEnable` so pooled or re-enabled objects retry their sprite load.
+- **UI — PanelStack**: Addressable panel loads now report ordinary failures as `null` instead of throwing, while cancellation still propagates to the caller.
+- **General Asset Linker - `GeneralSpriteLinker`**: `Refresh()` no longer clears the serialized `Image.sprite` without an undo entry, and only adopts a key the catalog knows.
+- **Inspector - `[FolderPath]`**: Folders picked outside the project's `Assets` folder are rejected with an error instead of producing a corrupt path.
+- **`RPlayerPrefDict<TKey, TVal>`**: Dirty flag now tracks real mutations only — equal assignments are skipped, a null collection assignment falls back to an empty dictionary, `Clear()` no-ops when already empty, and `SaveChange()` returns early when unchanged so an untouched empty collection no longer deletes its `PlayerPrefs` key.
+- `[AutoFill]` now fills null references and empty arrays/lists automatically after Inspector drawing, processing each selected object independently and avoiding repeated scene or AssetDatabase searches.
+
+## [1.3.0]
+
+### Added
+
+- **General Asset Linker — Catalog workflow**: Searchable, sortable asset grid with multi-select category editing, path display, quick add, sprite activation control, direct-reference usage indexing, and prefab linker usage scanning.
+- **General Asset Linker — Restore workflow**: Restore catalog-linked audio, sprite, texture, and `SpriteRenderer` references in prefabs, preview affected linkers before changes, and report skipped or failed assets.
+- **General Asset Linker — `GeneralSpriteRendererLinker`**: New runtime component resolves `SpriteRenderer.sprite` by catalog key; supports automatic component activation and exposes `Refresh()`.
+- **Inspector previews**: Show source asset paths and sprite regions for sprites, textures, and UI Images.
+- **UI — AddressableImage**: `Image` companion component that loads its sprite from an `AssetReferenceSprite` via UniTask and releases the handle on destroy. Editor tooling captures the assigned `Image.sprite` into Addressables, previews it in the inspector, migrates existing `Image` components, and strips serialized sprite references at build time.
+- **Asset Cleaner — Incremental cache**: Detect imports, moves, and deletions through an asset postprocessor; remap cached references on moves; persist versioned cache state; and scan serialized text references for direct usage results.
+
+### Changed
+
+- **AddressableImage editor tools**: Moved sprite capture and migration code into `rcore.editor`, preserving runtime/editor assembly separation while retaining Addressables editor integration.
+- **Asset Cleaner**: Replaced duplicate RevCore editor implementation with RCore.Main tooling.
+
+## [1.2.0]
+
+### Added
+
+- **General Asset Linker**: Key-based asset catalog (`AssetCatalog` ScriptableObject) for sprites, textures, and audio clips with lazy dictionary cache and no hard prefab references. Runtime linker components (`GeneralSpriteLinker`, `GeneralTextureLinker`, `GeneralAudioLinker`) resolve assets by string key at runtime. Editor tooling includes a catalog management window (add/delete/rename/categorize/Addressables marking), a relink panel for batch-migrating direct asset references in prefabs to catalog-key linker components, a usage report panel, and an asset picker window.
+
 ## [1.1.9]
 
 ### Added

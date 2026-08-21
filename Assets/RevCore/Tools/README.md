@@ -60,7 +60,6 @@ All tools are discovered via reflection from the `RevCoreTool` base class. Third
 | Tool | Type | Description |
 |---|---|---|
 | Auto Play First Scene | Quick Action | Toggle auto-play from first build scene |
-| Asset Cleaner | Window | Find unused assets, find references, bulk delete with confirmation |
 
 ### Addressables
 

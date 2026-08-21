@@ -25,6 +25,8 @@ namespace RCore.UI
 		public bool useOnce;
 		[Tooltip("Enable this to use custom transition effects via IE_HideFX and IE_ShowFX coroutines.")]
 		public bool enableFXTransition = false;
+		[Tooltip("Set True if this panel needs the panel roots DimmerOverlay")]
+		public bool needDimmerOverlay = true;
 		[Tooltip("If true, ensures the panel has its own Canvas and GraphicRaycaster.")]
 		public bool nested = true;
 		[Tooltip("Optional button to trigger the Back() action.")]

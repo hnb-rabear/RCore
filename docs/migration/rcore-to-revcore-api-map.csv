@@ -224,8 +224,8 @@ Inspector,SingleLayerAttribute,class,PORTED,Inspector,SingleLayerAttribute,RCore
 Inspector,SingleLayerPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
 Inspector,SpriteBoxAttribute,class,PORTED,Inspector,SpriteBoxAttribute,RCore.Inspector -> RevCore
 Inspector,SpriteBoxDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
-Inspector,TMPFontMaterialsAttribute,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
-Inspector,TMPFontMaterialsDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
+Inspector,TMPFontMaterialsAttribute,class,GAP,Inspector,,"port pending — RevCore.Inspector has no TextMeshPro dependency; port must keep Component font-atlas filtering plus ScriptableObject project-wide TMP material dropdown, and pick owner package (RevCore.UI already depends on TMP)"
+Inspector,TMPFontMaterialsDrawer,class,GAP,Inspector,,"port pending — see TMPFontMaterialsAttribute row; drawer needs both Component and ScriptableObject paths"
 Inspector,TagSelectorAttribute,class,PORTED,Inspector,TagSelectorAttribute,RCore.Inspector -> RevCore
 Inspector,TagSelectorPropertyDrawer,class,GAP,Inspector,,no RevCore equivalent found — port or drop?
 Inspector,TimeStampAttribute,class,GAP,Inspector,,no RevCore equivalent found — port or drop?

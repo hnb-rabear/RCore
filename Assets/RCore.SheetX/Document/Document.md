@@ -9,8 +9,7 @@ As game projects grow, so does the need for efficient data table, constant, and 
 Originally designed for RPGs with extensive databases, it now supports various game genres and utilizes Excel and Google Spreadsheets for data management.
 
 ### Samples
-This package includes samples to help you get started. You can find them in the `Samples~` folder. To view them in Unity, you may need to copy them from the package cache or enable "Show Packages" in the Project window if embedded. 
-Alternatively, you can download an example project [Here](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage).
+Download the example project [Here](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage).
 
 ## 2. Main Functions
 
@@ -471,6 +470,16 @@ LocalizationsManager.CurrentLanguage = "jp";
 // Register an action when language changed
 LocalizationsManager.OnLanguageChanged += OnLanguageChanged;
 ```
+
+#### Switch Language in Scene View
+
+Switch generated localization text without entering Play Mode:
+
+1. Open **Scene View**.
+2. Enable **Localization** from **View > Overlays > Localization** if hidden.
+3. Select a language from the dropdown, or use `<` and `>` to move between languages.
+
+The overlay reloads generated localization data, then refreshes matching localization text components in all loaded scenes and open Prefab Mode. It requires generated SheetX localization classes; no template change or code regeneration is needed. If none exist, it shows `No localization class found`.
 
 - You can retrieve localized content using three different methods.
 

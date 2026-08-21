@@ -26,6 +26,8 @@ namespace RCore.Inspector
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
+			label = EditorGUI.BeginProperty(position, label, property);
+
 			// This attribute only works on string properties.
 			if (property.propertyType == SerializedPropertyType.String)
 			{
@@ -54,8 +56,14 @@ namespace RCore.Inspector
 					if (!string.IsNullOrEmpty(selectedPath))
 					{
 						// Convert the absolute path to a relative path starting with "Assets".
-						property.stringValue = "Assets" + selectedPath.Substring(Application.dataPath.Length);
-						LastOpenedDirectory = property.stringValue; // Save for next time.
+						var relativePath = ToAssetsRelativePath(selectedPath);
+						if (relativePath == null)
+							Debug.LogError($"[FolderPath] '{selectedPath}' is outside the project's Assets folder.");
+						else
+						{
+							property.stringValue = relativePath;
+							LastOpenedDirectory = property.stringValue; // Save for next time.
+						}
 					}
 				}
 			}
@@ -64,6 +72,18 @@ namespace RCore.Inspector
 				// Show an error message if the attribute is used on a non-string field.
 				EditorGUI.LabelField(position, label.text, "Use [FolderPath] with string fields only.");
 			}
+
+			EditorGUI.EndProperty();
+		}
+
+		private static string ToAssetsRelativePath(string selectedPath)
+		{
+			var assetsPath = Application.dataPath.Replace('\\', '/').TrimEnd('/');
+			selectedPath = selectedPath.Replace('\\', '/').TrimEnd('/');
+			if (!selectedPath.Equals(assetsPath, System.StringComparison.OrdinalIgnoreCase)
+				&& !selectedPath.StartsWith(assetsPath + "/", System.StringComparison.OrdinalIgnoreCase))
+				return null;
+			return "Assets" + selectedPath.Substring(assetsPath.Length);
 		}
 	}
 #endif

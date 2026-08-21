@@ -14,17 +14,17 @@ namespace RCore
 				m_RPlayerPrefs[i].Delete();
 		}
 		public static void Register(RPlayerPref pChange)
-        {
-            for (int i = 0; i < m_RPlayerPrefs.Count; i++)
-            {
-                if (m_RPlayerPrefs[i].key == pChange.key)
-                {
-                    m_RPlayerPrefs[i] = pChange;
-                    return;
-                }
-            }
-            m_RPlayerPrefs.Add(pChange);
-        }
+		{
+			for (int i = 0; i < m_RPlayerPrefs.Count; i++)
+			{
+				if (m_RPlayerPrefs[i].key == pChange.key)
+				{
+					m_RPlayerPrefs[i] = pChange;
+					return;
+				}
+			}
+			m_RPlayerPrefs.Add(pChange);
+		}
 		public static void SaveChanges()
 		{
 			for (int i = 0; i < m_RPlayerPrefs.Count; i++)
@@ -144,7 +144,7 @@ namespace RCore
 		}
 	}
 
-    [Obsolete]
+	[Obsolete]
 	public class RPlayerPrefDateTime : RPlayerPref
 	{
 		private DateTime m_value;
@@ -296,47 +296,79 @@ namespace RCore
 			m_values ??= new Dictionary<TKey, TVal>();
 		}
 
-		public Dictionary<TKey, TVal> Values { get => m_values; set => m_values = value; }
+		public Dictionary<TKey, TVal> Values
+		{
+			get => m_values;
+			set
+			{
+				if (ReferenceEquals(m_values, value))
+					return;
+				m_values = value ?? new Dictionary<TKey, TVal>();
+				changed = true;
+			}
+		}
 
-		public TVal this[TKey index] { get => m_values[index]; set => m_values[index] = value; }
+		public TVal this[TKey pKey]
+		{
+			get => m_values[pKey];
+			set
+			{
+				if (m_values.TryGetValue(pKey, out var currentValue) && EqualityComparer<TVal>.Default.Equals(currentValue, value))
+					return;
+				m_values[pKey] = value;
+				changed = true;
+			}
+		}
 
 		public void Add(TKey pKey, TVal pVal)
 		{
-			m_values[pKey] = pVal;
-			changed = true;
+			this[pKey] = pVal;
 		}
 
-		public void Remove(TKey pValue)
+		public void Remove(TKey pKey)
 		{
-			if (m_values.Remove(pValue))
+			if (m_values.Remove(pKey))
 				changed = true;
 		}
 
-		public bool Contain(TKey value)
+		public bool ContainsKey(TKey pKey)
 		{
-			return m_values.ContainsKey(value);
+			return m_values.ContainsKey(pKey);
+		}
+
+		public bool Contain(TKey pKey)
+		{
+			return ContainsKey(pKey);
+		}
+
+		public bool TryGetValue(TKey pKey, out TVal pValue)
+		{
+			return m_values.TryGetValue(pKey, out pValue);
 		}
 
 		public override void SaveChange()
 		{
+			if (!changed)
+				return;
 			if (m_values.Count == 0)
 			{
 				PlayerPrefs.DeleteKey(key);
+				changed = false;
 				return;
 			}
-			if (!changed)
-				return;
 			PlayerPrefs.SetString(key, JsonConvert.SerializeObject(m_values));
 			changed = false;
 		}
 
 		public void Clear()
 		{
+			if (m_values.Count == 0)
+				return;
 			m_values.Clear();
 			changed = true;
 		}
 	}
-	
+
 	public class RPlayerPrefObject<T> : RPlayerPref
 	{
 		public T value;
@@ -377,10 +409,10 @@ namespace RCore
 	public class RPlayerPrefSerializableObject<T> : RPlayerPref
 	{
 		public T value;
-        private bool m_encrypted;
+		private bool m_encrypted;
 		public RPlayerPrefSerializableObject(string pKey, bool pEncrypted, T pDefault) : base(pKey)
 		{
-            m_encrypted = pEncrypted;
+			m_encrypted = pEncrypted;
 			value = pDefault;
 			key = pEncrypted ? Encryption.Singleton.Encrypt(pKey) : pKey;
 
@@ -400,10 +432,10 @@ namespace RCore
 		}
 		public override void SaveChange()
 		{
-            var json = JsonUtility.ToJson(value);
-            if (m_encrypted)
-                json = Encryption.Singleton.Encrypt(json);
-            PlayerPrefs.SetString(key, json);
+			var json = JsonUtility.ToJson(value);
+			if (m_encrypted)
+				json = Encryption.Singleton.Encrypt(json);
+			PlayerPrefs.SetString(key, json);
 		}
 	}
 }

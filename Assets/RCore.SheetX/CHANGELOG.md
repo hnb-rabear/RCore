@@ -25,6 +25,13 @@
   deliberate exception: no public symbol changes shape, and the alternative is a MAJOR bump for
   every consumer over a bug fix that makes two buttons agree with each other.
 
+### Added
+
+- Localization Scene View overlay for switching language directly from Scene View via dropdown and
+  `<`/`>` arrows, without entering Play Mode. Discovers generated localization classes by reflection
+  — no template change or code regeneration needed. Refreshes all matching text components in loaded
+  scenes and Prefab Stage.
+
 ### Security
 
 **Rotate your Google OAuth client secret when convenient.** If your `SheetXSettings.asset` was
@@ -52,6 +59,9 @@ Cloud Console does.
 
 ### Fixed
 
+- Missing localization ID diagnostics: `OnValidate` error now reports component type, missing ID,
+  GameObject name, full hierarchy path, and source asset/scene. Double-clicking the Console entry
+  pings the offending object.
 - Google `Export IDs` wrote the merged `IDs.cs` inside the per-sheet loop, so the file was
   rewritten once per sheet and the final content depended on sheet order.
 - Localization export threw on a blank header cell (Excel) or a short row (Google Sheets).

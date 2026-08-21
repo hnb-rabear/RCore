@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -7,9 +9,8 @@ using UnityEngine;
 namespace RCore.Inspector
 {
 	/// <summary>
-	/// An attribute that, when applied to a field in a MonoBehaviour or ScriptableObject,
-	/// automatically tries to find and assign a reference to it in the Unity Editor if the field is null.
-	/// It can handle single object references and arrays/lists of Components or ScriptableObjects.
+	/// An attribute that marks a field to be filled automatically while its Inspector is drawn.
+	/// It supports single object references and empty arrays/lists of Components or ScriptableObjects.
 	/// </summary>
 	public class AutoFillAttribute : PropertyAttribute
 	{
@@ -34,166 +35,183 @@ namespace RCore.Inspector
 #if UNITY_EDITOR
 	/// <summary>
 	/// The custom property drawer for fields marked with the [AutoFill] attribute.
-	/// This class contains the editor logic to find and assign references.
+	/// Empty references fill automatically for each inspected object.
 	/// </summary>
 	[CustomPropertyDrawer(typeof(AutoFillAttribute))]
 	public class AutoFillDrawer : PropertyDrawer
 	{
+		private static readonly HashSet<string> s_checked = new HashSet<string>();
+
+		static AutoFillDrawer()
+		{
+			Selection.selectionChanged += ClearChecks;
+			EditorApplication.hierarchyChanged += ClearChecks;
+			EditorApplication.projectChanged += ClearChecks;
+			Undo.undoRedoPerformed += ClearChecks;
+		}
+
 		/// <summary>
-		/// The main GUI drawing method for the property. It determines if the property is a single reference
-		/// or an array and calls the appropriate handler.
+		/// Draws the property and schedules automatic filling after the current Inspector event.
 		/// </summary>
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			var autoFill = (AutoFillAttribute)attribute;
-			// Check if the property is an array or a list and dispatch to the correct handler.
-			if (property.isArray && property.propertyType == SerializedPropertyType.Generic)
-			{
-				HandleArrayProperty(position, property, label, autoFill);
-			}
-			else
-			{
-				HandleObjectReferenceProperty(position, property, label, autoFill);
-			}
-		}
-
-		/// <summary>
-		/// Handles the logic for a single object reference property.
-		/// If the reference is null, it attempts to find a suitable component or ScriptableObject.
-		/// </summary>
-		private void HandleObjectReferenceProperty(Rect position, SerializedProperty property, GUIContent label, AutoFillAttribute autoFill)
-		{
-			// Only attempt to fill if the field is currently empty.
-			if (property.objectReferenceValue == null)
-			{
-				var fieldType = fieldInfo.FieldType;
-
-				// Handle MonoBehaviour and Component types
-				if (typeof(Component).IsAssignableFrom(fieldType))
-				{
-					var targetMonoBehaviour = property.serializedObject.targetObject as MonoBehaviour;
-					if (targetMonoBehaviour != null)
-					{
-						FindComponentInChildren(autoFill, property, fieldType, targetMonoBehaviour);
-					}
-				}
-				// Handle ScriptableObject types
-				else if (typeof(ScriptableObject).IsAssignableFrom(fieldType))
-				{
-					FindScriptableObject(autoFill, property, fieldType);
-				}
-			}
-
-			// Draw the property field as usual.
-			EditorGUI.PropertyField(position, property, label);
-		}
-
-		/// <summary>
-		/// Handles the logic for an array or list property.
-		/// It attempts to find all matching components or ScriptableObjects and populate the array with them.
-		/// </summary>
-		private void HandleArrayProperty(Rect position, SerializedProperty property, GUIContent label, AutoFillAttribute autoFill)
-		{
-			// Determine the element type of the array/list.
-			var elementType = fieldInfo.FieldType.GetElementType() ?? fieldInfo.FieldType.GetGenericArguments().FirstOrDefault();
-			if (elementType == null) return;
-
-			// Handle arrays of Components
-			if (typeof(Component).IsAssignableFrom(elementType))
-			{
-				var targetMonoBehaviour = property.serializedObject.targetObject as MonoBehaviour;
-				if (targetMonoBehaviour != null)
-				{
-					var components = targetMonoBehaviour.GetComponentsInChildren(elementType, true); // Include inactive
-					AssignComponentsToArrayProperty(property, components);
-				}
-			}
-			// Handle arrays of ScriptableObjects
-			else if (typeof(ScriptableObject).IsAssignableFrom(elementType))
-			{
-				var guids = string.IsNullOrEmpty(autoFill.Path)
-					? AssetDatabase.FindAssets($"t:{elementType.Name}")
-					: AssetDatabase.FindAssets($"t:{elementType.Name}", new[] { autoFill.Path });
-				var assets = guids.Select(AssetDatabase.GUIDToAssetPath)
-					.Select(p => AssetDatabase.LoadAssetAtPath(p, elementType) as ScriptableObject)
-					.ToArray();
-				AssignScriptableObjectsToArrayProperty(property, assets);
-			}
-
-			// Draw the array property field, allowing user to expand and see the auto-filled elements.
+			EditorGUI.BeginChangeCheck();
 			EditorGUI.PropertyField(position, property, label, true);
+			if (EditorGUI.EndChangeCheck())
+				ClearChecks(property.serializedObject.targetObjects, property.propertyPath);
+
+			if (Event.current.type == EventType.Repaint && fieldInfo != null
+				&& AutoFillResolver.NeedsFill(property, fieldInfo.FieldType))
+				ScheduleFill(property, fieldInfo.FieldType, ((AutoFillAttribute)attribute).Path);
 		}
 
 		/// <summary>
-		/// Finds a component in the children of the target MonoBehaviour and assigns it to the property.
+		/// Returns height required by expanded array and list fields.
 		/// </summary>
-		private void FindComponentInChildren(AutoFillAttribute autoFill, SerializedProperty property, System.Type fieldType, MonoBehaviour targetMonoBehaviour)
+		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			if (string.IsNullOrEmpty(autoFill.Path))
+			return EditorGUI.GetPropertyHeight(property, label, true);
+		}
+
+		private static void ScheduleFill(SerializedProperty property, Type fieldType, string path)
+		{
+			var propertyPath = property.propertyPath;
+			var targets = new List<UnityEngine.Object>();
+			var keys = new List<string>();
+
+			foreach (var target in property.serializedObject.targetObjects)
 			{
-				// If no path is specified, find the first component of the type in children.
-				var component = targetMonoBehaviour.GetComponentInChildren(fieldType, true); // Include inactive
-				if (component != null)
+				if (target == null) continue;
+				var key = GetKey(target, propertyPath);
+				if (!s_checked.Add(key)) continue;
+				targets.Add(target);
+				keys.Add(key);
+			}
+
+			if (targets.Count == 0) return;
+			EditorApplication.delayCall += () => Fill(targets, keys, propertyPath, fieldType, path);
+		}
+
+		private static void Fill(IReadOnlyList<UnityEngine.Object> targets, IReadOnlyList<string> keys,
+			string propertyPath, Type fieldType, string path)
+		{
+			for (int i = 0; i < targets.Count; i++)
+			{
+				if (!s_checked.Contains(keys[i])) continue;
+				var target = targets[i];
+				if (target == null) continue;
+
+				var serializedObject = new SerializedObject(target);
+				serializedObject.UpdateIfRequiredOrScript();
+				var property = serializedObject.FindProperty(propertyPath);
+				if (property == null || !AutoFillResolver.NeedsFill(property, fieldType))
 				{
-					property.objectReferenceValue = component;
+					s_checked.Remove(keys[i]);
+					continue;
+				}
+
+				if (AutoFillResolver.TryFill(property, fieldType, path, target as Component))
+				{
+					serializedObject.ApplyModifiedProperties();
+					s_checked.Remove(keys[i]);
 				}
 			}
-			else
-			{
-				// If a path is specified, find the component on the specific child transform.
-				var target = targetMonoBehaviour.transform.Find(autoFill.Path);
+		}
+
+		private static string GetKey(UnityEngine.Object target, string propertyPath)
+		{
+			return target.GetInstanceID() + "/" + propertyPath;
+		}
+
+		private static void ClearChecks()
+		{
+			s_checked.Clear();
+		}
+
+		private static void ClearChecks(IEnumerable<UnityEngine.Object> targets, string propertyPath)
+		{
+			foreach (var target in targets)
 				if (target != null)
-				{
-					var component = target.GetComponent(fieldType);
-					if (component != null)
-					{
-						property.objectReferenceValue = component;
-					}
-				}
-			}
+					s_checked.Remove(GetKey(target, propertyPath));
+		}
+	}
+
+	/// <summary>
+	/// Reference-resolution logic used by automatic Inspector filling.
+	/// </summary>
+	internal static class AutoFillResolver
+	{
+		/// <summary>
+		/// Returns whether the property is still empty, so a fill is worth attempting.
+		/// Cheap enough to call per repaint: it never touches the AssetDatabase or the scene.
+		/// </summary>
+		public static bool NeedsFill(SerializedProperty property, Type fieldType)
+		{
+			if (property.hasMultipleDifferentValues) return true;
+			if (GetElementType(fieldType) != null)
+				return property.isArray && property.arraySize == 0;
+			return property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue == null;
 		}
 
 		/// <summary>
-		/// Finds a ScriptableObject asset in the project and assigns it to the property.
+		/// Fills the property if it is still empty. Returns whether anything changed.
 		/// </summary>
-		private void FindScriptableObject(AutoFillAttribute autoFill, SerializedProperty property, System.Type fieldType)
+		public static bool TryFill(SerializedProperty property, Type fieldType, string path, Component owner)
 		{
-			// Find assets of the specified type, optionally filtering by path.
-			string[] guids = string.IsNullOrEmpty(autoFill.Path)
-				? AssetDatabase.FindAssets($"t:{fieldType.Name}")
-				: AssetDatabase.FindAssets($"t:{fieldType.Name}", new[] { autoFill.Path });
-			
-			// Load the first asset found from its GUID.
-			if (guids.Length > 0)
+			var elementType = GetElementType(fieldType);
+			if (elementType != null)
 			{
-				var assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-				var asset = AssetDatabase.LoadAssetAtPath(assetPath, fieldType);
-				property.objectReferenceValue = asset;
+				// A collection field can still resolve to a non-array property (e.g. a serialized wrapper); skip it.
+				if (!property.isArray) return false;
+				if (property.arraySize != 0) return false;
+				var matches = FindMatches(path, elementType, owner);
+				if (matches.Length == 0) return false;
+
+				property.arraySize = matches.Length;
+				for (int i = 0; i < matches.Length; i++)
+					property.GetArrayElementAtIndex(i).objectReferenceValue = matches[i];
+				return true;
 			}
+
+			if (property.propertyType != SerializedPropertyType.ObjectReference || property.objectReferenceValue != null) return false;
+			var match = FindMatches(path, fieldType, owner).FirstOrDefault();
+			if (match == null) return false;
+
+			property.objectReferenceValue = match;
+			return true;
 		}
 
-		/// <summary>
-		/// Assigns an array of components to a serialized list or array property.
-		/// </summary>
-		private void AssignComponentsToArrayProperty(SerializedProperty property, Component[] components)
+		private static Type GetElementType(Type fieldType)
 		{
-			property.arraySize = components.Length;
-			for (int i = 0; i < components.Length; i++)
-			{
-				property.GetArrayElementAtIndex(i).objectReferenceValue = components[i];
-			}
+			if (fieldType.IsArray) return fieldType.GetElementType();
+			return fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>)
+				? fieldType.GetGenericArguments()[0]
+				: null;
 		}
 
-		/// <summary>
-		/// Assigns an array of ScriptableObjects to a serialized list or array property.
-		/// </summary>
-		private void AssignScriptableObjectsToArrayProperty(SerializedProperty property, ScriptableObject[] assets)
+		private static UnityEngine.Object[] FindMatches(string path, Type type, Component targetComponent)
 		{
-			property.arraySize = assets.Length;
-			for (int i = 0; i < assets.Length; i++)
+			if (typeof(Component).IsAssignableFrom(type))
 			{
-				property.GetArrayElementAtIndex(i).objectReferenceValue = assets[i];
+				if (targetComponent == null) return new UnityEngine.Object[0];
+				if (string.IsNullOrEmpty(path)) return targetComponent.GetComponentsInChildren(type, true);
+
+				var transform = targetComponent.transform.Find(path);
+				var component = transform != null ? transform.GetComponent(type) : null;
+				return component != null ? new UnityEngine.Object[] { component } : new UnityEngine.Object[0];
 			}
+
+			if (!typeof(ScriptableObject).IsAssignableFrom(type)) return new UnityEngine.Object[0];
+			if (!string.IsNullOrEmpty(path) && !AssetDatabase.IsValidFolder(path)) return new UnityEngine.Object[0];
+
+			var guids = string.IsNullOrEmpty(path)
+				? AssetDatabase.FindAssets($"t:{type.Name}")
+				: AssetDatabase.FindAssets($"t:{type.Name}", new[] { path });
+			return guids.Select(AssetDatabase.GUIDToAssetPath)
+				.OrderBy(assetPath => assetPath, StringComparer.Ordinal)
+				.Select(assetPath => AssetDatabase.LoadAssetAtPath(assetPath, type))
+				.Where(asset => asset != null)
+				.ToArray();
 		}
 	}
 #endif
