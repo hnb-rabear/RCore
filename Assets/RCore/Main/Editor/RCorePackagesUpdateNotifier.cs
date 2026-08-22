@@ -177,7 +177,7 @@ namespace RCore.Editor
 			private bool m_MuteFor48Hours;
 			private bool m_Closed;
 
-			private static void ShowUpdates(List<UpdateInfo> updates)
+			internal static void ShowUpdates(List<UpdateInfo> updates)
 			{
 				if (s_Instance != null)
 				{
