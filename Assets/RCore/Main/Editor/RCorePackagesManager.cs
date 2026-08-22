@@ -105,30 +105,48 @@ namespace RCore.Editor
 			public string remoteVersion; // from GitHub, null if not checked
 			public PackageInfo upmInfo;
 
-			public bool HasUpdate =>
-				!string.IsNullOrEmpty(version) &&
-				!string.IsNullOrEmpty(remoteVersion) &&
-				version != remoteVersion &&
-				CompareVersions(remoteVersion, version) > 0;
+			public bool HasUpdate => RCorePackagesManager.HasUpdate(version, remoteVersion);
+		}
 
-			private static int CompareVersions(string a, string b)
+		internal const string RemoteVersionCachePrefix = "RCorePackagesManager_RemoteVersion_";
+		internal const string LastCheckTimeKey = "RCorePackagesManager_LastCheckTime";
+
+		internal static readonly string[] UpdateNotificationPackageNames =
+		{
+			"com.rabear.rcore.main",
+			"com.rabear.rcore.sheetx",
+			"com.rabear.rcore.assetfilter",
+			"com.rabear.rcore.rhierarchy",
+		};
+
+		internal static IEnumerable<PackageData> GetUpdateNotificationPackages()
+		{
+			return UpdateNotificationPackages;
+		}
+
+		internal static bool HasUpdate(string installedVersion, string remoteVersion)
+		{
+			return !string.IsNullOrEmpty(installedVersion)
+				&& !string.IsNullOrEmpty(remoteVersion)
+				&& installedVersion != remoteVersion
+				&& CompareVersions(remoteVersion, installedVersion) > 0;
+		}
+
+		internal static int CompareVersions(string a, string b)
+		{
+			try
 			{
-				try
-				{
-					var va = new Version(a);
-					var vb = new Version(b);
-					return va.CompareTo(vb);
-				}
-				catch
-				{
-					return string.Compare(a, b, StringComparison.Ordinal);
-				}
+				var va = new Version(a);
+				var vb = new Version(b);
+				return va.CompareTo(vb);
+			}
+			catch
+			{
+				return string.Compare(a, b, StringComparison.Ordinal);
 			}
 		}
 
 		private const string GITHUB_RAW_BASE = "https://raw.githubusercontent.com/hnb-rabear/RCore/main/Assets/";
-		private const string CACHE_PREFIX = "RCorePackagesManager_RemoteVersion_";
-		private const string CACHE_TIME_KEY = "RCorePackagesManager_LastCheckTime";
 
 		private static readonly List<PackageData> m_Packages = new List<PackageData>()
 		{
@@ -156,6 +174,20 @@ namespace RCore.Editor
 				"https://github.com/hnb-rabear/RCore/tree/main/Assets/RCore.SheetX",
 				"https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.SheetX/CHANGELOG.md",
 				GITHUB_RAW_BASE + "RCore.SheetX/package.json"),
+			new PackageData("RAsset Filter", "com.rabear.rcore.assetfilter",
+				"https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.RAssetFilter",
+				PackageCategory.Tools, null, "RCore.RAssetFilter",
+				"Editor-only asset auditing: reverse references, unused assets, leak scans, and project overlays.",
+				"https://github.com/hnb-rabear/RCore/tree/main/Assets/RCore.RAssetFilter",
+				"https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.RAssetFilter/CHANGELOG.md",
+				GITHUB_RAW_BASE + "RCore.RAssetFilter/package.json"),
+			new PackageData("RHierarchy", "com.rabear.rcore.rhierarchy",
+				"https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.RHierarchy",
+				PackageCategory.Tools, null, "RCore.RHierarchy",
+				"Editor-only Hierarchy window enhancement: row styling, component icons, and scene-object metadata.",
+				"https://github.com/hnb-rabear/RCore/tree/main/Assets/RCore.RHierarchy",
+				"https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.RHierarchy/CHANGELOG.md",
+				GITHUB_RAW_BASE + "RCore.RHierarchy/package.json"),
 
 			// Services
 			new PackageData("Ads", "com.rabear.rcore.services.ads",
@@ -205,6 +237,33 @@ namespace RCore.Editor
 				GITHUB_RAW_BASE + "RCore/Services/Notification/package.json"),
 		};
 
+		/// <summary>
+		/// Immutable snapshot of packages that participate in update notifications.
+		/// Order matches <c>m_Packages</c>.
+		/// </summary>
+		internal static readonly IReadOnlyList<PackageData> UpdateNotificationPackages =
+			Array.AsReadOnly(m_Packages.Where(p => UpdateNotificationPackageNames.Contains(p.packageName)).ToArray());
+
+		private static readonly HashSet<UnityWebRequest> s_PendingRemoteRequests = new HashSet<UnityWebRequest>();
+
+		[InitializeOnLoadMethod]
+		private static void RegisterRemoteRequestCleanup()
+		{
+			AssemblyReloadEvents.beforeAssemblyReload -= CancelPendingRemoteRequests;
+			AssemblyReloadEvents.beforeAssemblyReload += CancelPendingRemoteRequests;
+		}
+
+		private static void CancelPendingRemoteRequests()
+		{
+			var requests = s_PendingRemoteRequests.ToArray();
+			s_PendingRemoteRequests.Clear();
+			foreach (var request in requests)
+			{
+				request.Abort();
+				request.Dispose();
+			}
+		}
+
 		private static readonly List<SampleData> m_Samples = new List<SampleData>()
 		{
 			new SampleData("General Examples",
@@ -229,8 +288,7 @@ namespace RCore.Editor
 
 		// Remote version check
 		private bool m_IsCheckingRemote;
-		private int m_RemoteChecksPending;
-		private List<UnityWebRequestAsyncOperation> m_PendingWebRequests = new List<UnityWebRequestAsyncOperation>();
+		private int m_RemoteCheckGeneration;
 
 		// UI state
 		private HashSet<string> m_ExpandedPackages = new HashSet<string>();
@@ -323,6 +381,8 @@ namespace RCore.Editor
 
 		private void OnEnable()
 		{
+			m_IsCheckingRemote = false;
+			m_RemoteCheckGeneration++;
 			minSize = WINDOW_SIZE;
 			maxSize = WINDOW_SIZE;
 			LoadCachedRemoteVersions();
@@ -331,13 +391,7 @@ namespace RCore.Editor
 
 		private void OnDisable()
 		{
-			// Clean up pending web requests
-			foreach (var op in m_PendingWebRequests)
-			{
-				if (op?.webRequest != null && !op.isDone)
-					op.webRequest.Abort();
-			}
-			m_PendingWebRequests.Clear();
+			m_RemoteCheckGeneration++;
 		}
 
 		private void RefreshPackages()
@@ -438,7 +492,7 @@ namespace RCore.Editor
 			var info = new ResolvedPackageInfo();
 
 			// Load cached remote version
-			info.remoteVersion = EditorPrefs.GetString(CACHE_PREFIX + pkg.packageName, null);
+			info.remoteVersion = EditorPrefs.GetString(RemoteVersionCachePrefix + pkg.packageName, null);
 			if (string.IsNullOrEmpty(info.remoteVersion))
 				info.remoteVersion = null;
 
@@ -446,27 +500,36 @@ namespace RCore.Editor
 			if (m_InstalledPackages.TryGetValue(pkg.packageName, out var upmInfo))
 			{
 				info.upmInfo = upmInfo;
-				info.version = upmInfo.version;
 				info.mode = ResolveUpmSource(upmInfo);
-				return info;
 			}
-
-			// 2. Check local Assets/ path (source project mode)
-			if (!string.IsNullOrEmpty(pkg.localAssetsPath))
+			else if (!string.IsNullOrEmpty(pkg.localAssetsPath) &&
+				File.Exists(Path.Combine(Application.dataPath, pkg.localAssetsPath, "package.json")))
 			{
-				string localPackageJson = Path.Combine(Application.dataPath, pkg.localAssetsPath, "package.json");
-				if (File.Exists(localPackageJson))
-				{
-					info.mode = InstallMode.Source;
-					info.version = ReadVersionFromPackageJson(localPackageJson);
-					return info;
-				}
+				info.mode = InstallMode.Source;
+			}
+			else
+			{
+				info.mode = InstallMode.NotInstalled;
 			}
 
-			// 3. Not installed
-			info.mode = InstallMode.NotInstalled;
-			info.version = null;
+			info.version = GetInstalledVersion(pkg, m_InstalledPackages);
 			return info;
+		}
+
+		/// <summary>
+		/// Resolves the installed version of a package: UPM record first, then Assets/&lt;localAssetsPath&gt;/package.json
+		/// (source mode). Returns null when the package isn't installed.
+		/// </summary>
+		internal static string GetInstalledVersion(PackageData package, IReadOnlyDictionary<string, PackageInfo> installedPackages = null)
+		{
+			if (installedPackages != null && installedPackages.TryGetValue(package.packageName, out var upmInfo))
+				return upmInfo.version;
+
+			if (string.IsNullOrEmpty(package.localAssetsPath))
+				return null;
+
+			string packageJsonPath = Path.Combine(Application.dataPath, package.localAssetsPath, "package.json");
+			return File.Exists(packageJsonPath) ? ReadVersionFromPackageJson(packageJsonPath) : null;
 		}
 
 		private static InstallMode ResolveUpmSource(PackageInfo upmInfo)
@@ -506,81 +569,119 @@ namespace RCore.Editor
 
 		#region Remote Version Check
 
+		/// <summary>
+		/// Fetches each package's remote <c>package.json</c> version into the EditorPrefs cache. The callback
+		/// receives the names of packages whose version was fetched and parsed; failures leave their cache entry
+		/// untouched, and a run with no successes leaves <see cref="LastCheckTimeKey"/> untouched too.
+		/// </summary>
+		internal static void CheckRemoteVersions(
+			IEnumerable<PackageData> packages,
+			Action<IReadOnlyCollection<string>> completed = null)
+		{
+			if (packages == null)
+			{
+				completed?.Invoke(Array.Empty<string>());
+				return;
+			}
+
+			var targetPackages = packages.Where(p => p != null && !string.IsNullOrEmpty(p.remotePackageJsonUrl)).ToList();
+			if (targetPackages.Count == 0)
+			{
+				completed?.Invoke(Array.Empty<string>());
+				return;
+			}
+
+			int pending = targetPackages.Count;
+			var successfulPackageNames = new List<string>();
+			bool completionInvoked = false;
+			Action finishRequest = () =>
+			{
+				pending--;
+				if (pending > 0 || completionInvoked) return;
+
+				completionInvoked = true;
+				if (successfulPackageNames.Count > 0)
+					EditorPrefs.SetString(LastCheckTimeKey, DateTime.UtcNow.ToString("o"));
+				completed?.Invoke(successfulPackageNames.AsReadOnly());
+			};
+
+			foreach (var pkg in targetPackages)
+			{
+				UnityWebRequest request = null;
+				UnityWebRequestAsyncOperation op;
+				try
+				{
+					request = UnityWebRequest.Get(pkg.remotePackageJsonUrl);
+					op = request.SendWebRequest();
+				}
+				catch (Exception e)
+				{
+					request?.Dispose();
+					Debug.LogWarning($"[RCorePackagesManager] Failed to start remote version request for {pkg.packageName}: {e.Message}");
+					finishRequest();
+					continue;
+				}
+
+				s_PendingRemoteRequests.Add(request);
+				string packageName = pkg.packageName;
+				op.completed += _ =>
+				{
+					// Cleanup on assembly reload already aborted and disposed this request.
+					if (!s_PendingRemoteRequests.Remove(request))
+						return;
+
+					try
+					{
+						if (request.result == UnityWebRequest.Result.Success)
+						{
+							var wrapper = JsonUtility.FromJson<PackageJsonVersion>(request.downloadHandler.text);
+							if (!string.IsNullOrEmpty(wrapper?.version))
+							{
+								EditorPrefs.SetString(RemoteVersionCachePrefix + packageName, wrapper.version);
+								successfulPackageNames.Add(packageName);
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						Debug.LogWarning($"[RCorePackagesManager] Failed to parse remote version for {packageName}: {e.Message}");
+					}
+					finally
+					{
+						request.Dispose();
+						finishRequest();
+					}
+				};
+			}
+		}
+
 		private void CheckRemoteVersions()
 		{
 			if (m_IsCheckingRemote) return;
 
+			var packagesToCheck = m_Packages.Where(p => !string.IsNullOrEmpty(p.remotePackageJsonUrl)).ToList();
+			if (packagesToCheck.Count == 0)
+				return;
+
 			m_IsCheckingRemote = true;
-			m_RemoteChecksPending = 0;
-			m_PendingWebRequests.Clear();
+			m_StatusMessage = $"Checking for updates... ({packagesToCheck.Count} packages)";
+			int generation = ++m_RemoteCheckGeneration;
 
-			foreach (var pkg in m_Packages)
+			CheckRemoteVersions(packagesToCheck, _ =>
 			{
-				if (string.IsNullOrEmpty(pkg.remotePackageJsonUrl)) continue;
-
-				m_RemoteChecksPending++;
-				var request = UnityWebRequest.Get(pkg.remotePackageJsonUrl);
-				var op = request.SendWebRequest();
-				m_PendingWebRequests.Add(op);
-
-				// Capture packageName for closure
-				string packageName = pkg.packageName;
-				op.completed += _ => OnRemoteVersionReceived(packageName, request);
-			}
-
-			if (m_RemoteChecksPending == 0)
-			{
-				m_IsCheckingRemote = false;
-			}
-			else
-			{
-				m_StatusMessage = $"Checking for updates... ({m_RemoteChecksPending} packages)";
-			}
-		}
-
-		private void OnRemoteVersionReceived(string packageName, UnityWebRequest request)
-		{
-			m_RemoteChecksPending--;
-
-			if (request.result == UnityWebRequest.Result.Success)
-			{
-				try
-				{
-					var wrapper = JsonUtility.FromJson<PackageJsonVersion>(request.downloadHandler.text);
-					if (!string.IsNullOrEmpty(wrapper?.version))
-					{
-						// Cache to EditorPrefs
-						EditorPrefs.SetString(CACHE_PREFIX + packageName, wrapper.version);
-
-						// Update resolved info
-						if (m_ResolvedInfos.TryGetValue(packageName, out var info))
-						{
-							info.remoteVersion = wrapper.version;
-						}
-					}
-				}
-				catch (Exception e)
-				{
-					Debug.LogWarning($"[RCorePackagesManager] Failed to parse remote version for {packageName}: {e.Message}");
-				}
-			}
-
-			request.Dispose();
-
-			if (m_RemoteChecksPending <= 0)
-			{
+				if (generation != m_RemoteCheckGeneration) return;
 				m_IsCheckingRemote = false;
 				m_StatusMessage = "";
-				EditorPrefs.SetString(CACHE_TIME_KEY, DateTime.UtcNow.ToString("o"));
+				ResolveAllPackages();
 				Repaint();
-			}
+			});
 		}
 
 		private void LoadCachedRemoteVersions()
 		{
 			foreach (var pkg in m_Packages)
 			{
-				string cached = EditorPrefs.GetString(CACHE_PREFIX + pkg.packageName, null);
+				string cached = EditorPrefs.GetString(RemoteVersionCachePrefix + pkg.packageName, null);
 				if (!string.IsNullOrEmpty(cached) && m_ResolvedInfos.TryGetValue(pkg.packageName, out var info))
 				{
 					info.remoteVersion = cached;
@@ -590,7 +691,7 @@ namespace RCore.Editor
 
 		private string GetLastCheckTimeDisplay()
 		{
-			string timeStr = EditorPrefs.GetString(CACHE_TIME_KEY, null);
+			string timeStr = EditorPrefs.GetString(LastCheckTimeKey, null);
 			if (string.IsNullOrEmpty(timeStr)) return "Never";
 
 			try
