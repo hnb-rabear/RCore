@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace RCore.Editor.AssetCleaner
+namespace RCore.RAssetFilter.Editor
 {
 	public static class AssetReferenceTextScanner
 	{

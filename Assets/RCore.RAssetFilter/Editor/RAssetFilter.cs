@@ -6,9 +6,9 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace RCore.Editor.AssetCleaner
+namespace RCore.RAssetFilter.Editor
 {
-	public static class RAssetCleaner
+	public static class RAssetFilter
 	{
 		public struct FolderStats
 		{
@@ -193,7 +193,7 @@ namespace RCore.Editor.AssetCleaner
 				}
 				catch
 				{
-					Debug.LogWarning($"Asset Cleaner could not discard the stale cache file: {deleteException.Message}. Run a new scan before trusting Project labels.");
+					Debug.LogWarning($"RAsset Filter could not discard the stale cache file: {deleteException.Message}. Run a new scan before trusting Project labels.");
 				}
 			}
 		}
@@ -636,7 +636,7 @@ namespace RCore.Editor.AssetCleaner
 
 		private static void RefreshUnusedAndFolderStats()
 		{
-			var ignorePaths = RAssetCleanerSettings.Instance.ignorePaths;
+			var ignorePaths = RAssetFilterSettings.Instance.ignorePaths;
 			var unusedAssets = new List<string>();
 			var allAssets = AssetDatabase.GetAllAssetPaths();
 			foreach (var path in allAssets)
@@ -836,7 +836,7 @@ namespace RCore.Editor.AssetCleaner
 				if (chain.Count > 1)
 				{
 					string guid = AssetDatabase.AssetPathToGUID(current);
-					if (!string.IsNullOrEmpty(guid) && RCore.Editor.AddressableEditorHelper.IncludedInBuild(guid))
+					if (!string.IsNullOrEmpty(guid) && IsAddressableIncludedInBuild(guid))
 						return chain.GetRange(1, chain.Count - 1);
 				}
 #endif
@@ -896,7 +896,7 @@ namespace RCore.Editor.AssetCleaner
 				return new List<string>();
 
 			var allAssets = AssetDatabase.GetAllAssetPaths();
-			var textExtensions = new HashSet<string>(RAssetCleanerSettings.Instance.deepSearchExtensions.Select(e => e.ToLower()));
+			var textExtensions = new HashSet<string>(RAssetFilterSettings.Instance.deepSearchExtensions.Select(e => e.ToLower()));
 			var candidatePaths = new List<string>();
 			foreach (var path in allAssets)
 			{
@@ -927,9 +927,27 @@ namespace RCore.Editor.AssetCleaner
 			}
 		}
 
+#if ADDRESSABLES
+		private static bool IsAddressableIncludedInBuild(string pGuid)
+		{
+			if (string.IsNullOrEmpty(pGuid))
+				return false;
+
+			var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+			if (settings == null)
+				return false;
+
+			if (settings.FindAssetEntry(pGuid, true) == null)
+				return false;
+
+			var excludedGroup = settings.FindGroup("Excluded Content");
+			return excludedGroup == null || excludedGroup.GetAssetEntry(pGuid, true) == null;
+		}
+#endif
+
 #region Persistence
 
-		private const string CACHE_PATH = "Library/RAssetCleanerCache.json";
+		private const string CACHE_PATH = "Library/RAssetFilterCache.json";
 		private const string CACHE_TEMP_PATH = CACHE_PATH + ".tmp";
 		private const string CACHE_INVALID_PATH = CACHE_PATH + ".invalid";
 		private const int CACHE_FORMAT_VERSION = 4;
@@ -1007,7 +1025,7 @@ namespace RCore.Editor.AssetCleaner
 			catch (Exception ex)
 			{
 				// The previous cache is still whatever it was, so drop it rather than let it outlive this scan.
-				Debug.LogWarning($"Asset Cleaner could not save cache: {ex.Message}");
+				Debug.LogWarning($"RAsset Filter could not save cache: {ex.Message}");
 				DiscardCacheFile();
 				if (File.Exists(CACHE_TEMP_PATH))
 				{

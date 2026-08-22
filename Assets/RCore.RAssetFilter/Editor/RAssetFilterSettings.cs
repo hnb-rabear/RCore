@@ -2,17 +2,18 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.AssetCleaner
+namespace RCore.RAssetFilter.Editor
 {
-    //[CreateAssetMenu(fileName = "RAssetCleanerSettings", menuName = "RCore/Tool/AssetCleaner Settings")]
-    public class RAssetCleanerSettings : ScriptableObject
+    //[CreateAssetMenu(fileName = "RAssetFilterSettings", menuName = "RCore/Tool/AssetCleaner Settings")]
+    public class RAssetFilterSettings : ScriptableObject
     {
-        private const string EDITOR_PREFS_KEY = "RCore.AssetCleaner.Settings";
+        private const string EDITOR_PREFS_KEY = "RCore.RAssetFilter.Settings";
+        private const string LEGACY_EDITOR_PREFS_KEY = "RCore.AssetCleaner.Settings";
 
-        private static RAssetCleanerSettings m_instance;
+        private static RAssetFilterSettings m_instance;
         private static bool m_instanceIsAsset;
 
-        public static RAssetCleanerSettings Instance
+        public static RAssetFilterSettings Instance
         {
             get
             {
@@ -27,7 +28,7 @@ namespace RCore.Editor.AssetCleaner
                     {
                         // No settings asset in the project: keep the values local to this machine
                         // instead of losing them on the next domain reload.
-                        m_instance = CreateInstance<RAssetCleanerSettings>();
+                        m_instance = CreateInstance<RAssetFilterSettings>();
                         m_instance.hideFlags = HideFlags.HideAndDontSave;
                         m_instanceIsAsset = false;
                         LoadFromEditorPrefs(m_instance);
@@ -37,14 +38,14 @@ namespace RCore.Editor.AssetCleaner
             }
         }
 
-        private static bool TryLoadAsset(out RAssetCleanerSettings settings)
+        private static bool TryLoadAsset(out RAssetFilterSettings settings)
         {
             settings = null;
-            var guids = AssetDatabase.FindAssets("t:RAssetCleanerSettings");
+            var guids = AssetDatabase.FindAssets("t:RAssetFilterSettings");
             if (guids.Length == 0)
                 return false;
 
-            settings = AssetDatabase.LoadAssetAtPath<RAssetCleanerSettings>(AssetDatabase.GUIDToAssetPath(guids[0]));
+            settings = AssetDatabase.LoadAssetAtPath<RAssetFilterSettings>(AssetDatabase.GUIDToAssetPath(guids[0]));
             return settings != null;
         }
         
@@ -83,18 +84,25 @@ namespace RCore.Editor.AssetCleaner
             EditorPrefs.SetString(EDITOR_PREFS_KEY, JsonUtility.ToJson(m_instance));
         }
 
-        private static void LoadFromEditorPrefs(RAssetCleanerSettings settings)
+        private static void LoadFromEditorPrefs(RAssetFilterSettings settings)
         {
-            if (!EditorPrefs.HasKey(EDITOR_PREFS_KEY))
+            string key;
+            if (EditorPrefs.HasKey(EDITOR_PREFS_KEY))
+                key = EDITOR_PREFS_KEY;
+            else if (EditorPrefs.HasKey(LEGACY_EDITOR_PREFS_KEY))
+                key = LEGACY_EDITOR_PREFS_KEY;
+            else
                 return;
 
             try
             {
-                JsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EDITOR_PREFS_KEY), settings);
+                JsonUtility.FromJsonOverwrite(EditorPrefs.GetString(key), settings);
+                if (key == LEGACY_EDITOR_PREFS_KEY)
+                    EditorPrefs.SetString(EDITOR_PREFS_KEY, JsonUtility.ToJson(settings));
             }
             catch
             {
-                // Invalid local preference data must not block Asset Cleaner from using defaults.
+                // Invalid local preference data must not block RAsset Filter from using defaults.
             }
         }
     }

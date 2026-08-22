@@ -6,11 +6,14 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- Legacy AssetCatalog Direct Usage now uses RAsset Filter at runtime. Without `com.rabear.rcore.assetfilter`, AssetCatalog compiles and other features work, but Direct Usage reports package requirement.
 - `RCore.SheetX` **1.3.0**: Public detached exporter documentation now covers caller-owned output, null-versus-empty sheet selection, structured diagnostics, Google request credentials, and `Library/SheetX` token storage. `Assets/RCore.SheetX/package.json` bumped 1.2.0 → 1.3.0.
 - `RCore.SheetX` **1.2.0**: Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION` from editor scripts to unify into a single-flavor exporter. Those defines are now inert — every exporter, tab, and menu ships unconditionally; `ASSETS_STORE` is unaffected. `Assets/RCore.SheetX/package.json` bumped 1.1.0 → 1.2.0; `Document/Document.md` drops the "PRO only" labels and the stale `Samples~` example path. SheetX still has no tag path through `.github/workflows/release.yml`, so this cut is committed and untagged.
 
 ### Added
 
+- Extracted legacy Asset Cleaner into independent `com.rabear.rcore.assetfilter` 1.0.0 package, renamed **RAsset Filter**. Existing EditorPrefs settings migrate forward; regenerable cache does not.
+- Extracted legacy RHierarchy into independent `com.rabear.rcore.rhierarchy` 1.0.0 package. Existing `RHierarchy_*` EditorPrefs settings remain unchanged.
 - `RCore.SheetX`: Added `SheetXExporter` / `ISheetXOutput` editor API for caller-owned exports without settings-window state or disk writes.
 
 - `RevCore.JObjectDB.Reset(string key)` — resets a single collection's data to its type defaults while keeping the key registered in the index (companion to `Delete`/`DeleteAll`). Surfaced in the Editor via a per-collection "Reset" button on the `JObjectDBManager` inspector.

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace RCore.Editor.RHierarchy
+namespace RCore.RHierarchy.Editor
 {
     public static class RHierarchySettings
     {

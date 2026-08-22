@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using UnityEditor;
 
-namespace RCore.Editor.AssetCleaner
+namespace RCore.RAssetFilter.Editor
 {
-    public class RAssetCleanerCacheInvalidator : AssetPostprocessor
+    public class RAssetFilterCacheInvalidator : AssetPostprocessor
     {
         private static void OnPostprocessAllAssets(
             string[] importedAssets,
@@ -11,19 +11,19 @@ namespace RCore.Editor.AssetCleaner
             string[] movedAssets,
             string[] movedFromAssetPaths)
         {
-            if (RAssetCleaner.IsEditingAssetsInternally)
+            if (RAssetFilter.IsEditingAssetsInternally)
                 return;
 
             // A move only renames cache keys and any referencer path string that points at the old
             // location; every dependency edge is unchanged. Diff the paths in place so a move never
-            // discards a valid scan. RAssetCleaner falls back to a full invalidate itself when the
+            // discards a valid scan. RAssetFilter falls back to a full invalidate itself when the
             // batch is not a clean one-to-one rename (out-of-scope, or duplicates). When the batch is
             // malformed here (null, or mismatched-length arrays) no rename can be read from it, so
             // nothing valid can be updated incrementally and the cache must not survive unchanged
             // against paths it can no longer account for.
             if ((movedAssets == null) != (movedFromAssetPaths == null))
             {
-                RAssetCleaner.InvalidateCache();
+                RAssetFilter.InvalidateCache();
                 return;
             }
 
@@ -31,7 +31,7 @@ namespace RCore.Editor.AssetCleaner
             {
                 if (movedAssets.Length != movedFromAssetPaths.Length)
                 {
-                    RAssetCleaner.InvalidateCache();
+                    RAssetFilter.InvalidateCache();
                     return;
                 }
 
@@ -50,7 +50,7 @@ namespace RCore.Editor.AssetCleaner
                     if (!toRelevant || !fromRelevant)
                     {
                         // A move crossing in/out of scope (e.g. from Packages/) cannot be diffed as a rename.
-                        RAssetCleaner.InvalidateCache();
+                        RAssetFilter.InvalidateCache();
                         return;
                     }
                     movedTo.Add(toPath);
@@ -58,22 +58,22 @@ namespace RCore.Editor.AssetCleaner
                 }
 
                 if (movedTo.Count > 0)
-                    RAssetCleaner.UpdateCacheForMovedAssets(movedFrom, movedTo);
+                    RAssetFilter.UpdateCacheForMovedAssets(movedFrom, movedTo);
             }
 
             // A delete only removes one asset's forward/reverse edges; every other cached edge is
             // unchanged. Forget just the deleted paths instead of discarding the whole scan, mirroring
-            // the incremental move/import handling above. RAssetCleaner.ForgetAssets no-ops when the
+            // the incremental move/import handling above. RAssetFilter.ForgetAssets no-ops when the
             // cache isn't ready, so there's nothing to fall back to invalidating in that case.
             if (HasRelevantPath(deletedAssets))
             {
-                RAssetCleaner.ForgetAssets(FilterRelevant(deletedAssets).ToArray());
+                RAssetFilter.ForgetAssets(FilterRelevant(deletedAssets).ToArray());
                 return;
             }
 
             if (HasRelevantPath(importedAssets))
             {
-                RAssetCleaner.UpdateCacheForChangedAssets(FilterRelevant(importedAssets));
+                RAssetFilter.UpdateCacheForChangedAssets(FilterRelevant(importedAssets));
             }
         }
 

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 
-namespace RCore.Editor.AssetCleaner
+namespace RCore.RAssetFilter.Editor
 {
 	public enum LeakDirection
 	{
@@ -21,7 +21,7 @@ namespace RCore.Editor.AssetCleaner
 		public List<string> relatedPaths = new List<string>();
 	}
 
-	public static class RAssetCleanerLeak
+	public static class RAssetFilterLeak
 	{
 		/// <summary>Folders and prefabs from the current Project-window selection.</summary>
 		public static List<string> GetValidSelection(out int pFolderCount, out int pPrefabCount)
@@ -73,7 +73,7 @@ namespace RCore.Editor.AssetCleaner
 		}
 
 		/// <summary>
-		/// Requires RAssetCleaner.ReferenceCache to be built (caller's responsibility).
+		/// Requires RAssetFilter.ReferenceCache to be built (caller's responsibility).
 		/// LeakedIn: boundary asset referenced from outside. LeakedOut: external dependency of a boundary asset.
 		/// </summary>
 		public static List<LeakEntry> DetectLeaks(HashSet<string> pBoundary)
@@ -95,7 +95,7 @@ namespace RCore.Editor.AssetCleaner
 						continue;
 
 					// Leaked In: who references this boundary asset from outside?
-					if (RAssetCleaner.ReferenceCache.TryGetValue(asset, out var referencers))
+					if (RAssetFilter.ReferenceCache.TryGetValue(asset, out var referencers))
 					{
 						var external = referencers
 							.Where(r => !pBoundary.Contains(r) && IsReportable(r))
@@ -146,7 +146,7 @@ namespace RCore.Editor.AssetCleaner
 			if (!pPath.StartsWith("Assets/"))
 				return false;
 			string ext = Path.GetExtension(pPath).ToLower();
-			foreach (var ignored in RAssetCleanerSettings.Instance.leakIgnoreExtensions)
+			foreach (var ignored in RAssetFilterSettings.Instance.leakIgnoreExtensions)
 			{
 				if (ext == ignored.ToLower())
 					return false;

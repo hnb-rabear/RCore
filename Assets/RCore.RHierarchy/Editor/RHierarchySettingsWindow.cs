@@ -1,11 +1,11 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.RHierarchy
+namespace RCore.RHierarchy.Editor
 {
     public class RHierarchySettingsWindow : EditorWindow
     {
-        [MenuItem("RCore/RHierarchy Settings", priority = RMenu.GROUP_2 + 6)]
+        [MenuItem("RCore/RHierarchy Settings", priority = 26)]
         public static void ShowWindow()
         {
             GetWindow<RHierarchySettingsWindow>("RHierarchy Settings");

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.RHierarchy
+namespace RCore.RHierarchy.Editor
 {
     [InitializeOnLoad]
     public class RHierarchy

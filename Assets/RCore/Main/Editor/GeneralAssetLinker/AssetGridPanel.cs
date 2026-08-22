@@ -2042,7 +2042,10 @@ namespace RCore.Editor
 			}
 			else
 			{
-				EditorUtility.DisplayDialog("Find Direct Asset References", "Cannot resolve selected asset GUID and local file ID.", "OK");
+				EditorUtility.DisplayDialog(
+					"Find Direct Asset References",
+					"Cannot resolve selected asset GUID and local file ID, or RAsset Filter is unavailable. Direct Usage requires com.rabear.rcore.assetfilter.",
+					"OK");
 			}
 			m_Window.Repaint();
 		}

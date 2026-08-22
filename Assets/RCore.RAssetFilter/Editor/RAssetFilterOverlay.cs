@@ -3,10 +3,10 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Editor.AssetCleaner
+namespace RCore.RAssetFilter.Editor
 {
     [InitializeOnLoad]
-    public class RAssetCleanerOverlay
+    public class RAssetFilterOverlay
     {
         private struct LabelEntry
         {
@@ -26,23 +26,23 @@ namespace RCore.Editor.AssetCleaner
         private static bool m_labelCacheShowSize;
         private static bool m_labelCacheShowReferenceCount;
 
-        static RAssetCleanerOverlay()
+        static RAssetFilterOverlay()
         {
             EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemOnGUI;
         }
 
         private static void OnProjectWindowItemOnGUI(string guid, Rect rect)
         {
-            if (!RAssetCleanerWindow.IsOpen) return;
+            if (!RAssetFilterWindow.IsOpen) return;
 
-            var settings = RAssetCleanerSettings.Instance;
+            var settings = RAssetFilterSettings.Instance;
             string path = AssetDatabase.GUIDToAssetPath(guid);
 
             // Only Assets/ paths are scanned, so only they can carry meaningful cache results.
             if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/")) return;
 
             // Draw Unused Overlay
-            if (settings.showRedOverlay && RAssetCleaner.UnusedAssetsCache.Contains(path))
+            if (settings.showRedOverlay && RAssetFilter.UnusedAssetsCache.Contains(path))
             {
                 var originalColor = GUI.color;
                 GUI.color = settings.unusedColor;
@@ -57,15 +57,15 @@ namespace RCore.Editor.AssetCleaner
             DrawLabel(rect, entry.label, entry.highlight, settings);
         }
 
-        private static LabelEntry GetLabelEntry(string path, RAssetCleanerSettings settings)
+        private static LabelEntry GetLabelEntry(string path, RAssetFilterSettings settings)
         {
             // Label text depends only on cached scan data and the two display toggles.
-            if (m_labelCacheGeneration != RAssetCleaner.CacheGeneration ||
+            if (m_labelCacheGeneration != RAssetFilter.CacheGeneration ||
                 m_labelCacheShowSize != settings.showSize ||
                 m_labelCacheShowReferenceCount != settings.showReferenceCount)
             {
                 LabelCache.Clear();
-                m_labelCacheGeneration = RAssetCleaner.CacheGeneration;
+                m_labelCacheGeneration = RAssetFilter.CacheGeneration;
                 m_labelCacheShowSize = settings.showSize;
                 m_labelCacheShowReferenceCount = settings.showReferenceCount;
             }
@@ -80,24 +80,24 @@ namespace RCore.Editor.AssetCleaner
             return entry;
         }
 
-        private static LabelEntry BuildAssetEntry(string path, RAssetCleanerSettings settings)
+        private static LabelEntry BuildAssetEntry(string path, RAssetFilterSettings settings)
         {
             var entry = new LabelEntry();
             LabelBuilder.Length = 0;
 
             if (settings.showSize)
             {
-                long size = RAssetCleaner.GetAssetSize(path);
+                long size = RAssetFilter.GetAssetSize(path);
                 if (size > 0)
                     LabelBuilder.Append(EditorUtility.FormatBytes(size));
             }
 
-            if (settings.showReferenceCount && RAssetCleaner.HasReferenceData)
+            if (settings.showReferenceCount && RAssetFilter.HasReferenceData)
             {
                 if (LabelBuilder.Length > 0)
                     LabelBuilder.Append(" · ");
 
-                int referenceCount = RAssetCleaner.GetReferenceCount(path);
+                int referenceCount = RAssetFilter.GetReferenceCount(path);
                 LabelBuilder.Append(referenceCount).Append(" refs");
                 entry.highlight = referenceCount == 0;
             }
@@ -106,10 +106,10 @@ namespace RCore.Editor.AssetCleaner
             return entry;
         }
 
-        private static LabelEntry BuildFolderEntry(string path, RAssetCleanerSettings settings)
+        private static LabelEntry BuildFolderEntry(string path, RAssetFilterSettings settings)
         {
             var entry = new LabelEntry();
-            if (!RAssetCleaner.FolderStatsCache.TryGetValue(path, out var stats))
+            if (!RAssetFilter.FolderStatsCache.TryGetValue(path, out var stats))
                 return entry;
 
             // Folder labels keep reporting unused-file stats, never summed child references.
@@ -122,7 +122,7 @@ namespace RCore.Editor.AssetCleaner
             return entry;
         }
 
-        private static void DrawLabel(Rect rect, string label, bool highlight, RAssetCleanerSettings settings)
+        private static void DrawLabel(Rect rect, string label, bool highlight, RAssetFilterSettings settings)
         {
             if (string.IsNullOrEmpty(label))
                 return;
@@ -144,7 +144,7 @@ namespace RCore.Editor.AssetCleaner
             GUI.Label(listRect, label, highlight ? m_listHighlightStyle : style);
         }
 
-        private static void EnsureStyles(RAssetCleanerSettings settings)
+        private static void EnsureStyles(RAssetFilterSettings settings)
         {
             // EditorStyles are only valid during GUI calls, so build the styles lazily and reuse them.
             if (m_gridStyle != null && m_styleUnusedColor == settings.unusedColor &&

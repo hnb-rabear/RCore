@@ -1,0 +1,21 @@
+{
+  "name": "com.rabear.rcore.assetfilter",
+  "version": "1.0.0",
+  "displayName": "RAsset Filter",
+  "description": "Editor-only asset auditing tool. Builds a project-wide reverse-reference graph, finds unused assets, resolves who references an asset (including GUID text scanning for indirect references), detects folder/prefab reference leaks, and overlays reference counts and sizes in the Project window. Optional Addressables integration surfaces Addressable status and reference chains.",
+  "unity": "2022.3",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.RAssetFilter/CHANGELOG.md",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
+  "keywords": [
+    "asset",
+    "unused assets",
+    "references",
+    "editor tool",
+    "addressables"
+  ],
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.RAssetFilter/README.md"
+}

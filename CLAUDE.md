@@ -11,6 +11,10 @@ One Unity 2022.3.62f2 project holding **three separately-versioned code bases**:
 | `Assets/RCore/` | Legacy monolith framework (`Main`, `Services`, `Sub`) | 1.1.9 | In production across 4+ consumer projects. Frozen — do not edit unless asked. |
 | `Assets/RevCore/` | Next-gen rewrite: 9 runtime + 1 editor-only UPM packages | 1.0.0–1.1.0 per package | Active work. Semver-stable since v1.0.0. |
 | `Assets/RCore.SheetX/` | Editor-only spreadsheet→code/JSON exporter | 1.1.0 | Own CHANGELOG, own release cadence. |
+| `Assets/RCore.RAssetFilter/` | Editor-only asset auditing package: reverse references, unused/leak scans, overlay; optional Addressables | 1.0.0 | Active, separate release cadence. |
+| `Assets/RCore.RHierarchy/` | Editor-only Hierarchy window enhancer | 1.0.0 | Active, separate release cadence. |
+
+`AssetCatalogWindow` remains in frozen legacy RCore. Its Direct Usage feature optionally reflects `RCore.RAssetFilter.Editor` at runtime; never add an asmdef reference from `rcore.editor` to that package, because projects may install RCore without RAsset Filter. Both sibling packages sit outside RevCore architecture and RevCore doc-coverage/PublicAPI/release gates.
 
 Namespaces don't collide (`RevCore` flat vs `RCore.*` nested), so both frameworks compile side by side. Migration is opt-in with no deadline.
 

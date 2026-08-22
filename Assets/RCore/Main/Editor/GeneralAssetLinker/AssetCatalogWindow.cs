@@ -2,9 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using RCore.Config;
-using RCore.Editor.AssetCleaner;
 using UnityEditor;
 using UnityEngine;
 
@@ -76,9 +76,18 @@ namespace RCore.Editor
 		private IAssetCatalogPanel[] m_Panels;
 		private string[] m_TabLabels;
 
-		private const int DIRECT_USAGE_SCANNER_VERSION = 3;
+		private const int DIRECT_USAGE_SCANNER_VERSION = 4;
 
 		private static int s_DirectUsageProjectChangeVersion;
+		private static bool s_directUsageBridgeResolved;
+		private static bool s_directUsageBridgeAvailable;
+		private static bool s_directUsageBridgeErrorReported;
+		private static MethodInfo s_buildCacheMethod;
+		private static MethodInfo s_getCachedReferencingAssetsMethod;
+		private static ConstructorInfo s_objectReferenceTargetConstructor;
+		private static MethodInfo s_scanAllObjectReferencesMethod;
+		private static FieldInfo s_pathsByTargetIdField;
+		private static FieldInfo s_skippedPathsField;
 
 		private Dictionary<string, UsageCacheEntry> m_UsageCache = new Dictionary<string, UsageCacheEntry>();
 		private DirectUsageIndex m_DirectUsageIndex;
@@ -586,7 +595,8 @@ namespace RCore.Editor
 				return true;
 			}
 
-			var candidatePaths = GetDirectUsageCandidatePaths(targets);
+			if (!TryUseRAssetFilter(targets, false, out var candidatePaths, out _, out _))
+				return false;
 			if (m_DirectUsageIndex.candidateManifest != GetDirectUsageManifest(candidatePaths))
 				return false;
 
@@ -600,41 +610,16 @@ namespace RCore.Editor
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 			var targets = GetDirectUsageTargets();
-			var candidatePaths = GetDirectUsageCandidatePaths(targets);
+			if (!TryUseRAssetFilter(targets, true, out var candidatePaths, out var pathsByTargetId, out var skippedPaths))
+				return false;
+
 			var candidateManifest = GetDirectUsageManifest(candidatePaths);
 			var targetSnapshotSignature = GetDirectUsageTargetSnapshotSignature(targets);
-			var scanTargets = new List<AssetReferenceTextScanner.ObjectReferenceTarget>();
-			foreach (var target in targets)
-				scanTargets.Add(new AssetReferenceTextScanner.ObjectReferenceTarget(target.id, target.guid, target.localFileId, target.requireLocalFileId));
-
-			AssetReferenceTextScanner.AllTargetScanResult scanResult;
-			try
-			{
-				EditorUtility.DisplayProgressBar("Finding Direct Asset References", $"Scanning 0/{candidatePaths.Count} Asset Cleaner candidates", 0f);
-				scanResult = AssetReferenceTextScanner.ScanAllObjectReferences(
-					candidatePaths,
-					scanTargets,
-					128,
-					(completed, total) => EditorUtility.DisplayProgressBar(
-						"Finding Direct Asset References",
-						$"Scanning {completed}/{total} Asset Cleaner candidates",
-						total == 0 ? 1f : (float)completed / total),
-					Directory.GetParent(Application.dataPath).FullName);
-			}
-			catch (Exception ex)
-			{
-				Debug.LogWarning($"[AssetCatalogWindow] Failed to build direct usage index: {ex.Message}");
-				return false;
-			}
-			finally
-			{
-				EditorUtility.ClearProgressBar();
-			}
 
 			var entries = new List<DirectUsageIndexEntry>();
 			foreach (var target in targets)
 			{
-				scanResult.pathsByTargetId.TryGetValue(target.id, out var paths);
+				pathsByTargetId.TryGetValue(target.id, out var paths);
 				entries.Add(new DirectUsageIndexEntry
 				{
 					assetType = target.assetType,
@@ -651,10 +636,10 @@ namespace RCore.Editor
 				scannerVersion = DIRECT_USAGE_SCANNER_VERSION,
 				candidateManifest = candidateManifest,
 				targetSnapshotSignature = targetSnapshotSignature,
-				isComplete = scanResult.skippedPaths.Count == 0,
+				isComplete = skippedPaths.Count == 0,
 				lastScanTimestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss"),
 				entries = entries,
-				skippedAssets = scanResult.skippedPaths,
+				skippedAssets = skippedPaths,
 			};
 			m_DirectUsageIndexValidatedProjectChangeVersion = s_DirectUsageProjectChangeVersion;
 			SaveUsageCache();
@@ -707,19 +692,6 @@ namespace RCore.Editor
 			return !string.IsNullOrEmpty(pTarget.path) && (!pTarget.requireLocalFileId || localFileId != 0);
 		}
 
-		private static List<string> GetDirectUsageCandidatePaths(IEnumerable<DirectUsageTarget> pTargets)
-		{
-			var targetPaths = new List<string>();
-			foreach (var target in pTargets)
-			{
-				if (!string.IsNullOrEmpty(target.path))
-					targetPaths.Add(target.path);
-			}
-
-			RAssetCleaner.BuildCache();
-			return RAssetCleaner.GetCachedReferencingAssets(targetPaths);
-		}
-
 		private static string GetDirectUsageManifest(IEnumerable<string> pAssetPaths)
 		{
 			var projectRoot = Directory.GetParent(Application.dataPath).FullName;
@@ -738,6 +710,107 @@ namespace RCore.Editor
 				}
 			}
 			return manifest.ToString();
+		}
+
+		private static bool TryUseRAssetFilter(
+			IReadOnlyList<DirectUsageTarget> pTargets,
+			bool pScan,
+			out List<string> pCandidatePaths,
+			out Dictionary<string, List<string>> pPathsByTargetId,
+			out List<string> pSkippedPaths)
+		{
+			pCandidatePaths = new List<string>();
+			pPathsByTargetId = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+			pSkippedPaths = new List<string>();
+
+			try
+			{
+				if (!s_directUsageBridgeResolved)
+				{
+					s_directUsageBridgeResolved = true;
+					foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+					{
+						if (assembly.GetName().Name != "RCore.RAssetFilter.Editor")
+							continue;
+
+						var filterType = assembly.GetType("RCore.RAssetFilter.Editor.RAssetFilter");
+						var scannerType = assembly.GetType("RCore.RAssetFilter.Editor.AssetReferenceTextScanner");
+						var targetType = scannerType?.GetNestedType("ObjectReferenceTarget", BindingFlags.Public);
+						var resultType = scannerType?.GetNestedType("AllTargetScanResult", BindingFlags.Public);
+						s_buildCacheMethod = filterType?.GetMethod("BuildCache", BindingFlags.Public | BindingFlags.Static);
+						s_getCachedReferencingAssetsMethod = filterType?.GetMethod("GetCachedReferencingAssets", BindingFlags.Public | BindingFlags.Static);
+						s_objectReferenceTargetConstructor = targetType?.GetConstructor(new[] { typeof(string), typeof(string), typeof(long), typeof(bool) });
+						s_scanAllObjectReferencesMethod = scannerType?.GetMethod("ScanAllObjectReferences", BindingFlags.Public | BindingFlags.Static);
+						s_pathsByTargetIdField = resultType?.GetField("pathsByTargetId", BindingFlags.Public | BindingFlags.Instance);
+						s_skippedPathsField = resultType?.GetField("skippedPaths", BindingFlags.Public | BindingFlags.Instance);
+						s_directUsageBridgeAvailable = s_buildCacheMethod != null && s_getCachedReferencingAssetsMethod != null &&
+							s_objectReferenceTargetConstructor != null && s_scanAllObjectReferencesMethod != null &&
+							s_pathsByTargetIdField != null && s_skippedPathsField != null;
+						break;
+					}
+				}
+
+				if (!s_directUsageBridgeAvailable)
+					throw new InvalidOperationException("RAsset Filter is required for Direct Usage. Install com.rabear.rcore.assetfilter.");
+
+				var targetPaths = new List<string>();
+				foreach (var target in pTargets)
+					if (!string.IsNullOrEmpty(target.path))
+						targetPaths.Add(target.path);
+
+				s_buildCacheMethod.Invoke(null, null);
+				pCandidatePaths = s_getCachedReferencingAssetsMethod.Invoke(null, new object[] { targetPaths }) as List<string> ?? new List<string>();
+				if (!pScan || pCandidatePaths.Count == 0)
+					return true;
+
+				var targetType = s_objectReferenceTargetConstructor.DeclaringType;
+				var scanTargets = Array.CreateInstance(targetType, pTargets.Count);
+				for (var i = 0; i < pTargets.Count; i++)
+				{
+					var target = pTargets[i];
+					scanTargets.SetValue(s_objectReferenceTargetConstructor.Invoke(new object[]
+					{
+						target.id, target.guid, target.localFileId, target.requireLocalFileId,
+					}), i);
+				}
+
+				Action<int, int> progress = (completed, total) => EditorUtility.DisplayProgressBar(
+					"Finding Direct Asset References",
+					$"Scanning {completed}/{total} RAsset Filter candidates",
+					total == 0 ? 1f : (float)completed / total);
+				try
+				{
+					var result = s_scanAllObjectReferencesMethod.Invoke(null, new object[]
+					{
+						pCandidatePaths,
+						scanTargets,
+						128,
+						progress,
+						Directory.GetParent(Application.dataPath).FullName,
+					});
+					var sourcePaths = s_pathsByTargetIdField.GetValue(result) as Dictionary<string, List<string>>;
+					var sourceSkippedPaths = s_skippedPathsField.GetValue(result) as List<string>;
+					if (sourcePaths != null)
+						foreach (var pair in sourcePaths)
+							pPathsByTargetId[pair.Key] = new List<string>(pair.Value);
+					if (sourceSkippedPaths != null)
+						pSkippedPaths.AddRange(sourceSkippedPaths);
+					return true;
+				}
+				finally
+				{
+					EditorUtility.ClearProgressBar();
+				}
+			}
+			catch (Exception ex)
+			{
+				if (!s_directUsageBridgeErrorReported)
+				{
+					s_directUsageBridgeErrorReported = true;
+					Debug.LogWarning($"[AssetCatalogWindow] Direct Usage unavailable: {ex.Message}");
+				}
+				return false;
+			}
 		}
 
 		private static List<AssetCatalogUsageScanner.Usage> ScanPrefabContents(

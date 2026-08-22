@@ -1,0 +1,20 @@
+{
+  "name": "com.rabear.rcore.rhierarchy",
+  "version": "1.0.0",
+  "displayName": "RHierarchy",
+  "description": "Editor-only Hierarchy window enhancer. Adds row shading and separators, an activity toggle, component icons, child count, vertex count, tag, layer, and static flags to each Hierarchy row, with a settings window for per-feature toggles, colors, and column order.",
+  "unity": "2022.3",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.RHierarchy/CHANGELOG.md",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
+  "keywords": [
+    "hierarchy",
+    "editor tool",
+    "inspector",
+    "workflow"
+  ],
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.RHierarchy/README.md"
+}
