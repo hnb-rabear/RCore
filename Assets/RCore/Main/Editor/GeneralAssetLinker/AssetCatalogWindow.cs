@@ -735,11 +735,11 @@ namespace RCore.Editor
 
 						var filterType = assembly.GetType("RCore.RAssetFilter.Editor.RAssetFilter");
 						var scannerType = assembly.GetType("RCore.RAssetFilter.Editor.AssetReferenceTextScanner");
-						var targetType = scannerType?.GetNestedType("ObjectReferenceTarget", BindingFlags.Public);
+						var objectReferenceTargetType = scannerType?.GetNestedType("ObjectReferenceTarget", BindingFlags.Public);
 						var resultType = scannerType?.GetNestedType("AllTargetScanResult", BindingFlags.Public);
 						s_buildCacheMethod = filterType?.GetMethod("BuildCache", BindingFlags.Public | BindingFlags.Static);
 						s_getCachedReferencingAssetsMethod = filterType?.GetMethod("GetCachedReferencingAssets", BindingFlags.Public | BindingFlags.Static);
-						s_objectReferenceTargetConstructor = targetType?.GetConstructor(new[] { typeof(string), typeof(string), typeof(long), typeof(bool) });
+						s_objectReferenceTargetConstructor = objectReferenceTargetType?.GetConstructor(new[] { typeof(string), typeof(string), typeof(long), typeof(bool) });
 						s_scanAllObjectReferencesMethod = scannerType?.GetMethod("ScanAllObjectReferences", BindingFlags.Public | BindingFlags.Static);
 						s_pathsByTargetIdField = resultType?.GetField("pathsByTargetId", BindingFlags.Public | BindingFlags.Instance);
 						s_skippedPathsField = resultType?.GetField("skippedPaths", BindingFlags.Public | BindingFlags.Instance);
