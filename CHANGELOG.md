@@ -23,6 +23,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- `RCore.UI.OptimizedVerticalScrollView`: the rank-move animation feature (`AnimateItemMove`, `QueueAnimateItemMove`, `StopAnimateItemMove`, `TestAnimateItemMove`, `IsAnimating`, `onAnimationStarted`, `onAnimationCompleted`, and the `animMove*` inspector fields) is now fully inside `#if DOTWEEN`, matching the RevCore counterpart. Previously `DOTween.Kill`, `DOTween.Sequence`, `Ease`, `DOLocalMove`, and `DOPunchScale` were referenced unguarded, so the legacy assembly failed to compile in projects without DOTween. `ScrollToTop`, `ScrollToBot`, and `ScrollToIndex` keep their existing instant-scroll fallbacks.
 - `RCore.SheetX`: `SheetXExporter.ExportExcel` owns one named, read-only `MemoryStream` for the full export, so NPOI's lazy workbook reads no longer depend on garbage collection keeping the source stream alive.
 - `RCore.SheetX`: Generated localization C# is no longer tagged as localization data. `SheetXExportFileType` gains `LocalizationConstants` (`{file}.cs`) and `LocalizationComponent` (`{file}Text.cs`); language `.txt` data keeps `Localization`. Excel and Google handlers match; the regression test covers Excel only (Google needs OAuth and network).
 - `RCore.SheetX`: Export failures (invalid JSON, duplicate/non-integer IDs, missing templates) no longer open modal dialogs or throw on the public path — each becomes a warning or error in the returned result.
