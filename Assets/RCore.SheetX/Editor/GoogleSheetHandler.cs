@@ -40,6 +40,7 @@ namespace RCore.SheetX.Editor
 		private Dictionary<string, string> m_langCharSets;
 		private StringBuilder m_langCharSetsAll;
 		private Dictionary<string, Spreadsheet> m_cachedSpreadsheet = new Dictionary<string, Spreadsheet>();
+		private readonly SheetXBatchState m_batchState;
 
 		public GoogleSheetHandler(SheetXSettings settings)
 			: this(settings, null, null, null, false)
@@ -53,6 +54,23 @@ namespace RCore.SheetX.Editor
 			m_googleClientId = googleClientId;
 			m_googleClientSecret = googleClientSecret;
 			m_selectAllSheets = selectAllSheets;
+		}
+
+		internal GoogleSheetHandler(
+			SheetXSettings settings,
+			SheetXExportContext context,
+			string clientId,
+			string clientSecret,
+			SheetXBatchState batchState)
+			: this(settings, context, clientId, clientSecret, false)
+		{
+			m_batchState = batchState;
+			m_allIds = batchState.AllIds;
+			m_localizedSheetsExported = batchState.LocalizedSheetsExported;
+			m_localizedLanguages = batchState.LocalizedLanguages;
+			m_langCharSets = batchState.LangCharSets;
+			m_langCharSetsAll = batchState.LangCharSetsAll;
+			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
 		}
 
 		// A detached export takes its credentials from the request only: EditorPrefs holds the machine's
@@ -202,13 +220,19 @@ namespace RCore.SheetX.Editor
 						}
 						// The first definition wins. Appending a second "public const int" for the same
 						// key produced C# that does not compile, so a conflict is reported and the row skipped.
-						if (m_allIds.TryGetValue(key, out int existing))
+						if (m_batchState != null)
+						{
+							if (!m_batchState.DeclaredIds.Add(key))
+								continue;
+						}
+						else if (m_allIds.TryGetValue(key, out int existing))
 						{
 							if (existing != value)
 								m_writer.Blocking("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}");
 							continue;
 						}
-						m_allIds[key] = value;
+						if (m_batchState == null)
+							m_allIds[key] = value;
 						sb.Append("\tpublic const int ");
 						sb.Append(key);
 						sb.Append(" = ");
@@ -241,7 +265,8 @@ namespace RCore.SheetX.Editor
 				}
 			}
 
-			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
+			if (m_batchState == null)
+				m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
 
 			//Build Ids Enum
 			if (idsEnumBuilders.Count > 0)
@@ -1961,6 +1986,271 @@ namespace RCore.SheetX.Editor
 				else
 					pGoogleSheetsPath.AddSheet(sheetPath.name);
 			}
+		}
+
+		internal bool BatchMaterialize(
+			SheetXBatchSourceState source,
+			List<string> requestedSheets)
+		{
+			Spreadsheet metadata;
+			try
+			{
+				metadata = GetService()
+					.Spreadsheets.Get(source.SpreadsheetPath).Execute();
+			}
+			catch (Exception ex)
+			{
+				m_writer.Error(
+					$"Could not read Google spreadsheet '{source.SpreadsheetPath}': "
+					+ $"{ex.Message}");
+				return false;
+			}
+
+			source.Metadata = metadata;
+
+			if (string.IsNullOrEmpty(source.OutputName))
+				source.OutputName = metadata.Properties?.Title;
+
+			var requested = requestedSheets == null
+				? null
+				: new HashSet<string>(requestedSheets, StringComparer.Ordinal);
+			var available = new HashSet<string>(StringComparer.Ordinal);
+
+			if (metadata.Sheets != null)
+			{
+				foreach (var sheet in metadata.Sheets)
+				{
+					string name = sheet.Properties?.Title;
+					if (string.IsNullOrEmpty(name))
+						continue;
+
+					available.Add(name);
+
+					if (requested == null || requested.Contains(name))
+						source.SelectedSheets.Add(name);
+				}
+			}
+
+			if (requested == null)
+				return true;
+
+			bool ok = true;
+			foreach (string name in requestedSheets)
+			{
+				if (available.Contains(name))
+					continue;
+
+				m_writer.Error(
+					$"Google spreadsheet '{source.SpreadsheetPath}' "
+					+ $"has no sheet '{name}'.");
+				ok = false;
+			}
+
+			return ok;
+		}
+
+		private bool TryFindSheet(
+			SheetXBatchSourceState source,
+			string sheetName,
+			out Sheet sheet)
+		{
+			sheet = null;
+			if (source.Metadata?.Sheets == null)
+				return false;
+
+			foreach (var candidate in source.Metadata.Sheets)
+			{
+				if (string.Equals(
+					candidate.Properties?.Title,
+					sheetName,
+					StringComparison.Ordinal))
+				{
+					sheet = candidate;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private bool TryGetGridRange(
+			SheetXBatchSourceState source,
+			string sheetName,
+			out Sheet sheet,
+			out string range)
+		{
+			range = null;
+			if (!TryFindSheet(source, sheetName, out sheet))
+			{
+				m_writer.Error(
+					$"Google spreadsheet '{source.SpreadsheetPath}' "
+					+ $"has no sheet '{sheetName}'.");
+				return false;
+			}
+
+			int? columns = sheet.Properties?.GridProperties?.ColumnCount;
+			if (!columns.HasValue)
+			{
+				m_writer.Error(
+					$"Google spreadsheet '{source.SpreadsheetPath}' sheet '{sheetName}' "
+					+ "has no grid column count.");
+				return false;
+			}
+
+			range = $"{sheetName}!A1:{GetColumnLetter(columns.Value)}";
+			return true;
+		}
+
+		private IList<IList<object>> BatchFetchValues(
+			SheetXBatchSourceState source,
+			string range)
+			=> GetService()
+				.Spreadsheets.Values.Get(source.SpreadsheetPath, range)
+				.Execute()
+				.Values;
+
+		internal void BatchLoadIds(
+			SheetXBatchSourceState source, string sheetName)
+		{
+			if (!TryGetGridRange(source, sheetName, out _, out string range))
+				return;
+
+			var rowsData = BatchFetchValues(source, range);
+			if (rowsData == null || rowsData.Count <= 1)
+			{
+				m_writer.Warn($"Sheet {sheetName} is empty!");
+				return;
+			}
+
+			for (int row = 1; row < rowsData.Count; row++)
+			{
+				var rowData = rowsData[row];
+				if (rowData == null)
+					continue;
+				for (int col = 0; col < rowData.Count; col += 3)
+				{
+					var cellKey = rowData[col];
+					if (cellKey == null)
+						continue;
+					string key = cellKey.ToString().Trim();
+					if (string.IsNullOrEmpty(key))
+						continue;
+					var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
+					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
+						continue;
+					if (!SheetXHelper.TryParseInt(
+						cellValue.ToString().Trim(), out int value))
+					{
+						m_writer.Error(
+							$"Sheet {sheetName}: ID {key} has a "
+							+ $"non-integer value '{cellValue}'.");
+						continue;
+					}
+					if (!m_batchState.TryAddId(
+						key, value, source.SpreadsheetPath, sheetName, out string error)
+						&& error != null)
+					{
+						m_writer.Error(error);
+					}
+				}
+			}
+		}
+
+		internal void BatchBuildIds(
+			SheetXBatchSourceState source, string sheetName)
+		{
+			if (!TryGetGridRange(source, sheetName, out _, out string range))
+				return;
+
+			m_idsBuilderDict.Clear();
+			BuildContentOfFileIDs(sheetName, BatchFetchValues(source, range));
+
+			if (m_idsBuilderDict.TryGetValue(sheetName, out var builder))
+			{
+				m_batchState.IdsBuilders[
+					new SheetXBatchSheetKey(source.Index, sheetName)] = builder;
+
+				if (m_settings.separateIDs)
+					m_writer.CreateFileIDs(sheetName, builder.ToString());
+			}
+		}
+
+		internal void BatchBuildConstants(
+			SheetXBatchSourceState source, string sheetName)
+		{
+			if (!TryFindSheet(source, sheetName, out _))
+			{
+				m_writer.Error(
+					$"Google spreadsheet '{source.SpreadsheetPath}' "
+					+ $"has no sheet '{sheetName}'.");
+				return;
+			}
+
+			m_constantsBuilderDict.Clear();
+			LoadSheetConstantsData(
+				sheetName, BatchFetchValues(source, $"{sheetName}!A1:D"));
+
+			if (m_constantsBuilderDict.TryGetValue(sheetName, out var builder))
+			{
+				m_batchState.ConstantsBuilders[
+					new SheetXBatchSheetKey(source.Index, sheetName)] = builder;
+
+				if (m_settings.separateConstants)
+					m_writer.CreateFileConstants(builder.ToString(), sheetName);
+			}
+		}
+
+		internal void BatchBuildLocalization(
+			SheetXBatchSourceState source, string sheetName)
+		{
+			if (!TryGetGridRange(
+				source, sheetName, out var sheet, out string range))
+				return;
+
+			m_localizationsDict.Clear();
+			LoadSheetLocalizationData(
+				sheet, BatchFetchValues(source, range), sheetName);
+
+			if (m_localizationsDict.TryGetValue(sheetName, out var builder))
+			{
+				m_batchState.Localizations[
+					new SheetXBatchSheetKey(source.Index, sheetName)] = builder;
+
+				if (m_settings.separateLocalizations)
+				{
+					CreateLocalizationFile(
+						builder.idsString, builder.languageTextDict, sheetName);
+					m_localizedSheetsExported.Add(sheetName);
+				}
+			}
+		}
+
+		internal void BatchBuildJson(
+			SheetXBatchSourceState source, string sheetName, bool combine)
+		{
+			if (!TryGetGridRange(
+				source, sheetName, out var sheet, out string range))
+				return;
+
+			string fileName = sheetName.Trim().Replace(" ", "_");
+			string json = ConvertSheetToJson(
+				sheet,
+				BatchFetchValues(source, range),
+				sheetName,
+				fileName,
+				m_settings.encryptJson,
+				!combine);
+
+			if (!combine || json == null)
+				return;
+
+			if (!m_batchState.CombinedJsons.TryGetValue(source.Index, out var dict))
+			{
+				dict = new Dictionary<string, string>(StringComparer.Ordinal);
+				m_batchState.CombinedJsons[source.Index] = dict;
+			}
+
+			dict[fileName] = json;
 		}
 	}
 }
