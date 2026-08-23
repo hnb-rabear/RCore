@@ -300,6 +300,19 @@ namespace RCore.SheetX.Editor
 	public static class SheetXExporter
 	{
 		/// <summary>
+		/// Exports many spreadsheets in one detached run. Every source shares one
+		/// symbolic-ID namespace, and nothing reaches <paramref name="output"/>
+		/// unless the whole batch succeeds.
+		/// </summary>
+		/// <param name="request">Sources and options for the batch.</param>
+		/// <param name="output">Caller-owned sink for generated artifacts.</param>
+		/// <returns>Artifacts written, plus every warning and error.</returns>
+		public static SheetXExportResult ExportBatch(
+			SheetXBatchExportRequest request,
+			ISheetXOutput output)
+			=> new SheetXBatchExporter(request, output).Export();
+
+		/// <summary>
 		/// Exports one .xlsx workbook. The workbook is opened once and closed before this returns.
 		/// </summary>
 		public static SheetXExportResult ExportExcel(SheetXExportRequest request, ISheetXOutput output)
