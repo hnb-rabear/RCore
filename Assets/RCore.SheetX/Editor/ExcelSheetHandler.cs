@@ -32,6 +32,7 @@ namespace RCore.SheetX.Editor
 		private Dictionary<string, string> m_langCharSets;
 		private StringBuilder m_langCharSetsAll;
 		private SheetXWriter m_writer;
+		private readonly SheetXBatchState m_batchState;
 
 		public ExcelSheetHandler(SheetXSettings settings)
 			: this(settings, null)
@@ -42,6 +43,20 @@ namespace RCore.SheetX.Editor
 		{
 			m_settings = settings;
 			m_writer = new SheetXWriter(settings, context);
+		}
+
+		internal ExcelSheetHandler(
+			SheetXSettings settings,
+			SheetXExportContext context,
+			SheetXBatchState batchState)
+			: this(settings, context)
+		{
+			m_batchState = batchState;
+			m_allIds = batchState.AllIds;
+			m_localizedSheetsExported = batchState.LocalizedSheetsExported;
+			m_localizedLanguages = batchState.LocalizedLanguages;
+			m_langCharSets = batchState.LangCharSets;
+			m_langCharSetsAll = batchState.LangCharSetsAll;
 		}
 
 #region Export IDs
@@ -156,13 +171,24 @@ namespace RCore.SheetX.Editor
 						}
 						// The first definition wins. Appending a second "public const int" for the same key
 						// produced C# that does not compile, so a conflict is reported and the row skipped.
-						if (m_allIds.TryGetValue(key, out int existing))
+						// Batch mode: Phase C preloaded all IDs into the shared table.
+						// DeclaredIds gates whether this sheet declares the const.
+						if (m_batchState != null)
+						{
+							if (!m_batchState.DeclaredIds.Add(key))
+								continue;
+							// Value already in m_allIds from Phase C — skip the
+							// m_allIds[key] = value assignment below.
+						}
+						else if (m_allIds.TryGetValue(key, out int existing))
 						{
 							if (existing != value)
 								m_writer.Blocking("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}");
 							continue;
 						}
-						m_allIds[key] = value;
+
+						if (m_batchState == null)
+							m_allIds[key] = value;
 						sb.Append("\tpublic const int ");
 						sb.Append(key);
 						sb.Append(" = ");
@@ -197,7 +223,8 @@ namespace RCore.SheetX.Editor
 				}
 			}
 
-			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
+			if (m_batchState == null)
+				m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
 
 			//Build Ids Enum
 			if (idsEnumBuilders.Count > 0)
@@ -323,7 +350,52 @@ namespace RCore.SheetX.Editor
 				}
 			}
 
-			m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
+			if (m_batchState == null)
+				m_allIds = m_allIds.OrderBy(m => m.Key).ToDictionary(x => x.Key, x => x.Value);
+		}
+
+		internal void BatchLoadIds(
+			IWorkbook workbook, string sourcePath, string sheetName)
+		{
+			var sheet = workbook.GetSheet(sheetName);
+			if (sheet == null || sheet.LastRowNum == 0)
+			{
+				m_writer.Warn($"Sheet {sheetName} is empty!");
+				return;
+			}
+			for (int row = 0; row <= sheet.LastRowNum; row++)
+			{
+				var rowData = sheet.GetRow(row);
+				if (rowData == null)
+					continue;
+				for (int col = 0; col < rowData.LastCellNum; col += 3)
+				{
+					var cellKey = rowData.GetCell(col);
+					if (cellKey == null)
+						continue;
+					string key = cellKey.ToString().Trim();
+					if (row <= 0 || string.IsNullOrEmpty(key))
+						continue;
+					var cellValue = rowData.GetCell(col + 1);
+					if (cellValue == null
+						|| string.IsNullOrEmpty(cellValue.ToString()))
+						continue;
+					if (!SheetXHelper.TryParseInt(
+						cellValue.ToString().Trim(), out int value))
+					{
+						m_writer.Error(
+							$"Sheet {sheetName}: ID {key} has a "
+							+ $"non-integer value '{cellValue}'.");
+						continue;
+					}
+					if (!m_batchState.TryAddId(
+						key, value, sourcePath, sheetName, out string error))
+					{
+						if (error != null)
+							m_writer.Error(error);
+					}
+				}
+			}
 		}
 
 #endregion
@@ -1824,6 +1896,151 @@ namespace RCore.SheetX.Editor
 				if (id.Key == pKey.Trim())
 					return true;
 			return false;
+		}
+
+		internal void BatchBuildIds(
+			IWorkbook workbook, int sourceIndex, string sheetName)
+		{
+			m_idsBuilderDict.Clear();
+			BuildContentOfFileIDs(workbook, sheetName);
+			if (m_idsBuilderDict.TryGetValue(sheetName, out var builder))
+			{
+				m_batchState.IdsBuilders[
+					new SheetXBatchSheetKey(sourceIndex, sheetName)] = builder;
+			}
+			if (m_settings.separateIDs
+				&& m_idsBuilderDict.TryGetValue(sheetName, out var sepBuilder))
+			{
+				m_writer.CreateFileIDs(sheetName, sepBuilder.ToString());
+			}
+		}
+
+		internal void BatchBuildConstants(
+			IWorkbook workbook, int sourceIndex, string sheetName)
+		{
+			m_constantsBuilderDict.Clear();
+			LoadSheetConstantsData(workbook, sheetName);
+			if (m_constantsBuilderDict.TryGetValue(sheetName, out var builder))
+			{
+				m_batchState.ConstantsBuilders[
+					new SheetXBatchSheetKey(sourceIndex, sheetName)] = builder;
+			}
+			if (m_settings.separateConstants
+				&& m_constantsBuilderDict.TryGetValue(sheetName, out var sepBuilder))
+			{
+				m_writer.CreateFileConstants(sepBuilder.ToString(), sheetName);
+			}
+		}
+
+		internal void BatchBuildLocalization(
+			IWorkbook workbook, int sourceIndex, string sheetName)
+		{
+			m_localizationsDict.Clear();
+			LoadSheetLocalizationData(workbook, sheetName);
+			if (m_localizationsDict.TryGetValue(sheetName, out var builder))
+			{
+				m_batchState.Localizations[
+					new SheetXBatchSheetKey(sourceIndex, sheetName)] = builder;
+			}
+			if (m_settings.separateLocalizations
+				&& m_localizationsDict.TryGetValue(sheetName, out var sepBuilder))
+			{
+				CreateLocalizationFile(
+					sepBuilder.idsString, sepBuilder.languageTextDict, sheetName);
+				m_localizedSheetsExported.Add(sheetName);
+			}
+		}
+
+		internal void BatchBuildJson(
+			IWorkbook workbook, int sourceIndex, string sheetName,
+			string outputName, bool combine)
+		{
+			string fileName = sheetName.Trim().Replace(" ", "_");
+			string json = ConvertSheetToJson(
+				workbook, sheetName, fileName,
+				m_settings.encryptJson, !combine);
+			if (combine && json != null)
+			{
+				if (!m_batchState.CombinedJsons.TryGetValue(
+					sourceIndex, out var dict))
+				{
+					dict = new Dictionary<string, string>(StringComparer.Ordinal);
+					m_batchState.CombinedJsons[sourceIndex] = dict;
+				}
+				dict[fileName] = json;
+			}
+		}
+
+		internal void BatchEmitCombinedJson(int sourceIndex, string outputName)
+		{
+			if (!m_batchState.CombinedJsons.TryGetValue(sourceIndex, out var jsons)
+				|| jsons.Count == 0)
+				return;
+			string merged = SheetXHelper.MergeJsonContents(jsons);
+			string mergedFileName = outputName.Trim().Replace(" ", "_");
+			m_writer.Write(m_settings.jsonOutputFolder,
+				$"{mergedFileName}.txt", merged,
+				SheetXExportFileType.Json,
+				m_settings.encryptJson
+					? $"Exported encrypted Json data to {mergedFileName}.txt."
+					: $"Exported Json data to {mergedFileName}.txt.");
+		}
+
+		internal void BatchEmitAggregateIds(
+			IReadOnlyList<SheetXBatchSheetKey> order)
+		{
+			var content = new StringBuilder();
+			foreach (var key in order)
+			{
+				if (m_batchState.IdsBuilders.TryGetValue(key, out var builder))
+					content.Append(builder);
+			}
+			m_writer.CreateFileIDs("IDs", content.ToString());
+		}
+
+		internal void BatchEmitAggregateConstants(
+			IReadOnlyList<SheetXBatchSheetKey> order)
+		{
+			var content = new StringBuilder();
+			int count = 0;
+			foreach (var key in order)
+			{
+				if (!m_batchState.ConstantsBuilders.TryGetValue(
+					key, out var builder))
+					continue;
+				content.Append(builder);
+				if (count < order.Count - 1)
+					content.AppendLine();
+				count++;
+			}
+			m_writer.CreateFileConstants(content.ToString(), "Constants");
+		}
+
+		internal void BatchEmitAggregateLocalizations(
+			IReadOnlyList<SheetXBatchSheetKey> order)
+		{
+			var combined = new LocalizationBuilder();
+			foreach (var key in order)
+			{
+				if (!m_batchState.Localizations.TryGetValue(
+					key, out var builder))
+					continue;
+				combined.idsString.AddRange(builder.idsString);
+				foreach (var pair in builder.languageTextDict)
+				{
+					if (!combined.languageTextDict.ContainsKey(pair.Key))
+						combined.languageTextDict.Add(pair.Key, new List<string>());
+					combined.languageTextDict[pair.Key].AddRange(pair.Value);
+				}
+			}
+			CreateLocalizationFile(
+				combined.idsString, combined.languageTextDict, "Localization");
+			m_localizedSheetsExported.Add("Localization");
+		}
+
+		internal void BatchEmitLocalizationsManager()
+		{
+			CreateLocalizationsManagerFile();
 		}
 	}
 }
