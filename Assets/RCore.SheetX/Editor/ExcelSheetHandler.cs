@@ -157,7 +157,10 @@ namespace RCore.SheetX.Editor
 						var cellValue = rowData.GetCell(col + 1);
 						if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						{
-							m_writer.Blocking("Warning", $"Sheet {sheet.SheetName}: Key {key} doesn't have value!");
+							if (m_batchState != null)
+								m_writer.Warn($"Sheet {sheet.SheetName}: Key {key} doesn't have value!");
+							else
+								m_writer.Blocking("Warning", $"Sheet {sheet.SheetName}: Key {key} doesn't have value!");
 							continue;
 						}
 
@@ -936,7 +939,8 @@ namespace RCore.SheetX.Editor
 					SheetXExportFileType.CharacterSet, "Exported characters_set_all.txt!");
 			}
 
-			if (m_localizedSheetsExported.Count > 0)
+			if (m_localizedSheetsExported.Count > 0
+				&& m_localizedLanguages.Count > 0)
 			{
 				//Build language dictionary
 				var languagesDictBuilder = new StringBuilder();
@@ -1601,7 +1605,10 @@ namespace RCore.SheetX.Editor
 								{
 									// Skip the field instead of falling through: DeserializeObject would throw on
 									// the same text, taking down the whole export instead of one cell.
-									m_writer.Blocking("Error", $"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
+									if (m_batchState != null)
+										m_writer.Error($"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
+									else
+										m_writer.Blocking("Error", $"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
 									break;
 								}
 								var tempObj = JsonConvert.DeserializeObject(fieldValue);
@@ -1943,7 +1950,8 @@ namespace RCore.SheetX.Editor
 					new SheetXBatchSheetKey(sourceIndex, sheetName)] = builder;
 			}
 			if (m_settings.separateLocalizations
-				&& m_localizationsDict.TryGetValue(sheetName, out var sepBuilder))
+				&& m_localizationsDict.TryGetValue(sheetName, out var sepBuilder)
+				&& sepBuilder.languageTextDict.Count > 0)
 			{
 				CreateLocalizationFile(
 					sepBuilder.idsString, sepBuilder.languageTextDict, sheetName);
@@ -1993,7 +2001,7 @@ namespace RCore.SheetX.Editor
 			foreach (var key in order)
 			{
 				if (m_batchState.IdsBuilders.TryGetValue(key, out var builder))
-					content.Append(builder);
+					content.Append(builder).AppendLine();
 			}
 			m_writer.CreateFileIDs("IDs", content.ToString());
 		}
@@ -2033,9 +2041,12 @@ namespace RCore.SheetX.Editor
 					combined.languageTextDict[pair.Key].AddRange(pair.Value);
 				}
 			}
-			CreateLocalizationFile(
-				combined.idsString, combined.languageTextDict, "Localization");
-			m_localizedSheetsExported.Add("Localization");
+			if (combined.languageTextDict.Count > 0)
+			{
+				CreateLocalizationFile(
+					combined.idsString, combined.languageTextDict, "Localization");
+				m_localizedSheetsExported.Add("Localization");
+			}
 		}
 
 		internal void BatchEmitLocalizationsManager()

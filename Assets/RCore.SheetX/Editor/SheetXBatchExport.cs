@@ -574,16 +574,17 @@ namespace RCore.SheetX.Editor
 				if (string.IsNullOrEmpty(source.OutputName))
 					continue;
 
-				if (seen.TryGetValue(source.OutputName, out string first))
+				string normalized = source.OutputName.Trim().Replace(" ", "_");
+				if (seen.TryGetValue(normalized, out string first))
 				{
 					m_context.Error(
 						$"Sources '{first}' and '{source.SpreadsheetPath}' both resolve "
-						+ $"to OutputName '{source.OutputName}'.");
+						+ $"to OutputName '{normalized}'.");
 					ok = false;
 				}
 				else
 				{
-					seen.Add(source.OutputName, source.SpreadsheetPath);
+					seen.Add(normalized, source.SpreadsheetPath);
 				}
 			}
 

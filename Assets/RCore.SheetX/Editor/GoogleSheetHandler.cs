@@ -206,7 +206,10 @@ namespace RCore.SheetX.Editor
 						var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
 						if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
 						{
-							m_writer.Blocking("Warning", $"Sheet {pSheetName}: Key {key} doesn't have value!");
+							if (m_batchState != null)
+								m_writer.Warn($"Sheet {pSheetName}: Key {key} doesn't have value!");
+							else
+								m_writer.Blocking("Warning", $"Sheet {pSheetName}: Key {key} doesn't have value!");
 							continue;
 						}
 
@@ -960,7 +963,8 @@ namespace RCore.SheetX.Editor
 				m_writer.Info("Exported characters_set_all.txt!");
 			}
 
-			if (m_localizedSheetsExported.Count > 0)
+			if (m_localizedSheetsExported.Count > 0
+				&& m_localizedLanguages.Count > 0)
 			{
 				//Build language dictionary
 				var languagesDictBuilder = new StringBuilder();
@@ -1637,7 +1641,10 @@ namespace RCore.SheetX.Editor
 								}
 								if (!SheetXHelper.IsValidJson(fieldValue))
 								{
-									m_writer.Blocking("Error", $"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
+									if (m_batchState != null)
+										m_writer.Error($"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
+									else
+										m_writer.Blocking("Error", $"Invalid Json string at Sheet: {pSheetName} Field: {fieldNameTrim} Row: {i + 1}");
 									continue;
 								}
 								var tempObj = JsonConvert.DeserializeObject(fieldValue);
@@ -2216,7 +2223,8 @@ namespace RCore.SheetX.Editor
 				m_batchState.Localizations[
 					new SheetXBatchSheetKey(source.Index, sheetName)] = builder;
 
-				if (m_settings.separateLocalizations)
+				if (m_settings.separateLocalizations
+					&& builder.languageTextDict.Count > 0)
 				{
 					CreateLocalizationFile(
 						builder.idsString, builder.languageTextDict, sheetName);

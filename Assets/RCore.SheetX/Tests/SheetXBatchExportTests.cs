@@ -487,5 +487,146 @@ namespace RCore.SheetX.Tests
 			Assert.That(jsonWrites[1], Is.EqualTo("Generated/Alpha.txt"));
 			Assert.That(jsonWrites[2], Is.EqualTo("Generated/Beta.txt"));
 		}
+
+		[Test]
+		public void batch_missing_id_value_warns_and_does_not_block_flush()
+		{
+			var workbook = new XSSFWorkbook();
+			var ids = workbook.CreateSheet("HeroIDs");
+			ids.CreateRow(0).CreateCell(0).SetCellValue("Hero");
+			var row = ids.CreateRow(1);
+			row.CreateCell(0).SetCellValue("HERO_1");
+			row.CreateCell(1).SetCellValue("");
+
+			var data = workbook.CreateSheet("Data");
+			data.CreateRow(0).CreateCell(0).SetCellValue("id");
+			data.CreateRow(1).CreateCell(0).SetCellValue("1");
+
+			string path = SaveWorkbook(workbook);
+			var output = new MemoryOutput();
+
+			var result = SheetXExporter.ExportBatch(
+				new SheetXBatchExportRequest
+				{
+					ConstantsOutputPath = "Generated",
+					JsonOutputPath = "Generated",
+					Sources = new List<SheetXBatchSource>
+					{
+						new SheetXBatchSource { SpreadsheetPath = path },
+					},
+				},
+				output);
+
+			Assert.That(result.Errors, Is.Empty);
+			Assert.That(result.Warnings, Has.Count.GreaterThan(0));
+			Assert.That(result.Warnings, Has.Some.Contains("Key HERO_1 doesn't have value!"));
+			Assert.That(output.Writes.ContainsKey("Generated/Data.txt"), Is.True);
+		}
+
+		[Test]
+		public void batch_invalid_json_reports_error_and_discards_all_writes()
+		{
+			var workbook = new XSSFWorkbook();
+			var data = workbook.CreateSheet("Data");
+			data.CreateRow(0).CreateCell(0).SetCellValue("Payload{}");
+			data.CreateRow(1).CreateCell(0).SetCellValue("{broken");
+
+			string path = SaveWorkbook(workbook);
+			var output = new MemoryOutput();
+
+			var result = SheetXExporter.ExportBatch(
+				new SheetXBatchExportRequest
+				{
+					ConstantsOutputPath = "Generated",
+					JsonOutputPath = "Generated",
+					Sources = new List<SheetXBatchSource>
+					{
+						new SheetXBatchSource { SpreadsheetPath = path },
+					},
+				},
+				output);
+
+			Assert.That(result.Errors, Has.Count.GreaterThan(0));
+			Assert.That(result.Errors, Has.Some.Contains("Invalid Json string"));
+			Assert.That(output.WriteOrder, Is.Empty);
+		}
+
+		[Test]
+		public void empty_localization_sheet_does_not_crash_and_emits_no_manager()
+		{
+			var workbook = new XSSFWorkbook();
+			var sheet = workbook.CreateSheet("LocalizationEmpty");
+			var header = sheet.CreateRow(0);
+			header.CreateCell(0).SetCellValue("idString");
+			header.CreateCell(1).SetCellValue("relativeId");
+
+			string path = SaveWorkbook(workbook);
+			var output = new MemoryOutput();
+
+			var result = SheetXExporter.ExportBatch(
+				new SheetXBatchExportRequest
+				{
+					ConstantsOutputPath = "Generated",
+					LocalizationOutputPath = "Generated",
+					Sources = new List<SheetXBatchSource>
+					{
+						new SheetXBatchSource { SpreadsheetPath = path },
+					},
+				},
+				output);
+
+			Assert.That(result.Errors, Is.Empty);
+			Assert.That(output.Writes.ContainsKey("Generated/LocalizationsManager.cs"), Is.False);
+		}
+
+		[Test]
+		public void aggregate_ids_boundary_well_formed_between_regions()
+		{
+			string a = CreateIdsWorkbook("HeroIDs", ("HERO_1", "1"));
+			string b = CreateIdsWorkbook("MonsterIDs", ("MONSTER_1", "100"));
+			var output = new MemoryOutput();
+
+			var result = SheetXExporter.ExportBatch(
+				new SheetXBatchExportRequest
+				{
+					ConstantsOutputPath = "Generated",
+					Sources = new List<SheetXBatchSource>
+					{
+						new SheetXBatchSource { SpreadsheetPath = a },
+						new SheetXBatchSource { SpreadsheetPath = b },
+					},
+				},
+				output);
+
+			Assert.That(result.Errors, Is.Empty);
+			string idsContent = output.Writes["Generated/IDs.cs"];
+			Assert.That(idsContent, Does.Contain("#endregion" + Environment.NewLine + "\t#region"));
+		}
+
+		[Test]
+		public void normalized_output_name_collision_fails_in_validation()
+		{
+			string a = CreateWorkbookWithDataSheets(m_temp, "Weapons");
+			string b = CreateWorkbookWithDataSheets(m_temp, "Armors");
+			var output = new MemoryOutput();
+
+			var result = SheetXExporter.ExportBatch(
+				new SheetXBatchExportRequest
+				{
+					ConstantsOutputPath = "Generated",
+					JsonOutputPath = "Generated",
+					CombineJson = true,
+					Sources = new List<SheetXBatchSource>
+					{
+						new SheetXBatchSource { SpreadsheetPath = a, OutputName = "foo bar" },
+						new SheetXBatchSource { SpreadsheetPath = b, OutputName = "foo_bar" },
+					},
+				},
+				output);
+
+			Assert.That(result.Errors, Has.Count.GreaterThan(0));
+			Assert.That(result.Errors, Has.Some.Contains("both resolve to OutputName 'foo_bar'"));
+			Assert.That(output.WriteOrder, Is.Empty);
+		}
 	}
 }
