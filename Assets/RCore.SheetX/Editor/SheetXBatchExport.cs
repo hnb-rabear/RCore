@@ -258,6 +258,9 @@ namespace RCore.SheetX.Editor
 		private SheetXSettings m_settings;
 		private ExcelSheetHandler m_excel;
 		private GoogleSheetHandler m_google;
+		private IReadOnlyList<SheetXBatchSheetKey> m_idsOrder;
+		private IReadOnlyList<SheetXBatchSheetKey> m_constantsOrder;
+		private IReadOnlyList<SheetXBatchSheetKey> m_localizationOrder;
 
 		internal SheetXBatchExporter(
 			SheetXBatchExportRequest request,
@@ -302,6 +305,16 @@ namespace RCore.SheetX.Editor
 					return m_context.ToResult();
 
 				if (!LoadGlobalIds())
+					return m_context.ToResult();
+
+				BuildAllSources();
+
+				if (m_context.HasErrors)
+					return m_context.ToResult();
+
+				EmitAggregates();
+
+				if (m_context.HasErrors)
 					return m_context.ToResult();
 
 				m_context.Flush();
@@ -603,6 +616,104 @@ namespace RCore.SheetX.Editor
 			return !m_context.HasErrors;
 		}
 
+		private void BuildAllSources()
+		{
+			var idsOrder = new List<SheetXBatchSheetKey>();
+			var constantsOrder = new List<SheetXBatchSheetKey>();
+			var localizationOrder = new List<SheetXBatchSheetKey>();
+
+			foreach (var source in m_sources)
+			{
+				foreach (string sheetName in source.SelectedSheets)
+				{
+					m_context.SetOrigin(source.SpreadsheetPath, sheetName);
+
+					if (IsIdsSheet(sheetName))
+					{
+						idsOrder.Add(new SheetXBatchSheetKey(source.Index, sheetName));
+
+						if (source.Kind == SheetXSourceKind.Excel)
+							m_excel.BatchBuildIds(source.Workbook, source.Index, sheetName);
+						else
+							m_google.BatchBuildIds(source, sheetName);
+					}
+					else if (IsLocalizationSheet(sheetName))
+					{
+						localizationOrder.Add(new SheetXBatchSheetKey(source.Index, sheetName));
+
+						if (source.Kind == SheetXSourceKind.Excel)
+							m_excel.BatchBuildLocalization(source.Workbook, source.Index, sheetName);
+						else
+							m_google.BatchBuildLocalization(source, sheetName);
+					}
+					else if (IsConstantsSheet(sheetName))
+					{
+						constantsOrder.Add(new SheetXBatchSheetKey(source.Index, sheetName));
+
+						if (source.Kind == SheetXSourceKind.Excel)
+							m_excel.BatchBuildConstants(source.Workbook, source.Index, sheetName);
+						else
+							m_google.BatchBuildConstants(source, sheetName);
+					}
+					else if (IsSettingsSheet(sheetName))
+					{
+						continue;
+					}
+					else if (source.Kind == SheetXSourceKind.Excel)
+					{
+						m_excel.BatchBuildJson(
+							source.Workbook,
+							source.Index,
+							sheetName,
+							source.OutputName,
+							m_request.CombineJson);
+					}
+					else
+					{
+						m_google.BatchBuildJson(
+							source, sheetName, m_request.CombineJson);
+					}
+				}
+
+				if (m_request.CombineJson)
+				{
+					m_context.SetOrigin(source.SpreadsheetPath, "<combined-json>");
+					m_excel.BatchEmitCombinedJson(source.Index, source.OutputName);
+				}
+			}
+
+			m_idsOrder = idsOrder;
+			m_constantsOrder = constantsOrder;
+			m_localizationOrder = localizationOrder;
+		}
+
+		private void EmitAggregates()
+		{
+			if (!m_request.SeparateIDs && m_idsOrder.Count > 0)
+			{
+				m_context.SetOrigin("<batch>", "<ids>");
+				m_excel.BatchEmitAggregateIds(m_idsOrder);
+			}
+
+			if (!m_request.SeparateConstants && m_constantsOrder.Count > 0)
+			{
+				m_context.SetOrigin("<batch>", "<constants>");
+				m_excel.BatchEmitAggregateConstants(m_constantsOrder);
+			}
+
+			if (!m_request.SeparateLocalizations && m_localizationOrder.Count > 0)
+			{
+				m_context.SetOrigin("<batch>", "<localization>");
+				m_excel.BatchEmitAggregateLocalizations(m_localizationOrder);
+			}
+
+			if (m_state.LocalizedSheetsExported.Count > 0)
+			{
+				m_context.SetOrigin("<batch>", "<localization-manager>");
+				m_excel.BatchEmitLocalizationsManager();
+			}
+		}
+
 		private bool HasGoogleSource()
 		{
 			foreach (var source in m_request.Sources)
@@ -622,6 +733,16 @@ namespace RCore.SheetX.Editor
 		private static bool IsLocalizationSheet(string sheetName)
 			=> sheetName.StartsWith(
 				SheetXConstants.LOCALIZATION_SHEET,
+				StringComparison.Ordinal);
+
+		private static bool IsConstantsSheet(string sheetName)
+			=> sheetName.EndsWith(
+				SheetXConstants.CONSTANTS_SHEET,
+				StringComparison.Ordinal);
+
+		private static bool IsSettingsSheet(string sheetName)
+			=> sheetName.EndsWith(
+				SheetXConstants.SETTINGS_SHEET,
 				StringComparison.Ordinal);
 	}
 }
