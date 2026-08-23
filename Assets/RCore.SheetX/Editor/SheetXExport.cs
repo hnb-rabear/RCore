@@ -152,54 +152,136 @@ namespace RCore.SheetX.Editor
 	/// </summary>
 	internal sealed class SheetXExportContext
 	{
+		private struct StagedArtifact
+		{
+			public string RelativePath;
+			public string Content;
+			public SheetXExportFileType Type;
+			public string OriginSource;
+			public string OriginSheet;
+		}
+
 		private readonly ISheetXOutput m_output;
+		private readonly bool m_discardStagedOnError;
 		private readonly List<SheetXExportFile> m_files = new List<SheetXExportFile>();
 		private readonly List<string> m_warnings = new List<string>();
 		private readonly List<string> m_errors = new List<string>();
-		private readonly HashSet<string> m_written = new HashSet<string>(StringComparer.Ordinal);
+		private readonly List<StagedArtifact> m_staged = new List<StagedArtifact>();
+		private readonly Dictionary<string, StagedArtifact> m_stagedByPath =
+			new Dictionary<string, StagedArtifact>(StringComparer.Ordinal);
+		private readonly HashSet<string> m_reserved =
+			new HashSet<string>(StringComparer.Ordinal);
+		private string m_originSource;
+		private string m_originSheet;
+		private bool m_flushed;
 
-		public SheetXExportContext(ISheetXOutput output)
+		internal SheetXExportContext(ISheetXOutput output, bool discardStagedOnError)
 		{
 			m_output = output;
+			m_discardStagedOnError = discardStagedOnError;
+		}
+
+		internal void SetOrigin(string source, string sheet)
+		{
+			m_originSource = source;
+			m_originSheet = sheet;
 		}
 
 		/// <summary>
-		/// Hands one finished artifact to the output and records it. The file is recorded only after
-		/// the write returns: a caller that rejects content must not see it listed as exported.
+		/// Stages one artifact. <see cref="Flush"/> hands staged artifacts to the output and records
+		/// each one only after its write returns.
 		/// </summary>
-		public void Write(string pFolder, string pFileName, string pContent, SheetXExportFileType pType)
+		public void Write(
+			string pFolder,
+			string pFileName,
+			string pContent,
+			SheetXExportFileType pType)
 		{
 			string relativePath = Combine(pFolder, pFileName);
-			// Multiple producers for one final path silently overwrote content in legacy disk mode.
-			// Detached exports reject second production: one artifact reaches an output at most once.
-			if (!m_written.Add(relativePath))
+
+			if (!m_reserved.Add(relativePath))
 			{
-				m_errors.Add($"Artifact '{relativePath}' was produced more than once.");
-				return;
-			}
-			if (m_output == null)
-			{
-				m_written.Remove(relativePath);
-				m_errors.Add($"Writing '{relativePath}' failed: output is null.");
+				m_errors.Add(CollisionMessage(relativePath));
 				return;
 			}
 
-			try
+			var artifact = new StagedArtifact
 			{
-				m_output.Write(relativePath, pContent);
-			}
-			catch (Exception ex)
-			{
-				m_written.Remove(relativePath);
-				m_errors.Add($"Writing '{relativePath}' failed: {ex.Message}");
-				return;
-			}
-			m_files.Add(new SheetXExportFile { RelativePath = relativePath, Type = pType });
+				RelativePath = relativePath,
+				Content = pContent,
+				Type = pType,
+				OriginSource = m_originSource,
+				OriginSheet = m_originSheet,
+			};
+
+			m_stagedByPath[relativePath] = artifact;
+			m_staged.Add(artifact);
+		}
+
+		private string CollisionMessage(string relativePath)
+		{
+			bool haveOrigins =
+				!string.IsNullOrEmpty(m_originSource)
+				&& m_stagedByPath.TryGetValue(relativePath, out var first)
+				&& !string.IsNullOrEmpty(first.OriginSource);
+
+			if (!haveOrigins)
+				return $"Artifact '{relativePath}' was produced more than once.";
+
+			var origin = m_stagedByPath[relativePath];
+			return $"Artifact '{relativePath}' collision: "
+				+ $"first '{origin.OriginSource}' sheet '{origin.OriginSheet}'; "
+				+ $"second '{m_originSource}' sheet '{m_originSheet}'.";
 		}
 
 		public void Warn(string pMessage) => m_warnings.Add(pMessage);
 
 		public void Error(string pMessage) => m_errors.Add(pMessage);
+
+		internal bool HasErrors => m_errors.Count > 0;
+
+		internal void Flush()
+		{
+			if (m_flushed)
+				return;
+
+			m_flushed = true;
+
+			if (m_discardStagedOnError && m_errors.Count > 0)
+			{
+				m_staged.Clear();
+				return;
+			}
+
+			foreach (var artifact in m_staged)
+			{
+				if (m_output == null)
+				{
+					m_errors.Add(
+						$"Writing '{artifact.RelativePath}' failed: output is null.");
+					break;
+				}
+
+				try
+				{
+					m_output.Write(artifact.RelativePath, artifact.Content);
+				}
+				catch (Exception ex)
+				{
+					m_errors.Add(
+						$"Writing '{artifact.RelativePath}' failed: {ex.Message}");
+					break;
+				}
+
+				m_files.Add(new SheetXExportFile
+				{
+					RelativePath = artifact.RelativePath,
+					Type = artifact.Type,
+				});
+			}
+
+			m_staged.Clear();
+		}
 
 		public SheetXExportResult ToResult() => new SheetXExportResult(m_files, m_warnings, m_errors);
 
@@ -252,6 +334,7 @@ namespace RCore.SheetX.Editor
 			{
 				context.Error($"Could not read spreadsheet '{request.SpreadsheetPath}': {ex.Message}");
 			}
+			context.Flush();
 			return context.ToResult();
 		}
 
@@ -294,6 +377,7 @@ namespace RCore.SheetX.Editor
 			{
 				context.Error($"Could not export Google spreadsheet '{request.SpreadsheetPath}': {ex.Message}");
 			}
+			context.Flush();
 			return context.ToResult();
 		}
 
@@ -304,7 +388,7 @@ namespace RCore.SheetX.Editor
 			settings = null;
 			// A null sink is a caller bug, but this API promises every failure comes back in the
 			// result rather than as a throw, so it is reported the same way as any other.
-			var context = new SheetXExportContext(output);
+			var context = new SheetXExportContext(output, discardStagedOnError: false);
 			if (output == null)
 			{
 				context.Error("Output is null.");
