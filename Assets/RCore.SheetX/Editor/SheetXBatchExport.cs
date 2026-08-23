@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace RCore.SheetX.Editor
 {
@@ -81,5 +83,166 @@ namespace RCore.SheetX.Editor
 
 		/// <summary>OAuth client secret for Google sources. Never persisted.</summary>
 		public string GoogleClientSecret;
+	}
+
+	/// <summary>Where a symbolic ID was first defined.</summary>
+	internal readonly struct SheetXIdOrigin
+	{
+		/// <summary>Source that first defined ID.</summary>
+		public readonly string Source;
+
+		/// <summary>Sheet that first defined ID.</summary>
+		public readonly string Sheet;
+
+		/// <summary>Integer value first assigned to ID.</summary>
+		public readonly int Value;
+
+		/// <summary>Initializes first-definition origin.</summary>
+		public SheetXIdOrigin(string source, string sheet, int value)
+		{
+			Source = source;
+			Sheet = sheet;
+			Value = value;
+		}
+	}
+
+	/// <summary>Builder key that keeps two sources' same-named sheets apart.</summary>
+	internal readonly struct SheetXBatchSheetKey : IEquatable<SheetXBatchSheetKey>
+	{
+		/// <summary>Zero-based source position in batch.</summary>
+		public readonly int SourceIndex;
+
+		/// <summary>Sheet name within source.</summary>
+		public readonly string Sheet;
+
+		/// <summary>Initializes source-qualified sheet key.</summary>
+		public SheetXBatchSheetKey(int sourceIndex, string sheet)
+		{
+			SourceIndex = sourceIndex;
+			Sheet = sheet;
+		}
+
+		/// <summary>Checks source index and ordinal sheet-name equality.</summary>
+		public bool Equals(SheetXBatchSheetKey other)
+			=> SourceIndex == other.SourceIndex
+				&& string.Equals(Sheet, other.Sheet, StringComparison.Ordinal);
+
+		/// <summary>Checks value equality against another object.</summary>
+		public override bool Equals(object obj)
+			=> obj is SheetXBatchSheetKey other && Equals(other);
+
+		/// <summary>Returns hash code using source index and ordinal sheet name.</summary>
+		public override int GetHashCode()
+		{
+			int hash = SourceIndex * 397;
+			return hash ^ (Sheet == null ? 0 : StringComparer.Ordinal.GetHashCode(Sheet));
+		}
+	}
+
+	/// <summary>State shared by every handler inside one batch.</summary>
+	internal sealed class SheetXBatchState
+	{
+		/// <summary>Global symbolic-ID lookup table.</summary>
+		public readonly Dictionary<string, int> AllIds =
+			new Dictionary<string, int>(StringComparer.Ordinal);
+
+		/// <summary>First-definition origins for global symbolic IDs.</summary>
+		public readonly Dictionary<string, SheetXIdOrigin> IdOrigins =
+			new Dictionary<string, SheetXIdOrigin>(StringComparer.Ordinal);
+
+		/// <summary>Symbolic IDs already emitted into generated declarations.</summary>
+		public readonly HashSet<string> DeclaredIds =
+			new HashSet<string>(StringComparer.Ordinal);
+
+		/// <summary>ID builders keyed by source-qualified sheet.</summary>
+		public readonly Dictionary<SheetXBatchSheetKey, StringBuilder> IdsBuilders =
+			new Dictionary<SheetXBatchSheetKey, StringBuilder>();
+
+		/// <summary>Constants builders keyed by source-qualified sheet.</summary>
+		public readonly Dictionary<SheetXBatchSheetKey, StringBuilder> ConstantsBuilders =
+			new Dictionary<SheetXBatchSheetKey, StringBuilder>();
+
+		/// <summary>Localization builders keyed by source-qualified sheet.</summary>
+		public readonly Dictionary<SheetXBatchSheetKey, LocalizationBuilder> Localizations =
+			new Dictionary<SheetXBatchSheetKey, LocalizationBuilder>();
+
+		/// <summary>
+		/// Combined-JSON payloads per source index. Each inner map is one source's
+		/// sheet name to JSON content, so two sources sharing a sheet name never merge.
+		/// </summary>
+		public readonly Dictionary<int, Dictionary<string, string>> CombinedJsons =
+			new Dictionary<int, Dictionary<string, string>>();
+
+		/// <summary>Languages included in generated localizations.</summary>
+		public readonly List<string> LocalizedLanguages = new List<string>();
+
+		/// <summary>Sheets already included in generated localizations.</summary>
+		public readonly List<string> LocalizedSheetsExported = new List<string>();
+
+		/// <summary>Character sets by language.</summary>
+		public readonly Dictionary<string, string> LangCharSets =
+			new Dictionary<string, string>(StringComparer.Ordinal);
+
+		/// <summary>Aggregate localized character set.</summary>
+		public readonly StringBuilder LangCharSetsAll = new StringBuilder();
+
+		/// <summary>Whether duplicate IDs produce errors.</summary>
+		public bool StrictDuplicateIds = true;
+
+		/// <summary>Adds ID if absent, preserving first definition and reporting strict duplicates.</summary>
+		public bool TryAddId(
+			string key,
+			int value,
+			string source,
+			string sheet,
+			out string error)
+		{
+			error = null;
+
+			if (AllIds.ContainsKey(key))
+			{
+				if (StrictDuplicateIds)
+				{
+					var first = IdOrigins[key];
+					error = $"Duplicate ID '{key}': "
+						+ $"first '{first.Source}' sheet '{first.Sheet}' value '{first.Value}'; "
+						+ $"second '{source}' sheet '{sheet}' value '{value}'.";
+				}
+
+				return false;
+			}
+
+			AllIds.Add(key, value);
+			IdOrigins.Add(key, new SheetXIdOrigin(source, sheet, value));
+			return true;
+		}
+	}
+
+	/// <summary>One source after validation and materialization.</summary>
+	internal sealed class SheetXBatchSourceState
+	{
+		/// <summary>Zero-based source position in batch.</summary>
+		public int Index;
+
+		/// <summary>Spreadsheet source kind.</summary>
+		public SheetXSourceKind Kind;
+
+		/// <summary>Excel path or Google spreadsheet ID.</summary>
+		public string SpreadsheetPath;
+
+		/// <summary>Combined JSON artifact name.</summary>
+		public string OutputName;
+
+		/// <summary>Selected sheets in source order.</summary>
+		public readonly List<string> SelectedSheets = new List<string>();
+
+		/// <summary>Excel only. Open for whole batch; coordinator disposes.</summary>
+		public NPOI.SS.UserModel.IWorkbook Workbook;
+
+		/// <summary>Excel only. Backing stream for <see cref="Workbook"/>.</summary>
+		public System.IO.MemoryStream Stream;
+
+		/// <summary>Google only. Fetched once and reused by every phase.</summary>
+		public Google.Apis.Sheets.v4.Data.Spreadsheet Metadata;
 	}
 }
