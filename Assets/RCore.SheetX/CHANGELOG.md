@@ -7,6 +7,19 @@
 - `SheetXExporter.ExportExcel` now owns one named, read-only `MemoryStream` through the complete export. NPOI can read workbook parts lazily, so its source stream no longer depends on garbage collection or closes before later selected sheets are read.
 - Per-sheet localization artifacts now have distinct types: language `.txt` data remains `Localization`, `{file}.cs` is `LocalizationConstants`, and `{file}Text.cs` is `LocalizationComponent`. Excel and Google handlers route identically; regression coverage runs on Excel only because Google export requires OAuth and network access.
 
+## [1.4.0] - 2026-08-23
+
+### Added
+
+- `SheetXExporter.ExportBatch(SheetXBatchExportRequest, ISheetXOutput)` exports detached Excel and Google source lists through one caller-owned sink. Batch sources share output options, request-provided Google credentials, and one global symbolic-ID namespace; `Sources` membership enables a source.
+- Batch selection keeps source order and each source's native sheet order: `Sheets == null` selects all, an empty list selects none, and a requested missing sheet becomes a returned error.
+
+### Changed
+
+- Batch export materializes and validates every source before artifacts reach `ISheetXOutput`. It stages artifacts, flushes only with zero errors, and records sink writes in order; a sink failure records accepted earlier artifacts, stops later writes, and returns an error.
+- Batch duplicate symbolic IDs are errors even when values match; first definition remains available for resolution and diagnostics name both origins. Path collisions and duplicate combined-JSON output names also return errors before sink output.
+- `ExportBatch` never reads or writes the Settings asset or `EditorPrefs`; credentials are request-only and never persisted by the batch API.
+
 ## [1.3.0] - 2026-08-21
 
 ### Added

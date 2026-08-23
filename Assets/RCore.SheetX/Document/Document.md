@@ -134,7 +134,7 @@ The OAuth token Google writes after you authorize is stored in `Library/SheetX`,
 
 ![tab_google_1](https://github.com/user-attachments/assets/02d6e2a9-3c39-4087-9a1e-0e77eec73a19)
 
-Enter the Google Sheet ID, then click the Download button. You can find the ID in the Google Sheet's URL, formatted like this: 
+Enter the Google Sheet ID, then click the Download button. You can find the ID in the Google Sheet's URL, formatted like this:
 
 ```url
 https://docs.google.com/spreadsheets/d/[GOOGLE_SHEET_ID]/edit?......
@@ -149,7 +149,9 @@ Click on **Add Google Spreadsheets**, then enter the Google Sheet ID in the popu
 
 ## 6. Public Export API (for External Tooling)
 
-`RCore.SheetX.Editor.SheetXExporter` runs an export without the Settings window, the `.sx` asset, or any `EditorPrefs` state. Use it when another Editor tool needs to trigger a SheetX export programmatically — for example a build pipeline or a project-specific config layer that owns its own settings UI.
+`RCore.SheetX.Editor.SheetXExporter` runs single-file and multi-source batch exports without the Settings window, the `.sx` asset, or any `EditorPrefs` state. Use it when another Editor tool needs to trigger a SheetX export programmatically — for example a build pipeline, a custom CLI, or a project-specific config layer that owns its own settings UI.
+
+### 6.1. Single-Source Export
 
 ```cs
 using RCore.SheetX.Editor;
@@ -168,14 +170,68 @@ SheetXExportResult result = SheetXExporter.ExportExcel(request, myOutput);
 // or: SheetXExporter.ExportGoogle(request, myOutput) — also needs GoogleClientId/GoogleClientSecret
 
 if (!result.Success)
-    foreach (var error in result.Errors) Debug.LogError(error);
+{
+    // Result holds every diagnostic; exporter never writes to Console
+    foreach (var error in result.Errors)
+        ReportError(error);
+}
 ```
 
-- **`ISheetXOutput.Write(relativePath, content)`** receives every finished artifact exactly once. The exporter never calls `EditorUtility.DisplayDialog`, `Debug.Log`, `File.WriteAllText`, or `AssetDatabase` — writing to disk, importing, or showing UI is entirely the caller's choice. An exception thrown from `Write` is caught and reported in `SheetXExportResult.Errors`; that path can be retried by calling the exporter again.
-- **`Sheets == null` exports every sheet in the workbook (or every sheet in the Google spreadsheet). An empty list exports none** — for Google, this also skips OAuth, the credential check, and any network call.
-- Nothing the exporter produces is thrown as an exception. Every problem the exporter can attribute — invalid JSON, a non-integer or conflicting ID, a missing template, a bad spreadsheet path — comes back as a warning or error on `SheetXExportResult`, never a dialog or a log line.
-- `SheetXExportRequest.GoogleClientId` / `GoogleClientSecret` are read only for that one call; the exporter does not read or write `EditorPrefs`, and does not touch the project's `SheetXSettings.asset`.
-- `SheetXExportResult.Files` lists every artifact written, tagged with a `SheetXExportFileType` (`Ids`, `Constants`, `Json`, `Localization`, `CharacterSet`, `LocalizationManager`, `LocalizationConstants`, `LocalizationComponent`) so a caller can route each one without parsing its path. `Localization` is per-language data only; the generated C# for one localization sheet is `LocalizationConstants` (its key constants) and `LocalizationComponent` (its text component).
+### 6.2. Multi-Source Batch Export
+
+`SheetXExporter.ExportBatch` exports multiple Excel workbooks and Google spreadsheets in one run, sharing one global symbolic-ID namespace so ID references across sources resolve cleanly.
+
+```cs
+using System.Collections.Generic;
+using RCore.SheetX.Editor;
+
+var request = new SheetXBatchExportRequest
+{
+    Sources = new List<SheetXBatchSource>
+    {
+        new SheetXBatchSource
+        {
+            Kind = SheetXSourceKind.Excel,
+            SpreadsheetPath = "Assets/Data/Core.xlsx",
+            Sheets = null, // null = all sheets in workbook order
+            OutputName = "Core",
+        },
+        new SheetXBatchSource
+        {
+            Kind = SheetXSourceKind.Google,
+            SpreadsheetPath = "1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo",
+            Sheets = new List<string> { "HeroIDs", "Heroes" },
+        },
+    },
+    ConstantsOutputPath = "Assets/Generated/Scripts",
+    JsonOutputPath = "Assets/Generated/Json",
+    LocalizationOutputPath = "Assets/Generated/Localization",
+    Namespace = "MyGame.Data",
+    CombineJson = true,
+    SeparateIDs = false,
+    SeparateConstants = false,
+    SeparateLocalizations = true,
+    GoogleClientId = callerGoogleClientId,
+    GoogleClientSecret = callerGoogleClientSecret,
+};
+
+SheetXExportResult result = SheetXExporter.ExportBatch(request, callerOutput);
+if (!result.Success)
+{
+    // Batch flushes zero artifacts to callerOutput if any error occurred
+    foreach (var error in result.Errors)
+        ReportError(error);
+}
+```
+
+### 6.3. Contract and Execution Rules
+
+- **`ISheetXOutput.Write(relativePath, content)`** receives every finished artifact. The exporter never calls `EditorUtility.DisplayDialog`, `Debug.Log`, `File.WriteAllText`, or `AssetDatabase` — writing to disk, importing, or showing UI is entirely the caller's choice. An exception thrown from `Write` is caught and reported in `SheetXExportResult.Errors`.
+- **Staged output and error isolation:** Batch export materializes and validates all sources, loads global IDs, builds all sources, and generates aggregate files in staging before flushing to `ISheetXOutput`. If any error occurs during validation, materialization, ID resolution, or build, **no artifacts are flushed to the sink** and `SheetXExportResult.Files` is empty. If the sink throws during flush, earlier accepted writes are recorded in `Files`, subsequent writes halt, and the failure is appended to `Errors`.
+- **Sheet selection:** `Sheets == null` selects every sheet in source/metadata order; a non-null list selects that subset in native order; an empty list selects none. A requested sheet name absent from the source is returned as an error.
+- **Global ID namespace & duplicate policy:** All selected ID sheets across all batch sources load into a shared symbolic-ID lookup table before other sheets build. Duplicate symbolic IDs across sources or sheets are treated as errors (even if their integer values match), keeping the first definition for resolution. ID errors and path collisions report both source and sheet origins.
+- **Isolated execution:** Batch export never reads, creates, or dirties `Assets/SheetX/SheetXSettings.asset` and never reads or writes `EditorPrefs`. Google OAuth credentials must be supplied on the request object.
+- **`SheetXExportResult.Files`** lists every artifact written, tagged with a `SheetXExportFileType` (`Ids`, `Constants`, `Json`, `Localization`, `CharacterSet`, `LocalizationManager`, `LocalizationConstants`, `LocalizationComponent`).
 
 This API is separate from, and does not replace, the Settings-window-driven exporters in sections 4 and 5 above — those remain the way to configure and run exports interactively for a single project.
 
@@ -463,7 +519,7 @@ public class ExampleDataCollection : ScriptableObject
 private void LoadData()
 {
     #if UNITY_EDITOR
-    
+
     var txt = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Import/Json/ExampleData1.txt");
     exampleData1s = JsonConvert.DeserializeObject<List<ExampleData1>>(txt.text);
 

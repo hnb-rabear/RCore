@@ -7,6 +7,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 ### Changed
 
 - Legacy AssetCatalog Direct Usage now uses RAsset Filter at runtime. Without `com.rabear.rcore.assetfilter`, AssetCatalog compiles and other features work, but Direct Usage reports package requirement.
+- `RCore.SheetX` **1.4.0**: `SheetXExporter.ExportBatch` exports detached multi-source Excel and Google batches sharing one global ID namespace and request-provided Google credentials; artifacts stage and validate before reaching the caller's `ISheetXOutput`, which is flushed only when the whole batch has zero errors. Batch never reads or writes the Settings asset or `EditorPrefs`. `Assets/RCore.SheetX/package.json` bumped 1.3.0 → 1.4.0.
 - `RCore.SheetX` **1.3.0**: Public detached exporter documentation now covers caller-owned output, null-versus-empty sheet selection, structured diagnostics, Google request credentials, and `Library/SheetX` token storage. `Assets/RCore.SheetX/package.json` bumped 1.2.0 → 1.3.0.
 - `RCore.SheetX` **1.2.0**: Removed conditional compilation symbols `SX_LOCALIZATION`, `SX_LITE`, and `SX_NO_LOCALIZATION` from editor scripts to unify into a single-flavor exporter. Those defines are now inert — every exporter, tab, and menu ships unconditionally; `ASSETS_STORE` is unaffected. `Assets/RCore.SheetX/package.json` bumped 1.1.0 → 1.2.0; `Document/Document.md` drops the "PRO only" labels and the stale `Samples~` example path. SheetX still has no tag path through `.github/workflows/release.yml`, so this cut is committed and untagged.
 

@@ -1,6 +1,6 @@
 {
   "name": "com.rabear.rcore.sheetx",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "displayName": "SheetX - Sheets Exporter",
   "description": "Editor-only Excel and Google Sheets exporter for Unity data tables, IDs, constants, JSON, and localizations. Use SheetX interactively through its Settings and exporter windows, or programmatically through SheetXExporter with caller-owned output and structured diagnostics.\nDeterministic, culture-invariant generated data keeps source spreadsheets reproducible across machines. Google OAuth credentials stay in EditorPrefs and authorization tokens stay under Library/SheetX, outside assets and version control.",
   "unity": "2022.3",
