@@ -301,6 +301,9 @@ namespace RCore.SheetX.Editor
 				if (!Materialize())
 					return m_context.ToResult();
 
+				if (!LoadGlobalIds())
+					return m_context.ToResult();
+
 				m_context.Flush();
 				return m_context.ToResult();
 			}
@@ -574,6 +577,32 @@ namespace RCore.SheetX.Editor
 			return ok;
 		}
 
+		private bool LoadGlobalIds()
+		{
+			foreach (var source in m_sources)
+			{
+				foreach (string sheetName in source.SelectedSheets)
+				{
+					if (!IsIdsSheet(sheetName))
+						continue;
+
+					if (source.Kind == SheetXSourceKind.Excel)
+					{
+						m_excel.BatchLoadIds(
+							source.Workbook,
+							source.SpreadsheetPath,
+							sheetName);
+					}
+					else
+					{
+						m_google.BatchLoadIds(source, sheetName);
+					}
+				}
+			}
+
+			return !m_context.HasErrors;
+		}
+
 		private bool HasGoogleSource()
 		{
 			foreach (var source in m_request.Sources)
@@ -584,6 +613,11 @@ namespace RCore.SheetX.Editor
 
 			return false;
 		}
+
+		private static bool IsIdsSheet(string sheetName)
+			=> sheetName.EndsWith(
+				SheetXConstants.IDS_SHEET,
+				StringComparison.Ordinal);
 
 		private static bool IsLocalizationSheet(string sheetName)
 			=> sheetName.StartsWith(
