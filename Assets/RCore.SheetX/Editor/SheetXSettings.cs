@@ -134,22 +134,81 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		internal static SheetXSettings CreateTransient(SheetXExportRequest request)
 		{
+			var settings = CreateBlankTransient();
+			Map(
+				settings,
+				request.ConstantsOutputPath,
+				request.JsonOutputPath,
+				request.LocalizationOutputPath,
+				request.Namespace,
+				request.PersistentFields,
+				request.SeparateConstants,
+				request.SeparateIDs,
+				request.SeparateLocalizations,
+				request.CombineJson,
+				request.OnlyEnumAsIDs,
+				request.EncryptJson,
+				request.EncryptionKey);
+			return settings;
+		}
+
+		internal static SheetXSettings CreateTransient(SheetXBatchExportRequest request)
+		{
+			var settings = CreateBlankTransient();
+			settings.silent = true;
+			Map(
+				settings,
+				request.ConstantsOutputPath,
+				request.JsonOutputPath,
+				request.LocalizationOutputPath,
+				request.Namespace,
+				request.PersistentFields,
+				request.SeparateConstants,
+				request.SeparateIDs,
+				request.SeparateLocalizations,
+				request.CombineJson,
+				request.OnlyEnumAsIDs,
+				request.EncryptJson,
+				request.EncryptionKey);
+			return settings;
+		}
+
+		private static SheetXSettings CreateBlankTransient()
+		{
 			var settings = CreateInstance<SheetXSettings>();
 			settings.ResetToDefault();
-			settings.constantsOutputFolder = request.ConstantsOutputPath ?? "";
-			settings.jsonOutputFolder = request.JsonOutputPath ?? "";
-			settings.localizationOutputFolder = request.LocalizationOutputPath ?? "";
-			settings.@namespace = request.Namespace ?? "";
-			settings.separateConstants = request.SeparateConstants;
-			settings.separateIDs = request.SeparateIDs;
-			settings.separateLocalizations = request.SeparateLocalizations;
-			settings.combineJson = request.CombineJson;
-			settings.onlyEnumAsIDs = request.OnlyEnumAsIDs;
-			settings.persistentFields = request.PersistentFields ?? "";
-			settings.encryptJson = request.EncryptJson;
-			if (!string.IsNullOrEmpty(request.EncryptionKey))
-				settings.encryptionKey = request.EncryptionKey;
 			return settings;
+		}
+
+		private static void Map(
+			SheetXSettings settings,
+			string constantsOutputPath,
+			string jsonOutputPath,
+			string localizationOutputPath,
+			string @namespace,
+			string persistentFields,
+			bool separateConstants,
+			bool separateIDs,
+			bool separateLocalizations,
+			bool combineJson,
+			bool onlyEnumAsIDs,
+			bool encryptJson,
+			string encryptionKey)
+		{
+			settings.constantsOutputFolder = constantsOutputPath ?? "";
+			settings.jsonOutputFolder = jsonOutputPath ?? "";
+			settings.localizationOutputFolder = localizationOutputPath ?? "";
+			settings.@namespace = @namespace ?? "";
+			settings.persistentFields = persistentFields ?? "";
+			settings.separateConstants = separateConstants;
+			settings.separateIDs = separateIDs;
+			settings.separateLocalizations = separateLocalizations;
+			settings.combineJson = combineJson;
+			settings.onlyEnumAsIDs = onlyEnumAsIDs;
+			settings.encryptJson = encryptJson;
+
+			if (!string.IsNullOrEmpty(encryptionKey))
+				settings.encryptionKey = encryptionKey;
 		}
 
 		public static SheetXSettings Init()
