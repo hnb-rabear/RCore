@@ -1097,7 +1097,17 @@ namespace RCore.SheetX.Editor
 				return;
 			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
 			{
-				m_writer.Error("Please setup the Json Output Folder!");
+				bool selectedConfig = m_settings.generateConfigScriptableObject
+					&& Sheets.Any(sheet => sheet.selected
+						&& string.Equals(sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal));
+				if (selectedConfig && m_settings.encryptJson)
+					m_writer.Error("Generate Config ScriptableObject cannot be used with Encrypt Json.");
+				else
+				{
+					m_writer.Error("Please setup the Json Output Folder!");
+					if (selectedConfig && string.IsNullOrEmpty(m_settings.constantsOutputFolder))
+						m_writer.Error("Please setup the Constants Output Folder!");
+				}
 				return;
 			}
 
@@ -1109,6 +1119,8 @@ namespace RCore.SheetX.Editor
 			}
 
 			bool writeJsonFileForSingleSheet = !m_settings.combineJson;
+			bool configWritten = false;
+			string configBaseName = sheetMetadata.Properties.Title.Replace(" ", "_");
 			var allJsons = new Dictionary<string, string>();
 			var service = GetService();
 			foreach (var sheet in Sheets)
@@ -1129,6 +1141,16 @@ namespace RCore.SheetX.Editor
 				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
 				var response = request.Execute();
 				var values = response.Values;
+
+				// The Config route owns this sheet end to end, so it never reaches the row-array
+				// conversion below nor the combined aggregate. It reuses the values already fetched.
+				if (m_settings.generateConfigScriptableObject
+					&& string.Equals(sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+				{
+					TryExportConfig(values, sheet.name, configBaseName, out bool wroteConfig);
+					configWritten |= wroteConfig;
+					continue;
+				}
 
 				string fileName = sheet.name.Trim().Replace(" ", "_");
 				string json = ConvertSheetToJson(sheetInfo, values, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
@@ -1156,6 +1178,73 @@ namespace RCore.SheetX.Editor
 				else
 					m_writer.Info($"Exported Json data to {mergedFileName}.txt.");
 			}
+			if (configWritten)
+				AssetDatabase.Refresh();
+		}
+
+		private bool TryExportConfig(IList<IList<object>> values, string sheetName, string baseName, out bool wroteArtifacts)
+		{
+			wroteArtifacts = false;
+			if (!m_settings.generateConfigScriptableObject
+				|| !string.Equals(sheetName, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+			{
+				return false;
+			}
+			if (m_settings.encryptJson)
+			{
+				m_writer.Error("Generate Config ScriptableObject cannot be used with Encrypt Json.");
+				return true;
+			}
+
+			bool foldersValid = true;
+			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
+			{
+				m_writer.Error("Please setup the Json Output Folder!");
+				foldersValid = false;
+			}
+			if (string.IsNullOrEmpty(m_settings.constantsOutputFolder))
+			{
+				m_writer.Error("Please setup the Constants Output Folder!");
+				foldersValid = false;
+			}
+			if (!foldersValid)
+				return true;
+
+			string typeName = baseName + "Config";
+			if (!SheetXConfigSheet.TryParse(ReadConfigTable(values), typeName, m_writer.Error, out var data))
+				return true;
+
+			m_writer.Write(m_settings.jsonOutputFolder, $"{typeName}.txt", SheetXConfigSheet.EmitJson(data),
+				SheetXExportFileType.Json, $"Exported Config data to {typeName}.txt.");
+			m_writer.Write(m_settings.constantsOutputFolder, $"{typeName}.cs",
+				SheetXConfigSheet.EmitCSharp(data, typeName, m_settings.@namespace),
+				SheetXExportFileType.ConfigScript, $"Exported {typeName}.cs!");
+
+			string fullTypeName = string.IsNullOrEmpty(m_settings.@namespace)
+				? typeName
+				: $"{m_settings.@namespace}.{typeName}";
+			SheetXConfigAssetBuilder.RegisterPendingAsset(
+				fullTypeName,
+				$"{m_settings.jsonOutputFolder.TrimEnd('/', '\\')}/{typeName}.txt",
+				m_settings.constantsOutputFolder.Replace('\\', '/'));
+			wroteArtifacts = true;
+			return true;
+		}
+
+		private static List<string[]> ReadConfigTable(IList<IList<object>> values)
+		{
+			var table = new List<string[]>();
+			if (values == null)
+				return table;
+
+			foreach (var row in values)
+			{
+				var result = new string[4];
+				for (int col = 0; col < result.Length; col++)
+					result[col] = row != null && col < row.Count ? row[col]?.ToString()?.Trim() ?? "" : "";
+				table.Add(result);
+			}
+			return table;
 		}
 
 		private string ConvertSheetToJson(Sheet sheet, IList<IList<object>> pValues, string pSheetName, string pFileName, bool pEncrypt, bool pWriteFile)
@@ -1740,6 +1829,8 @@ namespace RCore.SheetX.Editor
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
 			m_langCharSetsAll = new StringBuilder();
+			bool configWritten = false;
+			bool configEncryptionErrorReported = false;
 
 			var service = GetService();
 			var googleSheetsPaths = m_settings.googleSheetsPaths;
@@ -1787,6 +1878,7 @@ namespace RCore.SheetX.Editor
 				// Get the sheet metadata to determine its dimensions
 				var ggSheetsMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
 				var allJsons = new Dictionary<string, string>();
+				string configBaseName = ggSheetsMetadata.Properties.Title.Replace(" ", "_");
 				foreach (var sheet in sheets)
 				{
 					var sheetInfo = ggSheetsMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
@@ -1806,7 +1898,16 @@ namespace RCore.SheetX.Editor
 					var values = response.Values;
 
 					//Load and write json file
-					if (SheetXHelper.IsJsonSheet(sheet.name))
+					if (m_settings.generateConfigScriptableObject
+						&& string.Equals(sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+					{
+						if (m_settings.encryptJson && configEncryptionErrorReported)
+							continue;
+						TryExportConfig(values, sheet.name, configBaseName, out bool wroteConfig);
+						configWritten |= wroteConfig;
+						configEncryptionErrorReported |= m_settings.encryptJson;
+					}
+					else if (SheetXHelper.IsJsonSheet(sheet.name))
 					{
 						string fileName = sheet.name.Trim().Replace(" ", "_");
 						string json = ConvertSheetToJson(sheetInfo, values, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
@@ -1911,6 +2012,9 @@ namespace RCore.SheetX.Editor
 
 			//Create localization manager file
 			CreateLocalizationsManagerFile();
+
+			if (configWritten)
+				AssetDatabase.Refresh();
 
 			Debug.Log("Done!");
 		}

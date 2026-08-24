@@ -17,6 +17,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 - Extracted legacy Asset Cleaner into independent `com.rabear.rcore.assetfilter` 1.0.0 package, renamed **RAsset Filter**. Existing EditorPrefs settings migrate forward; regenerable cache does not.
 - Extracted legacy RHierarchy into independent `com.rabear.rcore.rhierarchy` 1.0.0 package. Existing `RHierarchy_*` EditorPrefs settings remain unchanged.
 - `RCore.SheetX`: Added `SheetXExporter` / `ISheetXOutput` editor API for caller-owned exports without settings-window state or disk writes.
+- `RCore.SheetX`: Opt-in exact `Config` worksheet export now emits nested JSON and typed ScriptableObject C#, then creates or reuses its typed asset after script reload. Config stays standalone from combined JSON; `encryptJson` rejects Config artifacts.
 
 - `RevCore.JObjectDB.Reset(string key)` — resets a single collection's data to its type defaults while keeping the key registered in the index (companion to `Delete`/`DeleteAll`). Surfaced in the Editor via a per-collection "Reset" button on the `JObjectDBManager` inspector.
 - Per-collection **Delete** button on the `JObjectDBManager` inspector (uses the existing `JObjectDB.Delete(key)`); restricted to edit mode.

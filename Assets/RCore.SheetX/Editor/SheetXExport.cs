@@ -37,6 +37,9 @@ namespace RCore.SheetX.Editor
 
 		/// <summary>The generated localized-text component C# file for one localization sheet.</summary>
 		LocalizationComponent,
+
+		/// <summary>The generated config ScriptableObject C# file.</summary>
+		ConfigScript,
 	}
 
 	/// <summary>

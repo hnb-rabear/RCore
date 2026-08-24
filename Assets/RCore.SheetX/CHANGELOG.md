@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Opt-in exact `Config` worksheet export emits nested JSON and typed ScriptableObject C#, then creates or reuses its typed asset after script reload. Config stays standalone from combined JSON; `encryptJson` rejects Config artifacts. Detached and batch APIs retain ordinary row-array Config behavior.
+
 ### Fixed
 
 - `SheetXExporter.ExportExcel` now owns one named, read-only `MemoryStream` through the complete export. NPOI can read workbook parts lazily, so its source stream no longer depends on garbage collection or closes before later selected sheets are read.

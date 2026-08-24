@@ -28,6 +28,7 @@ namespace RCore.SheetX.Editor
 		public const string CONSTANTS_SHEET = "Constants";
 		public const string SETTINGS_SHEET = "Settings";
 		public const string LOCALIZATION_SHEET = "Localization";
+		public const string CONFIG_SHEET = "Config";
 	}
 
 	public enum ValueType
@@ -67,6 +68,7 @@ namespace RCore.SheetX.Editor
 		public bool separateIDs;
 		public bool separateLocalizations;
 		public bool combineJson;
+		public bool generateConfigScriptableObject;
 		public bool onlyEnumAsIDs;
 		public string persistentFields;
 		public string langCharSets;
@@ -284,6 +286,7 @@ namespace RCore.SheetX.Editor
 			separateIDs = false;
 			separateLocalizations = true;
 			combineJson = false;
+			generateConfigScriptableObject = false;
 			onlyEnumAsIDs = false;
 			persistentFields = "id, key";
 			langCharSets = "jp, ko, cn";

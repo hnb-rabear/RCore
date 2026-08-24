@@ -46,6 +46,7 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
     - API: `Localization.cs`
 - **Only enum as IDs:** For `[%IDs]` sheets, columns with the extension `[enum]` will be exported as enums and will not include the Integer Constant form.
 - **Combine Json Sheets:** Merges the Data Table from one Excel file into a single JSON file, named `[ExcelName].txt`.
+- **Generate Config ScriptableObject:** Opt-in setting beside **Combine Json Sheets**. An exact, case-sensitive `Config` sheet is exported using the typed Config format described in section 7.5.
 - **Language Char Sets:** Used in Localization with TextMeshPro to compile the character table of a language, mainly applied for Korean, Japanese, and Chinese due to their extensive character systems.
 - **Persistent columns:** Specifies the names of columns to retain during processing even if they are empty.
 - **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
@@ -361,6 +362,34 @@ Localization Sheets are named with the prefix `Localization` and follow these ru
 
 - For array types, the column name must end with `[]`.
 - For JSON object types, the column name must end with `{}`.
+
+### 7.5. Config ScriptableObject
+
+Enable **Generate Config ScriptableObject** beside **Combine Json Sheets** to special-case a worksheet named exactly `Config`. Matching is ordinal and case-sensitive: `RemoteConfig`, `BattleConfig`, and `config` remain ordinary row-array JSON sheets.
+
+Use this exact header after trimming cell text. Only first four columns are read; later columns are ignored.
+
+```text
+| Sub Class | Field Name | Type | Value |
+```
+
+- A non-empty **Sub Class** starts a nested group. Empty **Sub Class** rows continue current group.
+- A fully blank row closes current group. Later rows with empty **Sub Class** become root fields.
+- Empty **Sub Class** before any group is an error.
+- Add `[]` only as display suffix to **Field Name**; SheetX removes only final suffix. Actual array shape comes from **Type**.
+- Arrays use `|` between values. Supported type names are case-insensitive: `int`, `float`, `boolean`, `string`, `int-array`, `float-array`, `string-array`, `vector2`, and `vector3`.
+
+For source workbook base name `<BaseName>`, interactive Excel and Google exports write standalone unencrypted Config artifacts:
+
+- JSON folder: `<BaseName>Config.txt`
+- Scripts/Constants folder: `<BaseName>Config.cs`
+- After script compilation: `<BaseName>Config.asset` beside generated script, only when no matching asset exists
+
+Config JSON stays standalone when **Combine Json Sheets** is enabled; it never enters `<BaseName>.txt`. Generated C# uses configured namespace and contains **Load** inspector context menu. `autoLoad` starts enabled: after generated script reload, SheetX assigns Config JSON and loads values. Disable `autoLoad` to preserve serialized values until manually running **Load**.
+
+SheetX finds existing Config assets by exact generated runtime type across project. Zero matching assets creates one beside script; one matching asset is reused even after move or rename; multiple matching assets log one `SheetX:` error and update none. Delete matching asset, then next export creates replacement.
+
+`Generate Config ScriptableObject` with `encryptJson` reports an error and skips Config artifacts; normal selected sheets still export encrypted. Detached `SheetXExporter` and batch APIs do not generate Config assets: `Config` remains normal row-array JSON there.
 
 #### Special Data Type: Attributes List
 
