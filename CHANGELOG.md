@@ -6,6 +6,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- `RCore.SheetX` **1.5.0**: Optional Data Config Collections generate typed collection shells, bake editor-only JSON into serialized ScriptableObject arrays, and create a Global Resources root with feature references. Runtime parses no collection JSON. Detached and batch APIs exclude collection metadata. `Assets/RCore.SheetX/package.json` bumped 1.4.0 → 1.5.0; no tag path exists through current RevCore-only release workflow.
 - Legacy AssetCatalog Direct Usage now uses RAsset Filter at runtime. Without `com.rabear.rcore.assetfilter`, AssetCatalog compiles and other features work, but Direct Usage reports package requirement.
 - `RCore.SheetX` **1.4.0**: `SheetXExporter.ExportBatch` exports detached multi-source Excel and Google batches sharing one global ID namespace and request-provided Google credentials; artifacts stage and validate before reaching the caller's `ISheetXOutput`, which is flushed only when the whole batch has zero errors. Batch never reads or writes the Settings asset or `EditorPrefs`. `Assets/RCore.SheetX/package.json` bumped 1.3.0 → 1.4.0.
 - `RCore.SheetX` **1.3.0**: Public detached exporter documentation now covers caller-owned output, null-versus-empty sheet selection, structured diagnostics, Google request credentials, and `Library/SheetX` token storage. `Assets/RCore.SheetX/package.json` bumped 1.2.0 → 1.3.0.
@@ -17,7 +18,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 - Extracted legacy Asset Cleaner into independent `com.rabear.rcore.assetfilter` 1.0.0 package, renamed **RAsset Filter**. Existing EditorPrefs settings migrate forward; regenerable cache does not.
 - Extracted legacy RHierarchy into independent `com.rabear.rcore.rhierarchy` 1.0.0 package. Existing `RHierarchy_*` EditorPrefs settings remain unchanged.
 - `RCore.SheetX`: Added `SheetXExporter` / `ISheetXOutput` editor API for caller-owned exports without settings-window state or disk writes.
-- `RCore.SheetX`: Opt-in exact `Config` worksheet export now emits nested JSON and typed ScriptableObject C#, then creates or reuses its typed asset after script reload. Config stays standalone from combined JSON; `encryptJson` rejects Config artifacts.
+- `RCore.SheetX`: Interactive Excel and Google exports always route an exact `Config` worksheet to nested plaintext JSON and typed ScriptableObject C#, then create or reuse its typed asset after script reload. Sheet selection and `encryptJson` cannot block Config; Config stays outside combined JSON. Removed `generateConfigScriptableObject`; detached and batch APIs keep ordinary row-array Config behavior.
 
 - `RevCore.JObjectDB.Reset(string key)` — resets a single collection's data to its type defaults while keeping the key registered in the index (companion to `Delete`/`DeleteAll`). Surfaced in the Editor via a per-collection "Reset" button on the `JObjectDBManager` inspector.
 - Per-collection **Delete** button on the `JObjectDBManager` inspector (uses the existing `JObjectDB.Delete(key)`); restricted to edit mode.

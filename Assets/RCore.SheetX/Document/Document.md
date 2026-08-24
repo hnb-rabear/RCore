@@ -46,7 +46,6 @@ Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`
     - API: `Localization.cs`
 - **Only enum as IDs:** For `[%IDs]` sheets, columns with the extension `[enum]` will be exported as enums and will not include the Integer Constant form.
 - **Combine Json Sheets:** Merges the Data Table from one Excel file into a single JSON file, named `[ExcelName].txt`.
-- **Generate Config ScriptableObject:** Opt-in setting beside **Combine Json Sheets**. An exact, case-sensitive `Config` sheet is exported using the typed Config format described in section 7.5.
 - **Language Char Sets:** Used in Localization with TextMeshPro to compile the character table of a language, mainly applied for Korean, Japanese, and Chinese due to their extensive character systems.
 - **Persistent columns:** Specifies the names of columns to retain during processing even if they are empty.
 - **Google Client ID:** Enter your Google Client ID (retrieved from Credentials in Google Console).
@@ -236,9 +235,64 @@ if (!result.Success)
 
 This API is separate from, and does not replace, the Settings-window-driven exporters in sections 4 and 5 above — those remain the way to configure and run exports interactively for a single project.
 
-## 7. Rules in Spreadsheet
+## 7. Data Config Collections
 
-### 7.1. IDs
+Data Config Collections are optional. Enable **Data Config Collections** in SheetX Settings. Disabled remains legacy SheetX: ordinary JSON, IDs, Constants, and Localization output stay unchanged.
+
+### 7.1. Setup
+
+Set these project-relative folders before first export:
+
+```text
+Assets/Game/DataConfig/Code
+Assets/Game/DataConfig/Editor/Json
+Assets/Game/DataConfig/Collections
+Assets/Game/Resources
+```
+
+- **Collection Code Folder** owns `SheetXDataCollections.g.cs`. Do not edit it; add developer partial classes in separate files.
+- **Collection JSON Folder** must contain an `Editor` path segment. It is editor-only bake input and stays out of player builds.
+- **Collection Asset Folder** stores feature collection assets.
+- **Global Resources Folder** must end exactly in `Resources`. It stores generated `GlobalConfigCollection.asset` directly in that folder for runtime `Resources` lookup.
+
+One generated source file describes every saved Collection binding. When bindings span multiple Excel files or Google spreadsheets, use **Export All** so one session includes every Collection-bound sheet. SheetX stops collection writes when any binding is absent, preserving prior source declarations and assets.
+
+Add feature collections below immutable **Global**. Rename moves bindings. Delete asks for confirmation, then moves bindings to Global. Old generated code and assets remain; SheetX never deletes orphaned output.
+
+### 7.2. Sheet output modes
+
+Ordinary data sheets gain **Output Mode**, **Collection**, and **Row Type** controls. IDs, Constants, Settings, and Localization sheets never gain collection bindings.
+
+- **JSON Only** preserves legacy JSON export.
+- **Collection Generated Model** requires typed header annotations, generates partial row and collection fields, and derives row type from sheet name.
+- **Collection Existing Model** keeps legacy JSON shape. Pick a concrete, non-generic `[Serializable]` row class. Missing or invalid types stop collection artifact writes.
+
+Generated Model header grammar:
+
+```text
+id:int | name:string | tags[]:string | reward.amount:float
+```
+
+Use scalar `int`, `float`, `bool`, or `string`; scalar arrays with `[]`; and dotted nested-object fields. Every Generated Model header needs `:type`. Missing annotations stop the collection transaction before JSON, code, or asset changes.
+
+### 7.3. Bake and runtime access
+
+**Export** writes collection JSON and generated source atomically. After compilation, SheetX creates or updates collection assets and Global feature references. It deserializes JSON only in Editor, writes arrays into assets, and stores no `TextAsset` reference. Runtime collection bases depend only on `UnityEngine` and read serialized data only.
+
+**Auto Load After Export** and **Auto Load Before Play** load only collections whose per-row **Auto Load** is enabled. Disabled collection arrays remain unchanged until pressing that collection's **Load Data**. Global references still refresh. Global **Load All** loads every collection.
+
+```cs
+var global = GlobalConfigCollectionBase.Instance<GlobalConfigCollection>();
+GlobalConfigCollectionBase.SetInstance(customGlobal);
+```
+
+`Instance<T>()` loads default Global asset from Resources. Call `SetInstance<T>()` before first access to override it, for tests or custom bootstraps.
+
+Collection JSON is not secret. Serialized ScriptableObject data remains extractable from player builds; validate sensitive state server-side. Detached `SheetXExporter` and batch APIs do not support Collections.
+
+## 8. Rules in Spreadsheet
+
+### 8.1. IDs
 
 | Hero   |     |         | Building      |     |         | Pet      |     |         | Gender[enum]      |     |
 | ------ | --- | ------- | ------------- | --- | ------- | -------- | --- | ------- | ----------------- | --- |
@@ -268,7 +322,7 @@ ID Sheets, named with the suffix `IDs` are used to compile all IDs into Integer 
 | ----- | --- | ------- |
 ```
 
-### 7.2. Constants
+### 8.2. Constants
 
 | Name                  | Type        | Value              | Comment               |
 | --------------------- | ----------- | ------------------ | --------------------- |
@@ -302,7 +356,7 @@ Constants Sheets, named with the suffix `Constants` compile project constants. T
 | ---- | ---- | ----- | ------- |
 ```
 
-### 7.3. Localization
+### 8.3. Localization
 
 | idstring     | relativeId | english                   | spanish                        |
 | ------------ | ---------- | ------------------------- | ------------------------------ |
@@ -337,7 +391,7 @@ Localization Sheets are named with the prefix `Localization` and follow these ru
 | -------- | ---------- | ------- | ------- | ----- | ---- |
 ```
 
-### 7.4. Data Table - JSON Data
+### 8.4. Data Table - JSON Data
 
 #### Basic Data Type: Boolean, Number, String
 
@@ -363,9 +417,9 @@ Localization Sheets are named with the prefix `Localization` and follow these ru
 - For array types, the column name must end with `[]`.
 - For JSON object types, the column name must end with `{}`.
 
-### 7.5. Config ScriptableObject
+### 8.5. Config ScriptableObject
 
-Enable **Generate Config ScriptableObject** beside **Combine Json Sheets** to special-case a worksheet named exactly `Config`. Matching is ordinal and case-sensitive: `RemoteConfig`, `BattleConfig`, and `config` remain ordinary row-array JSON sheets.
+Interactive Excel and Google exports always special-case a worksheet named exactly `Config`. Its selection checkbox is ignored. Matching is ordinal and case-sensitive: `RemoteConfig`, `BattleConfig`, and `config` remain ordinary row-array JSON sheets.
 
 Use this exact header after trimming cell text. Only first four columns are read; later columns are ignored.
 
@@ -389,7 +443,7 @@ Config JSON stays standalone when **Combine Json Sheets** is enabled; it never e
 
 SheetX finds existing Config assets by exact generated runtime type across project. Zero matching assets creates one beside script; one matching asset is reused even after move or rename; multiple matching assets log one `SheetX:` error and update none. Delete matching asset, then next export creates replacement.
 
-`Generate Config ScriptableObject` with `encryptJson` reports an error and skips Config artifacts; normal selected sheets still export encrypted. Detached `SheetXExporter` and batch APIs do not generate Config assets: `Config` remains normal row-array JSON there.
+**Encrypt Json** does not affect Config: Config JSON stays plaintext while ordinary selected sheets remain encrypted. Detached `SheetXExporter` and batch APIs do not generate Config assets: `Config` remains normal row-array JSON there.
 
 #### Special Data Type: Attributes List
 
@@ -422,7 +476,7 @@ To define an attribute object type, the following rules should be followed:
     Example 2: attribute1, value1[], increase1[], value1[], max1[].
     ```
 
-## 8. How to Integrate
+## 9. How to Integrate
 
 **Download and import the [Example](https://github.com/hnb-rabear/hnb-rabear.github.io/blob/main/sheetx/SheetXExample.unitypackage)**
 
@@ -441,7 +495,7 @@ Example for exporting multiple files
 [**Example 3**](https://docs.google.com/spreadsheets/d/1i2CmDGYpAYuX_8vBUbHXBAhuWPKHi_gd52uwzsegLdY/edit?usp=drive_link)
 [**Example 4**](https://docs.google.com/spreadsheets/d/1kq0KaQxQ129f1OABm62x6GtfOKTg_3t4M8gODGHzSu8/edit?usp=drive_link)
 
-### 8.1. Create Folders for Exporting Files
+### 9.1. Create Folders for Exporting Files
 
 Create 3 directories to store the files that will be exported:
 
@@ -462,7 +516,7 @@ For this example I will create 3 folders:
 - `Assets\SheetXExample\DataConfig`: for Json data
 - `Assets\SheetXExample\Resources\Localizations`: for Localization data
 
-### 8.2. Scripting
+### 9.2. Scripting
 
 #### Create a ScriptableObject as Storage for Static Database
 
@@ -566,7 +620,7 @@ private void LoadData()
 
 ![Example Data Collection](https://github.com/user-attachments/assets/23e9aec3-cfbd-416c-8459-66cbb0e2fb58)
 
-### 8.3. Localization Integration
+### 9.3. Localization Integration
 
 - Initialization
 

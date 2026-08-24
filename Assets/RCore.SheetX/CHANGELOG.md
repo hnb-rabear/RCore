@@ -4,7 +4,9 @@
 
 ### Added
 
-- Opt-in exact `Config` worksheet export emits nested JSON and typed ScriptableObject C#, then creates or reuses its typed asset after script reload. Config stays standalone from combined JSON; `encryptJson` rejects Config artifacts. Detached and batch APIs retain ordinary row-array Config behavior.
+- Optional Data Config Collections: interactive Excel and Google exports can generate typed collection shells, bake editor-only JSON into serialized ScriptableObject arrays, and create a Global Resources root with feature references. Runtime reads serialized data only; it never parses collection JSON. `autoLoadAfterExport` and `autoLoadBeforePlay` respect per-collection Auto Load. Collection metadata remains unsupported by detached `SheetXExporter` and batch APIs.
+
+- Interactive Excel and Google exports always route an exact `Config` worksheet to nested plaintext JSON and typed ScriptableObject C#, then create or reuse its typed asset after script reload. Sheet selection and `encryptJson` cannot block Config; Config stays outside combined JSON. Removed `generateConfigScriptableObject`; detached and batch APIs retain ordinary row-array Config behavior.
 
 ### Fixed
 

@@ -1,12 +1,8 @@
 {
-    "name": "RCore.SheetX.Editor",
+    "name": "RCore.SheetX.Runtime",
     "rootNamespace": "",
-    "references": [
-        "RCore.SheetX.Runtime"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

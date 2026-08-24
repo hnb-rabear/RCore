@@ -26,6 +26,8 @@ namespace RCore.SheetX.Editor
 		private ExcelSheetHandler m_excelSheetHandler;
 		private EditorTableView<SheetPath> m_tableSheets;
 		private EditorTableView<ExcelSheetsPath> m_tableExcelSheetsPaths;
+		private bool m_tableCollectionsEnabled;
+		private string m_tableSourceId;
 		private IWorkbook m_workbook;
 
 		public void OnEnable()
@@ -125,13 +127,18 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginHorizontal();
-			if (m_tableSheets == null)
+			string sourceId = m_settings.excelSheetsPath.path;
+			if (m_tableSheets == null
+				|| m_tableCollectionsEnabled != m_settings.enableCollections
+				|| !string.Equals(m_tableSourceId, sourceId, StringComparison.Ordinal))
 			{
 				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.excelSheetsPath.name, isOn =>
 				{
 					foreach (var sheet in m_settings.excelSheetsPath.sheets)
 						sheet.selected = isOn;
-				});
+				}, m_settings, () => m_settings.excelSheetsPath.path);
+				m_tableCollectionsEnabled = m_settings.enableCollections;
+				m_tableSourceId = sourceId;
 				foreach (var sheetPath in m_settings.excelSheetsPath.sheets)
 					sheetPath.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPath.sheets, m_tableSheets);
 				ValidateTopToggle(m_settings.excelSheetsPath.sheets, m_tableSheets);

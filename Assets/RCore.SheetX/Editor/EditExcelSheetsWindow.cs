@@ -15,7 +15,10 @@ namespace RCore.SheetX.Editor
 	public class EditExcelSheetsWindow : EditorWindow
 	{
 		private ExcelSheetsPath m_excelSheetsPath;
+		private SheetXSettings m_settings;
 		private EditorTableView<SheetPath> m_tableSheets;
+		private bool m_tableCollectionsEnabled;
+		private string m_tableSourceId;
 		
 		/// <summary>
 		/// Opens the Edit Excel Sheets window for a specific Excel path.
@@ -25,18 +28,24 @@ namespace RCore.SheetX.Editor
 			var window = CreateInstance<EditExcelSheetsWindow>();
 			window.titleContent = new GUIContent("Edit Spreadsheets");
 			window.m_excelSheetsPath = excelSheetsPath;
+			window.m_settings = SheetXSettings.Init();
 			window.ShowUtility();
 		}
 
 		private void OnGUI()
 		{
-			if (m_tableSheets == null)
+			string sourceId = m_excelSheetsPath.path;
+			if (m_tableSheets == null
+				|| m_tableCollectionsEnabled != m_settings.enableCollections
+				|| !string.Equals(m_tableSourceId, sourceId, System.StringComparison.Ordinal))
 			{
 				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(this, m_excelSheetsPath.name, isOn =>
 				{
 					foreach (var sheetPath in m_excelSheetsPath.sheets)
 						sheetPath.selected = isOn;
-				});
+				}, m_settings, () => m_excelSheetsPath.path);
+				m_tableCollectionsEnabled = m_settings.enableCollections;
+				m_tableSourceId = sourceId;
 				foreach (var sheet in m_excelSheetsPath.sheets)
 					sheet.onSelected = _ => ValidateTopToggle(m_excelSheetsPath.sheets, m_tableSheets);
 				ValidateTopToggle(m_excelSheetsPath.sheets, m_tableSheets);

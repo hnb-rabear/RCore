@@ -35,21 +35,120 @@ namespace RCore.SheetX.Editor
 			m_sheetXSettings.separateLocalizations = EditorHelper.Toggle(m_sheetXSettings.separateLocalizations, "Separate Localizations Sheets", 200);
 			m_sheetXSettings.onlyEnumAsIDs = EditorHelper.Toggle(m_sheetXSettings.onlyEnumAsIDs, "Only enum as IDs", 200);
 			m_sheetXSettings.combineJson = EditorHelper.Toggle(m_sheetXSettings.combineJson, "Combine Json Sheets", 200);
-			m_sheetXSettings.generateConfigScriptableObject = EditorHelper.Toggle(
-				m_sheetXSettings.generateConfigScriptableObject,
-				"Generate Config ScriptableObject",
-				200);
 			m_sheetXSettings.langCharSets = EditorHelper.TextField(m_sheetXSettings.langCharSets, "Lang char sets", 200);
 			m_sheetXSettings.persistentFields = EditorHelper.TextField(m_sheetXSettings.persistentFields, "Persistent fields", 200);
 			m_sheetXSettings.ObfGoogleClientId = EditorHelper.TextField(m_sheetXSettings.ObfGoogleClientId, "Google client id", 200);
 			m_sheetXSettings.ObfGoogleClientSecret = EditorHelper.TextField(m_sheetXSettings.ObfGoogleClientSecret, "Google client secret", 200);
 			GUILayout.EndVertical();
+			DrawCollections();
 			if (EditorGUI.EndChangeCheck())
 				EditorUtility.SetDirty(m_sheetXSettings);
 			if (GUILayout.Button("Reset to default settings"))
 				m_sheetXSettings.ResetToDefault();
 
 			SupportDev();
+		}
+
+		private void DrawCollections()
+		{
+			GUILayout.BeginVertical("box");
+			m_sheetXSettings.enableCollections = EditorGUILayout.Toggle(
+				"Enable Data Config Collections", m_sheetXSettings.enableCollections);
+			if (m_sheetXSettings.enableCollections)
+			{
+				m_sheetXSettings.collectionNamespace = EditorHelper.TextField(
+					m_sheetXSettings.collectionNamespace, "Collection namespace", 200);
+				m_sheetXSettings.collectionCodeFolder = EditorHelper.FolderField(
+					m_sheetXSettings.collectionCodeFolder, "Generated code folder", 200);
+				m_sheetXSettings.collectionAssetFolder = EditorHelper.FolderField(
+					m_sheetXSettings.collectionAssetFolder, "Collection asset folder", 200);
+				m_sheetXSettings.collectionJsonFolder = EditorHelper.FolderField(
+					m_sheetXSettings.collectionJsonFolder, "Collection JSON folder", 200);
+				m_sheetXSettings.globalResourcesFolder = EditorHelper.FolderField(
+					m_sheetXSettings.globalResourcesFolder, "Global Resources folder", 200);
+				m_sheetXSettings.autoLoadAfterExport = EditorGUILayout.Toggle(
+					"Auto load after export", m_sheetXSettings.autoLoadAfterExport);
+				m_sheetXSettings.autoLoadBeforePlay = EditorGUILayout.Toggle(
+					"Auto load before Play Mode", m_sheetXSettings.autoLoadBeforePlay);
+				SheetXCollectionSettings.EnsureGlobal(m_sheetXSettings);
+				foreach (var collection in m_sheetXSettings.collections.ToArray())
+					DrawCollection(collection);
+				if (GUILayout.Button("Add Collection"))
+				{
+					string name = "Collection";
+					int suffix = 2;
+					while (m_sheetXSettings.collections.Exists(
+						collection => string.Equals(collection.name, name, System.StringComparison.Ordinal)))
+					{
+						name = "Collection" + suffix++;
+					}
+					m_sheetXSettings.collections.Add(new SheetXCollectionDefinition
+					{
+						name = name,
+						autoLoad = true,
+					});
+					EditorUtility.SetDirty(m_sheetXSettings);
+				}
+			}
+			GUILayout.EndVertical();
+		}
+
+		private void DrawCollection(SheetXCollectionDefinition collection)
+		{
+			GUILayout.BeginHorizontal();
+			bool global = collection.builtInGlobal;
+			EditorGUI.BeginDisabledGroup(global);
+			string renamed = EditorGUILayout.TextField(collection.name);
+			EditorGUI.EndDisabledGroup();
+			if (!global && !string.Equals(renamed, collection.name, System.StringComparison.Ordinal))
+			{
+				if (!SheetXCollectionSettings.RenameCollection(
+					m_sheetXSettings, collection.name, renamed, out string renameError))
+				{
+					Debug.LogError(renameError);
+				}
+				else
+				{
+					EditorUtility.SetDirty(m_sheetXSettings);
+				}
+			}
+			EditorGUILayout.LabelField(
+				SheetXCollectionNaming.CollectionTypeName(collection.name), GUILayout.Width(180));
+			EditorGUI.BeginChangeCheck();
+			collection.autoLoad = EditorGUILayout.Toggle(collection.autoLoad, GUILayout.Width(18));
+			if (EditorGUI.EndChangeCheck())
+				EditorUtility.SetDirty(m_sheetXSettings);
+			if (GUILayout.Button("Load Data", GUILayout.Width(80)))
+				LoadData(collection.name);
+			if (!global && GUILayout.Button("Delete", GUILayout.Width(60))
+				&& EditorUtility.DisplayDialog(
+					"Delete Collection", $"Delete '{collection.name}'? Its sheet bindings move to Global.", "Delete", "Cancel"))
+			{
+				if (!SheetXCollectionSettings.DeleteCollection(
+					m_sheetXSettings, collection.name, out string deleteError))
+				{
+					Debug.LogError(deleteError);
+				}
+				else
+				{
+					EditorUtility.SetDirty(m_sheetXSettings);
+				}
+			}
+			GUILayout.EndHorizontal();
+			if (global && GUILayout.Button("Load All"))
+				LoadData(autoLoadOnly: false);
+		}
+
+		private void LoadData(string collectionName)
+		{
+			if (!SheetXCollectionBaker.TryLoadData(m_sheetXSettings, collectionName, out string error))
+				Debug.LogError(error);
+		}
+
+		private void LoadData(bool autoLoadOnly)
+		{
+			if (!SheetXCollectionBaker.TryLoadData(m_sheetXSettings, autoLoadOnly, out string error))
+				Debug.LogError(error);
 		}
 
 		private void SupportDev()

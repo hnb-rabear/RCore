@@ -1,8 +1,8 @@
 {
   "name": "com.rabear.rcore.sheetx",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "displayName": "SheetX - Sheets Exporter",
-  "description": "Editor-only Excel and Google Sheets exporter for Unity data tables, IDs, constants, JSON, and localizations. Use SheetX interactively through its Settings and exporter windows, or programmatically through SheetXExporter with caller-owned output and structured diagnostics.\nDeterministic, culture-invariant generated data keeps source spreadsheets reproducible across machines. Google OAuth credentials stay in EditorPrefs and authorization tokens stay under Library/SheetX, outside assets and version control.",
+  "description": "Excel and Google Sheets exporter for Unity data tables, IDs, constants, JSON, and localizations, with optional runtime collection bases and an Editor-only typed JSON bake workflow. Use SheetX interactively through its Settings and exporter windows, or programmatically through SheetXExporter with caller-owned output and structured diagnostics.\nDeterministic, culture-invariant generated data keeps source spreadsheets reproducible across machines. Google OAuth credentials stay in EditorPrefs and authorization tokens stay under Library/SheetX, outside assets and version control.",
   "unity": "2022.3",
   "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.SheetX/CHANGELOG.md",
   "author": {
@@ -15,6 +15,13 @@
     "excel spreadsheets",
     "spreadsheets",
     "localization"
+  ],
+  "samples": [
+    {
+      "displayName": "Data Config Collections",
+      "description": "Folder layout and annotated-sheet starter reference.",
+      "path": "Samples~/DataConfigCollections"
+    }
   ],
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1"

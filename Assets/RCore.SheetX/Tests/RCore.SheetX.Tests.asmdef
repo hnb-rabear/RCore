@@ -3,6 +3,7 @@
   "rootNamespace": "RCore.SheetX.Tests",
   "references": [
     "RCore.SheetX.Editor",
+    "RCore.SheetX.Runtime",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],

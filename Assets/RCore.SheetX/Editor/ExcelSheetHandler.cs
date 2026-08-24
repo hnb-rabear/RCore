@@ -25,6 +25,7 @@ namespace RCore.SheetX.Editor
 		private Dictionary<string, StringBuilder> m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, StringBuilder> m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 		private Dictionary<string, int> m_allIds = new Dictionary<string, int>();
+		private HashSet<string> m_declaredIds = new HashSet<string>(StringComparer.Ordinal);
 		private Dictionary<string, int> m_allIDsSorted; //List sorted by length will be used for linked data, for IDs which have prefix that is exactly same with another ID
 		private Dictionary<string, LocalizationBuilder> m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
 		private List<string> m_localizedSheetsExported = new List<string>();
@@ -43,7 +44,14 @@ namespace RCore.SheetX.Editor
 		{
 			m_settings = settings;
 			m_writer = new SheetXWriter(settings, context);
+			ConfigRouteEnabled = !m_writer.Detached;
 		}
+
+		/// <summary>
+		/// Interactive windows always emit typed Config artifacts for an exact "Config" sheet. Detached
+		/// and batch requests carry no Config option, so Config stays ordinary row-array Json there.
+		/// </summary>
+		internal bool ConfigRouteEnabled { get; set; }
 
 		internal ExcelSheetHandler(
 			SheetXSettings settings,
@@ -88,6 +96,7 @@ namespace RCore.SheetX.Editor
 
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_allIds = new Dictionary<string, int>();
+			m_declaredIds = new HashSet<string>(StringComparer.Ordinal);
 
 			foreach (var m in sheets)
 			{
@@ -183,9 +192,9 @@ namespace RCore.SheetX.Editor
 							// Value already in m_allIds from Phase C — skip the
 							// m_allIds[key] = value assignment below.
 						}
-						else if (m_allIds.TryGetValue(key, out int existing))
+						else if (!m_declaredIds.Add(key))
 						{
-							if (existing != value)
+							if (m_allIds.TryGetValue(key, out int existing) && existing != value)
 								m_writer.Blocking("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}");
 							continue;
 						}
@@ -464,7 +473,7 @@ namespace RCore.SheetX.Editor
 		private void LoadSheetConstantsData(IWorkbook pWorkbook, string pSheetName)
 		{
 			var sheet = pWorkbook.GetSheet(pSheetName);
-			if (sheet == null || sheet.LastRowNum == 0)
+			if (sheet == null || sheet.PhysicalNumberOfRows == 0)
 			{
 				m_writer.Warn($"Sheet {pSheetName} is empty!");
 				return;
@@ -1071,22 +1080,31 @@ namespace RCore.SheetX.Editor
 		/// <summary>Exports JSON from a workbook the caller already opened.</summary>
 		internal void ExportJson(IWorkbook workBook)
 		{
+			bool configWritten = false;
+			var session = CreateCollectionSession();
+			if (ConfigRouteEnabled)
+				TryExportConfig(workBook, SheetXConstants.CONFIG_SHEET, ConfigBaseName(), out configWritten);
+			ExportOrdinaryJson(workBook, session, m_settings.excelSheetsPath.path);
+			FlushCollectionSession(session);
+			if ((configWritten || session?.WroteArtifacts == true) && !m_writer.Detached)
+				AssetDatabase.Refresh();
+			BakeCollectionSession(session);
+		}
+
+		private void ExportOrdinaryJson(
+			IWorkbook workBook,
+			SheetXCollectionExportSession session = null,
+			string sourceId = null)
+		{
 			var sheets = m_settings.excelSheetsPath.sheets;
 			if (!sheets.Any(x => x.selected && SheetXHelper.IsJsonSheet(x.name)))
 				return;
+			RouteCollectionSheets(session, workBook, sourceId, sheets);
+			if (session != null && !HasOrdinaryJsonSheets(workBook, sheets, session, sourceId))
+				return;
 			if (string.IsNullOrEmpty(m_settings.jsonOutputFolder))
 			{
-				bool selectedConfig = m_settings.generateConfigScriptableObject
-					&& sheets.Any(sheet => sheet.selected
-						&& string.Equals(sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal));
-				if (selectedConfig && m_settings.encryptJson)
-					m_writer.Error("Generate Config ScriptableObject cannot be used with Encrypt Json.");
-				else
-				{
-					m_writer.Error("Please setup the Json Output folder!");
-					if (selectedConfig && string.IsNullOrEmpty(m_settings.constantsOutputFolder))
-						m_writer.Error("Please setup the Constants Output Folder!");
-				}
+				m_writer.Error("Please setup the Json Output folder!");
 				return;
 			}
 			if (m_allIds == null || m_allIds.Count == 0)
@@ -1098,23 +1116,22 @@ namespace RCore.SheetX.Editor
 			}
 
 			bool writeJsonFileForSingleSheet = !m_settings.combineJson;
-			bool configWritten = false;
-			string configBaseName = Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path).Trim().Replace(" ", "_");
 			var allJsons = new Dictionary<string, string>();
 			foreach (var sheet in sheets)
 			{
-				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name))
-					continue;
-				// The Config route owns this sheet end to end, so it never reaches the row-array
-				// conversion below nor the combined aggregate.
-				if (m_settings.generateConfigScriptableObject
-					&& string.Equals(sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name)
+					|| ConfigRouteEnabled && string.Equals(
+						sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
 				{
-					TryExportConfig(workBook, sheet.name, configBaseName, out bool wroteConfig);
-					configWritten |= wroteConfig;
 					continue;
 				}
 				string fileName = sheet.name.Trim().Replace(" ", "_");
+				if (session != null
+					&& session.ModeOf(sourceId, sheet.name) != SheetXSheetOutputMode.JsonOnly)
+				{
+					continue;
+				}
+
 				string json = ConvertSheetToJson(workBook, sheet.name, fileName, m_settings.encryptJson, writeJsonFileForSingleSheet);
 
 				//Merge all json into a single file
@@ -1134,28 +1151,167 @@ namespace RCore.SheetX.Editor
 			{
 				//Build json file for all jsons content. Key-sorted so the output does not depend on sheet order.
 				string mergedJson = SheetXHelper.MergeJsonContents(allJsons);
-				string mergedFileName = Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path).Trim().Replace(" ", "_");
+				string mergedFileName = ConfigBaseName();
 				m_writer.Write(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson,
 					SheetXExportFileType.Json, m_settings.encryptJson
 						? $"Exported encrypted Json data to {mergedFileName}.txt."
 						: $"Exported Json data to {mergedFileName}.txt.");
 			}
-			if (configWritten)
-				AssetDatabase.Refresh();
 		}
+
+		private string ConfigBaseName()
+			=> Path.GetFileNameWithoutExtension(m_settings.excelSheetsPath.path).Trim().Replace(" ", "_");
+
+#region Collection route
+
+		// Detached and batch exports carry no settings-backed collection bindings, so they keep the
+		// ordinary Json route untouched.
+		private SheetXCollectionExportSession CreateCollectionSession()
+			=> m_settings.enableCollections && !m_writer.Detached
+				? new SheetXCollectionExportSession(m_settings)
+				: null;
+
+		// Ordinary Json needs its output folder; a collection-only export does not, so the folder check
+		// must not fire when every selected data sheet is bound to a collection.
+		private bool HasOrdinaryJsonSheets(
+			IWorkbook workbook,
+			List<SheetPath> sheets,
+			SheetXCollectionExportSession session,
+			string sourceId)
+		{
+			foreach (var sheet in sheets)
+			{
+				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name)
+					|| workbook.GetSheet(sheet.name) == null
+					|| ConfigRouteEnabled && string.Equals(
+						sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+				{
+					continue;
+				}
+				if (session.ModeOf(sourceId, sheet.name) == SheetXSheetOutputMode.JsonOnly)
+					return true;
+			}
+			return false;
+		}
+
+		private void RouteCollectionSheets(
+			SheetXCollectionExportSession session,
+			IWorkbook workbook,
+			string sourceId,
+			List<SheetPath> sheets)
+		{
+			if (session == null)
+				return;
+
+			foreach (var sheet in sheets)
+			{
+				if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name)
+					|| workbook.GetSheet(sheet.name) == null
+					|| ConfigRouteEnabled && string.Equals(
+						sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+				{
+					continue;
+				}
+				if (session.ModeOf(sourceId, sheet.name) == SheetXSheetOutputMode.JsonOnly)
+					continue;
+
+				string fileName = sheet.name.Trim().Replace(" ", "_");
+				AddCollectionSheet(session, workbook, sourceId, sheet.name, fileName);
+			}
+		}
+
+		private void AddCollectionSheet(
+			SheetXCollectionExportSession session,
+			IWorkbook workbook,
+			string sourceId,
+			string sheetName,
+			string fileName)
+		{
+			string error;
+			switch (session.ModeOf(sourceId, sheetName))
+			{
+				case SheetXSheetOutputMode.CollectionGeneratedModel:
+					ReadCollectionTable(workbook, sheetName, out var headers, out var rows);
+					if (!session.TryAddGeneratedTable(sourceId, sheetName, headers, rows, out error) && error != null)
+						m_writer.Error(error);
+					break;
+
+				case SheetXSheetOutputMode.CollectionExistingModel:
+					// pWriteFile false: the legacy structures are kept verbatim, but the file belongs to the
+					// collection transaction, not to the ordinary Json folder.
+					// pEncrypt false: collection Json is an editor-only bake input that the baker
+					// deserializes into the row type. Ciphertext could never map onto it.
+					string legacyJson = ConvertSheetToJson(
+						workbook, sheetName, fileName, pEncrypt: false, pWriteFile: false);
+					if (!session.TryAddExistingTable(sourceId, sheetName, legacyJson, out error) && error != null)
+						m_writer.Error(error);
+					break;
+			}
+		}
+
+		private void FlushCollectionSession(SheetXCollectionExportSession session)
+		{
+			if (session != null && !session.Flush(out string error))
+				m_writer.Error(error);
+		}
+
+		private void BakeCollectionSession(SheetXCollectionExportSession session)
+		{
+			if (session?.WroteArtifacts == true && !session.TryBakeAfterRefresh(out string error))
+				m_writer.Error(error);
+		}
+
+		// Generated Model owns its own grammar, so this reader stays deliberately plain: no merged-cell
+		// carry-over, no type inference, no [x] columns. Row order and formula results are preserved.
+		private static void ReadCollectionTable(
+			IWorkbook workbook,
+			string sheetName,
+			out List<string> headers,
+			out List<IReadOnlyList<string>> rows)
+		{
+			headers = new List<string>();
+			rows = new List<IReadOnlyList<string>>();
+
+			var sheet = workbook.GetSheet(sheetName);
+			var headerRow = sheet?.GetRow(0);
+			if (headerRow == null)
+				return;
+
+			int columnCount = headerRow.LastCellNum;
+			for (int col = 0; col < columnCount; col++)
+				headers.Add(CellText(headerRow.GetCell(col)));
+
+			for (int row = 1; row <= sheet.LastRowNum; row++)
+			{
+				var sheetRow = sheet.GetRow(row);
+				var values = new string[columnCount];
+				for (int col = 0; col < columnCount; col++)
+					values[col] = CellText(sheetRow?.GetCell(col));
+				rows.Add(values);
+			}
+		}
+
+		private static string CellText(ICell cell)
+		{
+			if (cell == null)
+				return "";
+			// Formula first: ToCellString on a formula cell returns the expression, not its result.
+			string value = SheetXHelper.ConvertFormulaCell(cell);
+			if (value == null)
+				value = cell.ToCellString();
+			// Trimmed like every other SheetX cell read: a stray space would fail int/float/bool parsing.
+			return value?.Trim() ?? "";
+		}
+
+#endregion
 
 		private bool TryExportConfig(IWorkbook workbook, string sheetName, string baseName, out bool wroteArtifacts)
 		{
 			wroteArtifacts = false;
-			if (!m_settings.generateConfigScriptableObject
-				|| !string.Equals(sheetName, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+			if (!string.Equals(sheetName, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal)
+				|| workbook.GetSheet(sheetName) == null)
 			{
 				return false;
-			}
-			if (m_settings.encryptJson)
-			{
-				m_writer.Error("Generate Config ScriptableObject cannot be used with Encrypt Json.");
-				return true;
 			}
 
 			bool foldersValid = true;
@@ -1182,13 +1338,16 @@ namespace RCore.SheetX.Editor
 				SheetXConfigSheet.EmitCSharp(data, typeName, m_settings.@namespace),
 				SheetXExportFileType.ConfigScript, $"Exported {typeName}.cs!");
 
-			string fullTypeName = string.IsNullOrEmpty(m_settings.@namespace)
-				? typeName
-				: $"{m_settings.@namespace}.{typeName}";
-			SheetXConfigAssetBuilder.RegisterPendingAsset(
-				fullTypeName,
-				$"{m_settings.jsonOutputFolder.TrimEnd('/', '\\')}/{typeName}.txt",
-				m_settings.constantsOutputFolder.Replace('\\', '/'));
+			if (!m_writer.Detached)
+			{
+				string fullTypeName = string.IsNullOrEmpty(m_settings.@namespace)
+					? typeName
+					: $"{m_settings.@namespace}.{typeName}";
+				SheetXConfigAssetBuilder.RegisterPendingAsset(
+					fullTypeName,
+					$"{m_settings.jsonOutputFolder.TrimEnd('/', '\\')}/{typeName}.txt",
+					m_settings.constantsOutputFolder.Replace('\\', '/'));
+			}
 			wroteArtifacts = true;
 			return true;
 		}
@@ -1840,12 +1999,15 @@ namespace RCore.SheetX.Editor
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
 			m_allIDsSorted = null;
 			m_allIds = new Dictionary<string, int>();
+			m_declaredIds = new HashSet<string>(StringComparer.Ordinal);
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();
 			m_langCharSets = new Dictionary<string, string>();
 			m_langCharSetsAll = new StringBuilder();
 			bool configWritten = false;
-			bool configEncryptionErrorReported = false;
+			// One session across every selected workbook: the generated source declares all of their
+			// tables together, so it can only be emitted once all of them parsed.
+			var session = CreateCollectionSession();
 
 			//Process all IDs sheets first
 			foreach (var file in m_settings.excelSheetsPaths)
@@ -1885,47 +2047,60 @@ namespace RCore.SheetX.Editor
 				//Load and write json file
 				var allJsons = new Dictionary<string, string>();
 				string configBaseName = Path.GetFileNameWithoutExtension(file.path).Trim().Replace(" ", "_");
-				foreach (var sheet in file.sheets)
+				if (ConfigRouteEnabled)
 				{
-					if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name) || workBook.GetSheet(sheet.name) == null)
-						continue;
-
-					// The Config route owns this sheet end to end, so it never reaches the row-array
-					// conversion below nor the combined aggregate.
-					if (m_settings.generateConfigScriptableObject
-						&& string.Equals(sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
+					TryExportConfig(workBook, SheetXConstants.CONFIG_SHEET, configBaseName, out bool wroteConfig);
+					configWritten |= wroteConfig;
+				}
+				RouteCollectionSheets(session, workBook, file.path, file.sheets);
+				bool hasOrdinaryJson = session == null || HasOrdinaryJsonSheets(workBook, file.sheets, session, file.path);
+				if (hasOrdinaryJson && string.IsNullOrEmpty(m_settings.jsonOutputFolder))
+				{
+					m_writer.Error("Please setup the Json Output folder!");
+				}
+				else
+				{
+					foreach (var sheet in file.sheets)
 					{
-						if (m_settings.encryptJson && configEncryptionErrorReported)
-							continue;
-						TryExportConfig(workBook, sheet.name, configBaseName, out bool wroteConfig);
-						configWritten |= wroteConfig;
-						configEncryptionErrorReported |= m_settings.encryptJson;
-						continue;
-					}
-
-					string fileName = sheet.name.Trim().Replace(" ", "_");
-					string json = ConvertSheetToJson(workBook, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
-
-					if (m_settings.combineJson && json != null)
-					{
-						if (allJsons.ContainsKey(fileName))
+						if (!sheet.selected || !SheetXHelper.IsJsonSheet(sheet.name)
+							|| workBook.GetSheet(sheet.name) == null
+							|| ConfigRouteEnabled && string.Equals(
+								sheet.name, SheetXConstants.CONFIG_SHEET, StringComparison.Ordinal))
 						{
-							m_writer.Error($"Could not create single Json file {fileName}, because key {fileName} is already exists!");
 							continue;
 						}
-						allJsons.Add(fileName, json);
-					}
-				}
 
-				if (m_settings.combineJson && allJsons.Count > 0)
-				{
-					//Build json file for all jsons content
-					string mergedJson = SheetXHelper.MergeJsonContents(allJsons);
-					string mergedFileName = Path.GetFileNameWithoutExtension(file.path).Trim().Replace(" ", "_");
-					m_writer.Write(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson,
-						SheetXExportFileType.Json, m_settings.encryptJson
-							? $"Exported encrypted Json data to {mergedFileName}.txt."
-							: $"Exported Json data to {mergedFileName}.txt.");
+						string fileName = sheet.name.Trim().Replace(" ", "_");
+						if (session != null
+							&& session.ModeOf(file.path, sheet.name) != SheetXSheetOutputMode.JsonOnly)
+						{
+							continue;
+						}
+
+						string json = ConvertSheetToJson(
+							workBook, sheet.name, fileName, m_settings.encryptJson, !m_settings.combineJson);
+
+						if (m_settings.combineJson && json != null)
+						{
+							if (allJsons.ContainsKey(fileName))
+							{
+								m_writer.Error($"Could not create single Json file {fileName}, because key {fileName} is already exists!");
+								continue;
+							}
+							allJsons.Add(fileName, json);
+						}
+					}
+
+					if (m_settings.combineJson && allJsons.Count > 0)
+					{
+						//Build json file for all jsons content
+						string mergedJson = SheetXHelper.MergeJsonContents(allJsons);
+						string mergedFileName = Path.GetFileNameWithoutExtension(file.path).Trim().Replace(" ", "_");
+						m_writer.Write(m_settings.jsonOutputFolder, $"{mergedFileName}.txt", mergedJson,
+							SheetXExportFileType.Json, m_settings.encryptJson
+								? $"Exported encrypted Json data to {mergedFileName}.txt."
+								: $"Exported Json data to {mergedFileName}.txt.");
+					}
 				}
 
 				//Load and write constants
@@ -2011,9 +2186,11 @@ namespace RCore.SheetX.Editor
 			//Create localization manager file
 			CreateLocalizationsManagerFile();
 
+			FlushCollectionSession(session);
 			// One refresh for every workbook: the pending assets resolve after the single reload it triggers.
-			if (configWritten)
+			if ((configWritten || session?.WroteArtifacts == true) && !m_writer.Detached)
 				AssetDatabase.Refresh();
+			BakeCollectionSession(session);
 
 			m_writer.Info("Done!");
 		}

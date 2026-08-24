@@ -23,6 +23,8 @@ namespace RCore.SheetX.Editor
 		private GoogleSheetHandler m_googleSheetHandler;
 		private EditorTableView<SheetPath> m_tableSheets;
 		private EditorTableView<GoogleSheetsPath> m_tableGoogleSheetsPaths;
+		private bool m_tableCollectionsEnabled;
+		private string m_tableSourceId;
 
 		public void OnEnable()
 		{
@@ -91,13 +93,18 @@ namespace RCore.SheetX.Editor
 			EditorGUILayout.EndHorizontal();
 			//-----
 			EditorGUILayout.BeginHorizontal();
-			if (m_tableSheets == null)
+			string sourceId = m_settings.googleSheetsPath.id;
+			if (m_tableSheets == null
+				|| m_tableCollectionsEnabled != m_settings.enableCollections
+				|| !string.Equals(m_tableSourceId, sourceId, StringComparison.Ordinal))
 			{
 				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.googleSheetsPath.name, isOn =>
 				{
 					foreach (var sheetPath in m_settings.googleSheetsPath.sheets)
 						sheetPath.selected = isOn;
-				});
+				}, m_settings, () => m_settings.googleSheetsPath.id);
+				m_tableCollectionsEnabled = m_settings.enableCollections;
+				m_tableSourceId = sourceId;
 				foreach (var sheetPath in m_settings.googleSheetsPath.sheets)
 					sheetPath.onSelected = _ => ValidateTopToggle(m_settings.googleSheetsPath.sheets, m_tableSheets);
 				ValidateTopToggle(m_settings.googleSheetsPath.sheets, m_tableSheets);

@@ -70,7 +70,7 @@ MonoBehaviour:
     - selected: 1
       name: PlayerLevels
     name: GameData
-  - selected: 1
+  - selected: 0
     path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Localization.xlsx
     sheets:
     - selected: 1
@@ -148,6 +148,17 @@ MonoBehaviour:
   separateIDs: 0
   separateLocalizations: 1
   combineJson: 0
+  generateConfigScriptableObject: 0
+  enableCollections: 0
+  collections: []
+  sheetBindings: []
+  collectionCodeFolder: 
+  collectionAssetFolder: 
+  collectionJsonFolder: 
+  collectionNamespace: 
+  globalResourcesFolder: 
+  autoLoadAfterExport: 0
+  autoLoadBeforePlay: 0
   onlyEnumAsIDs: 0
   persistentFields: 
   langCharSets: 

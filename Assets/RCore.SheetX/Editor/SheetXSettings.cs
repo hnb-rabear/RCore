@@ -43,6 +43,53 @@ namespace RCore.SheetX.Editor
 	}
 
 	/// <summary>
+	/// Selects how one ordinary data sheet is exported.
+	/// </summary>
+	public enum SheetXSheetOutputMode
+	{
+		/// <summary>Uses SheetX's existing JSON export path.</summary>
+		JsonOnly = 0,
+		/// <summary>Generates a typed row model and adds it to a collection.</summary>
+		CollectionGeneratedModel = 1,
+		/// <summary>Adds an existing serializable row model to a collection.</summary>
+		CollectionExistingModel = 2,
+	}
+
+	/// <summary>
+	/// Defines one managed data-config collection.
+	/// </summary>
+	[Serializable]
+	public sealed class SheetXCollectionDefinition
+	{
+		/// <summary>Gets or sets the collection name used to derive its generated type.</summary>
+		public string name;
+		/// <summary>Gets or sets whether Editor loading includes this collection automatically.</summary>
+		public bool autoLoad = true;
+		/// <summary>Gets or sets whether this is the immutable built-in Global collection.</summary>
+		public bool builtInGlobal;
+	}
+
+	/// <summary>
+	/// Binds one source sheet to its output mode and collection.
+	/// </summary>
+	[Serializable]
+	public sealed class SheetXSheetBinding
+	{
+		/// <summary>Gets or sets the workbook path or Google spreadsheet ID.</summary>
+		public string sourceId;
+		/// <summary>Gets or sets the source sheet name.</summary>
+		public string sheetName;
+		/// <summary>Gets or sets the selected output mode.</summary>
+		public SheetXSheetOutputMode outputMode;
+		/// <summary>Gets or sets the managed collection name.</summary>
+		public string collectionName;
+		/// <summary>Gets or sets the assembly-qualified existing row type name.</summary>
+		public string rowTypeName;
+		/// <summary>Gets or sets an optional generated collection field-name override.</summary>
+		public string fieldName;
+	}
+
+	/// <summary>
 	/// Stores configuration settings for the SheetX exporter, including paths, flags, and encryption keys.
 	/// </summary>
 	public class SheetXSettings : ScriptableObject
@@ -68,7 +115,16 @@ namespace RCore.SheetX.Editor
 		public bool separateIDs;
 		public bool separateLocalizations;
 		public bool combineJson;
-		public bool generateConfigScriptableObject;
+		public bool enableCollections;
+		public List<SheetXCollectionDefinition> collections;
+		public List<SheetXSheetBinding> sheetBindings;
+		public string collectionCodeFolder;
+		public string collectionAssetFolder;
+		public string collectionJsonFolder;
+		public string collectionNamespace;
+		public string globalResourcesFolder;
+		public bool autoLoadAfterExport;
+		public bool autoLoadBeforePlay;
 		public bool onlyEnumAsIDs;
 		public string persistentFields;
 		public string langCharSets;
@@ -286,7 +342,19 @@ namespace RCore.SheetX.Editor
 			separateIDs = false;
 			separateLocalizations = true;
 			combineJson = false;
-			generateConfigScriptableObject = false;
+			enableCollections = false;
+			collections = new List<SheetXCollectionDefinition>
+			{
+				new SheetXCollectionDefinition { name = "Global", autoLoad = true, builtInGlobal = true },
+			};
+			sheetBindings = new List<SheetXSheetBinding>();
+			collectionCodeFolder = "";
+			collectionAssetFolder = "";
+			collectionJsonFolder = "";
+			collectionNamespace = "";
+			globalResourcesFolder = "";
+			autoLoadAfterExport = true;
+			autoLoadBeforePlay = true;
 			onlyEnumAsIDs = false;
 			persistentFields = "id, key";
 			langCharSets = "jp, ko, cn";

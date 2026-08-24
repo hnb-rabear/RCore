@@ -611,7 +611,12 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Creates an EditorTableView for displaying sheet paths with a toggle column.
 		/// </summary>
-		public static EditorTableView<SheetPath> CreateSpreadsheetTable(EditorWindow editorWindow, string name, Action<bool> pOnTogSelected)
+		public static EditorTableView<SheetPath> CreateSpreadsheetTable(
+			EditorWindow editorWindow,
+			string name,
+			Action<bool> pOnTogSelected,
+			SheetXSettings settings = null,
+			Func<string> sourceId = null)
 		{
 			var table = new EditorTableView<SheetPath>(editorWindow, name);
 			var labelGUIStyle = new GUIStyle(GUI.skin.label)
@@ -637,6 +642,8 @@ namespace RCore.SheetX.Editor
 				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
 				EditorGUI.LabelField(rect, item.name, style);
 			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
+			if (settings != null && settings.enableCollections)
+				SheetXCollectionSheetGUI.AddColumns(table, settings, sourceId);
 			return table;
 		}
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using NUnit.Framework;
@@ -39,6 +40,61 @@ namespace RCore.SheetX.Tests
 				JsonOutputPath = "Generated",
 				LocalizationOutputPath = "Generated",
 			});
+
+		private static string SaveWorkbook(IWorkbook workbook)
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			using (var stream = File.Create(path))
+				workbook.Write(stream);
+			workbook.Close();
+			return path;
+		}
+
+		[Test]
+		public void export_all_files_emits_preloaded_ids_constants()
+		{
+			string firstPath = SaveWorkbook(IdsWorkbook("HeroIDs", "HERO_1", "1"));
+			string secondPath = SaveWorkbook(IdsWorkbook("MonsterIDs", "MONSTER_1", "100"));
+			var output = new MemoryOutput();
+			var settings = BatchSettings();
+			settings.excelSheetsPaths = new List<ExcelSheetsPath>
+			{
+				new ExcelSheetsPath
+				{
+					path = firstPath,
+					selected = true,
+					sheets = new List<SheetPath>
+					{
+						new SheetPath { name = "HeroIDs", selected = true },
+					},
+				},
+				new ExcelSheetsPath
+				{
+					path = secondPath,
+					selected = true,
+					sheets = new List<SheetPath>
+					{
+						new SheetPath { name = "MonsterIDs", selected = true },
+					},
+				},
+			};
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+
+			try
+			{
+				new ExcelSheetHandler(settings, context).ExportAllFiles();
+				context.Flush();
+
+				string content = output.Writes["Generated/IDs.cs"];
+				Assert.That(content, Does.Contain("public const int HERO_1 = 1;"));
+				Assert.That(content, Does.Contain("public const int MONSTER_1 = 100;"));
+			}
+			finally
+			{
+				File.Delete(firstPath);
+				File.Delete(secondPath);
+			}
+		}
 
 		[Test]
 		public void batch_constructor_aliases_shared_id_table()

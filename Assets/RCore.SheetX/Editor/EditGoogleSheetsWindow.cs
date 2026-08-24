@@ -16,7 +16,10 @@ namespace RCore.SheetX.Editor
 	public class EditGoogleSheetsWindow : EditorWindow
 	{
 		private GoogleSheetsPath m_googleSheetsPath;
+		private SheetXSettings m_settings;
 		private EditorTableView<SheetPath> m_tableSheets;
+		private bool m_tableCollectionsEnabled;
+		private string m_tableSourceId;
 		private string m_googleClientId;
 		private string m_googleClientSecret;
 		private Action<GoogleSheetsPath> m_onQuit;
@@ -30,6 +33,7 @@ namespace RCore.SheetX.Editor
 			var window = CreateInstance<EditGoogleSheetsWindow>();
 			window.titleContent = new GUIContent("Edit Spreadsheets");
 			window.m_googleSheetsPath = googleSheetsPath;
+			window.m_settings = SheetXSettings.Init();
 			window.m_googleClientId = googleClientId;
 			window.m_googleClientSecret = googleClientSecret;
 			window.m_onQuit = onQuit;
@@ -56,13 +60,18 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndHorizontal();
 			//-----
 			GUILayout.BeginVertical("box");
-			if (m_tableSheets == null)
+			string sourceId = m_googleSheetsPath.id;
+			if (m_tableSheets == null
+				|| m_tableCollectionsEnabled != m_settings.enableCollections
+				|| !string.Equals(m_tableSourceId, sourceId, StringComparison.Ordinal))
 			{
 				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(this, m_googleSheetsPath.name, isOn =>
 				{
 					foreach (var sheetPath in m_googleSheetsPath.sheets)
 						sheetPath.selected = isOn;
-				});
+				}, m_settings, () => m_googleSheetsPath.id);
+				m_tableCollectionsEnabled = m_settings.enableCollections;
+				m_tableSourceId = sourceId;
 				foreach (var sheet in m_googleSheetsPath.sheets)
 					sheet.onSelected = _ => ValidateTopToggle(m_googleSheetsPath.sheets, m_tableSheets);
 				ValidateTopToggle(m_googleSheetsPath.sheets, m_tableSheets);

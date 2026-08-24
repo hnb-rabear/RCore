@@ -410,6 +410,149 @@ namespace RCore.SheetX.Tests
 			}
 		}
 
+		[Test]
+		public void interactive_config_exports_when_unselected()
+		{
+			var workbook = CreateConfigWorkbook();
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var settings = InteractiveSettings(new SheetPath { name = "Config", selected = false });
+
+			try
+			{
+				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				Assert.That(output.Writes["Generated/Game_DataConfig.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.cs"));
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		[Test]
+		public void interactive_config_exports_when_missing_from_sheet_list()
+		{
+			var workbook = CreateConfigWorkbook();
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var settings = InteractiveSettings();
+
+			try
+			{
+				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.txt"));
+				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.cs"));
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		[Test]
+		public void interactive_config_exports_without_ordinary_json_selection()
+		{
+			var workbook = CreateConfigWorkbook();
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var settings = InteractiveSettings(new SheetPath { name = "Items", selected = false });
+
+			try
+			{
+				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.txt"));
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		[Test]
+		public void interactive_config_stays_plaintext_when_ordinary_json_is_encrypted()
+		{
+			var workbook = CreateConfigWorkbook();
+			CreateOrdinaryJsonSheet(workbook, "Items");
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var settings = InteractiveSettings(new SheetPath { name = "Items", selected = true });
+			settings.encryptJson = true;
+
+			try
+			{
+				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				Assert.That(output.Writes["Generated/Game_DataConfig.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes["Generated/Items.txt"], Does.Not.StartWith("["));
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		[Test]
+		public void interactive_combine_json_excludes_config()
+		{
+			var workbook = CreateConfigWorkbook();
+			CreateOrdinaryJsonSheet(workbook, "Items");
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var settings = InteractiveSettings(new SheetPath { name = "Items", selected = true });
+			settings.combineJson = true;
+
+			try
+			{
+				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				Assert.That(output.Writes["Generated/Game_Data.txt"], Does.Contain("\"Items\":"));
+				Assert.That(output.Writes["Generated/Game_Data.txt"], Does.Not.Contain("\"Config\":"));
+				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.txt"));
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		[TestCase("RemoteConfig")]
+		[TestCase("config")]
+		public void interactive_non_exact_config_stays_row_array_json(string sheetName)
+		{
+			var workbook = CreateConfigWorkbook(sheetName);
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var settings = InteractiveSettings(new SheetPath { name = sheetName, selected = true });
+
+			try
+			{
+				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				Assert.That(output.Writes[$"Generated/{sheetName}.txt"], Does.StartWith("["));
+				Assert.That(output.Writes.Keys, Has.None.EndsWith(".cs"));
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
 		// The detached exporter has no Config route at all: SheetXExportRequest never carries the setting,
 		// so an exact "Config" sheet must keep producing the same row-array artifact it always did.
 		[TestCase("Config")]
@@ -417,7 +560,7 @@ namespace RCore.SheetX.Tests
 		[TestCase("config")]
 		public void detached_config_sheet_stays_row_array_json(string sheetName)
 		{
-			string path = CreateConfigWorkbook(sheetName);
+			string path = CreateConfigWorkbookFile(sheetName);
 			try
 			{
 				var output = new MemoryOutput();
@@ -440,7 +583,7 @@ namespace RCore.SheetX.Tests
 		[Test]
 		public void detached_combine_json_still_merges_config_sheet()
 		{
-			string path = CreateConfigWorkbook("Config");
+			string path = CreateConfigWorkbookFile("Config");
 			try
 			{
 				var output = new MemoryOutput();
@@ -461,9 +604,8 @@ namespace RCore.SheetX.Tests
 			}
 		}
 
-		private static string CreateConfigWorkbook(string sheetName)
+		private static XSSFWorkbook CreateConfigWorkbook(string sheetName = "Config")
 		{
-			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
 			var workbook = new XSSFWorkbook();
 			var sheet = workbook.CreateSheet(sheetName);
 			var header = sheet.CreateRow(0);
@@ -475,9 +617,47 @@ namespace RCore.SheetX.Tests
 				header.CreateCell(i).SetCellValue(headers[i]);
 				row.CreateCell(i).SetCellValue(values[i]);
 			}
-			using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
-			workbook.Write(stream);
-			return path;
+			return workbook;
+		}
+
+		private static string CreateConfigWorkbookFile(string sheetName)
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			// XSSFWorkbook is not IDisposable in this NPOI version, so it cannot be a using declaration.
+			var workbook = CreateConfigWorkbook(sheetName);
+			try
+			{
+				using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+				workbook.Write(stream);
+				return path;
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		private static void CreateOrdinaryJsonSheet(XSSFWorkbook workbook, string sheetName)
+		{
+			var sheet = workbook.CreateSheet(sheetName);
+			sheet.CreateRow(0).CreateCell(0).SetCellValue("id");
+			sheet.CreateRow(1).CreateCell(0).SetCellValue("item_1");
+		}
+
+		private static SheetXSettings InteractiveSettings(params SheetPath[] sheets)
+		{
+			var settings = SheetXSettings.CreateTransient(new SheetXExportRequest
+			{
+				ConstantsOutputPath = "Generated",
+				JsonOutputPath = "Generated",
+			});
+			settings.silent = true;
+			settings.excelSheetsPath = new ExcelSheetsPath
+			{
+				path = "Game Data.xlsx",
+				sheets = sheets.ToList(),
+			};
+			return settings;
 		}
 
 		private sealed class MemoryOutput : ISheetXOutput
