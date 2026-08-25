@@ -223,7 +223,7 @@ namespace RCore.SheetX.Tests
 					sourceId = "Book",
 					sheetName = "Items",
 					collectionName = "Shop",
-					outputMode = SheetXSheetOutputMode.CollectionGeneratedModel,
+					outputMode = SheetXSheetOutputMode.GeneratedDataClass,
 					fieldName = "Rows",
 				});
 				var orphan = new SheetXSheetBinding
@@ -231,7 +231,7 @@ namespace RCore.SheetX.Tests
 					sourceId = "External",
 					sheetName = "Items",
 					collectionName = "Shop",
-					outputMode = SheetXSheetOutputMode.CollectionGeneratedModel,
+					outputMode = SheetXSheetOutputMode.GeneratedDataClass,
 					fieldName = "Rows",
 				};
 

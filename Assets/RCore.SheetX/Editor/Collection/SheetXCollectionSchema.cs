@@ -141,7 +141,7 @@ namespace RCore.SheetX.Editor
 			}
 			if (headers == null || headers.Count == 0)
 			{
-				error = "Generated Model requires at least one annotated header.";
+				error = "Generated Data Class requires at least one annotated header.";
 				return false;
 			}
 

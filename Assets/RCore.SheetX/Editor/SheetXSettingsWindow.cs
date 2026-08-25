@@ -52,24 +52,16 @@ namespace RCore.SheetX.Editor
 		private void DrawCollections()
 		{
 			GUILayout.BeginVertical("box");
-			m_sheetXSettings.enableCollections = EditorGUILayout.Toggle(
-				"Enable Data Config Collections", m_sheetXSettings.enableCollections);
+			m_sheetXSettings.enableCollections = EditorHelper.Toggle(m_sheetXSettings.enableCollections, "Enable Data Config Collections", 200);
 			if (m_sheetXSettings.enableCollections)
 			{
-				m_sheetXSettings.collectionNamespace = EditorHelper.TextField(
-					m_sheetXSettings.collectionNamespace, "Collection namespace", 200);
-				m_sheetXSettings.collectionCodeFolder = EditorHelper.FolderField(
-					m_sheetXSettings.collectionCodeFolder, "Generated code folder", 200);
-				m_sheetXSettings.collectionAssetFolder = EditorHelper.FolderField(
-					m_sheetXSettings.collectionAssetFolder, "Collection asset folder", 200);
-				m_sheetXSettings.collectionJsonFolder = EditorHelper.FolderField(
-					m_sheetXSettings.collectionJsonFolder, "Collection JSON folder", 200);
-				m_sheetXSettings.globalResourcesFolder = EditorHelper.FolderField(
-					m_sheetXSettings.globalResourcesFolder, "Global Resources folder", 200);
-				m_sheetXSettings.autoLoadAfterExport = EditorGUILayout.Toggle(
-					"Auto load after export", m_sheetXSettings.autoLoadAfterExport);
-				m_sheetXSettings.autoLoadBeforePlay = EditorGUILayout.Toggle(
-					"Auto load before Play Mode", m_sheetXSettings.autoLoadBeforePlay);
+				m_sheetXSettings.collectionNamespace = EditorHelper.TextField(m_sheetXSettings.collectionNamespace, "Collection namespace", 200);
+				m_sheetXSettings.collectionCodeFolder = EditorHelper.FolderField(m_sheetXSettings.collectionCodeFolder, "Generated code folder", 200);
+				m_sheetXSettings.collectionAssetFolder = EditorHelper.FolderField(m_sheetXSettings.collectionAssetFolder, "Collection asset folder", 200);
+				m_sheetXSettings.collectionJsonFolder = EditorHelper.FolderField(m_sheetXSettings.collectionJsonFolder, "Collection JSON folder", 200);
+				m_sheetXSettings.globalResourcesFolder = EditorHelper.FolderField(m_sheetXSettings.globalResourcesFolder, "Global Resources folder", 200);
+				m_sheetXSettings.autoLoadAfterExport = EditorHelper.Toggle(m_sheetXSettings.autoLoadAfterExport, "Auto load after export", 200);
+				m_sheetXSettings.autoLoadBeforePlay = EditorHelper.Toggle(m_sheetXSettings.autoLoadBeforePlay, "Auto load before Play Mode", 200);
 				SheetXCollectionSettings.EnsureGlobal(m_sheetXSettings);
 				foreach (var collection in m_sheetXSettings.collections.ToArray())
 					DrawCollection(collection);

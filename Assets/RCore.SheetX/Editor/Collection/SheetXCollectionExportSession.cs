@@ -45,7 +45,7 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
-		/// Parses one Generated Model sheet into typed JSON. Nothing reaches the disk here — a parse
+		/// Parses one Generated Data Class sheet into typed JSON. Nothing reaches the disk here — a parse
 		/// failure is remembered so <see cref="Flush"/> refuses the whole export.
 		/// </summary>
 		internal bool TryAddGeneratedTable(
@@ -55,7 +55,7 @@ namespace RCore.SheetX.Editor
 			IReadOnlyList<IReadOnlyList<string>> rows,
 			out string error)
 		{
-			if (!TryBind(sourceId, sheetName, SheetXSheetOutputMode.CollectionGeneratedModel, out var binding, out error))
+			if (!TryBind(sourceId, sheetName, SheetXSheetOutputMode.GeneratedDataClass, out var binding, out error))
 				return false;
 
 			if (!SheetXCollectionSchemaParser.TryParse(
@@ -74,7 +74,7 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
-		/// Adds one Existing Model sheet, keeping the legacy JSON byte for byte. The row type is resolved
+		/// Adds one Existing Data Class sheet, keeping the legacy JSON byte for byte. The row type is resolved
 		/// and the JSON deserialized into it now, so a mapping mistake is reported before anything is written.
 		/// </summary>
 		internal bool TryAddExistingTable(
@@ -83,7 +83,7 @@ namespace RCore.SheetX.Editor
 			string legacyJson,
 			out string error)
 		{
-			if (!TryBind(sourceId, sheetName, SheetXSheetOutputMode.CollectionExistingModel, out var binding, out error))
+			if (!TryBind(sourceId, sheetName, SheetXSheetOutputMode.ExistingDataClass, out var binding, out error))
 				return false;
 
 			if (!TryResolveRowType(binding.rowTypeName, out var rowType, out error))
@@ -186,7 +186,7 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
-		/// <summary>Completes an Existing Model export after callers refresh imported JSON files.</summary>
+		/// <summary>Completes an Existing Data Class export after callers refresh imported JSON files.</summary>
 		internal bool TryBakeAfterRefresh(out string error)
 		{
 			if (RequiresScriptReload)
@@ -279,7 +279,7 @@ namespace RCore.SheetX.Editor
 			error = null;
 			if (string.IsNullOrWhiteSpace(rowTypeName))
 			{
-				error = "Existing Model needs a row type name.";
+				error = "Existing Data Class needs a row type name.";
 				return false;
 			}
 

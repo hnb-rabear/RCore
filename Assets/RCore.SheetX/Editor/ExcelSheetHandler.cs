@@ -1230,13 +1230,13 @@ namespace RCore.SheetX.Editor
 			string error;
 			switch (session.ModeOf(sourceId, sheetName))
 			{
-				case SheetXSheetOutputMode.CollectionGeneratedModel:
+				case SheetXSheetOutputMode.GeneratedDataClass:
 					ReadCollectionTable(workbook, sheetName, out var headers, out var rows);
 					if (!session.TryAddGeneratedTable(sourceId, sheetName, headers, rows, out error) && error != null)
 						m_writer.Error(error);
 					break;
 
-				case SheetXSheetOutputMode.CollectionExistingModel:
+				case SheetXSheetOutputMode.ExistingDataClass:
 					// pWriteFile false: the legacy structures are kept verbatim, but the file belongs to the
 					// collection transaction, not to the ordinary Json folder.
 					// pEncrypt false: collection Json is an editor-only bake input that the baker
@@ -1261,7 +1261,7 @@ namespace RCore.SheetX.Editor
 				m_writer.Error(error);
 		}
 
-		// Generated Model owns its own grammar, so this reader stays deliberately plain: no merged-cell
+		// Generated Data Class owns its own grammar, so this reader stays deliberately plain: no merged-cell
 		// carry-over, no type inference, no [x] columns. Row order and formula results are preserved.
 		private static void ReadCollectionTable(
 			IWorkbook workbook,

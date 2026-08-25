@@ -264,16 +264,16 @@ Add feature collections below immutable **Global**. Rename moves bindings. Delet
 Ordinary data sheets gain **Output Mode**, **Collection**, and **Row Type** controls. IDs, Constants, Settings, and Localization sheets never gain collection bindings.
 
 - **JSON Only** preserves legacy JSON export.
-- **Collection Generated Model** requires typed header annotations, generates partial row and collection fields, and derives row type from sheet name.
-- **Collection Existing Model** keeps legacy JSON shape. Pick a concrete, non-generic `[Serializable]` row class. Missing or invalid types stop collection artifact writes.
+- **Generated Data Class** requires typed header annotations, generates partial data and collection classes, and derives data class name from sheet name.
+- **Existing Data Class** keeps legacy JSON shape. Pick a concrete, non-generic `[Serializable]` data class. Missing or invalid types stop collection artifact writes.
 
-Generated Model header grammar:
+Generated Data Class header grammar:
 
 ```text
 id:int | name:string | tags[]:string | reward.amount:float
 ```
 
-Use scalar `int`, `float`, `bool`, or `string`; scalar arrays with `[]`; and dotted nested-object fields. Every Generated Model header needs `:type`. Missing annotations stop the collection transaction before JSON, code, or asset changes.
+Use scalar `int`, `float`, `bool`, or `string`; scalar arrays with `[]`; and dotted nested-object fields. Every Generated Data Class header needs `:type`. Missing annotations stop the collection transaction before JSON, code, or asset changes.
 
 ### 7.3. Bake and runtime access
 

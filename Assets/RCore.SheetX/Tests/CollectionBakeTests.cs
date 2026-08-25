@@ -236,7 +236,7 @@ namespace RCore.SheetX.Tests
 			{
 				sourceId = "book.xlsx",
 				sheetName = "BakeItems",
-				outputMode = SheetXSheetOutputMode.CollectionExistingModel,
+				outputMode = SheetXSheetOutputMode.ExistingDataClass,
 				collectionName = "BakeShop",
 				rowTypeName = typeof(BakeItemsRow).AssemblyQualifiedName,
 				fieldName = "items",

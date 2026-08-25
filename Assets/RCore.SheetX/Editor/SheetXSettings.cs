@@ -49,10 +49,10 @@ namespace RCore.SheetX.Editor
 	{
 		/// <summary>Uses SheetX's existing JSON export path.</summary>
 		JsonOnly = 0,
-		/// <summary>Generates a typed row model and adds it to a collection.</summary>
-		CollectionGeneratedModel = 1,
-		/// <summary>Adds an existing serializable row model to a collection.</summary>
-		CollectionExistingModel = 2,
+		/// <summary>Generates a typed data class and adds it to a collection.</summary>
+		GeneratedDataClass = 1,
+		/// <summary>Adds an existing serializable data class to a collection.</summary>
+		ExistingDataClass = 2,
 	}
 
 	/// <summary>

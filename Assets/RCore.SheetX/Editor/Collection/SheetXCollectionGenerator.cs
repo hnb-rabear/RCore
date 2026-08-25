@@ -144,7 +144,7 @@ namespace RCore.SheetX.Editor
 				if (string.IsNullOrEmpty(table.FieldName))
 					throw new InvalidOperationException($"Sheet '{table.SheetName}' has no collection field name.");
 
-				// Only generated rows declare a type; an Existing Model reuses one the developer owns.
+				// Only generated rows declare a type; an Existing Data Class reuses one the developer owns.
 				if (table.Schema != null)
 				{
 					if (rowTypes.TryGetValue(table.RowTypeName, out string owner))

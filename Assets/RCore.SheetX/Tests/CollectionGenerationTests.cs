@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace RCore.SheetX.Tests
 {
-	/// <summary>Stands in for a row type a consuming project owns, for Existing Model coverage.</summary>
+	/// <summary>Stands in for a row type a consuming project owns, for Existing Data Class coverage.</summary>
 	[Serializable]
 	public sealed class CollectionGenerationExistingRow
 	{
@@ -261,8 +261,8 @@ namespace RCore.SheetX.Tests
 			var settings = SessionSettings();
 			try
 			{
-				Bind(settings, "GenTable", SheetXSheetOutputMode.CollectionGeneratedModel);
-				Bind(settings, "ExistingTable", SheetXSheetOutputMode.CollectionExistingModel,
+				Bind(settings, "GenTable", SheetXSheetOutputMode.GeneratedDataClass);
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
 					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
 
 				var session = new SheetXCollectionExportSession(settings);
@@ -303,8 +303,8 @@ namespace RCore.SheetX.Tests
 			var settings = SessionSettings();
 			try
 			{
-				Bind(settings, "GenTable", SheetXSheetOutputMode.CollectionGeneratedModel);
-				Bind(settings, "other-book.xlsx", "OtherTable", SheetXSheetOutputMode.CollectionGeneratedModel);
+				Bind(settings, "GenTable", SheetXSheetOutputMode.GeneratedDataClass);
+				Bind(settings, "other-book.xlsx", "OtherTable", SheetXSheetOutputMode.GeneratedDataClass);
 
 				Directory.CreateDirectory(CodeFolder);
 				File.WriteAllText(GeneratedSource, "// prior source");
@@ -331,7 +331,7 @@ namespace RCore.SheetX.Tests
 			var settings = SessionSettings();
 			try
 			{
-				Bind(settings, "ExistingTable", SheetXSheetOutputMode.CollectionExistingModel,
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
 					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
 				Directory.CreateDirectory(CodeFolder);
 				File.WriteAllText(GeneratedSource, SheetXCollectionGenerator.Emit(settings,
@@ -404,8 +404,8 @@ namespace RCore.SheetX.Tests
 			var settings = SessionSettings();
 			try
 			{
-				Bind(settings, "GenTable", SheetXSheetOutputMode.CollectionGeneratedModel);
-				Bind(settings, "Broken", SheetXSheetOutputMode.CollectionGeneratedModel);
+				Bind(settings, "GenTable", SheetXSheetOutputMode.GeneratedDataClass);
+				Bind(settings, "Broken", SheetXSheetOutputMode.GeneratedDataClass);
 
 				var session = new SheetXCollectionExportSession(settings);
 				Assert.That(

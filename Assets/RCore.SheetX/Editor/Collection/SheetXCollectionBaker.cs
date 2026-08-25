@@ -477,7 +477,7 @@ namespace RCore.SheetX.Editor
 			SheetXSettings settings, SheetXSheetBinding binding, out Type type, out string error)
 		{
 			error = null;
-			string name = binding.outputMode == SheetXSheetOutputMode.CollectionGeneratedModel
+			string name = binding.outputMode == SheetXSheetOutputMode.GeneratedDataClass
 				? settings.collectionNamespace.Trim() + "." + SheetXCollectionNaming.RowTypeName(binding.sheetName)
 				: binding.rowTypeName;
 			type = Type.GetType(name, throwOnError: false) ?? FindType(name);

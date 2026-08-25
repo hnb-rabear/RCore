@@ -19,8 +19,8 @@ namespace RCore.SheetX.Editor
 		private static readonly string[] s_outputModes =
 		{
 			"JSON Only",
-			"Generated Model",
-			"Existing Model",
+			"Generated Data Class",
+			"Existing Data Class",
 		};
 
 		private static Type[] s_rowTypes;
@@ -101,7 +101,7 @@ namespace RCore.SheetX.Editor
 				{
 					return;
 				}
-				if (binding.outputMode == SheetXSheetOutputMode.CollectionGeneratedModel)
+				if (binding.outputMode == SheetXSheetOutputMode.GeneratedDataClass)
 				{
 					EditorGUI.LabelField(rect,
 						settings.collectionNamespace + "." + SheetXCollectionNaming.RowTypeName(item.name));

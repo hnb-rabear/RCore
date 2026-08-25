@@ -1238,7 +1238,7 @@ namespace RCore.SheetX.Editor
 			string error;
 			switch (mode)
 			{
-				case SheetXSheetOutputMode.CollectionGeneratedModel:
+				case SheetXSheetOutputMode.GeneratedDataClass:
 					ReadCollectionTable(values, out var headers, out var rows);
 					if (!session.TryAddGeneratedTable(sourceId, sheetName, headers, rows, out error)
 						&& error != null)
@@ -1247,7 +1247,7 @@ namespace RCore.SheetX.Editor
 					}
 					break;
 
-				case SheetXSheetOutputMode.CollectionExistingModel:
+				case SheetXSheetOutputMode.ExistingDataClass:
 					// Collection Json is editor-only bake input, not encrypted output. The session owns its write.
 					string legacyJson = ConvertSheetToJson(
 						sheet, values, sheetName, fileName, pEncrypt: false, pWriteFile: false);
