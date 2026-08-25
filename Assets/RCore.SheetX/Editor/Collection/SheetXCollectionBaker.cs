@@ -325,7 +325,7 @@ namespace RCore.SheetX.Editor
 			var assets = new Dictionary<string, SheetXConfigCollectionBase>(StringComparer.Ordinal);
 			foreach (var collection in collections.Where(collection => !IsGlobal(collection.Name)))
 			{
-				string path = SheetXCollectionSettings.NormalizePath(settings.collectionAssetFolder)
+				string path = SheetXCollectionSettings.NormalizePath(settings.ResolveCollectionAssetFolder())
 					+ "/" + collection.Type.Name + ".asset";
 				if (!TryLoadOrCreate(path, collection.Type, snapshots, createdPaths, out var asset, out error))
 					return null;
@@ -333,7 +333,7 @@ namespace RCore.SheetX.Editor
 			}
 
 			var globalCollection = collections.First(collection => IsGlobal(collection.Name));
-			string globalPath = SheetXCollectionSettings.NormalizePath(settings.globalResourcesFolder)
+			string globalPath = SheetXCollectionSettings.NormalizePath(settings.ResolveGlobalResourcesFolder())
 				+ "/" + globalCollection.Type.Name + ".asset";
 			if (!TryLoadOrCreate(globalPath, globalCollection.Type, snapshots, createdPaths, out var globalAsset, out error))
 				return null;
@@ -380,6 +380,7 @@ namespace RCore.SheetX.Editor
 				return false;
 			}
 			AssetDatabase.CreateAsset(asset, path);
+			AssetDatabase.SaveAssetIfDirty(asset);
 			createdPaths.Add(path);
 			return true;
 		}
@@ -423,15 +424,33 @@ namespace RCore.SheetX.Editor
 			var serializedObject = new SerializedObject(global);
 			foreach (var collection in collections.Where(collection => !IsGlobal(collection.Name)))
 			{
-				var property = serializedObject.FindProperty(SheetXCollectionNaming.ToCamelIdentifier(collection.Name));
+				string fieldName = SheetXCollectionNaming.ToCamelIdentifier(collection.Name);
+				var property = serializedObject.FindProperty(fieldName);
 				if (property == null || property.propertyType != SerializedPropertyType.ObjectReference)
 				{
-					error = $"Global collection has no feature reference '{SheetXCollectionNaming.ToCamelIdentifier(collection.Name)}'.";
+					error = $"Global collection has no feature reference '{fieldName}'.";
 					return false;
 				}
-				property.objectReferenceValue = assets[collection.Name];
+
+				var featureAsset = assets[collection.Name];
+				var field = global.GetType().GetField(
+					fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				if (field == null || !field.FieldType.IsAssignableFrom(featureAsset.GetType()))
+				{
+					error = $"Global collection feature reference '{fieldName}' has an incompatible type.";
+					return false;
+				}
+
+				property.objectReferenceValue = featureAsset;
 			}
 			serializedObject.ApplyModifiedPropertiesWithoutUndo();
+			foreach (var collection in collections.Where(collection => !IsGlobal(collection.Name)))
+			{
+				string fieldName = SheetXCollectionNaming.ToCamelIdentifier(collection.Name);
+				var field = global.GetType().GetField(
+					fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				field.SetValue(global, assets[collection.Name]);
+			}
 			return true;
 		}
 
@@ -455,9 +474,10 @@ namespace RCore.SheetX.Editor
 			SheetXSettings settings, string collectionName, out Type type, out string error)
 		{
 			error = null;
-			string name = string.IsNullOrEmpty(settings.collectionNamespace)
+			string collectionNamespace = settings.ResolveCollectionNamespace();
+			string name = string.IsNullOrEmpty(collectionNamespace)
 				? SheetXCollectionNaming.CollectionTypeName(collectionName)
-				: settings.collectionNamespace.Trim() + "." + SheetXCollectionNaming.CollectionTypeName(collectionName);
+				: collectionNamespace.Trim() + "." + SheetXCollectionNaming.CollectionTypeName(collectionName);
 			type = FindType(name);
 			if (type == null)
 			{
@@ -478,7 +498,7 @@ namespace RCore.SheetX.Editor
 		{
 			error = null;
 			string name = binding.outputMode == SheetXSheetOutputMode.GeneratedDataClass
-				? settings.collectionNamespace.Trim() + "." + SheetXCollectionNaming.RowTypeName(binding.sheetName)
+				? settings.ResolveCollectionNamespace().Trim() + "." + SheetXCollectionNaming.RowTypeName(binding.sheetName)
 				: binding.rowTypeName;
 			type = Type.GetType(name, throwOnError: false) ?? FindType(name);
 			if (type == null)

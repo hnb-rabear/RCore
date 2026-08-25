@@ -6,10 +6,11 @@
 
 - Optional Data Config Collections: interactive Excel and Google exports can generate typed collection shells, bake editor-only JSON into serialized ScriptableObject arrays, and create a Global Resources root with feature references. Runtime reads serialized data only; it never parses collection JSON. `autoLoadAfterExport` and `autoLoadBeforePlay` respect per-collection Auto Load. Collection metadata remains unsupported by detached `SheetXExporter` and batch APIs.
 
-- Interactive Excel and Google exports always route an exact `Config` worksheet to nested plaintext JSON and typed ScriptableObject C#, then create or reuse its typed asset after script reload. Sheet selection and `encryptJson` cannot block Config; Config stays outside combined JSON. Removed `generateConfigScriptableObject`; detached and batch APIs retain ordinary row-array Config behavior.
+- Interactive Excel and Google exports route exact ordinal `Configuration` worksheets to fixed plaintext `Configuration.txt` and `Configuration.cs`, then create or reuse `Configuration.asset` after script reload. Single exports ignore Configuration selection. Multi-file exports merge physical Configuration sheets from selected sources in source-list order, keeping duplicate data. Configuration stays outside combined JSON. `Config` remains ordinary row-array JSON. Detached and batch APIs retain ordinary row-array behavior for both names.
 
 ### Fixed
 
+- Freshly created Data Config Collection assets now persist before Global references serialize, preventing feature references from loading as null during same-bake creation.
 - `SheetXExporter.ExportExcel` now owns one named, read-only `MemoryStream` through the complete export. NPOI can read workbook parts lazily, so its source stream no longer depends on garbage collection or closes before later selected sheets are read.
 - Per-sheet localization artifacts now have distinct types: language `.txt` data remains `Localization`, `{file}.cs` is `LocalizationConstants`, and `{file}Text.cs` is `LocalizationComponent`. Excel and Google handlers route identically; regression coverage runs on Excel only because Google export requires OAuth and network access.
 
