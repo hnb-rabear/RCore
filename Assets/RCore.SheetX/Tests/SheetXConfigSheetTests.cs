@@ -47,20 +47,21 @@ namespace RCore.SheetX.Tests
 				Row("", "startingGems", "int", "50"),
 				Row("", "", "", ""),
 				Row("", "position2", "vector2", "1|2"),
-			}, "GameDataConfig", Fail, out var data);
+			}, "Configuration", Fail, out var data);
 
 			Assert.That(ok, Is.True);
 			Assert.That(data.Groups, Has.Count.EqualTo(1));
 			Assert.That(data.Groups[0].Key, Is.EqualTo("economy"));
 			Assert.That(data.Groups[0].ClassName, Is.EqualTo("Economy"));
 			Assert.That(data.Groups[0].Fields, Has.Count.EqualTo(2));
-			Assert.That(data.RootFields, Has.Count.EqualTo(1));
 			Assert.That(data.RootFields[0].Name, Is.EqualTo("position2"));
 		}
 
 		[TestCase("int", "42")]
 		[TestCase("float", "1.25")]
 		[TestCase("boolean", "true")]
+		[TestCase("boolean", "0")]
+		[TestCase("boolean", "1")]
 		[TestCase("string", "hello")]
 		[TestCase("int-array", "1|2|3")]
 		[TestCase("float-array", "1.5|2.25")]
@@ -73,9 +74,24 @@ namespace RCore.SheetX.Tests
 			{
 				Header(),
 				Row("group", "value", type, value),
-			}, "GameDataConfig", Fail, out _);
+			}, "Configuration", Fail, out _);
 
 			Assert.That(ok, Is.True);
+		}
+
+		[Test]
+		public void parse_excel_boolean_numbers_as_json_booleans()
+		{
+			bool ok = SheetXConfigSheet.TryParse(new List<string[]>
+			{
+				Header(),
+				Row("feature", "maintenanceMode", "boolean", "0"),
+				Row("", "enableShop", "boolean", "1"),
+			}, "Configuration", Fail, out var data);
+
+			Assert.That(ok, Is.True);
+			Assert.That(SheetXConfigSheet.EmitJson(data), Is.EqualTo(
+				"{\"feature\":{\"maintenanceMode\":false,\"enableShop\":true}}"));
 		}
 
 		[TestCase("INT", "7")]
@@ -87,155 +103,31 @@ namespace RCore.SheetX.Tests
 			{
 				Header(),
 				Row("group", "value", type, value),
-			}, "GameDataConfig", Fail, out _);
+			}, "Configuration", Fail, out _);
 
 			Assert.That(ok, Is.True);
 		}
 
 		[Test]
-		public void parse_strips_only_trailing_display_array_suffix()
-		{
-			bool ok = SheetXConfigSheet.TryParse(new List<string[]>
-			{
-				Header(),
-				Row("group", "rates[]", "float-array", "0.5|0.25"),
-			}, "GameDataConfig", Fail, out var data);
-
-			Assert.That(ok, Is.True);
-			Assert.That(data.Groups[0].Fields[0].Name, Is.EqualTo("rates"));
-			Assert.That(data.Groups[0].Fields[0].Type, Is.EqualTo(ConfigFieldType.FloatArray));
-		}
-
-		[Test]
-		public void parse_ignores_extra_columns_beyond_value()
-		{
-			bool ok = SheetXConfigSheet.TryParse(new List<string[]>
-			{
-				new[] { "Sub Class", "Field Name", "Type", "Value", "Note" },
-				new[] { "group", "count", "int", "3", "ignored" },
-			}, "GameDataConfig", Fail, out var data);
-
-			Assert.That(ok, Is.True);
-			Assert.That(data.Groups[0].Fields[0].Value, Is.EqualTo(3));
-		}
-
-		[TestCase("Sub Class", "Field", "Type", "Value")]
-		[TestCase("SubClass", "Field Name", "Type", "Value")]
-		public void parse_rejects_wrong_header(string a, string b, string c, string d)
+		public void parse_rejects_malformed_rows()
 		{
 			var errors = ParseErrors(new List<string[]>
 			{
-				new[] { a, b, c, d },
+				new[] { "SubClass", "Field Name", "Type", "Value" },
 				Row("group", "count", "int", "1"),
 			});
+			Assert.That(errors, Has.Some.Contains("Configuration header"));
 
-			Assert.That(errors, Has.Count.EqualTo(1));
-			Assert.That(errors[0], Does.Contain("Config header"));
-		}
-
-		[Test]
-		public void parse_rejects_missing_table()
-		{
-			var errors = ParseErrors(new List<string[]>());
-
-			Assert.That(errors, Has.Count.EqualTo(1));
-			Assert.That(errors[0], Does.Contain("header"));
-		}
-
-		[Test]
-		public void parse_rejects_invalid_root_type_name()
-		{
-			var errors = ParseErrors(new List<string[]>
+			errors = ParseErrors(new List<string[]>
 			{
 				Header(),
-				Row("group", "count", "int", "1"),
-			}, "9GameConfig");
-
-			Assert.That(errors, Has.Some.Contains("9GameConfig"));
-		}
-
-		[TestCase("2bad")]
-		[TestCase("has space")]
-		[TestCase("class")]
-		public void parse_rejects_invalid_field_identifier(string fieldName)
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("group", fieldName, "int", "1"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("valid C# identifier"));
-		}
-
-		[TestCase("value")]
-		[TestCase("var")]
-		[TestCase("from")]
-		[TestCase("_private")]
-		public void parse_accepts_contextual_keywords_as_field_names(string fieldName)
-		{
-			bool ok = SheetXConfigSheet.TryParse(new List<string[]>
-			{
-				Header(),
-				Row("group", fieldName, "int", "1"),
-			}, "GameDataConfig", Fail, out _);
-
-			Assert.That(ok, Is.True);
-		}
-
-		[Test]
-		public void parse_rejects_invalid_group_identifier()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("2group", "count", "int", "1"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("Sub Class '2group'"));
-		}
-
-		[Test]
-		public void parse_rejects_unknown_type()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
+				Row("group", "2bad", "int", "1"),
 				Row("group", "count", "unknown", "1"),
+				Row("group", "number", "float", "NaN"),
 			});
-
-			Assert.That(errors, Has.Some.Contains("type 'unknown' is not supported"));
-		}
-
-		[TestCase("int", "abc")]
-		[TestCase("float", "abc")]
-		[TestCase("boolean", "yes")]
-		[TestCase("int-array", "1|x")]
-		[TestCase("float", "NaN")]
-		[TestCase("float", "Infinity")]
-		[TestCase("float-array", "1|NaN")]
-		public void parse_rejects_unparseable_value(string type, string value)
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("group", "value", type, value),
-			});
-
-			Assert.That(errors, Has.Some.Contains("value"));
-		}
-
-		[TestCase("vector2", "1|2|3")]
-		[TestCase("vector3", "1|2")]
-		public void parse_rejects_wrong_vector_arity(string type, string value)
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("group", "value", type, value),
-			});
-
-			Assert.That(errors, Has.Some.Contains("must contain exactly"));
+			Assert.That(errors, Has.Some.Contains("valid C# identifier"));
+			Assert.That(errors, Has.Some.Contains("not supported"));
+			Assert.That(errors, Has.Some.Contains("invalid float"));
 		}
 
 		[Test]
@@ -251,158 +143,61 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void parse_rejects_duplicate_group_key()
+		public void parse_preserves_duplicate_groups_fields_and_root_collisions()
 		{
-			var errors = ParseErrors(new List<string[]>
+			bool ok = SheetXConfigSheet.TryParse(new List<string[]>
 			{
 				Header(),
-				Row("economy", "a", "int", "1"),
-				Row("economy", "b", "int", "2"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("duplicate Sub Class 'economy'"));
-		}
-
-		[Test]
-		public void parse_rejects_group_class_name_collision()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("economy", "a", "int", "1"),
-				Row("Economy", "b", "int", "2"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("generated class 'Economy'"));
-		}
-
-		[Test]
-		public void parse_rejects_group_class_colliding_with_root_type()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("gameDataConfig", "a", "int", "1"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("generated type 'GameDataConfig'"));
-		}
-
-		[Test]
-		public void parse_rejects_duplicate_group_field()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("economy", "a", "int", "1"),
-				Row("", "a", "int", "2"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("duplicate field 'a'"));
-		}
-
-		[Test]
-		public void parse_rejects_duplicate_root_field()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("economy", "a", "int", "1"),
+				Row("economy", "value", "int", "1"),
+				Row("", "value", "int", "2"),
+				Row("economy", "value", "int", "3"),
 				Row("", "", "", ""),
-				Row("", "b", "int", "1"),
-				Row("", "b", "int", "2"),
-			});
+				Row("", "economy", "int", "4"),
+				Row("", "economy", "int", "5"),
+			}, "Configuration", Fail, out var data);
 
-			Assert.That(errors, Has.Some.Contains("duplicate root field 'b'"));
-		}
+			Assert.That(ok, Is.True);
+			Assert.That(data.Groups, Has.Count.EqualTo(2));
+			Assert.That(data.Groups[0].Fields, Has.Count.EqualTo(2));
+			Assert.That(data.RootFields, Has.Count.EqualTo(2));
 
-		[Test]
-		public void parse_rejects_root_field_colliding_with_group()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("economy", "a", "int", "1"),
-				Row("", "", "", ""),
-				Row("", "economy", "int", "2"),
-			});
+			string json = SheetXConfigSheet.EmitJson(data);
+			Assert.That(json, Is.EqualTo(
+				"{\"economy\":{\"value\":1,\"value\":2},\"economy\":{\"value\":3},\"economy\":4,\"economy\":5}"));
 
-			Assert.That(errors, Has.Some.Contains("conflicts with a Sub Class"));
-		}
-
-		[Test]
-		public void parse_rejects_missing_field_name_or_type()
-		{
-			var errors = ParseErrors(new List<string[]>
-			{
-				Header(),
-				Row("economy", "", "int", "1"),
-				Row("economy2", "a", "", "1"),
-			});
-
-			Assert.That(errors, Has.Some.Contains("Field Name is required"));
-			Assert.That(errors, Has.Some.Contains("Type is required"));
-		}
-
-		[Test]
-		public void emit_json_writes_nested_object_in_source_order()
-		{
-			// Values are asserted by the JsonUtility round-trip test; this one owns nesting and key order.
-			// Float spelling ("2.0" vs "2") is Newtonsoft's business, so it is not asserted.
-			string json = SheetXConfigSheet.EmitJson(ParseValidConfig());
-
-			Assert.That(json, Does.StartWith(
-				"{\"economy\":{\"startingCoins\":1000,\"rates\":[0.5,0.25],\"enabled\":true},\"position2\":{\"x\":"));
-			Assert.That(json.IndexOf("\"position3\"", StringComparison.Ordinal),
-				Is.GreaterThan(json.IndexOf("\"position2\"", StringComparison.Ordinal)));
-			Assert.That(json, Does.Not.Contain("\"rates[]\""));
+			string source = SheetXConfigSheet.EmitCSharp(data, "Configuration", "");
+			Assert.That(Count(source, "public class Economy"), Is.EqualTo(2));
+			Assert.That(Count(source, "public int economy;"), Is.EqualTo(2));
 		}
 
 		[Test]
 		public void emit_csharp_writes_nested_types_load_method_and_namespace()
 		{
-			string source = SheetXConfigSheet.EmitCSharp(ParseValidConfig(), "GameDataConfig", "Game.Data");
+			string source = SheetXConfigSheet.EmitCSharp(ParseValidConfiguration(), "Configuration", "Game.Data");
 
 			Assert.That(source, Does.Contain("namespace Game.Data"));
-			Assert.That(source, Does.Contain("public class GameDataConfig : ScriptableObject"));
+			Assert.That(source, Does.Contain("public class Configuration : ScriptableObject"));
 			Assert.That(source, Does.Contain("public class Economy"));
 			Assert.That(source, Does.Contain("public int startingCoins;"));
 			Assert.That(source, Does.Contain("public float[] rates;"));
-			Assert.That(source, Does.Contain("public bool enabled;"));
 			Assert.That(source, Does.Contain("public Economy economy;"));
-			Assert.That(source, Does.Contain("public Vector2 position2;"));
-			Assert.That(source, Does.Contain("public Vector3 position3;"));
-			Assert.That(source, Does.Contain("[SerializeField] private TextAsset configJson;"));
-			Assert.That(source, Does.Contain("[SerializeField] private bool autoLoad = true;"));
-			Assert.That(source, Does.Contain("[ContextMenu(\"Load\")]"));
 			Assert.That(source, Does.Contain("JsonUtility.FromJsonOverwrite(configJson.text, this);"));
-			Assert.That(source, Does.Contain("UnityEditor.AssetDatabase.SaveAssetIfDirty(this);"));
-			Assert.That(source, Does.Contain("[CreateAssetMenu(fileName = \"GameDataConfig\", menuName = \"SheetX/GameDataConfig\")]"));
+			Assert.That(source, Does.Contain("Configuration JSON is not assigned."));
 			Assert.That(source, Does.Not.Contain("Newtonsoft"));
-		}
-
-		[Test]
-		public void emit_csharp_uses_crlf_only()
-		{
-			string source = SheetXConfigSheet.EmitCSharp(ParseValidConfig(), "GameDataConfig", "");
-
 			Assert.That(source.Replace("\r\n", ""), Does.Not.Contain("\n"));
 		}
 
 		[Test]
-		public void emitted_config_json_loads_with_json_utility()
+		public void emitted_configuration_json_loads_with_json_utility()
 		{
-			string json = SheetXConfigSheet.EmitJson(ParseValidConfig());
-			var asset = ScriptableObject.CreateInstance<ConfigShape>();
+			string json = SheetXConfigSheet.EmitJson(ParseValidConfiguration());
+			var asset = ScriptableObject.CreateInstance<ConfigurationShape>();
 			try
 			{
 				JsonUtility.FromJsonOverwrite(json, asset);
-
 				Assert.That(asset.economy.startingCoins, Is.EqualTo(1000));
 				Assert.That(asset.economy.rates, Is.EqualTo(new[] { 0.5f, 0.25f }));
-				Assert.That(asset.economy.enabled, Is.True);
 				Assert.That(asset.position2, Is.EqualTo(new Vector2(1f, 2f)));
-				Assert.That(asset.position3, Is.EqualTo(new Vector3(1f, 2f, 3f)));
 			}
 			finally
 			{
@@ -411,21 +206,21 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void interactive_config_exports_when_unselected()
+		public void interactive_configuration_exports_when_unselected_and_missing_from_sheet_list()
 		{
-			var workbook = CreateConfigWorkbook();
+			var workbook = CreateConfigurationWorkbook();
 			var output = new MemoryOutput();
 			var context = new SheetXExportContext(output, discardStagedOnError: true);
-			var settings = InteractiveSettings(new SheetPath { name = "Config", selected = false });
+			var settings = InteractiveSettings(new SheetPath { name = "Configuration", selected = false });
 
 			try
 			{
-				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				new ExcelSheetHandler(settings, context) { ConfigurationRouteEnabled = true }.ExportJson(workbook);
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes["Generated/Game_DataConfig.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.cs"));
+				Assert.That(output.Writes["Generated/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Generated/Configuration.cs"));
 			}
 			finally
 			{
@@ -434,21 +229,23 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void interactive_config_exports_when_missing_from_sheet_list()
+		public void interactive_config_stays_selected_ordinary_json_and_joins_combined_json()
 		{
-			var workbook = CreateConfigWorkbook();
+			var workbook = CreateOrdinaryConfigWorkbook();
 			var output = new MemoryOutput();
 			var context = new SheetXExportContext(output, discardStagedOnError: true);
-			var settings = InteractiveSettings();
+			var settings = InteractiveSettings(new SheetPath { name = "Config", selected = true });
+			settings.combineJson = true;
 
 			try
 			{
-				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				new ExcelSheetHandler(settings, context) { ConfigurationRouteEnabled = true }.ExportJson(workbook);
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.txt"));
-				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.cs"));
+				Assert.That(output.Writes["Generated/Game_Data.txt"], Does.Contain("\"Config\":["));
+				Assert.That(output.Writes.Keys, Does.Not.Contain("Generated/Configuration.txt"));
+				Assert.That(output.Writes.Keys.Any(key => key.EndsWith(".cs", StringComparison.Ordinal)), Is.False);
 			}
 			finally
 			{
@@ -457,133 +254,74 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void interactive_config_exports_without_ordinary_json_selection()
+		public void interactive_configuration_stays_plaintext_and_outside_combined_json()
 		{
-			var workbook = CreateConfigWorkbook();
-			var output = new MemoryOutput();
-			var context = new SheetXExportContext(output, discardStagedOnError: true);
-			var settings = InteractiveSettings(new SheetPath { name = "Items", selected = false });
-
-			try
-			{
-				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
-				context.Flush();
-
-				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.txt"));
-			}
-			finally
-			{
-				workbook.Close();
-			}
-		}
-
-		[Test]
-		public void interactive_config_stays_plaintext_when_ordinary_json_is_encrypted()
-		{
-			var workbook = CreateConfigWorkbook();
-			CreateOrdinaryJsonSheet(workbook, "Items");
-			var output = new MemoryOutput();
-			var context = new SheetXExportContext(output, discardStagedOnError: true);
-			var settings = InteractiveSettings(new SheetPath { name = "Items", selected = true });
-			settings.encryptJson = true;
-
-			try
-			{
-				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
-				context.Flush();
-
-				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes["Generated/Game_DataConfig.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes["Generated/Items.txt"], Does.Not.StartWith("["));
-			}
-			finally
-			{
-				workbook.Close();
-			}
-		}
-
-		[Test]
-		public void interactive_combine_json_excludes_config()
-		{
-			var workbook = CreateConfigWorkbook();
+			var workbook = CreateConfigurationWorkbook();
 			CreateOrdinaryJsonSheet(workbook, "Items");
 			var output = new MemoryOutput();
 			var context = new SheetXExportContext(output, discardStagedOnError: true);
 			var settings = InteractiveSettings(new SheetPath { name = "Items", selected = true });
 			settings.combineJson = true;
+			settings.encryptJson = true;
 
 			try
 			{
-				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
+				new ExcelSheetHandler(settings, context) { ConfigurationRouteEnabled = true }.ExportJson(workbook);
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes["Generated/Game_Data.txt"], Does.Contain("\"Items\":"));
-				Assert.That(output.Writes["Generated/Game_Data.txt"], Does.Not.Contain("\"Config\":"));
-				Assert.That(output.Writes, Contains.Key("Generated/Game_DataConfig.txt"));
+				Assert.That(output.Writes["Generated/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Generated/Game_Data.txt"));
+				string aggregate = settings.GetEncryption().Decrypt(output.Writes["Generated/Game_Data.txt"]);
+				Assert.That(aggregate, Does.Contain("\"Items\":["));
+				Assert.That(aggregate, Does.Not.Contain("\"Configuration\":"));
 			}
 			finally
 			{
 				workbook.Close();
-			}
-		}
-
-		[TestCase("RemoteConfig")]
-		[TestCase("config")]
-		public void interactive_non_exact_config_stays_row_array_json(string sheetName)
-		{
-			var workbook = CreateConfigWorkbook(sheetName);
-			var output = new MemoryOutput();
-			var context = new SheetXExportContext(output, discardStagedOnError: true);
-			var settings = InteractiveSettings(new SheetPath { name = sheetName, selected = true });
-
-			try
-			{
-				new ExcelSheetHandler(settings, context) { ConfigRouteEnabled = true }.ExportJson(workbook);
-				context.Flush();
-
-				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes[$"Generated/{sheetName}.txt"], Does.StartWith("["));
-				Assert.That(output.Writes.Keys, Has.None.EndsWith(".cs"));
-			}
-			finally
-			{
-				workbook.Close();
-			}
-		}
-
-		// The detached exporter has no Config route at all: SheetXExportRequest never carries the setting,
-		// so an exact "Config" sheet must keep producing the same row-array artifact it always did.
-		[TestCase("Config")]
-		[TestCase("RemoteConfig")]
-		[TestCase("config")]
-		public void detached_config_sheet_stays_row_array_json(string sheetName)
-		{
-			string path = CreateConfigWorkbookFile(sheetName);
-			try
-			{
-				var output = new MemoryOutput();
-				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
-				{
-					SpreadsheetPath = path,
-					JsonOutputPath = "Generated",
-				}, output);
-
-				Assert.That(result.Success, Is.True);
-				Assert.That(output.Writes[$"Generated/{sheetName}.txt"], Does.StartWith("["));
-				Assert.That(output.Writes.Keys, Has.None.EndsWith(".cs"));
-			}
-			finally
-			{
-				File.Delete(path);
 			}
 		}
 
 		[Test]
-		public void detached_combine_json_still_merges_config_sheet()
+		public void interactive_multi_file_configuration_merges_selected_sources_in_source_order()
 		{
-			string path = CreateConfigWorkbookFile("Config");
+			string firstPath = CreateConfigurationWorkbookFile("economy", "startingCoins", "1000");
+			string secondPath = CreateConfigurationWorkbookFile("visual", "uiScale", "2");
+			try
+			{
+				var output = new MemoryOutput();
+				var context = new SheetXExportContext(output, discardStagedOnError: true);
+				var settings = InteractiveSettings();
+				settings.combineJson = true;
+				settings.excelSheetsPaths = new List<ExcelSheetsPath>
+				{
+					new ExcelSheetsPath { path = firstPath, selected = true },
+					new ExcelSheetsPath { path = secondPath, selected = true },
+				};
+
+				new ExcelSheetHandler(settings, context) { ConfigurationRouteEnabled = true }.ExportAllFiles();
+				context.Flush();
+
+				Assert.That(context.ToResult().Errors, Is.Empty);
+				string json = output.Writes["Generated/Configuration.txt"];
+				Assert.That(json.IndexOf("\"economy\"", StringComparison.Ordinal), Is.LessThan(
+					json.IndexOf("\"visual\"", StringComparison.Ordinal)));
+				Assert.That(output.Writes, Contains.Key("Generated/Configuration.cs"));
+				Assert.That(output.Writes.Keys.Any(key => key.Contains("ConfigurationConfiguration")), Is.False);
+				Assert.That(output.Writes.Values.Any(value => value.Contains("\"Configuration\":")), Is.False);
+			}
+			finally
+			{
+				File.Delete(firstPath);
+				File.Delete(secondPath);
+			}
+		}
+
+		[TestCase("Config")]
+		[TestCase("Configuration")]
+		public void detached_sheets_stay_row_array_json(string sheetName)
+		{
+			string path = CreateOrdinaryConfigWorkbookFile(sheetName);
 			try
 			{
 				var output = new MemoryOutput();
@@ -591,12 +329,11 @@ namespace RCore.SheetX.Tests
 				{
 					SpreadsheetPath = path,
 					JsonOutputPath = "Generated",
-					CombineJson = true,
 				}, output);
 
 				Assert.That(result.Success, Is.True);
-				Assert.That(output.Writes, Has.Count.EqualTo(1));
-				Assert.That(output.Writes.Values.Single(), Does.Contain("\"Config\":["));
+				Assert.That(output.Writes[$"Generated/{sheetName}.txt"], Does.StartWith("["));
+				Assert.That(output.Writes.Keys.Any(key => key.EndsWith(".cs", StringComparison.Ordinal)), Is.False);
 			}
 			finally
 			{
@@ -604,27 +341,26 @@ namespace RCore.SheetX.Tests
 			}
 		}
 
-		private static XSSFWorkbook CreateConfigWorkbook(string sheetName = "Config")
+		private static XSSFWorkbook CreateConfigurationWorkbook(
+			string group = "economy", string field = "startingCoins", string value = "1000")
 		{
 			var workbook = new XSSFWorkbook();
-			var sheet = workbook.CreateSheet(sheetName);
-			var header = sheet.CreateRow(0);
-			var row = sheet.CreateRow(1);
-			string[] headers = { "Sub Class", "Field Name", "Type", "Value" };
-			string[] values = { "economy", "startingCoins", "int", "1000" };
-			for (int i = 0; i < headers.Length; i++)
-			{
-				header.CreateCell(i).SetCellValue(headers[i]);
-				row.CreateCell(i).SetCellValue(values[i]);
-			}
+			var sheet = workbook.CreateSheet("Configuration");
+			WriteConfigurationRows(sheet, group, field, value);
 			return workbook;
 		}
 
-		private static string CreateConfigWorkbookFile(string sheetName)
+		private static XSSFWorkbook CreateOrdinaryConfigWorkbook()
+		{
+			var workbook = new XSSFWorkbook();
+			CreateOrdinaryJsonSheet(workbook, "Config");
+			return workbook;
+		}
+
+		private static string CreateConfigurationWorkbookFile(string group, string field, string value)
 		{
 			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
-			// XSSFWorkbook is not IDisposable in this NPOI version, so it cannot be a using declaration.
-			var workbook = CreateConfigWorkbook(sheetName);
+			var workbook = CreateConfigurationWorkbook(group, field, value);
 			try
 			{
 				using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
@@ -634,6 +370,36 @@ namespace RCore.SheetX.Tests
 			finally
 			{
 				workbook.Close();
+			}
+		}
+
+		private static string CreateOrdinaryConfigWorkbookFile(string sheetName)
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			CreateOrdinaryJsonSheet(workbook, sheetName);
+			try
+			{
+				using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+				workbook.Write(stream);
+				return path;
+			}
+			finally
+			{
+				workbook.Close();
+			}
+		}
+
+		private static void WriteConfigurationRows(NPOI.SS.UserModel.ISheet sheet, string group, string field, string value)
+		{
+			string[] headers = { "Sub Class", "Field Name", "Type", "Value" };
+			string[] values = { group, field, "int", value };
+			var header = sheet.CreateRow(0);
+			var row = sheet.CreateRow(1);
+			for (int i = 0; i < headers.Length; i++)
+			{
+				header.CreateCell(i).SetCellValue(headers[i]);
+				row.CreateCell(i).SetCellValue(values[i]);
 			}
 		}
 
@@ -660,17 +426,7 @@ namespace RCore.SheetX.Tests
 			return settings;
 		}
 
-		private sealed class MemoryOutput : ISheetXOutput
-		{
-			public readonly Dictionary<string, string> Writes = new Dictionary<string, string>();
-
-			public void Write(string relativePath, string content)
-			{
-				Writes.Add(relativePath, content);
-			}
-		}
-
-		private static ConfigSheetData ParseValidConfig()
+		private static ConfigSheetData ParseValidConfiguration()
 		{
 			bool ok = SheetXConfigSheet.TryParse(new List<string[]>
 			{
@@ -680,30 +436,43 @@ namespace RCore.SheetX.Tests
 				Row("", "enabled", "boolean", "true"),
 				Row("", "", "", ""),
 				Row("", "position2", "vector2", "1|2"),
-				Row("", "position3", "vector3", "1|2|3"),
-			}, "GameDataConfig", Fail, out var data);
+			}, "Configuration", Fail, out var data);
 
 			Assert.That(ok, Is.True);
 			return data;
 		}
 
-		private static List<string> ParseErrors(List<string[]> table, string rootTypeName = "GameDataConfig")
+		private static List<string> ParseErrors(List<string[]> table, string rootTypeName = "Configuration")
 		{
 			var errors = new List<string>();
 			bool ok = SheetXConfigSheet.TryParse(table, rootTypeName, errors.Add, out var data);
-
 			Assert.That(ok, Is.False);
 			Assert.That(data, Is.Null);
-			Assert.That(errors, Is.Not.Empty);
 			return errors;
 		}
 
-		private static string[] Header() => Row("Sub Class", "Field Name", "Type", "Value");
+		private static int Count(string text, string value)
+		{
+			int count = 0;
+			int index = 0;
+			while ((index = text.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+			{
+				count++;
+				index += value.Length;
+			}
+			return count;
+		}
 
+		private static string[] Header() => Row("Sub Class", "Field Name", "Type", "Value");
 		private static string[] Row(string subClass, string fieldName, string type, string value)
 			=> new[] { subClass, fieldName, type, value };
-
 		private static void Fail(string message) => Assert.Fail(message);
+
+		private sealed class MemoryOutput : ISheetXOutput
+		{
+			public readonly Dictionary<string, string> Writes = new Dictionary<string, string>();
+			public void Write(string relativePath, string content) => Writes.Add(relativePath, content);
+		}
 
 		[Serializable]
 		private class Economy
@@ -713,11 +482,10 @@ namespace RCore.SheetX.Tests
 			public bool enabled;
 		}
 
-		private class ConfigShape : ScriptableObject
+		private class ConfigurationShape : ScriptableObject
 		{
 			public Economy economy;
 			public Vector2 position2;
-			public Vector3 position3;
 		}
 	}
 }

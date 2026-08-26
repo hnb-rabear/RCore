@@ -28,7 +28,7 @@ namespace RCore.SheetX.Editor
 	}
 
 	/// <summary>
-	/// Bridges a Config export to the typed asset it feeds. The generated C# does not exist yet when the
+	/// Bridges a Configuration export to the typed asset it feeds. The generated C# does not exist yet when the
 	/// export finishes, so each request is parked in <see cref="SessionState"/> and resolved after the
 	/// domain reload that compiles it.
 	/// </summary>
@@ -37,20 +37,20 @@ namespace RCore.SheetX.Editor
 		private const string PendingKey = "SheetX.PendingConfigAssets";
 
 		/// <summary>
-		/// Records the asset work one Config export left for the next reload. A second export of the same
+		/// Records the asset work one Configuration export left for the next reload. A second export of the same
 		/// generated type replaces the earlier request; different types queue side by side.
 		/// </summary>
 		internal static void RegisterPendingAsset(string fullTypeName, string jsonAssetPath, string scriptFolder)
 		{
 			if (string.IsNullOrEmpty(fullTypeName) || string.IsNullOrEmpty(jsonAssetPath) || string.IsNullOrEmpty(scriptFolder))
 			{
-				Debug.LogError("SheetX: a pending Config asset needs a type name, a JSON path, and a script folder.");
+				Debug.LogError("SheetX: a pending Configuration asset needs a type name, a JSON path, and a script folder.");
 				return;
 			}
 
 			var store = LoadStore(out bool malformed);
 			if (malformed)
-				Debug.LogError("SheetX: pending Config asset state was unreadable and has been replaced.");
+				Debug.LogError("SheetX: pending Configuration asset state was unreadable and has been replaced.");
 			var entry = store.Entries.FirstOrDefault(
 				e => string.Equals(e?.FullTypeName, fullTypeName, StringComparison.Ordinal));
 			if (entry == null)
@@ -94,7 +94,7 @@ namespace RCore.SheetX.Editor
 			var generatedType = FindType(entry.FullTypeName);
 			if (generatedType == null)
 			{
-				Debug.LogError($"SheetX: generated Config type '{entry.FullTypeName}' was not found after reload.");
+				Debug.LogError($"SheetX: generated Configuration type '{entry.FullTypeName}' was not found after reload.");
 				return false;
 			}
 
@@ -114,7 +114,7 @@ namespace RCore.SheetX.Editor
 			var jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(entry.JsonAssetPath);
 			if (jsonAsset == null)
 			{
-				Debug.LogError($"SheetX: Config JSON '{entry.JsonAssetPath}' was not found; '{entry.FullTypeName}' keeps its previous data.");
+				Debug.LogError($"SheetX: Configuration JSON '{entry.JsonAssetPath}' was not found; '{entry.FullTypeName}' keeps its previous data.");
 				return false;
 			}
 

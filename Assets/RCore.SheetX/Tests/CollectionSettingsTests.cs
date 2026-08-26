@@ -20,7 +20,7 @@ namespace RCore.SheetX.Tests
 			settings.collectionNamespace = "Game.Config";
 			settings.collectionCodeFolder = "Assets/Game/Generated";
 			settings.collectionAssetFolder = "Assets/Game/Collections";
-			settings.collectionJsonFolder = "Assets/Game/Editor/CollectionJson";
+			settings.collectionJsonFolder = "Assets/Game/CollectionJson";
 			settings.globalResourcesFolder = "Assets/Game/Resources";
 		}
 
@@ -185,7 +185,7 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void validation_reports_resources_json_and_overlap_problems()
+		public void validation_reports_resources_and_overlap_problems()
 		{
 			var settings = CreateSettings();
 			try
@@ -193,15 +193,82 @@ namespace RCore.SheetX.Tests
 				settings.enableCollections = true;
 				SetValidPaths(settings);
 				settings.globalResourcesFolder = "Assets/Game/Resources/Generated";
-				settings.collectionJsonFolder = "Assets/Game/ConfigJson";
 				settings.collectionCodeFolder = "Assets/Game/Generated";
 				settings.collectionAssetFolder = "Assets/Game/Generated/Assets";
 
 				var issues = SheetXCollectionSettings.Validate(settings, null);
 
 				Assert.That(issues.Any(i => i.Message.Contains("must end with a 'Resources' folder")), Is.True);
-				Assert.That(issues.Any(i => i.Message.Contains("must sit under an 'Editor' folder")), Is.True);
 				Assert.That(issues.Any(i => i.Message.Contains("must not contain each other")), Is.True);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[TestCase("Assets/Game/Resources/CollectionJson", "Resources")]
+		[TestCase("Assets/Game/StreamingAssets/CollectionJson", "StreamingAssets")]
+		public void validation_rejects_collection_json_in_build_included_folders(
+			string path, string folderName)
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				SetValidPaths(settings);
+				settings.collectionJsonFolder = path;
+
+				var issues = SheetXCollectionSettings.Validate(settings, null);
+
+				Assert.That(issues.Any(i => i.Message.Contains(folderName)), Is.True);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void empty_global_resources_folder_falls_back_to_assets_resources()
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				SetValidPaths(settings);
+				settings.globalResourcesFolder = "";
+
+				Assert.That(settings.ResolveGlobalResourcesFolder(), Is.EqualTo("Assets/Resources"));
+
+				var issues = SheetXCollectionSettings.Validate(settings, null);
+				Assert.That(issues.Any(i => i.Message.Contains("Global Resources folder")), Is.False);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void validation_with_active_bindings_ignores_inactive_sheet_errors()
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				SetValidPaths(settings);
+				var active = SheetXCollectionSettings.GetOrCreateBinding(settings, "Book", "Active");
+				active.outputMode = SheetXSheetOutputMode.GeneratedDataClass;
+				active.collectionName = "Global";
+				active.fieldName = "active";
+				var inactive = SheetXCollectionSettings.GetOrCreateBinding(settings, "Book", "Inactive");
+				inactive.outputMode = SheetXSheetOutputMode.GeneratedDataClass;
+				inactive.collectionName = "Missing";
+
+				Assert.That(SheetXCollectionSettings.Validate(settings, new[] { active }), Is.Empty);
+				Assert.That(SheetXCollectionSettings.Validate(settings, null)
+					.Any(issue => issue.SheetName == "Inactive"), Is.True);
 			}
 			finally
 			{
@@ -218,14 +285,15 @@ namespace RCore.SheetX.Tests
 				settings.enableCollections = true;
 				SetValidPaths(settings);
 				settings.collections.Add(new SheetXCollectionDefinition { name = "Shop" });
-				settings.sheetBindings.Add(new SheetXSheetBinding
+				var saved = new SheetXSheetBinding
 				{
 					sourceId = "Book",
 					sheetName = "Items",
 					collectionName = "Shop",
 					outputMode = SheetXSheetOutputMode.GeneratedDataClass,
 					fieldName = "Rows",
-				});
+				};
+				settings.sheetBindings.Add(saved);
 				var orphan = new SheetXSheetBinding
 				{
 					sourceId = "External",
@@ -235,7 +303,7 @@ namespace RCore.SheetX.Tests
 					fieldName = "Rows",
 				};
 
-				var issues = SheetXCollectionSettings.Validate(settings, new[] { orphan });
+				var issues = SheetXCollectionSettings.Validate(settings, new[] { saved, orphan });
 
 				Assert.That(issues.Any(i => i.Message.Contains("not saved in the settings asset")), Is.True);
 				Assert.That(issues.Any(i => i.Message.Contains("both write collection field 'Rows'")), Is.True);

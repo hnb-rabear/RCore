@@ -69,6 +69,7 @@ namespace RCore.SheetX.Editor
 		public int labelWidth = 80;
 		public int valueWidth;
 		public string value;
+		public string tooltip;
 		public string OutputValue { get; private set; }
 		public bool readOnly;
 		public bool textArea;
@@ -79,7 +80,7 @@ namespace RCore.SheetX.Editor
 			if (!string.IsNullOrEmpty(label))
 			{
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
+				EditorGUILayout.LabelField(new GUIContent(label, tooltip), GUILayout.Width(labelWidth));
 			}
 
 			value ??= "";
@@ -130,6 +131,7 @@ namespace RCore.SheetX.Editor
 	public class EditorButton : IDraw
 	{
 		public string label;
+		public string tooltip;
 		public Color color;
 		public int width;
 		public int height;
@@ -152,9 +154,9 @@ namespace RCore.SheetX.Editor
 			}
 			if (color != default)
 				GUI.backgroundColor = color;
-			var content = new GUIContent(label);
+			var content = new GUIContent(label, tooltip);
 			if (icon != null)
-				content = new GUIContent(label, icon);
+				content = new GUIContent(label, icon, tooltip);
 			IsPressed = GUILayout.Button(content, style, minHeight);
 			if (IsPressed && onPressed != null)
 				onPressed();
@@ -168,6 +170,7 @@ namespace RCore.SheetX.Editor
 	public class EditorToggle : IDraw
 	{
 		public string label;
+		public string tooltip;
 		public int labelWidth = 80;
 		public bool value;
 		public int valueWidth;
@@ -180,7 +183,7 @@ namespace RCore.SheetX.Editor
 			if (!string.IsNullOrEmpty(label))
 			{
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
+				EditorGUILayout.LabelField(new GUIContent(label, tooltip), GUILayout.Width(labelWidth));
 			}
 
 			bool result;
@@ -237,12 +240,13 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Draws a text field with a label and returns the input value.
 		/// </summary>
-		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, Color color = default)
+		public static string TextField(string value, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, Color color = default, string tooltip = null)
 		{
 			var text = new EditorText()
 			{
 				value = value,
 				label = label,
+				tooltip = tooltip,
 				labelWidth = labelWidth,
 				valueWidth = valueWidth,
 				readOnly = readOnly,
@@ -273,11 +277,12 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Draws a button and returns true if it was clicked.
 		/// </summary>
-		public static bool Button(string pLabel, int pWidth = 0, int pHeight = 0)
+		public static bool Button(string pLabel, int pWidth = 0, int pHeight = 0, string tooltip = null)
 		{
 			var button = new EditorButton()
 			{
 				label = pLabel,
+				tooltip = tooltip,
 				width = pWidth,
 				height = pHeight
 			};
@@ -288,11 +293,12 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Draws a button with an icon and label, returning true if clicked.
 		/// </summary>
-		public static bool Button(string label, Texture2D icon, Color color = default, int width = 0, int height = 0)
+		public static bool Button(string label, Texture2D icon, Color color = default, int width = 0, int height = 0, string tooltip = null)
 		{
 			var button = new EditorButton()
 			{
 				label = label,
+				tooltip = tooltip,
 				icon = icon,
 				color = color,
 				width = width,
@@ -388,12 +394,12 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Draws a text field with a button to open a folder selection dialog.
 		/// </summary>
-		public static string FolderField(string defaultPath, string label, int labelWidth = 0, bool pFormatToUnityPath = true)
+		public static string FolderField(string defaultPath, string label, int labelWidth = 0, bool pFormatToUnityPath = true, string tooltip = null)
 		{
 			EditorGUILayout.BeginHorizontal();
-			var newPath = TextField(defaultPath, label, labelWidth > 0 ? labelWidth : label.Length * 7);
+			var newPath = TextField(defaultPath, label, labelWidth > 0 ? labelWidth : label.Length * 7, tooltip: tooltip);
 			var icon = EditorIcon.GetIcon(EditorIcon.Icon.AddFolder);
-			if (Button(null, icon, default, 25, 21))
+			if (Button(null, icon, default, 25, 21, tooltip))
 			{
 				newPath = EditorUtility.OpenFolderPanel("Select Folder", string.IsNullOrEmpty(defaultPath) ? LastOpenedDirectory : defaultPath, "");
 				if (!string.IsNullOrEmpty(newPath))
@@ -408,13 +414,60 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
+		/// Draws a folder field that shows a dimmed fallback path when the value is empty.
+		/// </summary>
+		public static string FolderFieldWithFallback(string value, string fallback, string label, int labelWidth = 0, bool pFormatToUnityPath = true, string tooltip = null)
+		{
+			string result = FolderField(value, label, labelWidth, pFormatToUnityPath, tooltip);
+			if (string.IsNullOrEmpty(result) && !string.IsNullOrEmpty(fallback))
+			{
+				var rect = GUILayoutUtility.GetLastRect();
+				float lw = labelWidth > 0 ? labelWidth : label.Length * 7;
+				DrawFallbackOverlay(rect, fallback, lw, 25);
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Draws a text field that shows a dimmed fallback value when the value is empty.
+		/// </summary>
+		public static string TextFieldWithFallback(string value, string fallback, string label, int labelWidth = 80, int valueWidth = 0, bool readOnly = false, Color color = default, string tooltip = null)
+		{
+			string result = TextField(value, label, labelWidth, valueWidth, readOnly, color, tooltip);
+			if (string.IsNullOrEmpty(result) && !string.IsNullOrEmpty(fallback))
+			{
+				var rect = GUILayoutUtility.GetLastRect();
+				DrawFallbackOverlay(rect, fallback, labelWidth, 0);
+			}
+			return result;
+		}
+
+		private static void DrawFallbackOverlay(Rect rowRect, string fallback, float labelWidth, float trailingWidth)
+		{
+			// Position overlay inside the text field content area, past the label and before any trailing button
+			var rect = new Rect(
+				rowRect.x + labelWidth + 4,
+				rowRect.y,
+				rowRect.width - labelWidth - trailingWidth - 8,
+				rowRect.height);
+			var style = new GUIStyle(EditorStyles.label)
+			{
+				fontStyle = FontStyle.Italic,
+				normal = { textColor = new Color(0.5f, 0.5f, 0.5f) },
+				alignment = TextAnchor.MiddleLeft,
+			};
+			GUI.Label(rect, fallback, style);
+		}
+
+		/// <summary>
 		/// Draws a toggle field with a label.
 		/// </summary>
-		public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0, Color color = default)
+		public static bool Toggle(bool value, string label, int labelWidth = 80, int valueWidth = 0, Color color = default, string tooltip = null)
 		{
 			var toggle = new EditorToggle()
 			{
 				label = label,
+				tooltip = tooltip,
 				labelWidth = labelWidth,
 				value = value,
 				valueWidth = valueWidth,

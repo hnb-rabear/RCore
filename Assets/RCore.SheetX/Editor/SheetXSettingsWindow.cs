@@ -26,24 +26,50 @@ namespace RCore.SheetX.Editor
 		{
 			EditorGUI.BeginChangeCheck();
 			GUILayout.BeginVertical("box");
-			m_sheetXSettings.constantsOutputFolder = EditorHelper.FolderField(m_sheetXSettings.constantsOutputFolder, "Scripts output folder", 200);
-			m_sheetXSettings.jsonOutputFolder = EditorHelper.FolderField(m_sheetXSettings.jsonOutputFolder, "Json output folder", 200);
-			m_sheetXSettings.localizationOutputFolder = EditorHelper.FolderField(m_sheetXSettings.localizationOutputFolder, "Localization output folder", 200);
-			m_sheetXSettings.@namespace = EditorHelper.TextField(m_sheetXSettings.@namespace, "Namespace", 200);
-			m_sheetXSettings.separateIDs = EditorHelper.Toggle(m_sheetXSettings.separateIDs, "Separate IDs Sheets", 200);
-			m_sheetXSettings.separateConstants = EditorHelper.Toggle(m_sheetXSettings.separateConstants, "Separate Constants Sheets", 200);
-			m_sheetXSettings.separateLocalizations = EditorHelper.Toggle(m_sheetXSettings.separateLocalizations, "Separate Localizations Sheets", 200);
-			m_sheetXSettings.onlyEnumAsIDs = EditorHelper.Toggle(m_sheetXSettings.onlyEnumAsIDs, "Only enum as IDs", 200);
-			m_sheetXSettings.combineJson = EditorHelper.Toggle(m_sheetXSettings.combineJson, "Combine Json Sheets", 200);
-			m_sheetXSettings.langCharSets = EditorHelper.TextField(m_sheetXSettings.langCharSets, "Lang char sets", 200);
-			m_sheetXSettings.persistentFields = EditorHelper.TextField(m_sheetXSettings.persistentFields, "Persistent fields", 200);
-			m_sheetXSettings.ObfGoogleClientId = EditorHelper.TextField(m_sheetXSettings.ObfGoogleClientId, "Google client id", 200);
-			m_sheetXSettings.ObfGoogleClientSecret = EditorHelper.TextField(m_sheetXSettings.ObfGoogleClientSecret, "Google client secret", 200);
+			m_sheetXSettings.constantsOutputFolder = EditorHelper.FolderField(
+				m_sheetXSettings.constantsOutputFolder, "Scripts output folder", 200,
+				tooltip: "Destination directory where generated C# constants and enum scripts are saved.");
+			m_sheetXSettings.jsonOutputFolder = EditorHelper.FolderField(
+				m_sheetXSettings.jsonOutputFolder, "Json output folder", 200,
+				tooltip: "Destination directory where exported JSON data files are saved.");
+			m_sheetXSettings.localizationOutputFolder = EditorHelper.FolderField(
+				m_sheetXSettings.localizationOutputFolder, "Localization output folder", 200,
+				tooltip: "Destination directory where exported localization text files and CSVs are saved.");
+			m_sheetXSettings.@namespace = EditorHelper.TextField(
+				m_sheetXSettings.@namespace, "Namespace", 200,
+				tooltip: "Default C# namespace applied to generated constants, collections, and data classes.");
+			m_sheetXSettings.separateIDs = EditorHelper.Toggle(
+				m_sheetXSettings.separateIDs, "Separate IDs Sheets", 200,
+				tooltip: "When enabled, generates separate C# ID enum files for each ID sheet instead of combining into one.");
+			m_sheetXSettings.separateConstants = EditorHelper.Toggle(
+				m_sheetXSettings.separateConstants, "Separate Constants Sheets", 200,
+				tooltip: "When enabled, generates separate C# constant classes for each constant sheet.");
+			m_sheetXSettings.separateLocalizations = EditorHelper.Toggle(
+				m_sheetXSettings.separateLocalizations, "Separate Localizations Sheets", 200,
+				tooltip: "When enabled, exports each localization sheet to its own dedicated file.");
+			m_sheetXSettings.onlyEnumAsIDs = EditorHelper.Toggle(
+				m_sheetXSettings.onlyEnumAsIDs, "Only enum as IDs", 200,
+				tooltip: "When enabled, only sheets marked with enum types produce ID definitions.");
+			m_sheetXSettings.combineJson = EditorHelper.Toggle(
+				m_sheetXSettings.combineJson, "Combine Json Sheets", 200,
+				tooltip: "When enabled, combines all table JSON outputs into a single consolidated JSON file.");
+			m_sheetXSettings.langCharSets = EditorHelper.TextField(
+				m_sheetXSettings.langCharSets, "Lang char sets", 200,
+				tooltip: "Specific character sets to extract from localization text (e.g. for generating font asset atlases).");
+			m_sheetXSettings.persistentFields = EditorHelper.TextField(
+				m_sheetXSettings.persistentFields, "Persistent fields", 200,
+				tooltip: "Comma-separated list of field names that should preserve values across data reloads.");
+			m_sheetXSettings.ObfGoogleClientId = EditorHelper.TextField(
+				m_sheetXSettings.ObfGoogleClientId, "Google client id", 200,
+				tooltip: "Google OAuth 2.0 Client ID used to authenticate and read Google Spreadsheets.");
+			m_sheetXSettings.ObfGoogleClientSecret = EditorHelper.TextField(
+				m_sheetXSettings.ObfGoogleClientSecret, "Google client secret", 200,
+				tooltip: "Google OAuth 2.0 Client Secret used to authenticate and read Google Spreadsheets.");
 			GUILayout.EndVertical();
 			DrawCollections();
 			if (EditorGUI.EndChangeCheck())
 				EditorUtility.SetDirty(m_sheetXSettings);
-			if (GUILayout.Button("Reset to default settings"))
+			if (EditorHelper.Button("Reset to default settings", tooltip: "Reset all settings in this window back to their default values."))
 				m_sheetXSettings.ResetToDefault();
 
 			SupportDev();
@@ -52,95 +78,45 @@ namespace RCore.SheetX.Editor
 		private void DrawCollections()
 		{
 			GUILayout.BeginVertical("box");
-			m_sheetXSettings.enableCollections = EditorHelper.Toggle(m_sheetXSettings.enableCollections, "Enable Data Config Collections", 200);
+			m_sheetXSettings.enableCollections = EditorHelper.Toggle(
+				m_sheetXSettings.enableCollections, "Enable Data Config Collections", 200,
+				tooltip: "Enables ScriptableObject Data Config Collections workflow to bake Excel/Google sheets into Unity assets.");
 			if (m_sheetXSettings.enableCollections)
 			{
-				m_sheetXSettings.collectionNamespace = EditorHelper.TextField(m_sheetXSettings.collectionNamespace, "Collection namespace", 200);
-				m_sheetXSettings.collectionCodeFolder = EditorHelper.FolderField(m_sheetXSettings.collectionCodeFolder, "Generated code folder", 200);
-				m_sheetXSettings.collectionAssetFolder = EditorHelper.FolderField(m_sheetXSettings.collectionAssetFolder, "Collection asset folder", 200);
-				m_sheetXSettings.collectionJsonFolder = EditorHelper.FolderField(m_sheetXSettings.collectionJsonFolder, "Collection JSON folder", 200);
-				m_sheetXSettings.globalResourcesFolder = EditorHelper.FolderField(m_sheetXSettings.globalResourcesFolder, "Global Resources folder", 200);
-				m_sheetXSettings.autoLoadAfterExport = EditorHelper.Toggle(m_sheetXSettings.autoLoadAfterExport, "Auto load after export", 200);
-				m_sheetXSettings.autoLoadBeforePlay = EditorHelper.Toggle(m_sheetXSettings.autoLoadBeforePlay, "Auto load before Play Mode", 200);
-				SheetXCollectionSettings.EnsureGlobal(m_sheetXSettings);
-				foreach (var collection in m_sheetXSettings.collections.ToArray())
-					DrawCollection(collection);
-				if (GUILayout.Button("Add Collection"))
+				m_sheetXSettings.collectionNamespace = EditorHelper.TextFieldWithFallback(
+					m_sheetXSettings.collectionNamespace, m_sheetXSettings.ResolveCollectionNamespace(),
+					"Collection namespace", 200,
+					tooltip: "C# namespace for generated collection ScriptableObjects and row data classes. Falls back to global Namespace if empty.");
+				m_sheetXSettings.collectionCodeFolder = EditorHelper.FolderFieldWithFallback(
+					m_sheetXSettings.collectionCodeFolder, m_sheetXSettings.ResolveCollectionCodeFolder(),
+					"Generated code folder", 200,
+					tooltip: "Folder where collection and row C# scripts are generated. Falls back to Scripts output folder if empty.");
+				m_sheetXSettings.collectionAssetFolder = EditorHelper.FolderFieldWithFallback(
+					m_sheetXSettings.collectionAssetFolder, m_sheetXSettings.ResolveCollectionAssetFolder(),
+					"Collection asset folder", 200,
+					tooltip: "Folder where feature collection ScriptableObject assets (.asset) are saved. Falls back to Assets/Resources if empty.");
+				m_sheetXSettings.collectionJsonFolder = EditorHelper.FolderFieldWithFallback(
+					m_sheetXSettings.collectionJsonFolder, m_sheetXSettings.ResolveCollectionJsonFolder(),
+					"Collection JSON folder", 200,
+					tooltip: "Folder for collection bake-source JSON files. Must stay outside Resources and StreamingAssets. Falls back to Json output folder if empty.");
+				m_sheetXSettings.globalResourcesFolder = EditorHelper.FolderFieldWithFallback(
+					m_sheetXSettings.globalResourcesFolder, m_sheetXSettings.ResolveGlobalResourcesFolder(),
+					"Global Resources folder", 200,
+					tooltip: "Resources folder for GlobalConfigCollection.asset so GlobalConfigCollection.Instance can load it. Must end in 'Resources'.");
+
+				m_sheetXSettings.autoLoadAfterExport = EditorHelper.Toggle(
+					m_sheetXSettings.autoLoadAfterExport, "Auto load after export", 200,
+					tooltip: "Automatically bake JSON into ScriptableObject assets immediately after exporting sheets.");
+				m_sheetXSettings.autoLoadBeforePlay = EditorHelper.Toggle(
+					m_sheetXSettings.autoLoadBeforePlay, "Auto load before Play Mode", 200,
+					tooltip: "Automatically re-bake dirty collection assets before entering Unity Play Mode.");
+
+				if (EditorHelper.Button("Manage Collections...", 200, 24, tooltip: "Open popup window to manage root (Global) and feature collections, auto-load rules, and manual bake actions."))
 				{
-					string name = "Collection";
-					int suffix = 2;
-					while (m_sheetXSettings.collections.Exists(
-						collection => string.Equals(collection.name, name, System.StringComparison.Ordinal)))
-					{
-						name = "Collection" + suffix++;
-					}
-					m_sheetXSettings.collections.Add(new SheetXCollectionDefinition
-					{
-						name = name,
-						autoLoad = true,
-					});
-					EditorUtility.SetDirty(m_sheetXSettings);
+					SheetXCollectionsWindow.ShowWindow(m_sheetXSettings);
 				}
 			}
 			GUILayout.EndVertical();
-		}
-
-		private void DrawCollection(SheetXCollectionDefinition collection)
-		{
-			GUILayout.BeginHorizontal();
-			bool global = collection.builtInGlobal;
-			EditorGUI.BeginDisabledGroup(global);
-			string renamed = EditorGUILayout.TextField(collection.name);
-			EditorGUI.EndDisabledGroup();
-			if (!global && !string.Equals(renamed, collection.name, System.StringComparison.Ordinal))
-			{
-				if (!SheetXCollectionSettings.RenameCollection(
-					m_sheetXSettings, collection.name, renamed, out string renameError))
-				{
-					Debug.LogError(renameError);
-				}
-				else
-				{
-					EditorUtility.SetDirty(m_sheetXSettings);
-				}
-			}
-			EditorGUILayout.LabelField(
-				SheetXCollectionNaming.CollectionTypeName(collection.name), GUILayout.Width(180));
-			EditorGUI.BeginChangeCheck();
-			collection.autoLoad = EditorGUILayout.Toggle(collection.autoLoad, GUILayout.Width(18));
-			if (EditorGUI.EndChangeCheck())
-				EditorUtility.SetDirty(m_sheetXSettings);
-			if (GUILayout.Button("Load Data", GUILayout.Width(80)))
-				LoadData(collection.name);
-			if (!global && GUILayout.Button("Delete", GUILayout.Width(60))
-				&& EditorUtility.DisplayDialog(
-					"Delete Collection", $"Delete '{collection.name}'? Its sheet bindings move to Global.", "Delete", "Cancel"))
-			{
-				if (!SheetXCollectionSettings.DeleteCollection(
-					m_sheetXSettings, collection.name, out string deleteError))
-				{
-					Debug.LogError(deleteError);
-				}
-				else
-				{
-					EditorUtility.SetDirty(m_sheetXSettings);
-				}
-			}
-			GUILayout.EndHorizontal();
-			if (global && GUILayout.Button("Load All"))
-				LoadData(autoLoadOnly: false);
-		}
-
-		private void LoadData(string collectionName)
-		{
-			if (!SheetXCollectionBaker.TryLoadData(m_sheetXSettings, collectionName, out string error))
-				Debug.LogError(error);
-		}
-
-		private void LoadData(bool autoLoadOnly)
-		{
-			if (!SheetXCollectionBaker.TryLoadData(m_sheetXSettings, autoLoadOnly, out string error))
-				Debug.LogError(error);
 		}
 
 		private void SupportDev()

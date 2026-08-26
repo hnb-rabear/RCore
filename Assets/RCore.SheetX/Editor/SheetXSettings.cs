@@ -28,7 +28,7 @@ namespace RCore.SheetX.Editor
 		public const string CONSTANTS_SHEET = "Constants";
 		public const string SETTINGS_SHEET = "Settings";
 		public const string LOCALIZATION_SHEET = "Localization";
-		public const string CONFIG_SHEET = "Config";
+		public const string CONFIGURATION_SHEET = "Configuration";
 	}
 
 	public enum ValueType
@@ -365,6 +365,26 @@ namespace RCore.SheetX.Editor
 			encryptJson = false;
 			encryptionKey = DEFAULT_ENCRYPTION_KEY;
 		}
+
+		/// <summary>Returns collection code folder or falls back to constants output folder.</summary>
+		internal string ResolveCollectionCodeFolder()
+			=> string.IsNullOrEmpty(collectionCodeFolder) ? constantsOutputFolder : collectionCodeFolder;
+
+		/// <summary>Returns collection asset folder or falls back to Assets/Resources.</summary>
+		internal string ResolveCollectionAssetFolder()
+			=> string.IsNullOrEmpty(collectionAssetFolder) ? "Assets/Resources" : collectionAssetFolder;
+
+		/// <summary>Returns collection JSON folder or falls back to JSON output folder.</summary>
+		internal string ResolveCollectionJsonFolder()
+			=> string.IsNullOrEmpty(collectionJsonFolder) ? jsonOutputFolder : collectionJsonFolder;
+
+		/// <summary>Returns collection namespace or falls back to Namespace.</summary>
+		internal string ResolveCollectionNamespace()
+			=> string.IsNullOrEmpty(collectionNamespace) ? @namespace : collectionNamespace;
+
+		/// <summary>Returns global Resources folder or falls back to Assets/Resources.</summary>
+		internal string ResolveGlobalResourcesFolder()
+			=> string.IsNullOrEmpty(globalResourcesFolder) ? "Assets/Resources" : globalResourcesFolder;
 
 		// Published in this repository, so it protects nothing — GetEncryption() warns when it is
 		// still in use with encryptJson on.

@@ -37,7 +37,7 @@ namespace RCore.SheetX.Editor
 
 			protected override AdvancedDropdownItem BuildRoot()
 			{
-				var root = new AdvancedDropdownItem("Row Type");
+				var root = new AdvancedDropdownItem("Data Class");
 				for (int index = 0; index < s_rowTypes.Length; index++)
 					root.AddChild(new AdvancedDropdownItem(s_rowTypes[index].FullName) { id = index });
 				return root;
@@ -94,7 +94,7 @@ namespace RCore.SheetX.Editor
 				settings.SaveToDisk();
 			});
 
-			table.AddColumn("Row Type", 140, 260, (rect, item) =>
+			table.AddColumn("Data Class", 140, 260, (rect, item) =>
 			{
 				if (!TryBinding(settings, sourceId, item, out var binding)
 					|| binding.outputMode == SheetXSheetOutputMode.JsonOnly)
@@ -103,8 +103,9 @@ namespace RCore.SheetX.Editor
 				}
 				if (binding.outputMode == SheetXSheetOutputMode.GeneratedDataClass)
 				{
-					EditorGUI.LabelField(rect,
-						settings.collectionNamespace + "." + SheetXCollectionNaming.RowTypeName(item.name));
+					string typeName = SheetXCollectionNaming.RowTypeName(item.name);
+					EditorGUI.LabelField(rect, new GUIContent(typeName,
+						settings.ResolveCollectionNamespace() + "." + typeName));
 					return;
 				}
 
@@ -115,8 +116,9 @@ namespace RCore.SheetX.Editor
 					? (string.IsNullOrEmpty(binding.rowTypeName)
 						? "<Select>"
 						: "Missing: " + binding.rowTypeName)
-					: selectedType.FullName;
-				if (!EditorGUI.DropdownButton(rect, new GUIContent(label), FocusType.Passive))
+					: selectedType.Name;
+				string tooltip = selectedType == null ? label : selectedType.FullName;
+				if (!EditorGUI.DropdownButton(rect, new GUIContent(label, tooltip), FocusType.Passive))
 					return;
 				new RowTypeDropdown(type =>
 				{

@@ -12,26 +12,74 @@ using Newtonsoft.Json;
 namespace RCore.SheetX.Editor
 {
 	/// <summary>
-	/// One interactive collection export. Every bound sheet is parsed and held in memory until
-	/// <see cref="Flush"/>, so a single bad sheet leaves no half-written JSON and no generated source
-	/// that disagrees with it.
+	/// One interactive collection export. Bad sheets are reported and skipped; accepted JSON and generated
+	/// source stay in memory until <see cref="Flush"/> can write their internally consistent set atomically.
 	/// </summary>
 	internal sealed class SheetXCollectionExportSession
 	{
 		private sealed class Candidate
 		{
+			internal SheetXSheetBinding Binding;
 			internal SheetXCollectionGeneratedTable Table;
 			internal string Json;
 		}
 
+		private sealed class FileSnapshot
+		{
+			internal string Path;
+			internal byte[] Content;
+			internal bool Existed;
+		}
+
+		private sealed class RollbackFileOutput : ISheetXOutput
+		{
+			private readonly ISheetXOutput m_output;
+			private readonly Dictionary<string, FileSnapshot> m_snapshots;
+
+			internal RollbackFileOutput(ISheetXOutput output, IEnumerable<FileSnapshot> snapshots)
+			{
+				m_output = output;
+				m_snapshots = snapshots.ToDictionary(snapshot => snapshot.Path, StringComparer.Ordinal);
+			}
+
+			public void Write(string relativePath, string content)
+			{
+				try
+				{
+					m_output.Write(relativePath, content);
+				}
+				catch
+				{
+					if (m_snapshots.TryGetValue(relativePath, out var snapshot))
+						RestoreSnapshot(snapshot);
+					throw;
+				}
+			}
+		}
+
 		private readonly SheetXSettings m_settings;
 		private readonly List<Candidate> m_candidates = new List<Candidate>();
-		private readonly List<SheetXSheetBinding> m_bindings = new List<SheetXSheetBinding>();
-		private readonly List<string> m_errors = new List<string>();
+		private readonly List<Candidate> m_accepted = new List<Candidate>();
+		private readonly HashSet<string> m_processed = new HashSet<string>(StringComparer.Ordinal);
+		private readonly HashSet<string> m_processedSources = new HashSet<string>(StringComparer.Ordinal);
+		private readonly HashSet<string> m_skipped = new HashSet<string>(StringComparer.Ordinal);
+		private readonly Action<string> m_warn;
+		private readonly Action<string> m_error;
+		private readonly ISheetXOutput m_output;
+		private readonly IReadOnlyDictionary<string, int> m_ids;
 
-		internal SheetXCollectionExportSession(SheetXSettings settings)
+		internal SheetXCollectionExportSession(
+			SheetXSettings settings,
+			Action<string> warn = null,
+			Action<string> error = null,
+			ISheetXOutput output = null,
+			IReadOnlyDictionary<string, int> ids = null)
 		{
 			m_settings = settings;
+			m_warn = warn;
+			m_error = error;
+			m_output = output ?? new SheetXFileOutput();
+			m_ids = ids;
 		}
 
 		/// <summary>
@@ -44,10 +92,7 @@ namespace RCore.SheetX.Editor
 			return binding?.outputMode ?? SheetXSheetOutputMode.JsonOnly;
 		}
 
-		/// <summary>
-		/// Parses one Generated Data Class sheet into typed JSON. Nothing reaches the disk here — a parse
-		/// failure is remembered so <see cref="Flush"/> refuses the whole export.
-		/// </summary>
+		/// <summary>Parses one Generated Data Class sheet into typed JSON without writing files.</summary>
 		internal bool TryAddGeneratedTable(
 			string sourceId,
 			string sheetName,
@@ -58,24 +103,53 @@ namespace RCore.SheetX.Editor
 			if (!TryBind(sourceId, sheetName, SheetXSheetOutputMode.GeneratedDataClass, out var binding, out error))
 				return false;
 
+			var resolvedRows = ResolveIds(rows);
 			if (!SheetXCollectionSchemaParser.TryParse(
-				headers, SheetXCollectionNaming.RowTypeName(sheetName), out var schema, out error))
+				headers, resolvedRows, SheetXCollectionNaming.RowTypeName(sheetName),
+				out var schema, out var warnings, out error))
 			{
-				return Reject($"Sheet '{sheetName}': {error}", out error);
+				return SkipSheet(binding, error, out error);
 			}
+			foreach (string warning in warnings)
+				m_warn?.Invoke(Context(sourceId, sheetName, warning));
 			if (!SheetXCollectionSchemaParser.TryBuildRows(
-				schema, rows, m_settings.GetPersistentFields(), out string json, out error))
+				schema, resolvedRows, m_settings.GetPersistentFields(), out string json, out error))
 			{
-				return Reject($"Sheet '{sheetName}': {error}", out error);
+				return SkipSheet(binding, error, out error);
 			}
 
 			Add(binding, json, table => table.Schema = schema);
 			return true;
 		}
 
+		private IReadOnlyList<IReadOnlyList<string>> ResolveIds(
+			IReadOnlyList<IReadOnlyList<string>> rows)
+		{
+			if (m_ids == null || m_ids.Count == 0 || rows == null)
+				return rows;
+
+			return rows.Select(row => (IReadOnlyList<string>)(row == null
+				? null
+				: row.Select(ResolveIds).ToArray())).ToArray();
+		}
+
+		private string ResolveIds(string value)
+		{
+			string[] parts = SheetXHelper.SplitValueToArray(value ?? "", false);
+			bool resolved = false;
+			for (int i = 0; i < parts.Length; i++)
+			{
+				if (!m_ids.TryGetValue(parts[i], out int id))
+					continue;
+				parts[i] = SheetXHelper.FormatInt(id);
+				resolved = true;
+			}
+			return resolved ? string.Join("|", parts) : value;
+		}
+
 		/// <summary>
-		/// Adds one Existing Data Class sheet, keeping the legacy JSON byte for byte. The row type is resolved
-		/// and the JSON deserialized into it now, so a mapping mistake is reported before anything is written.
+		/// Adds one Existing Data Class sheet, keeping legacy JSON byte for byte. Row type and JSON mapping
+		/// are checked now, before any output can be written.
 		/// </summary>
 		internal bool TryAddExistingTable(
 			string sourceId,
@@ -87,7 +161,7 @@ namespace RCore.SheetX.Editor
 				return false;
 
 			if (!TryResolveRowType(binding.rowTypeName, out var rowType, out error))
-				return Reject($"Sheet '{sheetName}': {error}", out error);
+				return SkipSheet(binding, error + " Fix: set Existing Data Class to a loaded concrete [Serializable] row type.", out error);
 
 			string json = string.IsNullOrEmpty(legacyJson) ? "[]" : legacyJson;
 			try
@@ -96,57 +170,92 @@ namespace RCore.SheetX.Editor
 			}
 			catch (Exception ex)
 			{
-				return Reject(
-					$"Sheet '{sheetName}': its Json does not map onto '{rowType.FullName}': {ex.Message}",
+				return SkipSheet(binding,
+					$"JSON does not map onto '{rowType.FullName}': {ex.Message} Fix: correct sheet values or select the matching row type.",
 					out error);
 			}
 
-			// Nested types read as 'Outer+Inner' in FullName, which is not C#.
 			string typeName = rowType.FullName?.Replace('+', '.') ?? rowType.Name;
 			Add(binding, json, table => table.ExistingRowTypeName = typeName);
 			return true;
 		}
 
-		/// <summary>
-		/// True once <see cref="Flush"/> has written collection artifacts. The caller owns the single
-		/// AssetDatabase refresh, because the same export may also have written Config artifacts.
-		/// </summary>
+		/// <summary>True once <see cref="Flush"/> has written collection artifacts.</summary>
 		internal bool WroteArtifacts { get; private set; }
 
-		/// <summary>True when this flush changed generated collection source and needs script reload.</summary>
+		/// <summary>True when generated collection source changed and needs script reload.</summary>
 		internal bool RequiresScriptReload { get; private set; }
 
+		/// <summary>Number of collection sheets rejected during add or candidate admission.</summary>
+		internal int SkippedSheetCount => m_skipped.Count;
+
+		/// <summary>True after latest flush completed, including a successful no-op.</summary>
+		internal bool FlushSucceeded { get; private set; }
+
 		/// <summary>
-		/// Validates the whole batch, then stages every JSON file plus the single generated source through
-		/// one atomic export context. Nothing is written unless all of it is valid.
+		/// Admits valid candidates in processing order, then writes all accepted JSON plus generated source
+		/// through one atomic export context.
 		/// </summary>
 		internal bool Flush(out string error)
 		{
 			error = null;
 			WroteArtifacts = false;
 			RequiresScriptReload = false;
-			if (m_errors.Count > 0)
+			FlushSucceeded = false;
+			m_accepted.Clear();
+
+			var globalIssues = SheetXCollectionSettings.Validate(m_settings, Array.Empty<SheetXSheetBinding>());
+			if (globalIssues.Count > 0)
 			{
-				error = string.Join("\n", m_errors);
+				error = string.Join("\n", globalIssues.Select(issue => issue.Message));
 				return false;
 			}
-			var issues = SheetXCollectionSettings.Validate(m_settings, m_bindings);
-			if (issues.Count > 0)
+			if (!IncludesEveryCollectionBindingFromProcessedSources(out error))
+				return false;
+			try
 			{
-				error = string.Join("\n", issues.Select(i => i.Message));
+				SheetXCollectionGenerator.Emit(m_settings, Array.Empty<SheetXCollectionGeneratedTable>());
+			}
+			catch (InvalidOperationException ex)
+			{
+				error = $"[SheetX Collections] Global configuration: {ex.Message} Fix: rename the conflicting collection.";
 				return false;
 			}
-			if (m_candidates.Count == 0)
+
+			foreach (var candidate in m_candidates)
+			{
+				var trial = m_accepted.Append(candidate).ToList();
+				var issues = SheetXCollectionSettings.Validate(m_settings, trial.Select(item => item.Binding));
+				if (issues.Count > 0)
+				{
+					SkipSheet(candidate.Binding,
+						string.Join(" ", issues.Select(issue => issue.Message))
+						+ " Fix: correct this sheet binding in Collection Management.", out _);
+					continue;
+				}
+				try
+				{
+					SheetXCollectionGenerator.Emit(m_settings, trial.Select(item => item.Table).ToList());
+					m_accepted.Add(candidate);
+				}
+				catch (InvalidOperationException ex)
+				{
+					SkipSheet(candidate.Binding,
+						ex.Message + " Fix: rename this sheet, generated field, nested object, or collection to make generated names unique.",
+						out _);
+				}
+			}
+
+			if (m_accepted.Count == 0)
+			{
+				FlushSucceeded = true;
 				return true;
-			if (!IncludesEveryCollectionBinding(out error))
-				return false;
+			}
 
 			string source;
 			try
 			{
-				// Emit first: it rejects every name collision and stamps each table with the JSON path
-				// its generated constant names, so the staged file and the constant cannot disagree.
-				source = SheetXCollectionGenerator.Emit(m_settings, m_candidates.Select(c => c.Table).ToList());
+				source = SheetXCollectionGenerator.Emit(m_settings, m_accepted.Select(item => item.Table).ToList());
 			}
 			catch (InvalidOperationException ex)
 			{
@@ -155,10 +264,20 @@ namespace RCore.SheetX.Editor
 			}
 
 			RequiresScriptReload = SourceChanged(source);
-			// discardStagedOnError: a collision inside the context must leave the previous export intact.
-			var context = new SheetXExportContext(new SheetXFileOutput(), discardStagedOnError: true);
+			List<FileSnapshot> snapshots;
+			try
+			{
+				snapshots = CaptureSnapshots();
+			}
+			catch (Exception ex)
+			{
+				error = $"Could not prepare Collection output rollback: {ex.Message}";
+				return false;
+			}
+			var context = new SheetXExportContext(
+				new RollbackFileOutput(m_output, snapshots), discardStagedOnError: true);
 			var writer = new SheetXWriter(m_settings, context);
-			foreach (var candidate in m_candidates)
+			foreach (var candidate in m_accepted)
 			{
 				string path = candidate.Table.JsonPath;
 				writer.Write(
@@ -166,7 +285,7 @@ namespace RCore.SheetX.Editor
 					SheetXExportFileType.Json);
 			}
 			writer.Write(
-				m_settings.collectionCodeFolder, SheetXCollectionGenerator.FileName, source,
+				m_settings.ResolveCollectionCodeFolder(), SheetXCollectionGenerator.FileName, source,
 				SheetXExportFileType.ConfigScript);
 			context.Flush();
 
@@ -174,19 +293,45 @@ namespace RCore.SheetX.Editor
 			if (!result.Success)
 			{
 				error = string.Join("\n", result.Errors);
+				try
+				{
+					RestoreSnapshots(snapshots);
+				}
+				catch (Exception ex)
+				{
+					error += $"\nRestoring previous Collection output failed: {ex.Message}";
+				}
+				return false;
+			}
+			try
+			{
+				DeleteLegacyGeneratedSource();
+			}
+			catch (Exception ex)
+			{
+				error = $"Could not remove legacy Collection source: {ex.Message}";
+				try
+				{
+					RestoreSnapshots(snapshots);
+				}
+				catch (Exception restoreException)
+				{
+					error += $"\nRestoring previous Collection output failed: {restoreException.Message}";
+				}
 				return false;
 			}
 
 			if (RequiresScriptReload)
 			{
-				// Generated types cannot be baked before script reload compiles them.
-				SheetXCollectionBaker.RegisterPendingBake(m_settings, m_settings.autoLoadAfterExport);
+				SheetXCollectionBaker.RegisterPendingBake(
+					m_settings, m_settings.autoLoadAfterExport, AcceptedBindingIdentities());
 			}
 			WroteArtifacts = true;
+			FlushSucceeded = true;
 			return true;
 		}
 
-		/// <summary>Completes an Existing Data Class export after callers refresh imported JSON files.</summary>
+		/// <summary>Completes accepted Existing Data Class output after callers refresh imported JSON.</summary>
 		internal bool TryBakeAfterRefresh(out string error)
 		{
 			if (RequiresScriptReload)
@@ -195,27 +340,102 @@ namespace RCore.SheetX.Editor
 				return true;
 			}
 			return m_settings.autoLoadAfterExport
-				? SheetXCollectionBaker.TryLoadData(m_settings, autoLoadOnly: true, out error)
-				: SheetXCollectionBaker.TryFinishPendingBake(m_settings, autoLoadAfterExport: false, out error);
+				? SheetXCollectionBaker.TryLoadData(
+					m_settings, autoLoadOnly: true, AcceptedBindingIdentities(), out error)
+				: SheetXCollectionBaker.TryFinishPendingBake(
+					m_settings, autoLoadAfterExport: false, AcceptedBindingIdentities(), out error);
+		}
+
+		private List<FileSnapshot> CaptureSnapshots()
+		{
+			string codeFolder = SheetXCollectionSettings.NormalizePath(
+				m_settings.ResolveCollectionCodeFolder());
+			string legacyPath = codeFolder + "/" + SheetXCollectionGenerator.LegacyFileName;
+			var paths = m_accepted.Select(candidate => candidate.Table.JsonPath)
+				.Append(codeFolder + "/" + SheetXCollectionGenerator.FileName)
+				.Append(legacyPath)
+				.Append(legacyPath + ".meta");
+			return paths.Distinct(StringComparer.Ordinal).Select(path => new FileSnapshot
+			{
+				Path = path,
+				Existed = File.Exists(path),
+				Content = File.Exists(path) ? File.ReadAllBytes(path) : null,
+			}).ToList();
+		}
+
+		private void DeleteLegacyGeneratedSource()
+		{
+			string path = Path.Combine(
+				m_settings.ResolveCollectionCodeFolder(), SheetXCollectionGenerator.LegacyFileName);
+			if (File.Exists(path))
+				File.Delete(path);
+			string metaPath = path + ".meta";
+			if (File.Exists(metaPath))
+				File.Delete(metaPath);
+		}
+
+		private static void RestoreSnapshots(IEnumerable<FileSnapshot> snapshots)
+		{
+			List<Exception> errors = null;
+			foreach (var snapshot in snapshots)
+			{
+				try
+				{
+					RestoreSnapshot(snapshot);
+				}
+				catch (Exception ex)
+				{
+					errors ??= new List<Exception>();
+					errors.Add(ex);
+				}
+			}
+			if (errors != null)
+				throw new AggregateException(errors);
+		}
+
+		private static void RestoreSnapshot(FileSnapshot snapshot)
+		{
+			if (snapshot.Existed)
+			{
+				string folder = Path.GetDirectoryName(snapshot.Path);
+				if (!string.IsNullOrEmpty(folder))
+					Directory.CreateDirectory(folder);
+				File.WriteAllBytes(snapshot.Path, snapshot.Content);
+			}
+			else if (File.Exists(snapshot.Path))
+			{
+				File.Delete(snapshot.Path);
+			}
+		}
+
+		private IReadOnlyList<PendingCollectionBakeBinding> AcceptedBindingIdentities()
+		{
+			return m_accepted.Select(candidate => new PendingCollectionBakeBinding
+			{
+				SourceId = candidate.Binding.sourceId,
+				SheetName = candidate.Binding.sheetName,
+			}).ToList();
 		}
 
 		private bool SourceChanged(string source)
 		{
-			string path = Path.Combine(m_settings.collectionCodeFolder, SheetXCollectionGenerator.FileName);
+			string path = Path.Combine(m_settings.ResolveCollectionCodeFolder(), SheetXCollectionGenerator.FileName);
 			return !File.Exists(path) || !string.Equals(File.ReadAllText(path), source, StringComparison.Ordinal);
 		}
 
-		private bool IncludesEveryCollectionBinding(out string error)
+		private bool IncludesEveryCollectionBindingFromProcessedSources(out string error)
 		{
-			var active = new HashSet<string>(m_bindings.Select(BindingKey), StringComparer.Ordinal);
 			foreach (var binding in m_settings.sheetBindings)
 			{
-				if (binding == null || binding.outputMode == SheetXSheetOutputMode.JsonOnly)
+				if (binding == null || binding.outputMode == SheetXSheetOutputMode.JsonOnly
+					|| !m_processedSources.Contains(binding.sourceId)
+					|| m_processed.Contains(BindingKey(binding)))
+				{
 					continue;
-				if (active.Contains(BindingKey(binding)))
-					continue;
+				}
 
-				error = $"Sheet '{binding.sheetName}': collection source is shared; select every Collection sheet before export.";
+				error = Context(binding.sourceId, binding.sheetName,
+					"Collection source is shared, but this sheet from an exported source was not processed. Fix: select every Collection sheet in this source before export.");
 				return false;
 			}
 			error = null;
@@ -225,8 +445,6 @@ namespace RCore.SheetX.Editor
 		private static string BindingKey(SheetXSheetBinding binding)
 			=> binding.sourceId + "\0" + binding.sheetName;
 
-		// A binding the caller routed as a collection must still say so — the settings asset, not the
-		// caller, owns that decision.
 		private bool TryBind(
 			string sourceId, string sheetName, SheetXSheetOutputMode expected,
 			out SheetXSheetBinding binding, out string error)
@@ -235,22 +453,26 @@ namespace RCore.SheetX.Editor
 			binding = SheetXCollectionSettings.GetOrCreateBinding(m_settings, sourceId, sheetName);
 			if (binding == null)
 			{
-				Reject($"Sheet '{sheetName}': no settings asset to bind against.", out error);
+				error = Context(sourceId, sheetName,
+					"No settings asset exists for this binding. Fix: assign a SheetXSettings asset and retry.");
+				m_error?.Invoke(error);
 				return false;
 			}
 			if (binding.outputMode == SheetXSheetOutputMode.JsonOnly)
 				return false;
+
+			m_processed.Add(BindingKey(binding));
+			m_processedSources.Add(binding.sourceId);
 			if (binding.outputMode != expected)
 			{
-				Reject($"Sheet '{sheetName}': bound as {binding.outputMode}, not {expected}.", out error);
-				return false;
+				return SkipSheet(binding,
+					$"Binding mode is {binding.outputMode}, not {expected}. Fix: select the matching output mode.", out error);
 			}
 			return true;
 		}
 
 		private void Add(SheetXSheetBinding binding, string json, Action<SheetXCollectionGeneratedTable> fill)
 		{
-			m_bindings.Add(binding);
 			var table = new SheetXCollectionGeneratedTable
 			{
 				SourceId = binding.sourceId,
@@ -261,18 +483,23 @@ namespace RCore.SheetX.Editor
 				FieldName = SheetXCollectionSettings.ResolveFieldName(binding),
 			};
 			fill(table);
-			m_candidates.Add(new Candidate { Table = table, Json = json });
+			m_candidates.Add(new Candidate { Binding = binding, Table = table, Json = json });
 		}
 
-		private bool Reject(string message, out string error)
+		private bool SkipSheet(SheetXSheetBinding binding, string cause, out string error)
 		{
-			m_errors.Add(message);
-			error = message;
+			string key = BindingKey(binding);
+			bool firstError = m_skipped.Add(key);
+			error = Context(binding.sourceId, binding.sheetName,
+				cause + " Sheet skipped; previous JSON was not updated.");
+			if (firstError)
+				m_error?.Invoke(error);
 			return false;
 		}
 
-		// Type.GetType only sees mscorlib and the calling assembly unless the name is assembly-qualified,
-		// and a row type usually lives in the consuming project's own assembly.
+		private static string Context(string sourceId, string sheetName, string message)
+			=> $"[SheetX Collections] Source '{sourceId}', sheet '{sheetName}': {message}";
+
 		private static bool TryResolveRowType(string rowTypeName, out Type type, out string error)
 		{
 			type = null;
@@ -319,7 +546,9 @@ namespace RCore.SheetX.Editor
 						continue;
 					if (string.Equals(type.FullName, rowTypeName, StringComparison.Ordinal)
 						|| string.Equals(type.Name, rowTypeName, StringComparison.Ordinal))
+					{
 						return type;
+					}
 				}
 			}
 			return null;

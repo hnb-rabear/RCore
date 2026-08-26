@@ -409,7 +409,7 @@ namespace RCore.SheetX.Editor
 		{
 			return JsonConvert.SerializeObject(pJsonBySheet
 				.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-				.ToDictionary(pair => pair.Key, pair => pair.Value));
+				.ToDictionary(pair => pair.Key, pair => JToken.Parse(pair.Value)));
 		}
 
 		/// <summary>

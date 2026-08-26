@@ -72,7 +72,7 @@ namespace RCore.SheetX.Tests
 			});
 
 			Assert.That(reversed, Is.EqualTo(forward));
-			StringAssert.StartsWith("{\"Heroes\"", forward);
+			Assert.That(forward, Is.EqualTo("{\"Heroes\":[],\"Items\":[]}"));
 		}
 
 		[Test]

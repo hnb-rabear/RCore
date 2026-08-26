@@ -17,10 +17,18 @@ using UnityEngine;
 namespace RCore.SheetX.Editor
 {
 	[Serializable]
+	internal sealed class PendingCollectionBakeBinding
+	{
+		public string SourceId;
+		public string SheetName;
+	}
+
+	[Serializable]
 	internal sealed class PendingCollectionBakeEntry
 	{
 		public string SettingsAssetPath;
 		public bool AutoLoadAfterExport;
+		public List<PendingCollectionBakeBinding> AcceptedBindings = new List<PendingCollectionBakeBinding>();
 	}
 
 	[Serializable]
@@ -57,7 +65,10 @@ namespace RCore.SheetX.Editor
 		/// <summary>
 		/// Records one export for post-compilation bake, preserving its Auto Load intent.
 		/// </summary>
-		internal static void RegisterPendingBake(SheetXSettings settings, bool autoLoadAfterExport)
+		internal static void RegisterPendingBake(
+			SheetXSettings settings,
+			bool autoLoadAfterExport,
+			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings)
 		{
 			string settingsPath = settings == null ? "" : AssetDatabase.GetAssetPath(settings);
 			if (string.IsNullOrEmpty(settingsPath))
@@ -68,16 +79,11 @@ namespace RCore.SheetX.Editor
 				candidate?.SettingsAssetPath, settingsPath, StringComparison.Ordinal));
 			if (entry == null)
 			{
-				store.Entries.Add(new PendingCollectionBakeEntry
-				{
-					SettingsAssetPath = settingsPath,
-					AutoLoadAfterExport = autoLoadAfterExport,
-				});
+				entry = new PendingCollectionBakeEntry { SettingsAssetPath = settingsPath };
+				store.Entries.Add(entry);
 			}
-			else
-			{
-				entry.AutoLoadAfterExport = autoLoadAfterExport;
-			}
+			entry.AutoLoadAfterExport = autoLoadAfterExport;
+			entry.AcceptedBindings = CopyBindings(acceptedBindings);
 			SavePending(store);
 		}
 
@@ -101,7 +107,8 @@ namespace RCore.SheetX.Editor
 					continue;
 				}
 
-				if (TryFinishPendingBake(settings, entry.AutoLoadAfterExport, out string error))
+				if (TryFinishPendingBake(
+					settings, entry.AutoLoadAfterExport, PendingBindings(entry), out string error))
 					continue;
 
 				if (error.IndexOf("was not found", StringComparison.Ordinal) >= 0)
@@ -125,33 +132,53 @@ namespace RCore.SheetX.Editor
 		/// Loads selected collection JSON and commits every affected asset as one rollback-capable transaction.
 		/// </summary>
 		internal static bool TryLoadData(SheetXSettings settings, bool autoLoadOnly, out string error)
-			=> TryLoadData(settings, autoLoadOnly, null, out error);
+			=> TryLoadData(settings, autoLoadOnly, null, null, out error);
+
+		internal static bool TryLoadData(
+			SheetXSettings settings,
+			bool autoLoadOnly,
+			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings,
+			out string error)
+			=> TryLoadData(settings, autoLoadOnly, null, acceptedBindings, out error);
 
 		internal static bool TryLoadData(
 			SheetXSettings settings,
 			string collectionName,
 			out string error)
-			=> TryLoadData(settings, autoLoadOnly: false, collectionName, out error);
+			=> TryLoadData(settings, autoLoadOnly: false, collectionName, null, out error);
 
 		/// <summary>
 		/// Completes a post-compilation export by refreshing Global references and loading rows only when requested.
 		/// </summary>
 		internal static bool TryFinishPendingBake(
 			SheetXSettings settings, bool autoLoadAfterExport, out string error)
-			=> TryLoadData(settings, autoLoadAfterExport, null, refreshGlobalOnly: !autoLoadAfterExport, out error);
+			=> TryFinishPendingBake(settings, autoLoadAfterExport, null, out error);
+
+		internal static bool TryFinishPendingBake(
+			SheetXSettings settings,
+			bool autoLoadAfterExport,
+			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings,
+			out string error)
+			=> TryLoadData(
+				settings, autoLoadAfterExport, null, refreshGlobalOnly: !autoLoadAfterExport,
+				acceptedBindings, out error);
 
 		private static bool TryLoadData(
 			SheetXSettings settings,
 			bool autoLoadOnly,
 			string collectionName,
+			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings,
 			out string error)
-			=> TryLoadData(settings, autoLoadOnly, collectionName, refreshGlobalOnly: false, out error);
+			=> TryLoadData(
+				settings, autoLoadOnly, collectionName, refreshGlobalOnly: false,
+				acceptedBindings, out error);
 
 		private static bool TryLoadData(
 			SheetXSettings settings,
 			bool autoLoadOnly,
 			string collectionName,
 			bool refreshGlobalOnly,
+			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings,
 			out string error)
 		{
 			error = null;
@@ -161,14 +188,16 @@ namespace RCore.SheetX.Editor
 				return false;
 			}
 
-			var issues = SheetXCollectionSettings.Validate(settings, null);
+			var selectedBindings = SelectBindings(settings, acceptedBindings);
+			var issues = SheetXCollectionSettings.Validate(
+				settings, acceptedBindings == null ? null : selectedBindings);
 			if (issues.Count > 0)
 			{
 				error = string.Join("\n", issues.Select(issue => issue.Message));
 				return false;
 			}
 
-			if (!TryBuildCollections(settings, out var collections, out error))
+			if (!TryBuildCollections(settings, selectedBindings, out var collections, out error))
 				return false;
 			if (!string.IsNullOrEmpty(collectionName)
 				&& !collections.Any(collection => string.Equals(
@@ -210,10 +239,13 @@ namespace RCore.SheetX.Editor
 				if (!ApplyGlobalReferences(global, collections, assets, out error))
 					throw new InvalidOperationException(error);
 
-				foreach (var asset in assets.Values.Append(global).Distinct())
+				var changedAssets = new[] { global }
+					.Concat(assets.Values.Where(asset => asset != global)).ToList();
+				foreach (var asset in changedAssets)
+					EditorUtility.SetDirty(asset);
+				foreach (var asset in changedAssets)
 				{
 					TestBeforeSave?.Invoke(AssetDatabase.GetAssetPath(asset));
-					EditorUtility.SetDirty(asset);
 					AssetDatabase.SaveAssetIfDirty(asset);
 				}
 				if (!refreshGlobalOnly)
@@ -239,7 +271,10 @@ namespace RCore.SheetX.Editor
 		}
 
 		private static bool TryBuildCollections(
-			SheetXSettings settings, out List<Collection> collections, out string error)
+			SheetXSettings settings,
+			IReadOnlyList<SheetXSheetBinding> bindings,
+			out List<Collection> collections,
+			out string error)
 		{
 			collections = new List<Collection>();
 			error = null;
@@ -255,7 +290,7 @@ namespace RCore.SheetX.Editor
 				});
 			}
 
-			foreach (var binding in settings.sheetBindings.Where(binding => binding.outputMode != SheetXSheetOutputMode.JsonOnly))
+			foreach (var binding in bindings.Where(binding => binding.outputMode != SheetXSheetOutputMode.JsonOnly))
 			{
 				string collectionName = string.IsNullOrEmpty(binding.collectionName)
 					? SheetXCollectionSettings.GlobalName : binding.collectionName;
@@ -524,6 +559,47 @@ namespace RCore.SheetX.Editor
 				}
 			}
 			return null;
+		}
+
+		private static List<SheetXSheetBinding> SelectBindings(
+			SheetXSettings settings,
+			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings)
+		{
+			var bindings = settings.sheetBindings
+				.Where(binding => binding != null && binding.outputMode != SheetXSheetOutputMode.JsonOnly);
+			if (acceptedBindings == null)
+				return bindings.ToList();
+
+			var accepted = new HashSet<string>(acceptedBindings
+				.Where(binding => binding != null)
+				.Select(BindingKey), StringComparer.Ordinal);
+			return bindings.Where(binding => accepted.Contains(BindingKey(binding))).ToList();
+		}
+
+		private static string BindingKey(PendingCollectionBakeBinding binding)
+			=> binding.SourceId + "\0" + binding.SheetName;
+
+		private static string BindingKey(SheetXSheetBinding binding)
+			=> binding.sourceId + "\0" + binding.sheetName;
+
+		private static List<PendingCollectionBakeBinding> CopyBindings(
+			IReadOnlyList<PendingCollectionBakeBinding> bindings)
+		{
+			return bindings?.Where(binding => binding != null).Select(binding =>
+				new PendingCollectionBakeBinding
+				{
+					SourceId = binding.SourceId,
+					SheetName = binding.SheetName,
+				}).ToList() ?? new List<PendingCollectionBakeBinding>();
+		}
+
+		private static IReadOnlyList<PendingCollectionBakeBinding> PendingBindings(
+			PendingCollectionBakeEntry entry)
+		{
+			// Entries written before binding filters existed deserialize with no list; keep old all-binding behavior.
+			return entry.AcceptedBindings == null || entry.AcceptedBindings.Count == 0
+				? null
+				: entry.AcceptedBindings;
 		}
 
 		private static PendingCollectionBakeStore LoadPending()

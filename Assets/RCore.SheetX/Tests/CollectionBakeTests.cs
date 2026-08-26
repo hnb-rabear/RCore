@@ -171,6 +171,69 @@ namespace RCore.SheetX.Tests
 
 
 		[Test]
+		public void export_bake_reads_only_accepted_bindings()
+		{
+			File.WriteAllText(JsonPath, "[{\"id\":1,\"name\":\"hero\"}]");
+			File.WriteAllText(JsonFolder + "/Broken.txt", "{stale");
+			var settings = CreateSettings();
+			settings.sheetBindings.Add(new SheetXSheetBinding
+			{
+				sourceId = "book.xlsx",
+				sheetName = "Broken",
+				outputMode = SheetXSheetOutputMode.GeneratedDataClass,
+				collectionName = "BakeShop",
+				fieldName = "broken",
+			});
+			var accepted = new[]
+			{
+				new PendingCollectionBakeBinding { SourceId = "book.xlsx", SheetName = "BakeItems" },
+			};
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(
+					settings, autoLoadOnly: false, accepted, out string error), Is.True, error);
+
+				var feature = AssetDatabase.LoadAssetAtPath<BakeShopConfigCollection>(FeaturePath);
+				Assert.That(feature.items, Has.Length.EqualTo(1));
+				Assert.That(feature.items[0].id, Is.EqualTo(1));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void pending_bake_store_round_trips_accepted_binding_identity()
+		{
+			var store = new PendingCollectionBakeStore
+			{
+				Entries =
+				{
+					new PendingCollectionBakeEntry
+					{
+						SettingsAssetPath = "Assets/Settings.asset",
+						AutoLoadAfterExport = true,
+						AcceptedBindings =
+						{
+							new PendingCollectionBakeBinding
+							{
+								SourceId = "book.xlsx",
+								SheetName = "Items",
+							},
+						},
+					},
+				},
+			};
+
+			var restored = JsonUtility.FromJson<PendingCollectionBakeStore>(JsonUtility.ToJson(store));
+
+			Assert.That(restored.Entries[0].AcceptedBindings, Has.Count.EqualTo(1));
+			Assert.That(restored.Entries[0].AcceptedBindings[0].SourceId, Is.EqualTo("book.xlsx"));
+			Assert.That(restored.Entries[0].AcceptedBindings[0].SheetName, Is.EqualTo("Items"));
+		}
+
+		[Test]
 		public void invalid_json_leaves_existing_assets_unchanged()
 		{
 			var feature = CreateFeatureAsset(7, "old");

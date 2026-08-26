@@ -50,7 +50,7 @@ namespace RCore.SheetX.Editor
 	{
 		private static readonly string[] s_expectedHeader = { "Sub Class", "Field Name", "Type", "Value" };
 		// Reserved keywords only. Contextual keywords (value, group, var, from, ...) are legal identifiers
-		// and a Config sheet is expected to use words like 'value' and 'group' as field names.
+		// and a Configuration sheet is expected to use words like 'value' and 'group' as field names.
 		private static readonly HashSet<string> s_reservedKeywords = new HashSet<string>(StringComparer.Ordinal)
 		{
 			"abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const",
@@ -78,24 +78,20 @@ namespace RCore.SheetX.Editor
 
 			if (table == null || table.Count == 0)
 			{
-				error("Config sheet is missing its header row.");
+				error("Configuration sheet is missing its header row.");
 				return false;
 			}
 
 			if (!IsExpectedHeader(table[0]))
 			{
-				error("Config header must be: Sub Class, Field Name, Type, Value.");
+				error("Configuration header must be: Sub Class, Field Name, Type, Value.");
 				return false;
 			}
 
 			if (!IsValidIdentifier(rootTypeName))
-				error($"Config generated type name '{rootTypeName}' is not a valid C# identifier.");
+				error($"Configuration generated type name '{rootTypeName}' is not a valid C# identifier.");
 
 			var result = new ConfigSheetData();
-			var groupKeys = new HashSet<string>(StringComparer.Ordinal);
-			var groupClasses = new HashSet<string>(StringComparer.Ordinal);
-			var rootNames = new HashSet<string>(StringComparer.Ordinal);
-			var groupFieldNames = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
 			ConfigGroup currentGroup = null;
 			bool rootFieldMode = false;
 
@@ -117,27 +113,27 @@ namespace RCore.SheetX.Editor
 
 				if (string.IsNullOrEmpty(fieldName))
 				{
-					error($"Config row {spreadsheetRow}: Field Name is required.");
+					error($"Configuration row {spreadsheetRow}: Field Name is required.");
 					continue;
 				}
 				if (string.IsNullOrEmpty(typeName))
 				{
-					error($"Config row {spreadsheetRow}: Type is required for field '{fieldName}'.");
+					error($"Configuration row {spreadsheetRow}: Type is required for field '{fieldName}'.");
 					continue;
 				}
 				if (!IsValidIdentifier(fieldName))
 				{
-					error($"Config row {spreadsheetRow}: field '{fieldName}' is not a valid C# identifier.");
+					error($"Configuration row {spreadsheetRow}: field '{fieldName}' is not a valid C# identifier.");
 					continue;
 				}
 				if (!TryParseFieldType(typeName, out ConfigFieldType fieldType))
 				{
-					error($"Config row {spreadsheetRow}: type '{typeName}' is not supported.");
+					error($"Configuration row {spreadsheetRow}: type '{typeName}' is not supported.");
 					continue;
 				}
 				if (!TryParseValue(fieldType, value, out object parsedValue, out string parseError))
 				{
-					error($"Config row {spreadsheetRow}: field '{fieldName}' {parseError}.");
+					error($"Configuration row {spreadsheetRow}: field '{fieldName}' {parseError}.");
 					continue;
 				}
 
@@ -145,68 +141,28 @@ namespace RCore.SheetX.Editor
 				{
 					if (!IsValidIdentifier(groupKey))
 					{
-						error($"Config row {spreadsheetRow}: Sub Class '{groupKey}' is not a valid C# identifier.");
+						error($"Configuration row {spreadsheetRow}: Sub Class '{groupKey}' is not a valid C# identifier.");
 						continue;
 					}
 
 					string className = UppercaseFirst(groupKey);
-					// A rejected group must not open: its fields would otherwise land in the previous
-					// group and produce a second, misleading error per row.
-					if (!groupKeys.Add(groupKey))
-					{
-						error($"Config row {spreadsheetRow}: duplicate Sub Class '{groupKey}'.");
-						currentGroup = null;
-						rootFieldMode = false;
-						continue;
-					}
-					if (!groupClasses.Add(className))
-					{
-						error($"Config row {spreadsheetRow}: Sub Class '{groupKey}' conflicts with generated class '{className}'.");
-						currentGroup = null;
-						rootFieldMode = false;
-						continue;
-					}
-					if (string.Equals(className, rootTypeName, StringComparison.Ordinal))
-					{
-						error($"Config row {spreadsheetRow}: Sub Class '{groupKey}' conflicts with generated type '{rootTypeName}'.");
-						currentGroup = null;
-						rootFieldMode = false;
-						continue;
-					}
-					if (rootNames.Contains(groupKey))
-					{
-						error($"Config row {spreadsheetRow}: Sub Class '{groupKey}' conflicts with a root field.");
-						currentGroup = null;
-						rootFieldMode = false;
-						continue;
-					}
-
 					currentGroup = new ConfigGroup { Key = groupKey, ClassName = className };
 					result.Groups.Add(currentGroup);
-					groupFieldNames[groupKey] = new HashSet<string>(StringComparer.Ordinal);
 					rootFieldMode = false;
 				}
 
 				var field = new ConfigField { Name = fieldName, Type = fieldType, Value = parsedValue };
 				if (currentGroup != null && !rootFieldMode)
 				{
-					if (!groupFieldNames[currentGroup.Key].Add(fieldName))
-						error($"Config row {spreadsheetRow}: duplicate field '{fieldName}' in Sub Class '{currentGroup.Key}'.");
-					else
-						currentGroup.Fields.Add(field);
+					currentGroup.Fields.Add(field);
 				}
 				else if (rootFieldMode)
 				{
-					if (!rootNames.Add(fieldName))
-						error($"Config row {spreadsheetRow}: duplicate root field '{fieldName}'.");
-					else if (groupKeys.Contains(fieldName))
-						error($"Config row {spreadsheetRow}: root field '{fieldName}' conflicts with a Sub Class.");
-					else
-						result.RootFields.Add(field);
+					result.RootFields.Add(field);
 				}
 				else
 				{
-					error($"Config row {spreadsheetRow}: field '{fieldName}' has no Sub Class before a group.");
+					error($"Configuration row {spreadsheetRow}: field '{fieldName}' has no Sub Class before a group.");
 				}
 			}
 
@@ -219,17 +175,35 @@ namespace RCore.SheetX.Editor
 
 		internal static string EmitJson(ConfigSheetData data)
 		{
-			var root = new JObject();
+			var json = new StringBuilder("{");
+			bool first = true;
 			foreach (ConfigGroup group in data.Groups)
 			{
-				var groupJson = new JObject();
+				AppendJsonPropertyPrefix(json, group.Key, ref first);
+				json.Append('{');
+				bool firstField = true;
 				foreach (ConfigField field in group.Fields)
-					groupJson.Add(field.Name, ToJsonToken(field.Value));
-				root.Add(group.Key, groupJson);
+				{
+					AppendJsonPropertyPrefix(json, field.Name, ref firstField);
+					json.Append(ToJsonToken(field.Value).ToString(Formatting.None));
+				}
+				json.Append('}');
 			}
 			foreach (ConfigField field in data.RootFields)
-				root.Add(field.Name, ToJsonToken(field.Value));
-			return root.ToString(Formatting.None);
+			{
+				AppendJsonPropertyPrefix(json, field.Name, ref first);
+				json.Append(ToJsonToken(field.Value).ToString(Formatting.None));
+			}
+			return json.Append('}').ToString();
+		}
+
+		private static void AppendJsonPropertyPrefix(
+			StringBuilder json, string name, ref bool first)
+		{
+			if (!first)
+				json.Append(',');
+			first = false;
+			json.Append(JsonConvert.ToString(name)).Append(':');
 		}
 
 		internal static string EmitCSharp(ConfigSheetData data, string typeName, string @namespace)
@@ -264,7 +238,7 @@ namespace RCore.SheetX.Editor
 			source.Append(indent).Append('{').Append(nl);
 			source.Append(indent).Append(indent).Append("if (configJson == null)").Append(nl);
 			source.Append(indent).Append(indent).Append('{').Append(nl);
-			source.Append(indent).Append(indent).Append(indent).Append("Debug.LogError(\"Config JSON is not assigned.\", this);").Append(nl);
+			source.Append(indent).Append(indent).Append(indent).Append("Debug.LogError(\"Configuration JSON is not assigned.\", this);").Append(nl);
 			source.Append(indent).Append(indent).Append(indent).Append("return;").Append(nl);
 			source.Append(indent).Append(indent).Append('}').Append(nl).Append(nl);
 			source.Append(indent).Append(indent).Append("JsonUtility.FromJsonOverwrite(configJson.text, this);").Append(nl).Append(nl);
@@ -338,6 +312,8 @@ namespace RCore.SheetX.Editor
 					break;
 				case ConfigFieldType.Boolean:
 					if (bool.TryParse(value, out bool boolValue)) { parsed = boolValue; return true; }
+					if (value == "0") { parsed = false; return true; }
+					if (value == "1") { parsed = true; return true; }
 					break;
 				case ConfigFieldType.String:
 					parsed = value;

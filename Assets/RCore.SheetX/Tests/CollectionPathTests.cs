@@ -20,14 +20,13 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void editor_segment_matches_whole_segment_only()
+		public void build_included_segment_matches_special_folder_names_only()
 		{
-			Assert.That(SheetXCollectionSettings.HasEditorSegment("Assets/Game/Editor/Data"), Is.True);
-			// Substring matching would wrongly accept these; they ship in a build.
-			Assert.That(SheetXCollectionSettings.HasEditorSegment("Assets/GameEditor/Data"), Is.False);
-			Assert.That(SheetXCollectionSettings.HasEditorSegment("Assets/Game/EditorTools/Data"), Is.False);
-			// "Assets" itself never counts, even in the pathological case.
-			Assert.That(SheetXCollectionSettings.HasEditorSegment("Editor/Game/Data"), Is.False);
+			Assert.That(SheetXCollectionSettings.HasBuildIncludedSegment("Assets/Game/Resources/Data"), Is.True);
+			Assert.That(SheetXCollectionSettings.HasBuildIncludedSegment("Assets/Game/StreamingAssets/Data"), Is.True);
+			Assert.That(SheetXCollectionSettings.HasBuildIncludedSegment("Assets/Game/MyResources/Data"), Is.False);
+			Assert.That(SheetXCollectionSettings.HasBuildIncludedSegment("Assets/Game/StreamingAssetsTools/Data"), Is.False);
+			Assert.That(SheetXCollectionSettings.HasBuildIncludedSegment("Assets/Game/Editor/Data"), Is.False);
 		}
 
 		[Test]

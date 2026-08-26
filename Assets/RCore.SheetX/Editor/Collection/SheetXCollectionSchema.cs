@@ -22,6 +22,7 @@ namespace RCore.SheetX.Editor
 	internal sealed class SheetXCollectionColumn
 	{
 		internal string Header;
+		internal int SourceColumnIndex;
 		internal IReadOnlyList<string> Path;
 		internal SheetXCollectionScalarType ScalarType;
 		internal bool IsArray;
@@ -56,9 +57,12 @@ namespace RCore.SheetX.Editor
 			"unsafe", "ushort", "using", "virtual", "void", "volatile", "while"
 		};
 
+		internal static bool IsReservedKeyword(string value)
+			=> !string.IsNullOrEmpty(value) && s_reservedKeywords.Contains(value);
+
 		internal static bool IsValidIdentifier(string value)
 		{
-			if (string.IsNullOrEmpty(value) || s_reservedKeywords.Contains(value))
+			if (string.IsNullOrEmpty(value) || IsReservedKeyword(value))
 				return false;
 			if (value[0] != '_' && !char.IsLetter(value[0]))
 				return false;
@@ -104,7 +108,7 @@ namespace RCore.SheetX.Editor
 			return char.ToLowerInvariant(result[0]) + result.Substring(1);
 		}
 
-		internal static string RowTypeName(string sheetName) => ToPascalIdentifier(sheetName) + "Row";
+		internal static string RowTypeName(string sheetName) => ToPascalIdentifier(sheetName) + "SX";
 
 		internal static string CollectionTypeName(string collectionName)
 		{
@@ -132,16 +136,45 @@ namespace RCore.SheetX.Editor
 			out SheetXCollectionSchema schema,
 			out string error)
 		{
+			if (headers != null && headers.Any(RequiresRowsForInference))
+			{
+				schema = null;
+				error = "Rows are required to infer types for unannotated headers.";
+				return false;
+			}
+			return TryParse(headers, null, rowTypeName, out schema, out _, out error);
+		}
+
+		internal static bool TryParse(
+			IReadOnlyList<string> headers,
+			IReadOnlyList<IReadOnlyList<string>> rows,
+			string rowTypeName,
+			out SheetXCollectionSchema schema,
+			out string error)
+		{
+			return TryParse(headers, rows, rowTypeName, out schema, out _, out error);
+		}
+
+		internal static bool TryParse(
+			IReadOnlyList<string> headers,
+			IReadOnlyList<IReadOnlyList<string>> rows,
+			string rowTypeName,
+			out SheetXCollectionSchema schema,
+			out IReadOnlyList<string> warnings,
+			out string error)
+		{
 			schema = null;
 			error = null;
+			var warningList = new List<string>();
+			warnings = warningList;
 			if (!SheetXCollectionNaming.IsValidIdentifier(rowTypeName))
 			{
-				error = $"Row type '{rowTypeName}' is not a valid C# identifier.";
+				error = $"Row type '{rowTypeName}' is not a valid C# identifier. Fix: rename the sheet so its generated Data Class name is valid.";
 				return false;
 			}
 			if (headers == null || headers.Count == 0)
 			{
-				error = "Generated Data Class requires at least one annotated header.";
+				error = "Generated Data Class requires at least one header. Fix: add a field header to row 1.";
 				return false;
 			}
 
@@ -150,10 +183,20 @@ namespace RCore.SheetX.Editor
 			for (int i = 0; i < headers.Count; i++)
 			{
 				string header = headers[i]?.Trim() ?? "";
-				if (!TryParseHeader(header, out SheetXCollectionColumn column, out error))
+				if (header.IndexOf("[x]", StringComparison.Ordinal) >= 0)
+					continue;
+				if (!TryParseHeader(header, rows, i, out SheetXCollectionColumn column,
+					out string keyword, out error))
 				{
 					error = $"Header '{header}' (column {i + 1}): {error}";
 					return false;
+				}
+				if (keyword != null)
+				{
+					warningList.Add(
+						$"Header '{header}' (column {i + 1}) was skipped because '{keyword}' is a C# keyword. "
+						+ "Fix: rename the keyword path segment to a valid C# field name, or add [x] to mark the column ignored.");
+					continue;
 				}
 
 				foreach (var existing in normalizedPaths)
@@ -172,12 +215,12 @@ namespace RCore.SheetX.Editor
 						continue;
 					if (existing.Count == column.Path.Count)
 					{
-						error = $"Header '{header}' (column {i + 1}): duplicate normalized field path '{string.Join(".", column.Path)}'.";
+						error = $"Header '{header}' (column {i + 1}): duplicate normalized field path '{string.Join(".", column.Path)}'. Fix: rename or mark one duplicate column with [x].";
 						return false;
 					}
 					if (shared == existing.Count || shared == column.Path.Count)
 					{
-						error = $"Header '{header}' (column {i + 1}): object/leaf conflict at '{string.Join(".", column.Path.Take(shared))}'.";
+						error = $"Header '{header}' (column {i + 1}): object/leaf conflict at '{string.Join(".", column.Path.Take(shared))}'. Fix: rename one path so a field is not both a value and an object.";
 						return false;
 					}
 				}
@@ -186,6 +229,11 @@ namespace RCore.SheetX.Editor
 				normalizedPaths.Add(column.Path);
 			}
 
+			if (columns.Count == 0)
+			{
+				error = "Generated Data Class has no usable generated fields. Fix: add a valid non-keyword header without [x].";
+				return false;
+			}
 			var objects = BuildObjects(columns, rowTypeName, out error);
 			if (objects == null)
 				return false;
@@ -231,7 +279,9 @@ namespace RCore.SheetX.Editor
 				for (int columnIndex = 0; columnIndex < schema.Columns.Count; columnIndex++)
 				{
 					SheetXCollectionColumn column = schema.Columns[columnIndex];
-					string value = columnIndex < (source?.Count ?? 0) ? source[columnIndex] ?? "" : "";
+					string value = column.SourceColumnIndex < (source?.Count ?? 0)
+						? source[column.SourceColumnIndex] ?? ""
+						: "";
 					string fieldPath = string.Join(".", column.Path);
 					if (string.IsNullOrEmpty(value))
 					{
@@ -243,7 +293,7 @@ namespace RCore.SheetX.Editor
 
 					if (!TryParseToken(column, value, out JToken token, out string parseError))
 					{
-						error = $"Row {rowIndex + 1}, header '{column.Header}': {parseError}";
+						error = $"Row {rowIndex + 1}, header '{column.Header}' (column {column.SourceColumnIndex + 1}): {parseError} Fix: correct the cell value or override the header type.";
 						return false;
 					}
 					SetToken(row, column.Path, token);
@@ -254,50 +304,109 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
+		private static bool RequiresRowsForInference(string value)
+		{
+			string header = value?.Trim() ?? "";
+			if (header.IndexOf("[x]", StringComparison.Ordinal) >= 0 || header.IndexOf(':') >= 0)
+				return false;
+			string rawPath = header.EndsWith("[]", StringComparison.Ordinal)
+				? header.Substring(0, header.Length - 2)
+				: header;
+			return !rawPath.Split('.').Any(SheetXCollectionNaming.IsReservedKeyword);
+		}
+
 		private static bool TryParseHeader(
-			string header, out SheetXCollectionColumn column, out string error)
+			string header,
+			IReadOnlyList<IReadOnlyList<string>> rows,
+			int columnIndex,
+			out SheetXCollectionColumn column,
+			out string keyword,
+			out string error)
 		{
 			column = null;
+			keyword = null;
 			error = null;
 			int colon = header.IndexOf(':');
-			if (colon <= 0 || colon != header.LastIndexOf(':') || colon == header.Length - 1)
+			if (colon != header.LastIndexOf(':') || colon == 0 || colon == header.Length - 1)
 			{
-				error = "expected '<path>:<type>'.";
+				error = "expected '<path>' or '<path>:<type>'. Fix: remove extra ':' characters or provide both path and type.";
 				return false;
 			}
 
-			string rawPath = header.Substring(0, colon);
-			string typeName = header.Substring(colon + 1);
+			string rawPath = colon < 0 ? header : header.Substring(0, colon);
+			string typeName = colon < 0 ? null : header.Substring(colon + 1);
 			bool isArray = rawPath.EndsWith("[]", StringComparison.Ordinal);
 			if (isArray)
 				rawPath = rawPath.Substring(0, rawPath.Length - 2);
 			if (rawPath.IndexOfAny(new[] { '[', ']' }) >= 0)
 			{
-				error = "'[]' is allowed only after the leaf name.";
+				error = "'[]' is allowed only after the leaf name. Fix: move [] to the end of the path or add [x] to ignore the column.";
 				return false;
 			}
 
 			string[] rawSegments = rawPath.Split('.');
+			keyword = rawSegments.FirstOrDefault(SheetXCollectionNaming.IsReservedKeyword);
+			if (keyword != null)
+				return true;
 			if (rawSegments.Length == 0 || rawSegments.Any(s => !SheetXCollectionNaming.IsValidIdentifier(s)))
 			{
-				error = $"path '{rawPath}' contains a keyword or invalid C# identifier.";
+				error = $"path '{rawPath}' contains an invalid C# identifier. Fix: use letters, digits, or underscores, starting with a letter or underscore; or add [x] to ignore the column.";
 				return false;
 			}
 			var path = rawSegments.Select(SheetXCollectionNaming.ToCamelIdentifier).ToArray();
 
-			if (!TryParseType(typeName, out SheetXCollectionScalarType scalarType))
+			SheetXCollectionScalarType scalarType;
+			if (typeName == null)
 			{
-				error = $"type '{typeName}' is not supported.";
+				scalarType = InferType(rows, columnIndex, isArray);
+			}
+			else if (!TryParseType(typeName, out scalarType))
+			{
+				error = $"type '{typeName}' is not supported. Fix: use int, float, bool, or string; or remove the annotation to infer the type.";
 				return false;
 			}
 			column = new SheetXCollectionColumn
 			{
 				Header = header,
+				SourceColumnIndex = columnIndex,
 				Path = path,
 				ScalarType = scalarType,
 				IsArray = isArray,
 			};
 			return true;
+		}
+
+		private static SheetXCollectionScalarType InferType(
+			IReadOnlyList<IReadOnlyList<string>> rows, int columnIndex, bool isArray)
+		{
+			string longest = "";
+			for (int rowIndex = 0; rowIndex < (rows?.Count ?? 0); rowIndex++)
+			{
+				var row = rows[rowIndex];
+				string value = columnIndex < (row?.Count ?? 0) ? row[columnIndex]?.Trim() ?? "" : "";
+				if (value.Length > longest.Length)
+					longest = value;
+			}
+			if (isArray)
+			{
+				string longestItem = "";
+				foreach (string value in SheetXHelper.SplitValueToArray(longest, false))
+				{
+					if (value.Length > longestItem.Length)
+						longestItem = value;
+				}
+				longest = longestItem;
+			}
+			if (SheetXHelper.TryParseInt(longest, out _))
+				return SheetXCollectionScalarType.Int;
+			if (SheetXHelper.TryParseFloat(longest, out float floatValue)
+				&& !float.IsNaN(floatValue) && !float.IsInfinity(floatValue))
+			{
+				return SheetXCollectionScalarType.Float;
+			}
+			return bool.TryParse(longest, out _)
+				? SheetXCollectionScalarType.Bool
+				: SheetXCollectionScalarType.String;
 		}
 
 		private static IReadOnlyList<SheetXCollectionObject> BuildObjects(
@@ -321,7 +430,7 @@ namespace RCore.SheetX.Editor
 					string typeName = SheetXCollectionNaming.ToPascalIdentifier(path[path.Length - 1]);
 					if (types.TryGetValue(typeName, out string existing) && !string.Equals(existing, key, StringComparison.Ordinal))
 					{
-						error = $"Nested object '{key}' collides with generated type '{typeName}'.";
+						error = $"Header '{column.Header}' (column {column.SourceColumnIndex + 1}): nested object '{key}' collides with generated type '{typeName}'. Fix: rename the nested path or sheet so generated type names are unique.";
 						return null;
 					}
 					types[typeName] = key;

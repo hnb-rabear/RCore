@@ -73,17 +73,19 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
-		/// Determines whether an "Editor" segment follows "Assets". Segment membership, not substring:
-		/// "Assets/GameEditor/Data" is a shipping folder, "Assets/Game/Editor/Data" is not.
+		/// Determines whether a path contains a Unity special folder whose contents enter player builds.
+		/// Segment membership, not substring: "MyResources" remains an ordinary folder.
 		/// </summary>
-		internal static bool HasEditorSegment(string path)
+		internal static bool HasBuildIncludedSegment(string path)
 		{
 			var segments = Segments(path);
 			for (int i = 1; i < segments.Length; i++)
 			{
-				// Unity's special-folder rule is case-sensitive, so the comparison is too.
-				if (string.Equals(segments[i], "Editor", StringComparison.Ordinal))
+				if (string.Equals(segments[i], "Resources", StringComparison.Ordinal)
+					|| string.Equals(segments[i], "StreamingAssets", StringComparison.Ordinal))
+				{
 					return true;
+				}
 			}
 			return false;
 		}
@@ -318,7 +320,10 @@ namespace RCore.SheetX.Editor
 
 			// Read-only on purpose: a missing Global is a diagnostic here, not something to silently repair.
 			var collections = settings.collections?.Where(c => c != null).ToList() ?? new List<SheetXCollectionDefinition>();
-			var bindings = settings.sheetBindings?.Where(b => b != null).ToList() ?? new List<SheetXSheetBinding>();
+			var savedBindings = settings.sheetBindings?.Where(b => b != null).ToList() ?? new List<SheetXSheetBinding>();
+			var bindings = activeBindings == null
+				? savedBindings
+				: activeBindings.Where(binding => binding != null).ToList();
 
 			ValidateNamespace(settings, issues);
 			ValidateFolders(settings, issues);
@@ -333,34 +338,23 @@ namespace RCore.SheetX.Editor
 						binding.collectionName, binding.sourceId, binding.sheetName,
 						$"Binding points at collection '{Or(binding.collectionName)}', which is not defined.", null));
 				}
-			}
-
-			var all = new List<SheetXSheetBinding>(bindings);
-			if (activeBindings != null)
-			{
-				foreach (var binding in activeBindings)
+				if (activeBindings != null && !savedBindings.Any(saved =>
+					string.Equals(saved.sourceId, binding.sourceId, StringComparison.Ordinal)
+					&& string.Equals(saved.sheetName, binding.sheetName, StringComparison.Ordinal)))
 				{
-					if (binding == null)
-						continue;
-					bool registered = bindings.Any(b =>
-						string.Equals(b.sourceId, binding.sourceId, StringComparison.Ordinal)
-						&& string.Equals(b.sheetName, binding.sheetName, StringComparison.Ordinal));
-					if (registered)
-						continue;
-					all.Add(binding);
 					issues.Add(Issue(
 						binding.collectionName, binding.sourceId, binding.sheetName,
 						"Binding was supplied for export but is not saved in the settings asset.", null));
 				}
 			}
 
-			ValidateFieldNames(all, issues);
+			ValidateFieldNames(bindings, issues);
 			return issues;
 		}
 
 		private static void ValidateNamespace(SheetXSettings settings, List<SheetXCollectionDiagnostic> issues)
 		{
-			string ns = settings.collectionNamespace;
+			string ns = settings.ResolveCollectionNamespace();
 			if (string.IsNullOrWhiteSpace(ns))
 			{
 				issues.Add(Issue(null, null, null, "Collection namespace is empty.", null));
@@ -372,33 +366,36 @@ namespace RCore.SheetX.Editor
 
 		private static void ValidateFolders(SheetXSettings settings, List<SheetXCollectionDiagnostic> issues)
 		{
-			ValidateFolder("Generated code folder", settings.collectionCodeFolder, issues);
-			ValidateFolder("Collection asset folder", settings.collectionAssetFolder, issues);
-			ValidateFolder("Collection JSON folder", settings.collectionJsonFolder, issues);
-			ValidateFolder("Global Resources folder", settings.globalResourcesFolder, issues);
+			string codeFolder = settings.ResolveCollectionCodeFolder();
+			string assetFolder = settings.ResolveCollectionAssetFolder();
+			string jsonFolder = settings.ResolveCollectionJsonFolder();
+			string globalResourcesFolder = settings.ResolveGlobalResourcesFolder();
 
-			string json = settings.collectionJsonFolder;
-			if (!string.IsNullOrWhiteSpace(json) && !HasEditorSegment(json))
+			ValidateFolder("Generated code folder", codeFolder, issues);
+			ValidateFolder("Collection asset folder", assetFolder, issues);
+			ValidateFolder("Collection JSON folder", jsonFolder, issues);
+			ValidateFolder("Global Resources folder", globalResourcesFolder, issues);
+
+			if (!string.IsNullOrWhiteSpace(jsonFolder) && HasBuildIncludedSegment(jsonFolder))
 			{
 				issues.Add(Issue(null, null, null,
-					"Collection JSON folder must sit under an 'Editor' folder so the source JSON never ships in a build.",
-					json));
+					"Collection JSON folder must not sit under a 'Resources' or 'StreamingAssets' folder because source JSON would enter player builds.",
+					jsonFolder));
 			}
 
-			string global = settings.globalResourcesFolder;
-			if (!string.IsNullOrWhiteSpace(global) && !EndsWithResources(global))
+			if (!string.IsNullOrWhiteSpace(globalResourcesFolder) && !EndsWithResources(globalResourcesFolder))
 			{
 				issues.Add(Issue(null, null, null,
 					"Global Resources folder must end with a 'Resources' folder so Resources.Load can find the root asset.",
-					global));
+					globalResourcesFolder));
 			}
 
-			CheckOverlap("Generated code folder", settings.collectionCodeFolder,
-				"Collection asset folder", settings.collectionAssetFolder, issues);
-			CheckOverlap("Generated code folder", settings.collectionCodeFolder,
-				"Collection JSON folder", settings.collectionJsonFolder, issues);
-			CheckOverlap("Collection asset folder", settings.collectionAssetFolder,
-				"Collection JSON folder", settings.collectionJsonFolder, issues);
+			CheckOverlap("Generated code folder", codeFolder,
+				"Collection asset folder", assetFolder, issues);
+			CheckOverlap("Generated code folder", codeFolder,
+				"Collection JSON folder", jsonFolder, issues);
+			CheckOverlap("Collection asset folder", assetFolder,
+				"Collection JSON folder", jsonFolder, issues);
 		}
 
 		private static void ValidateFolder(string label, string path, List<SheetXCollectionDiagnostic> issues)
