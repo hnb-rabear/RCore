@@ -81,10 +81,12 @@ namespace RCore.SheetX.Editor
 			};
 		}
 
+#if !IKIT_SHEETX
 #if ASSETS_STORE
 		[MenuItem("Window/" + MENU)]
 #else
 		[MenuItem("RCore/" + MENU, priority = 24)]
+#endif
 #endif
 		/// <summary>
 		/// Opens the SheetX editor window.
