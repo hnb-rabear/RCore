@@ -8,13 +8,14 @@
 
 ### Changed
 
-- Generated collection source is now named `SheetXDataCollections.cs` instead of `SheetXDataCollections.g.cs`. Its top-of-file banner states that SheetX generated it; successful export removes the legacy `.g.cs` file to prevent duplicate generated types.
+- Generated collection source is now named `SheetXDataCollections.cs` instead of `SheetXDataCollections.g.cs`. It contains row models and JSON path constants; every collection `ScriptableObject` now lives in its matching `GlobalConfigCollection.cs` or `<Name>ConfigCollection.cs`, so Unity can display its Mono Script. Every generated file carries the SheetX banner; successful export removes the legacy `.g.cs` file to prevent duplicate generated types.
 - Collection JSON no longer requires an `Editor` path segment. Any project-relative `Assets/` folder is allowed except paths under `Resources` or `StreamingAssets`, whose contents Unity includes in player builds.
 
 - Interactive Excel and Google exports route exact ordinal `Configuration` worksheets to fixed plaintext `Configuration.txt` and `Configuration.cs`, then create or reuse `Configuration.asset` after script reload. Single exports ignore Configuration selection. Multi-file exports merge physical Configuration sheets from selected sources in source-list order, keeping duplicate data. Configuration stays outside combined JSON. `Config` remains ordinary row-array JSON. Detached and batch APIs retain ordinary row-array behavior for both names.
 
 ### Fixed
 
+- Existing collection assets with a missing `m_Script` reference now bind to their matching generated `MonoScript` during bake without recreating the asset or discarding serialized data.
 - Generated Data Class now ignores any header containing `[x]`, skips exact C# keyword path segments with actionable warnings, and preserves source-column alignment after ignored fields. Malformed headers, invalid values, binding errors, and generated-name collisions now log once and skip only offending sheet; later valid sheets continue. Accepted JSON and generated source still write atomically, skipped JSON stays untouched and is excluded from current automatic bake. A missing Collection binding from a processed source still aborts collection flush, while bindings from unrelated, unprocessed sources no longer block the current export. Generated source contains accepted current-session bindings only.
 - Generated Data Class now resolves exact symbolic ID keys from `*IDs` sheets before type inference and JSON emission, including array items, for both Excel and Google exports. Explicit header annotations still control generated field types; embedded or unknown text stays unchanged.
 - Global Collection asset now saves before feature assets after references are assigned, preventing later asset saves from clearing a same-bake Global feature reference.

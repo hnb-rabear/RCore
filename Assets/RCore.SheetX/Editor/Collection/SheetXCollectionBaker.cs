@@ -400,7 +400,13 @@ namespace RCore.SheetX.Editor
 					return false;
 				}
 				snapshots.Add(asset, EditorJsonUtility.ToJson(asset));
-				return true;
+				return TryEnsureMonoScript(asset, type, path, out error);
+			}
+			if (AssetDatabase.LoadMainAssetAtPath(path) != null)
+			{
+				error = $"Asset '{path}' exists but cannot load as '{type.FullName}'. SheetX will not overwrite it. "
+					+ "Fix or remove the incompatible asset, then retry.";
+				return false;
 			}
 			if (!AssetDatabase.IsValidFolder(Path.GetDirectoryName(path)?.Replace('\\', '/')))
 			{
@@ -415,8 +421,39 @@ namespace RCore.SheetX.Editor
 				return false;
 			}
 			AssetDatabase.CreateAsset(asset, path);
-			AssetDatabase.SaveAssetIfDirty(asset);
 			createdPaths.Add(path);
+			if (!TryEnsureMonoScript(asset, type, path, out error))
+				return false;
+			AssetDatabase.SaveAssetIfDirty(asset);
+			return true;
+		}
+
+		private static bool TryEnsureMonoScript(
+			SheetXConfigCollectionBase asset, Type type, string path, out string error)
+		{
+			error = null;
+			var serializedObject = new SerializedObject(asset);
+			var scriptProperty = serializedObject.FindProperty("m_Script");
+			if (scriptProperty == null)
+			{
+				error = $"Asset '{path}' has no serialized m_Script property for collection type '{type.FullName}'.";
+				return false;
+			}
+			if (scriptProperty.objectReferenceValue != null)
+				return true;
+
+			MonoScript script = MonoScript.FromScriptableObject(asset);
+			if (script == null)
+				script = MonoImporter.GetAllRuntimeMonoScripts().FirstOrDefault(candidate => candidate.GetClass() == type);
+			if (script == null || script.GetClass() != type)
+			{
+				error = $"Collection type '{type.FullName}' has no matching MonoScript for asset '{path}'. "
+					+ $"Expected source file '{type.Name}.cs'. Re-export collections, wait for compilation, then retry.";
+				return false;
+			}
+
+			scriptProperty.objectReferenceValue = script;
+			serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			return true;
 		}
 

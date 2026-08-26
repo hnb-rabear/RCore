@@ -255,6 +255,67 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		public void load_data_repairs_missing_collection_scripts_without_recreating_assets()
+		{
+			var feature = CreateFeatureAsset(7, "old");
+			File.WriteAllText(JsonPath, "[{\"id\":9,\"name\":\"new\"}]");
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.True, error);
+				var global = AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath);
+				var featureScript = MonoScript.FromScriptableObject(feature);
+				var globalScript = MonoScript.FromScriptableObject(global);
+				Assert.That(featureScript, Is.Not.Null);
+				Assert.That(globalScript, Is.Not.Null);
+
+				ClearScript(feature);
+				ClearScript(global);
+				Assert.That(ScriptOf(feature), Is.Null);
+				Assert.That(ScriptOf(global), Is.Null);
+				feature.items = new[] { new BakeItemsRow { id = 7, name = "old" } };
+				EditorUtility.SetDirty(feature);
+				AssetDatabase.SaveAssetIfDirty(feature);
+
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out error), Is.True, error);
+
+				Assert.That(AssetDatabase.LoadAssetAtPath<BakeShopConfigCollection>(FeaturePath), Is.SameAs(feature));
+				Assert.That(AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath), Is.SameAs(global));
+				Assert.That(ScriptOf(feature), Is.SameAs(featureScript));
+				Assert.That(ScriptOf(global), Is.SameAs(globalScript));
+				Assert.That(feature.items, Has.Length.EqualTo(1));
+				Assert.That(feature.items[0].id, Is.EqualTo(9));
+				Assert.That(feature.items[0].name, Is.EqualTo("new"));
+				Assert.That(global.bakeShop, Is.SameAs(feature));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void unknown_existing_asset_is_not_overwritten_when_collection_cannot_load()
+		{
+			var sentinel = new TextAsset("keep me");
+			AssetDatabase.CreateAsset(sentinel, FeaturePath);
+			File.WriteAllText(JsonPath, "[{\"id\":9,\"name\":\"new\"}]");
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.False);
+				Assert.That(error, Does.Contain(FeaturePath));
+				Assert.That(error, Does.Contain("will not overwrite"));
+				Assert.That(AssetDatabase.LoadAssetAtPath<TextAsset>(FeaturePath), Is.SameAs(sentinel));
+				Assert.That(sentinel.text, Is.EqualTo("keep me"));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
 		public void write_failure_restores_existing_assets_and_deletes_created_assets()
 		{
 			var feature = CreateFeatureAsset(7, "old");
@@ -314,6 +375,20 @@ namespace RCore.SheetX.Tests
 			AssetDatabase.CreateAsset(feature, FeaturePath);
 			AssetDatabase.SaveAssetIfDirty(feature);
 			return feature;
+		}
+
+		private static void ClearScript(ScriptableObject asset)
+		{
+			var serializedObject = new SerializedObject(asset);
+			serializedObject.FindProperty("m_Script").objectReferenceValue = null;
+			serializedObject.ApplyModifiedPropertiesWithoutUndo();
+			AssetDatabase.SaveAssetIfDirty(asset);
+		}
+
+		private static MonoScript ScriptOf(ScriptableObject asset)
+		{
+			var serializedObject = new SerializedObject(asset);
+			return serializedObject.FindProperty("m_Script").objectReferenceValue as MonoScript;
 		}
 
 		private static bool ContainsTextAssetReference(ScriptableObject asset)

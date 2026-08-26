@@ -252,10 +252,11 @@ namespace RCore.SheetX.Editor
 				return true;
 			}
 
-			string source;
+			IReadOnlyDictionary<string, string> sources;
 			try
 			{
-				source = SheetXCollectionGenerator.Emit(m_settings, m_accepted.Select(item => item.Table).ToList());
+				sources = SheetXCollectionGenerator.EmitFiles(
+					m_settings, m_accepted.Select(item => item.Table).ToList());
 			}
 			catch (InvalidOperationException ex)
 			{
@@ -263,11 +264,11 @@ namespace RCore.SheetX.Editor
 				return false;
 			}
 
-			RequiresScriptReload = SourceChanged(source);
+			RequiresScriptReload = SourcesChanged(sources);
 			List<FileSnapshot> snapshots;
 			try
 			{
-				snapshots = CaptureSnapshots();
+				snapshots = CaptureSnapshots(sources.Keys);
 			}
 			catch (Exception ex)
 			{
@@ -284,9 +285,12 @@ namespace RCore.SheetX.Editor
 					Path.GetDirectoryName(path) ?? "", Path.GetFileName(path), candidate.Json,
 					SheetXExportFileType.Json);
 			}
-			writer.Write(
-				m_settings.ResolveCollectionCodeFolder(), SheetXCollectionGenerator.FileName, source,
-				SheetXExportFileType.ConfigScript);
+			foreach (var source in sources)
+			{
+				writer.Write(
+					m_settings.ResolveCollectionCodeFolder(), source.Key, source.Value,
+					SheetXExportFileType.ConfigScript);
+			}
 			context.Flush();
 
 			var result = context.ToResult();
@@ -346,13 +350,13 @@ namespace RCore.SheetX.Editor
 					m_settings, autoLoadAfterExport: false, AcceptedBindingIdentities(), out error);
 		}
 
-		private List<FileSnapshot> CaptureSnapshots()
+		private List<FileSnapshot> CaptureSnapshots(IEnumerable<string> sourceFileNames)
 		{
 			string codeFolder = SheetXCollectionSettings.NormalizePath(
 				m_settings.ResolveCollectionCodeFolder());
 			string legacyPath = codeFolder + "/" + SheetXCollectionGenerator.LegacyFileName;
 			var paths = m_accepted.Select(candidate => candidate.Table.JsonPath)
-				.Append(codeFolder + "/" + SheetXCollectionGenerator.FileName)
+				.Concat(sourceFileNames.Select(fileName => codeFolder + "/" + fileName))
 				.Append(legacyPath)
 				.Append(legacyPath + ".meta");
 			return paths.Distinct(StringComparer.Ordinal).Select(path => new FileSnapshot
@@ -417,10 +421,15 @@ namespace RCore.SheetX.Editor
 			}).ToList();
 		}
 
-		private bool SourceChanged(string source)
+		private bool SourcesChanged(IReadOnlyDictionary<string, string> sources)
 		{
-			string path = Path.Combine(m_settings.ResolveCollectionCodeFolder(), SheetXCollectionGenerator.FileName);
-			return !File.Exists(path) || !string.Equals(File.ReadAllText(path), source, StringComparison.Ordinal);
+			string folder = m_settings.ResolveCollectionCodeFolder();
+			return sources.Any(source =>
+			{
+				string path = Path.Combine(folder, source.Key);
+				return !File.Exists(path)
+					|| !string.Equals(File.ReadAllText(path), source.Value, StringComparison.Ordinal);
+			});
 		}
 
 		private bool IncludesEveryCollectionBindingFromProcessedSources(out string error)
