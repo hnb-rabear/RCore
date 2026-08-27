@@ -14,6 +14,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
+- `RCore.SheetX`: Added Check New Update / Update mechanism in Settings tab. Fetches remote `package.json` from GitHub, compares SemVer versions, displays update notification badge, and allows one-click update for UPM Git or registry installs via `Client.Add()`. Source, embedded, and local installs stay read-only with matching badges.
 - `RCore/Check For Updates` now checks RCore Main, SheetX, RAsset Filter, and RHierarchy against their GitHub package versions. Unity shows one combined update popup after a six-hour cache interval; users can mute prompts for 48 hours or open RCore Packages Manager to review updates.
 - Extracted legacy Asset Cleaner into independent `com.rabear.rcore.assetfilter` 1.0.0 package, renamed **RAsset Filter**. Existing EditorPrefs settings migrate forward; regenerable cache does not.
 - Extracted legacy RHierarchy into independent `com.rabear.rcore.rhierarchy` 1.0.0 package. Existing `RHierarchy_*` EditorPrefs settings remain unchanged.

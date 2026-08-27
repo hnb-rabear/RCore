@@ -4,6 +4,7 @@
 
 ### Added
 
+- Settings tab now checks SheetX's remote GitHub `package.json`, caches latest version in `EditorPrefs`, displays installed/latest versions and a `NEW` badge, and updates UPM Git or registry installs with `Client.Add()`. Source, embedded, and local installs stay read-only with matching badges.
 - Optional Data Config Collections: interactive Excel and Google exports can generate typed collection shells, bake editor-time JSON into serialized ScriptableObject arrays, and create a Global Resources root with feature references. Generated Data Class infers `int`, `float`, `bool`, or `string` from longest non-empty column cells; optional header annotations override inference. Runtime reads serialized data only; it never parses collection JSON. `autoLoadAfterExport` and `autoLoadBeforePlay` respect per-collection Auto Load. Collection metadata remains unsupported by detached `SheetXExporter` and batch APIs.
 
 ### Changed

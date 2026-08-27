@@ -28,7 +28,7 @@ namespace RCore.SheetX.Editor
 			m_googleSheetXWindow.OnEnable();
 			m_googleSheetXWindow.editorWindow = this;
 			m_settingsWindow ??= new SheetXSettingsWindow();
-			m_settingsWindow.OnEnable();
+			m_settingsWindow.OnEnable(this);
 		}
 
 		private void OnGUI()
@@ -66,7 +66,11 @@ namespace RCore.SheetX.Editor
 		// AssetDatabase write is unsafe — mark dirty here and let delayCall do the actual write.
 		private void OnLostFocus() => FlushSettings();
 
-		private void OnDisable() => FlushSettings();
+		private void OnDisable()
+		{
+			m_settingsWindow?.OnDisable();
+			FlushSettings();
+		}
 
 		private void FlushSettings()
 		{

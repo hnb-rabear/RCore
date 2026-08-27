@@ -3,10 +3,14 @@
  * https://github.com/hnb-rabear
  */
 
+using System;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEditor;
+using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace RCore.SheetX.Editor
 {
@@ -16,14 +20,38 @@ namespace RCore.SheetX.Editor
 	public class SheetXSettingsWindow
 	{
 		private SheetXSettings m_sheetXSettings;
+		private EditorWindow m_editorWindow;
 
-		public void OnEnable()
+		// Update check state
+		private string m_installedVersion;
+		private PackageInfo m_packageInfo;
+		private bool m_isUpdating;
+		private AddRequest m_addRequest;
+
+		public void OnEnable(EditorWindow editorWindow)
 		{
 			m_sheetXSettings = SheetXSettings.Init();
+			m_editorWindow = editorWindow;
+			RefreshInstalledPackage();
+		}
+
+		public void OnDisable()
+		{
+			m_editorWindow = null;
+		}
+
+		private void RefreshInstalledPackage()
+		{
+			m_packageInfo = SheetXUpdateChecker.GetInstalledPackageInfo();
+			m_installedVersion = !string.IsNullOrEmpty(m_packageInfo?.version)
+				? m_packageInfo.version
+				: SheetXUpdateChecker.GetInstalledVersion();
 		}
 
 		public void OnGUI()
 		{
+			DrawUpdateSection();
+
 			EditorGUI.BeginChangeCheck();
 			GUILayout.BeginVertical("box");
 			m_sheetXSettings.constantsOutputFolder = EditorHelper.FolderField(
@@ -158,6 +186,137 @@ namespace RCore.SheetX.Editor
 			if (GUILayout.Button("Buy me a coffee", GUILayout.Height(30)))
 				Application.OpenURL("https://ko-fi.com/rabear");
 			GUI.backgroundColor = color;
+		}
+
+		private void DrawUpdateSection()
+		{
+			string remoteVersion = SheetXUpdateChecker.CachedRemoteVersion;
+			bool hasUpdate = SheetXUpdateChecker.HasUpdate(m_installedVersion, remoteVersion);
+
+			GUILayout.BeginVertical("box");
+
+			// Row 1: Version info
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("SheetX", EditorStyles.boldLabel, GUILayout.Width(60));
+			if (!string.IsNullOrEmpty(m_installedVersion))
+			{
+				string versionText = hasUpdate
+					? $"v{m_installedVersion} → v{remoteVersion}"
+					: $"v{m_installedVersion}";
+				var versionStyle = new GUIStyle(EditorStyles.miniLabel)
+				{
+					normal = { textColor = hasUpdate ? new Color(1f, 0.9f, 0.2f) : new Color(0.4f, 0.7f, 1f) },
+					fontStyle = FontStyle.Bold
+				};
+				GUILayout.Label(versionText, versionStyle);
+			}
+			if (hasUpdate)
+			{
+				var updateBadgeStyle = new GUIStyle(EditorStyles.miniLabel)
+				{
+					normal = { textColor = new Color(1f, 0.9f, 0.2f) },
+					fontStyle = FontStyle.Bold,
+				};
+				GUILayout.Label("⬆ NEW", updateBadgeStyle, GUILayout.Width(45));
+			}
+			GUILayout.FlexibleSpace();
+			GUILayout.EndHorizontal();
+
+			// Row 2: Last checked + buttons
+			GUILayout.BeginHorizontal();
+			GUILayout.Label($"Last checked: {SheetXUpdateChecker.GetLastCheckTimeDisplay()}", EditorStyles.miniLabel);
+			GUILayout.FlexibleSpace();
+
+			bool busy = SheetXUpdateChecker.IsChecking || m_isUpdating;
+			bool canUpdate = SheetXUpdateChecker.CanUpdate(m_packageInfo);
+			GUI.enabled = !busy;
+
+			if (GUILayout.Button("Check Update", GUILayout.Width(100), GUILayout.Height(22)))
+			{
+				SheetXUpdateChecker.CheckRemoteVersion(_ =>
+				{
+					RefreshInstalledPackage();
+					m_editorWindow?.Repaint();
+				});
+			}
+
+			if (hasUpdate && canUpdate)
+			{
+				GUI.backgroundColor = new Color(0.4f, 0.8f, 1f);
+				if (GUILayout.Button("Update", GUILayout.Width(70), GUILayout.Height(22)))
+				{
+					UpdatePackage();
+				}
+				GUI.backgroundColor = Color.white;
+			}
+			else if (!canUpdate)
+			{
+				GUI.enabled = false;
+				GUILayout.Button(GetReadOnlyInstallLabel(), GUILayout.Width(70), GUILayout.Height(22));
+				GUI.enabled = !busy;
+			}
+
+			GUI.enabled = true;
+			GUILayout.EndHorizontal();
+
+			// Status message
+			if (SheetXUpdateChecker.IsChecking)
+			{
+				EditorGUILayout.HelpBox("Checking for updates...", MessageType.Info);
+			}
+			else if (m_isUpdating)
+			{
+				EditorGUILayout.HelpBox("Updating SheetX...", MessageType.Info);
+			}
+
+			GUILayout.EndVertical();
+		}
+
+		private string GetReadOnlyInstallLabel()
+		{
+			if (m_packageInfo == null) return "In Assets";
+			if (m_packageInfo.source == PackageSource.Embedded) return "Embedded";
+			if (m_packageInfo.source == PackageSource.Local) return "Local";
+			return "Read Only";
+		}
+
+		private void UpdatePackage()
+		{
+			if (m_isUpdating || !SheetXUpdateChecker.CanUpdate(m_packageInfo)) return;
+
+			try
+			{
+				m_addRequest = Client.Add(SheetXUpdateChecker.GitUrl);
+				m_isUpdating = true;
+				EditorApplication.update -= PollUpdateRequest;
+				EditorApplication.update += PollUpdateRequest;
+			}
+			catch (Exception e)
+			{
+				m_addRequest = null;
+				m_isUpdating = false;
+				Debug.LogError($"[SheetX] Failed to start update: {e.Message}");
+			}
+		}
+
+		private void PollUpdateRequest()
+		{
+			if (m_addRequest == null || !m_addRequest.IsCompleted) return;
+
+			if (m_addRequest.Status == StatusCode.Success)
+			{
+				Debug.Log($"[SheetX] Updated to {m_addRequest.Result.version}");
+			}
+			else if (m_addRequest.Status >= StatusCode.Failure)
+			{
+				Debug.LogError($"[SheetX] Update failed: {m_addRequest.Error?.message ?? "Unknown error"}");
+			}
+
+			m_addRequest = null;
+			m_isUpdating = false;
+			RefreshInstalledPackage();
+			EditorApplication.update -= PollUpdateRequest;
+			m_editorWindow?.Repaint();
 		}
 
 		/// <summary>
