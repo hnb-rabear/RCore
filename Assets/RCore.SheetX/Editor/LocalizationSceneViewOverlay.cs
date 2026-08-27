@@ -159,7 +159,6 @@ namespace RCore.SheetX.Editor
 				currentIndex = 0;
 
 			EditorGUILayout.BeginHorizontal();
-			GUILayout.Label(currentLang, GUILayout.MinWidth(48));
 
 			// Previous button
 			if (GUILayout.Button("<", GUILayout.Width(24)))
@@ -170,7 +169,7 @@ namespace RCore.SheetX.Editor
 
 			// Dropdown
 			EditorGUI.BeginChangeCheck();
-			int selected = EditorGUILayout.Popup(currentIndex, s_languageKeys, GUILayout.MinWidth(80));
+			int selected = EditorGUILayout.Popup(currentIndex, s_languageKeys, GUILayout.Width(64));
 			if (EditorGUI.EndChangeCheck() && selected != currentIndex)
 			{
 				SwitchLanguage(s_languageKeys[selected]);
