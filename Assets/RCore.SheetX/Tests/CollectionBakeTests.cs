@@ -33,6 +33,7 @@ namespace RCore.SheetX.Tests
 			Directory.CreateDirectory(JsonFolder);
 			Directory.CreateDirectory(AssetFolder);
 			Directory.CreateDirectory(ResourcesFolder);
+			File.WriteAllText(JsonFolder + "/Configuration.txt", "{}");
 			AssetDatabase.Refresh();
 		}
 
@@ -255,38 +256,161 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void load_data_repairs_missing_collection_scripts_without_recreating_assets()
+		public void configuration_object_populates_root_and_nested_global_fields()
 		{
-			var feature = CreateFeatureAsset(7, "old");
-			File.WriteAllText(JsonPath, "[{\"id\":9,\"name\":\"new\"}]");
+			File.WriteAllText(JsonPath, "[{\"id\":1,\"name\":\"hero\"}]");
+			File.WriteAllText(JsonFolder + "/Configuration.txt",
+				"{\"environment\":\"production\",\"economy\":{\"startingCoins\":42}}");
 			var settings = CreateSettings();
 			try
 			{
 				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.True, error);
+
 				var global = AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath);
+				Assert.That(global.environment, Is.EqualTo("production"));
+				Assert.That(global.economy.startingCoins, Is.EqualTo(42));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_json_root_must_be_object()
+		{
+			File.WriteAllText(JsonPath, "[{\"id\":1,\"name\":\"hero\"}]");
+			File.WriteAllText(JsonFolder + "/Configuration.txt", "[]");
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.False);
+				Assert.That(error, Does.Contain("Configuration JSON root must be an object."));
+				Assert.That(AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath), Is.Null);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void missing_configuration_json_aborts_before_asset_mutation()
+		{
+			File.Delete(JsonFolder + "/Configuration.txt");
+			var feature = CreateFeatureAsset(7, "old");
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.False);
+				Assert.That(error, Does.Contain("Configuration JSON was not found."));
+				Assert.That(feature.items[0].id, Is.EqualTo(7));
+				Assert.That(AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath), Is.Null);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void stale_configuration_json_is_ignored_without_compiled_marker()
+		{
+			File.WriteAllText(JsonFolder + "/Configuration.txt", "{\"environment\":\"stale\"}");
+			var settings = CreateMarkerAbsentSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<MarkerAbsent.GlobalConfigCollection>(GlobalPath);
+				Assert.That(global, Is.Not.Null);
+				Assert.That(global.environment, Is.Null);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_only_bake_preserves_table_arrays_and_feature_references()
+		{
+			var feature = CreateFeatureAsset(7, "old");
+			var global = CreateGlobalAsset("old", feature);
+			File.WriteAllText(JsonFolder + "/Configuration.txt", "{\"environment\":\"production\"}");
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(
+					settings, false, Array.Empty<PendingCollectionBakeBinding>(), out string error), Is.True, error);
+
+				Assert.That(feature.items[0].id, Is.EqualTo(7));
+				Assert.That(feature.items[0].name, Is.EqualTo("old"));
+				Assert.That(global.environment, Is.EqualTo("production"));
+				Assert.That(global.bakeShop, Is.SameAs(feature));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_failure_rolls_back_global_and_feature_assets()
+		{
+			var feature = CreateFeatureAsset(7, "old");
+			var global = CreateGlobalAsset("old", feature);
+			File.WriteAllText(JsonPath, "[{\"id\":9,\"name\":\"new\"}]");
+			File.WriteAllText(JsonFolder + "/Configuration.txt", "{\"environment\":\"new\"}");
+			string featureSnapshot = EditorJsonUtility.ToJson(feature);
+			string globalSnapshot = EditorJsonUtility.ToJson(global);
+			SheetXCollectionBaker.TestBeforeSave = path =>
+			{
+				if (string.Equals(path, FeaturePath, StringComparison.Ordinal))
+					throw new IOException("Injected feature write failure");
+			};
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.False);
+				Assert.That(error, Does.Contain("Injected feature write failure"));
+				Assert.That(EditorJsonUtility.ToJson(feature), Is.EqualTo(featureSnapshot));
+				Assert.That(EditorJsonUtility.ToJson(global), Is.EqualTo(globalSnapshot));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void load_data_repairs_missing_collection_scripts_without_recreating_assets()
+		{
+			var feature = CreateFeatureAsset(7, "old");
+			var global = CreateGlobalAsset("old", null);
+			File.WriteAllText(JsonPath, "[{\"id\":9,\"name\":\"new\"}]");
+			var settings = CreateSettings();
+			try
+			{
 				var featureScript = MonoScript.FromScriptableObject(feature);
 				var globalScript = MonoScript.FromScriptableObject(global);
 				Assert.That(featureScript, Is.Not.Null);
 				Assert.That(globalScript, Is.Not.Null);
-
-				ClearScript(feature);
-				ClearScript(global);
-				Assert.That(ScriptOf(feature), Is.Null);
-				Assert.That(ScriptOf(global), Is.Null);
-				feature.items = new[] { new BakeItemsRow { id = 7, name = "old" } };
-				EditorUtility.SetDirty(feature);
-				AssetDatabase.SaveAssetIfDirty(feature);
-
-				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out error), Is.True, error);
-
-				Assert.That(AssetDatabase.LoadAssetAtPath<BakeShopConfigCollection>(FeaturePath), Is.SameAs(feature));
-				Assert.That(AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath), Is.SameAs(global));
 				Assert.That(ScriptOf(feature), Is.SameAs(featureScript));
 				Assert.That(ScriptOf(global), Is.SameAs(globalScript));
-				Assert.That(feature.items, Has.Length.EqualTo(1));
-				Assert.That(feature.items[0].id, Is.EqualTo(9));
-				Assert.That(feature.items[0].name, Is.EqualTo("new"));
-				Assert.That(global.bakeShop, Is.SameAs(feature));
+
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, false, out string error), Is.True, error);
+
+				var reloadedFeature = AssetDatabase.LoadAssetAtPath<BakeShopConfigCollection>(FeaturePath);
+				var reloadedGlobal = AssetDatabase.LoadAssetAtPath<GlobalConfigCollection>(GlobalPath);
+				Assert.That(reloadedFeature, Is.SameAs(feature));
+				Assert.That(reloadedGlobal, Is.SameAs(global));
+				Assert.That(ScriptOf(reloadedFeature), Is.SameAs(featureScript));
+				Assert.That(ScriptOf(reloadedGlobal), Is.SameAs(globalScript));
+				Assert.That(reloadedFeature.items, Has.Length.EqualTo(1));
+				Assert.That(reloadedFeature.items[0].id, Is.EqualTo(9));
+				Assert.That(reloadedFeature.items[0].name, Is.EqualTo("new"));
+				Assert.That(reloadedGlobal.bakeShop, Is.SameAs(reloadedFeature));
 			}
 			finally
 			{
@@ -341,6 +465,50 @@ namespace RCore.SheetX.Tests
 			}
 		}
 
+		[Test]
+		public void explicit_empty_accepted_bindings_round_trip_as_empty()
+		{
+			var settings = CreateSettings();
+			AssetDatabase.CreateAsset(settings, "Assets/SheetXTestsTemp/SheetXSettings.asset");
+			try
+			{
+				SheetXCollectionBaker.RegisterPendingBake(
+					settings, true, Array.Empty<PendingCollectionBakeBinding>());
+				string raw = SessionState.GetString(SheetXCollectionBaker.PendingKey, "");
+				var store = JsonUtility.FromJson<PendingCollectionBakeStore>(raw);
+				var entry = store.Entries.Single();
+				Assert.That(entry.HasAcceptedBindingFilter, Is.True);
+				Assert.That(entry.AcceptedBindings, Is.Empty);
+			}
+			finally
+			{
+				SessionState.EraseString(SheetXCollectionBaker.PendingKey);
+				AssetDatabase.DeleteAsset("Assets/SheetXTestsTemp/SheetXSettings.asset");
+			}
+		}
+
+		[Test]
+		public void legacy_pending_entry_without_filter_still_means_all_saved_bindings()
+		{
+			var legacyStore = new PendingCollectionBakeStore
+			{
+				Entries = new System.Collections.Generic.List<PendingCollectionBakeEntry>
+				{
+					new PendingCollectionBakeEntry
+					{
+						SettingsAssetPath = "Assets/Settings.asset",
+						AutoLoadAfterExport = true,
+						HasAcceptedBindingFilter = false,
+						AcceptedBindings = new System.Collections.Generic.List<PendingCollectionBakeBinding>(),
+					}
+				}
+			};
+			string json = JsonUtility.ToJson(legacyStore);
+			var deserialized = JsonUtility.FromJson<PendingCollectionBakeStore>(json);
+			var entry = deserialized.Entries.Single();
+			Assert.That(entry.HasAcceptedBindingFilter, Is.False);
+		}
+
 		private static SheetXSettings CreateSettings()
 		{
 			var settings = ScriptableObject.CreateInstance<SheetXSettings>();
@@ -368,6 +536,19 @@ namespace RCore.SheetX.Tests
 			return settings;
 		}
 
+		private static SheetXSettings CreateMarkerAbsentSettings()
+		{
+			var settings = ScriptableObject.CreateInstance<SheetXSettings>();
+			settings.ResetToDefault();
+			settings.enableCollections = true;
+			settings.collectionNamespace = "RCore.SheetX.Tests.MarkerAbsent";
+			settings.collectionCodeFolder = TempRoot + "/Code";
+			settings.collectionAssetFolder = AssetFolder;
+			settings.collectionJsonFolder = JsonFolder;
+			settings.globalResourcesFolder = ResourcesFolder;
+			return settings;
+		}
+
 		private static BakeShopConfigCollection CreateFeatureAsset(int id, string name)
 		{
 			var feature = ScriptableObject.CreateInstance<BakeShopConfigCollection>();
@@ -377,12 +558,22 @@ namespace RCore.SheetX.Tests
 			return feature;
 		}
 
-		private static void ClearScript(ScriptableObject asset)
+		private static GlobalConfigCollection CreateGlobalAsset(string environment, BakeShopConfigCollection feature)
+		{
+			var global = ScriptableObject.CreateInstance<GlobalConfigCollection>();
+			global.environment = environment;
+			global.bakeShop = feature;
+			AssetDatabase.CreateAsset(global, GlobalPath);
+			AssetDatabase.SaveAssetIfDirty(global);
+			return global;
+		}
+
+		private static void SetScript(ScriptableObject asset, MonoScript script)
 		{
 			var serializedObject = new SerializedObject(asset);
-			serializedObject.FindProperty("m_Script").objectReferenceValue = null;
+			var property = serializedObject.FindProperty("m_Script");
+			property.objectReferenceValue = script;
 			serializedObject.ApplyModifiedPropertiesWithoutUndo();
-			AssetDatabase.SaveAssetIfDirty(asset);
 		}
 
 		private static MonoScript ScriptOf(ScriptableObject asset)

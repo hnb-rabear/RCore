@@ -14,27 +14,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   excelSheetsPath:
     selected: 1
-    path: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
+    path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
     sheets:
-    - selected: 1
-      name: ExampleConstants
-    - selected: 1
-      name: ExampleIDs
-    - selected: 1
-      name: LocalizationExample1
-    - selected: 1
-      name: LocalizationExample2
-    - selected: 1
-      name: ExampleData1
-    - selected: 1
-      name: ExampleData2
-    - selected: 1
-      name: ExampleArrayData
-    - selected: 1
-      name: ExampleData4
-    - selected: 1
-      name: ExampleAttributeData
-    name: Example
+    - selected: 0
+      name: Constants
+    - selected: 0
+      name: TrackingConstants
+    - selected: 0
+      name: IDs
+    - selected: 0
+      name: Configuration
+    - selected: 0
+      name: Characters
+    - selected: 0
+      name: Enemies
+    - selected: 0
+      name: EnemyAttacks
+    - selected: 0
+      name: Mods
+    - selected: 0
+      name: Equipments
+    - selected: 0
+      name: RescueRewards
+    - selected: 0
+      name: PlayerLevels
+    name: GameData
   excelSheetsPaths:
   - selected: 1
     path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Challenges.xlsx
@@ -69,17 +73,9 @@ MonoBehaviour:
       name: RescueRewards
     - selected: 1
       name: PlayerLevels
+    - selected: 1
+      name: Configuration
     name: GameData
-  - selected: 0
-    path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Localization.xlsx
-    sheets:
-    - selected: 1
-      name: LocalizationCommon
-    - selected: 1
-      name: LocalizationMod
-    - selected: 1
-      name: LocalizationTask
-    name: Localization
   - selected: 1
     path: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
     sheets:
@@ -148,16 +144,177 @@ MonoBehaviour:
   separateIDs: 0
   separateLocalizations: 1
   combineJson: 0
-  generateConfigScriptableObject: 0
-  enableCollections: 0
-  collections: []
-  sheetBindings: []
+  enableCollections: 1
+  collections:
+  - name: Global
+    autoLoad: 1
+    builtInGlobal: 1
+  - name: Player
+    autoLoad: 1
+    builtInGlobal: 0
+  sheetBindings:
+  - sourceId: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    sheetName: ExampleData1
+    outputMode: 0
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    sheetName: ExampleData2
+    outputMode: 0
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    sheetName: ExampleArrayData
+    outputMode: 0
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    sheetName: ExampleAttributeData
+    outputMode: 0
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
+    sheetName: ExampleData1
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
+    sheetName: ExampleData2
+    outputMode: 2
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
+    sheetName: ExampleArrayData
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
+    sheetName: ExampleData4
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting an Excel File/Example.xlsx
+    sheetName: ExampleAttributeData
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Challenges.xlsx
+    sheetName: Achievements
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/Challenges.xlsx
+    sheetName: DailyQuests
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: Characters
+    outputMode: 1
+    collectionName: Player
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: Enemies
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: EnemyAttacks
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: Mods
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: Equipments
+    outputMode: 1
+    collectionName: Player
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: RescueRewards
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: PlayerLevels
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
+    sheetName: Shop
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
+    sheetName: Chests
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
+    sheetName: ChestRewards
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
+    sheetName: CheckinRewards
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
+    sheetName: ProgressRewards
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/ShopItems.xlsx
+    sheetName: FreeRewards
+    outputMode: 1
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: 1_9BqoKwRsod5cMwML5n_pLpuWk045lD3Jd7nrizqVBo
+    sheetName: ExampleData3
+    outputMode: 0
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
+  - sourceId: Assets/SheetXExample/Examples/Exporting Multiple Excel Files/GameData.xlsx
+    sheetName: Configuration
+    outputMode: 0
+    collectionName: Global
+    rowTypeName: 
+    fieldName: 
   collectionCodeFolder: 
   collectionAssetFolder: 
   collectionJsonFolder: 
   collectionNamespace: 
   globalResourcesFolder: 
-  autoLoadAfterExport: 0
+  autoLoadAfterExport: 1
   autoLoadBeforePlay: 0
   onlyEnumAsIDs: 0
   persistentFields: 

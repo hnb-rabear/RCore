@@ -1080,8 +1080,16 @@ namespace RCore.SheetX.Editor
 		{
 			bool configurationWritten = false;
 			var session = CreateCollectionSession();
-			if (ConfigurationRouteEnabled)
-				TryExportConfiguration(ReadConfigurationTable(workBook), out configurationWritten);
+			var configurationTable = ReadConfigurationTable(workBook);
+			if (session != null)
+			{
+				if (FindExactSheet(workBook, SheetXConstants.CONFIGURATION_SHEET) != null)
+					session.TryAddConfiguration(m_settings.excelSheetsPath.path, configurationTable, out _);
+			}
+			else if (ConfigurationRouteEnabled)
+			{
+				TryExportConfiguration(configurationTable, out configurationWritten);
+			}
 			ExportOrdinaryJson(workBook, session, m_settings.excelSheetsPath.path);
 			FlushCollectionSession(session);
 			if ((configurationWritten || session?.WroteArtifacts == true) && !m_writer.Detached)
@@ -1171,9 +1179,9 @@ namespace RCore.SheetX.Editor
 		// Detached and batch exports carry no settings-backed collection bindings, so they keep the
 		// ordinary Json route untouched.
 		private SheetXCollectionExportSession CreateCollectionSession()
-			=> m_settings.enableCollections && !m_writer.Detached
+			=> m_settings.enableCollections && ConfigurationRouteEnabled
 				? new SheetXCollectionExportSession(
-					m_settings, m_writer.Warn, m_writer.Error, ids: m_allIds)
+					m_settings, m_writer.Warn, m_writer.Error, output: m_writer.Output, ids: m_allIds)
 				: null;
 
 		// Ordinary Json needs its output folder; a collection-only export does not, so the folder check
@@ -1276,8 +1284,11 @@ namespace RCore.SheetX.Editor
 
 		private void BakeCollectionSession(SheetXCollectionExportSession session)
 		{
-			if (session?.WroteArtifacts == true && !session.TryBakeAfterRefresh(out string error))
+			if (!m_writer.Detached && session?.WroteArtifacts == true
+				&& !session.TryBakeAfterRefresh(out string error))
+			{
 				m_writer.Error(error);
+			}
 		}
 
 		// Generated Data Class owns its own grammar, so this reader stays deliberately plain: no merged-cell
@@ -1369,10 +1380,23 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
+		private static ISheet FindExactSheet(IWorkbook workbook, string sheetName)
+		{
+			if (workbook == null)
+				return null;
+			for (int i = 0; i < workbook.NumberOfSheets; i++)
+			{
+				var sheet = workbook.GetSheetAt(i);
+				if (string.Equals(sheet.SheetName, sheetName, StringComparison.Ordinal))
+					return sheet;
+			}
+			return null;
+		}
+
 		private static List<string[]> ReadConfigurationTable(IWorkbook workbook)
 		{
 			var table = new List<string[]>();
-			var sheet = workbook?.GetSheet(SheetXConstants.CONFIGURATION_SHEET);
+			var sheet = FindExactSheet(workbook, SheetXConstants.CONFIGURATION_SHEET);
 			if (sheet == null)
 				return table;
 
@@ -2054,7 +2078,22 @@ namespace RCore.SheetX.Editor
 			}
 
 			bool configurationWritten = false;
-			if (ConfigurationRouteEnabled)
+			if (session != null)
+			{
+				foreach (var file in m_settings.excelSheetsPaths)
+				{
+					if (!file.selected)
+						continue;
+
+					var workBook = file.GetWorkBook();
+					if (workBook == null)
+						continue;
+
+					if (workBook.GetSheet(SheetXConstants.CONFIGURATION_SHEET) != null)
+						session.TryAddConfiguration(file.path, ReadConfigurationTable(workBook), out _);
+				}
+			}
+			else if (ConfigurationRouteEnabled)
 			{
 				foreach (var file in m_settings.excelSheetsPaths)
 				{

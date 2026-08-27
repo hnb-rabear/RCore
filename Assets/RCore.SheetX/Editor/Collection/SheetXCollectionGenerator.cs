@@ -56,34 +56,42 @@ namespace RCore.SheetX.Editor
 		/// Emits the generated data source, or throws <see cref="InvalidOperationException"/> on a name
 		/// collision. Use <see cref="EmitFiles"/> when writing output so each collection gets its matching script.
 		/// </summary>
-		internal static string Emit(SheetXSettings settings, IReadOnlyList<SheetXCollectionGeneratedTable> tables)
-			=> EmitFiles(settings, tables)[FileName];
+		internal static string Emit(
+			SheetXSettings settings,
+			IReadOnlyList<SheetXCollectionGeneratedTable> tables,
+			ConfigSheetData configuration = null)
+			=> EmitFiles(settings, tables, configuration)[FileName];
 
 		/// <summary>
 		/// Emits row models and paths in <see cref="FileName"/>, plus one matching script per collection type.
 		/// </summary>
 		internal static IReadOnlyDictionary<string, string> EmitFiles(
-			SheetXSettings settings, IReadOnlyList<SheetXCollectionGeneratedTable> tables)
+			SheetXSettings settings,
+			IReadOnlyList<SheetXCollectionGeneratedTable> tables,
+			ConfigSheetData configuration = null)
 		{
 			var ordered = Order(tables);
 			foreach (var table in ordered)
 				table.JsonPath = JsonPathFor(settings, table.SheetName);
-			Validate(settings, ordered);
+			Validate(settings, ordered, configuration);
 
 			var files = new Dictionary<string, string>(StringComparer.Ordinal);
-			var dataSource = BeginSource(settings, includeSystem: true);
+			var dataSource = BeginSource(settings, includeSystem: true, includeUnityEngine: false);
 			string indent = SourceIndent(settings);
 			foreach (var table in ordered.Where(t => t.Schema != null))
 				AppendRowTypes(dataSource, indent, table.Schema);
-			AppendPaths(dataSource, indent, settings, ordered);
+			AppendPaths(dataSource, indent, settings, ordered, configuration);
 			EndSource(dataSource, settings);
 			files.Add(FileName, dataSource.ToString());
 
 			var collectionOrder = CollectionOrder(settings, ordered);
 			foreach (string collection in collectionOrder)
 			{
-				var collectionSource = BeginSource(settings, includeSystem: false);
-				AppendCollection(collectionSource, indent, collection, collectionOrder, ordered);
+				bool isGlobal = IsGlobal(collection);
+				bool includeSystem = isGlobal && configuration != null && configuration.Groups.Count > 0;
+				bool includeUnityEngine = isGlobal && UsesUnityEngine(configuration);
+				var collectionSource = BeginSource(settings, includeSystem, includeUnityEngine);
+				AppendCollection(collectionSource, indent, collection, collectionOrder, ordered, configuration);
 				EndSource(collectionSource, settings);
 				string typeName = SheetXCollectionNaming.CollectionTypeName(collection);
 				files.Add(typeName + ".cs", collectionSource.ToString());
@@ -91,7 +99,8 @@ namespace RCore.SheetX.Editor
 			return files;
 		}
 
-		private static StringBuilder BeginSource(SheetXSettings settings, bool includeSystem)
+		private static StringBuilder BeginSource(
+			SheetXSettings settings, bool includeSystem, bool includeUnityEngine)
 		{
 			var source = new StringBuilder();
 			source.Append("/***").Append(NL);
@@ -100,7 +109,7 @@ namespace RCore.SheetX.Editor
 			if (includeSystem)
 				source.Append("using System;").Append(NL);
 			source.Append("using RCore.SheetX;").Append(NL);
-			if (includeSystem)
+			if (includeUnityEngine)
 				source.Append("using UnityEngine;").Append(NL);
 			source.Append(NL);
 
@@ -111,6 +120,27 @@ namespace RCore.SheetX.Editor
 				source.Append('{').Append(NL);
 			}
 			return source;
+		}
+
+		private static bool UsesUnityEngine(ConfigSheetData configuration)
+		{
+			if (configuration == null)
+				return false;
+
+			foreach (var root in configuration.RootFields)
+			{
+				if (root.Type == ConfigFieldType.Vector2 || root.Type == ConfigFieldType.Vector3)
+					return true;
+			}
+			foreach (var group in configuration.Groups)
+			{
+				foreach (var field in group.Fields)
+				{
+					if (field.Type == ConfigFieldType.Vector2 || field.Type == ConfigFieldType.Vector3)
+						return true;
+				}
+			}
+			return false;
 		}
 
 		private static string SourceIndent(SheetXSettings settings)
@@ -148,20 +178,50 @@ namespace RCore.SheetX.Editor
 			return names;
 		}
 
+		private static readonly HashSet<string> s_inheritedGlobalMembers = new HashSet<string>(StringComparer.Ordinal)
+		{
+			"IsLoaded",
+			"SetLoaded",
+			"ResetLoaded",
+			"Instance",
+			"SetInstance",
+		};
+
+		private static string FormatOwner(string sourceId, int row)
+		{
+			if (string.IsNullOrEmpty(sourceId))
+				return "unknown";
+			return row > 0 ? $"{sourceId}:{row}" : sourceId;
+		}
+
+		private static string ConfigurationOwner(ConfigSheetData configuration)
+		{
+			var group = configuration.Groups.FirstOrDefault();
+			if (group != null)
+				return FormatOwner(group.SourceId, group.Row);
+
+			var root = configuration.RootFields.FirstOrDefault();
+			return root == null ? "unknown" : FormatOwner(root.SourceId, root.Row);
+		}
+
 		private static void Validate(
-			SheetXSettings settings, List<SheetXCollectionGeneratedTable> tables)
+			SheetXSettings settings,
+			List<SheetXCollectionGeneratedTable> tables,
+			ConfigSheetData configuration)
 		{
 			var rowTypes = new Dictionary<string, string>(StringComparer.Ordinal);
 			var declaredTypes = new Dictionary<string, string>(StringComparer.Ordinal);
 			var fields = new HashSet<string>(StringComparer.Ordinal);
+			var globalMembers = new Dictionary<string, string>(StringComparer.Ordinal);
 			var constants = new Dictionary<string, string>(StringComparer.Ordinal);
 			var collectionTypes = new Dictionary<string, string>(StringComparer.Ordinal);
+			var configurationTypes = new Dictionary<string, string>(StringComparer.Ordinal);
 
 			foreach (string collection in CollectionOrder(settings, tables))
 			{
 				string typeName = SheetXCollectionNaming.CollectionTypeName(collection);
 				if (collectionTypes.TryGetValue(typeName, out string owner))
-					throw new InvalidOperationException($"Collections '{owner}' and '{collection}' both generate type '{typeName}'.");
+					throw new InvalidOperationException($"Collections '{owner}' and '{collection}' both generate type '{typeName}'. Fix: rename one collection.");
 				collectionTypes[typeName] = collection;
 			}
 			declaredTypes["SheetXCollectionPaths"] = "<path constants>";
@@ -169,12 +229,87 @@ namespace RCore.SheetX.Editor
 				CollectionOrder(settings, tables).Where(name => !IsGlobal(name)).Select(SheetXCollectionNaming.ToCamelIdentifier),
 				StringComparer.Ordinal);
 
+			foreach (string feature in CollectionOrder(settings, tables).Where(name => !IsGlobal(name)))
+				globalMembers[SheetXCollectionNaming.ToCamelIdentifier(feature)] = $"feature collection reference '{feature}'";
+
+			if (configuration != null)
+			{
+				string configConstant = SheetXCollectionNaming.ToPascalIdentifier("Configuration");
+				constants[configConstant] = $"Configuration ({ConfigurationOwner(configuration)})";
+
+				foreach (var group in configuration.Groups)
+				{
+					if (string.IsNullOrEmpty(group.ClassName))
+						continue;
+
+					string groupOwner = FormatOwner(group.SourceId, group.Row);
+					if (declaredTypes.TryGetValue(group.ClassName, out string firstTypeOwner))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{group.SourceId}', sheet 'Configuration', row {group.Row}: Sub Class '{group.Key}' generates type '{group.ClassName}' which collides with '{firstTypeOwner}'. First owner: {firstTypeOwner}. Fix: rename Sub Class.");
+					}
+					if (collectionTypes.TryGetValue(group.ClassName, out string firstCollectionOwner))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{group.SourceId}', sheet 'Configuration', row {group.Row}: Sub Class '{group.Key}' generates type '{group.ClassName}' which collides with collection type '{firstCollectionOwner}'. First owner: {firstCollectionOwner}. Fix: rename Sub Class or collection.");
+					}
+					declaredTypes[group.ClassName] = $"Configuration:{groupOwner}";
+					configurationTypes[group.ClassName] = groupOwner;
+
+					if (string.Equals(group.Key, group.ClassName, StringComparison.Ordinal))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{group.SourceId}', sheet 'Configuration', row {group.Row}: group member '{group.Key}' collides with nested class '{group.ClassName}'. First owner: {groupOwner}. Fix: rename Sub Class.");
+					}
+					foreach (ConfigField field in group.Fields)
+					{
+						if (string.Equals(field.Name, group.ClassName, StringComparison.Ordinal))
+						{
+							throw new InvalidOperationException(
+								$"SheetX: source '{field.SourceId}', sheet 'Configuration', row {field.Row}: field '{field.Name}' collides with its containing nested class '{group.ClassName}'. First owner: {groupOwner}. Fix: rename field or Sub Class.");
+						}
+					}
+					if (s_inheritedGlobalMembers.Contains(group.Key))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{group.SourceId}', sheet 'Configuration', row {group.Row}: group member '{group.Key}' collides with inherited GlobalConfigCollectionBase member '{group.Key}'. First owner: GlobalConfigCollectionBase.{group.Key}. Fix: rename Sub Class.");
+					}
+					if (globalMembers.TryGetValue(group.Key, out string firstGlobalGroupOwner))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{group.SourceId}', sheet 'Configuration', row {group.Row}: group member '{group.Key}' collides with {firstGlobalGroupOwner}. First owner: {firstGlobalGroupOwner}. Fix: rename Sub Class or conflicting member.");
+					}
+					globalMembers[group.Key] = $"Configuration group '{group.Key}' ({groupOwner})";
+				}
+
+				foreach (var root in configuration.RootFields)
+				{
+					string rootOwner = FormatOwner(root.SourceId, root.Row);
+					if (configurationTypes.TryGetValue(root.Name, out string firstConfigurationTypeOwner))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{root.SourceId}', sheet 'Configuration', row {root.Row}: root field '{root.Name}' collides with nested class '{root.Name}'. First owner: {firstConfigurationTypeOwner}. Fix: rename root field or Sub Class.");
+					}
+					if (s_inheritedGlobalMembers.Contains(root.Name))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{root.SourceId}', sheet 'Configuration', row {root.Row}: member '{root.Name}' collides with inherited GlobalConfigCollectionBase member '{root.Name}'. First owner: GlobalConfigCollectionBase.{root.Name}. Fix: rename root field.");
+					}
+					if (globalMembers.TryGetValue(root.Name, out string firstGlobalRootOwner))
+					{
+						throw new InvalidOperationException(
+							$"SheetX: source '{root.SourceId}', sheet 'Configuration', row {root.Row}: root field '{root.Name}' collides with {firstGlobalRootOwner}. First owner: {firstGlobalRootOwner}. Fix: rename root field or conflicting member.");
+					}
+					globalMembers[root.Name] = $"Configuration root field '{root.Name}' ({rootOwner})";
+				}
+			}
+
 			foreach (var table in tables)
 			{
 				if (string.IsNullOrEmpty(table.RowTypeName))
-					throw new InvalidOperationException($"Sheet '{table.SheetName}' has no row type.");
+					throw new InvalidOperationException($"Sheet '{table.SheetName}' has no row type. Fix: configure valid row type.");
 				if (string.IsNullOrEmpty(table.FieldName))
-					throw new InvalidOperationException($"Sheet '{table.SheetName}' has no collection field name.");
+					throw new InvalidOperationException($"Sheet '{table.SheetName}' has no collection field name. Fix: configure valid field name.");
 
 				// Only generated rows declare a type; an Existing Data Class reuses one the developer owns.
 				if (table.Schema != null)
@@ -182,7 +317,7 @@ namespace RCore.SheetX.Editor
 					if (rowTypes.TryGetValue(table.RowTypeName, out string owner))
 					{
 						throw new InvalidOperationException(
-							$"Sheets '{owner}' and '{table.SheetName}' both generate row type '{table.RowTypeName}'.");
+							$"Sheets '{owner}' and '{table.SheetName}' both generate row type '{table.RowTypeName}'. Fix: rename one sheet.");
 					}
 					rowTypes[table.RowTypeName] = table.SheetName;
 
@@ -192,10 +327,13 @@ namespace RCore.SheetX.Editor
 						if (declaredTypes.TryGetValue(declared, out string first))
 						{
 							throw new InvalidOperationException(
-								$"Sheets '{first}' and '{table.SheetName}' both generate type '{declared}'.");
+								$"Sheets '{first}' and '{table.SheetName}' both generate type '{declared}'. First owner: {first}. Fix: rename row/nested class or sheet.");
 						}
-						if (collectionTypes.ContainsKey(declared))
-							throw new InvalidOperationException($"Generated type '{declared}' collides with a generated collection type.");
+						if (collectionTypes.TryGetValue(declared, out string firstCollection))
+						{
+							throw new InvalidOperationException(
+								$"Sheet '{table.SheetName}' generates type '{declared}' which collides with collection type '{firstCollection}'. First owner: {firstCollection}. Fix: rename sheet or collection.");
+						}
 						declaredTypes[declared] = table.SheetName;
 					}
 				}
@@ -203,19 +341,28 @@ namespace RCore.SheetX.Editor
 				if (!fields.Add(table.CollectionName + "\0" + table.FieldName))
 				{
 					throw new InvalidOperationException(
-						$"Collection '{table.CollectionName}' declares field '{table.FieldName}' twice.");
+						$"Collection '{table.CollectionName}' declares field '{table.FieldName}' twice. Fix: rename one sheet or field.");
 				}
-				if (IsGlobal(table.CollectionName) && globalFeatureFields.Contains(table.FieldName))
+				if (IsGlobal(table.CollectionName))
 				{
-					throw new InvalidOperationException(
-						$"Global table field '{table.FieldName}' collides with a feature collection reference.");
+					if (configurationTypes.TryGetValue(table.FieldName, out string firstConfigurationTypeOwner))
+					{
+						throw new InvalidOperationException(
+							$"Global table field '{table.FieldName}' collides with Configuration nested class '{table.FieldName}'. First owner: {firstConfigurationTypeOwner}. Fix: rename table field or Sub Class.");
+					}
+					if (globalMembers.TryGetValue(table.FieldName, out string firstOwner))
+					{
+						throw new InvalidOperationException(
+							$"Global table field '{table.FieldName}' collides with {firstOwner}. First owner: {firstOwner}. Fix: rename table or member.");
+					}
+					globalMembers[table.FieldName] = $"Global table field '{table.FieldName}' ({table.SheetName})";
 				}
 
 				string constant = SheetXCollectionNaming.ToPascalIdentifier(table.SheetName);
 				if (constants.TryGetValue(constant, out string existing))
 				{
 					throw new InvalidOperationException(
-						$"Sheets '{existing}' and '{table.SheetName}' both generate path constant '{constant}'.");
+						$"Sheets '{existing}' and '{table.SheetName}' both generate path constant '{constant}'. First owner: {existing}. Fix: rename one sheet.");
 				}
 				constants[constant] = table.SheetName;
 			}
@@ -268,7 +415,8 @@ namespace RCore.SheetX.Editor
 
 		private static void AppendCollection(
 			StringBuilder source, string indent, string collection,
-			IEnumerable<string> collectionOrder, List<SheetXCollectionGeneratedTable> tables)
+			IEnumerable<string> collectionOrder, List<SheetXCollectionGeneratedTable> tables,
+			ConfigSheetData configuration)
 		{
 			bool global = IsGlobal(collection);
 			string baseType = global ? "GlobalConfigCollectionBase" : "SheetXConfigCollectionBase";
@@ -276,6 +424,36 @@ namespace RCore.SheetX.Editor
 				.Append(SheetXCollectionNaming.CollectionTypeName(collection))
 				.Append(" : ").Append(baseType).Append(NL);
 			source.Append(indent).Append('{').Append(NL);
+
+			if (global && configuration != null)
+			{
+				foreach (var group in configuration.Groups)
+				{
+					source.Append(indent).Append(T).Append("[Serializable]").Append(NL);
+					source.Append(indent).Append(T).Append("public class ").Append(group.ClassName).Append(NL);
+					source.Append(indent).Append(T).Append('{').Append(NL);
+					foreach (var field in group.Fields)
+					{
+						source.Append(indent).Append(T).Append(T).Append("public ")
+							.Append(SheetXConfigSheet.ToCSharpType(field.Type)).Append(' ')
+							.Append(field.Name).Append(';').Append(NL);
+					}
+					source.Append(indent).Append(T).Append('}').Append(NL).Append(NL);
+				}
+
+				foreach (var group in configuration.Groups)
+				{
+					source.Append(indent).Append(T).Append("public ")
+						.Append(group.ClassName).Append(' ')
+						.Append(group.Key).Append(';').Append(NL);
+				}
+				foreach (var root in configuration.RootFields)
+				{
+					source.Append(indent).Append(T).Append("public ")
+						.Append(SheetXConfigSheet.ToCSharpType(root.Type)).Append(' ')
+						.Append(root.Name).Append(';').Append(NL);
+				}
+			}
 
 			foreach (var table in tables.Where(t => string.Equals(t.CollectionName, collection, StringComparison.Ordinal)))
 				source.Append(indent).Append(T).Append("public ").Append(table.RowTypeName).Append("[] ").Append(table.FieldName).Append(';').Append(NL);
@@ -294,10 +472,18 @@ namespace RCore.SheetX.Editor
 		}
 
 		private static void AppendPaths(
-			StringBuilder source, string indent, SheetXSettings settings, List<SheetXCollectionGeneratedTable> tables)
+			StringBuilder source, string indent, SheetXSettings settings,
+			List<SheetXCollectionGeneratedTable> tables, ConfigSheetData configuration)
 		{
 			source.Append(indent).Append("public static partial class SheetXCollectionPaths").Append(NL);
 			source.Append(indent).Append('{').Append(NL);
+
+			if (configuration != null)
+			{
+				source.Append(indent).Append(T).Append("internal const string Configuration = \"")
+					.Append(JsonPathFor(settings, "Configuration")).Append("\";").Append(NL);
+			}
+
 			foreach (var table in tables)
 			{
 				source.Append(indent).Append(T).Append("internal const string ")

@@ -44,6 +44,26 @@ namespace RCore.SheetX.Editor
 			"unsafe", "ushort", "using", "virtual", "void", "volatile", "while"
 		};
 
+		/// <summary>
+		/// Determines whether exact sheet name automatically binds as direct input to Global collection.
+		/// </summary>
+		internal static bool IsAutomaticConfiguration(SheetXSettings settings, string sheetName)
+		{
+			return settings != null
+				&& settings.enableCollections
+				&& string.Equals(sheetName, SheetXConstants.CONFIGURATION_SHEET, StringComparison.Ordinal);
+		}
+
+		internal static IEnumerable<SheetXSheetBinding> FilterActiveBindings(
+			SheetXSettings settings, IEnumerable<SheetXSheetBinding> bindings)
+		{
+			if (bindings == null)
+				return Enumerable.Empty<SheetXSheetBinding>();
+			if (settings != null && settings.enableCollections)
+				return bindings.Where(b => b != null && !IsAutomaticConfiguration(settings, b.sheetName));
+			return bindings.Where(b => b != null);
+		}
+
 		#region Paths
 
 		/// <summary>
@@ -175,7 +195,7 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		internal static SheetXSheetBinding GetOrCreateBinding(SheetXSettings settings, string sourceId, string sheetName)
 		{
-			if (settings == null)
+			if (settings == null || IsAutomaticConfiguration(settings, sheetName))
 				return null;
 
 			EnsureGlobal(settings);
@@ -320,10 +340,10 @@ namespace RCore.SheetX.Editor
 
 			// Read-only on purpose: a missing Global is a diagnostic here, not something to silently repair.
 			var collections = settings.collections?.Where(c => c != null).ToList() ?? new List<SheetXCollectionDefinition>();
-			var savedBindings = settings.sheetBindings?.Where(b => b != null).ToList() ?? new List<SheetXSheetBinding>();
+			var savedBindings = FilterActiveBindings(settings, settings.sheetBindings).ToList();
 			var bindings = activeBindings == null
 				? savedBindings
-				: activeBindings.Where(binding => binding != null).ToList();
+				: FilterActiveBindings(settings, activeBindings).ToList();
 
 			ValidateNamespace(settings, issues);
 			ValidateFolders(settings, issues);

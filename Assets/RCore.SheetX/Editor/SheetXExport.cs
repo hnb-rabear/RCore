@@ -243,6 +243,8 @@ namespace RCore.SheetX.Editor
 
 		internal bool HasErrors => m_errors.Count > 0;
 
+		internal ISheetXOutput Output => m_output;
+
 		internal void Flush()
 		{
 			if (m_flushed)

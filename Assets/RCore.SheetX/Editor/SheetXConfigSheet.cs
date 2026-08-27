@@ -31,6 +31,8 @@ namespace RCore.SheetX.Editor
 		public string Name;
 		public ConfigFieldType Type;
 		public object Value;
+		internal string SourceId;
+		internal int Row;
 	}
 
 	internal sealed class ConfigGroup
@@ -38,6 +40,14 @@ namespace RCore.SheetX.Editor
 		public string Key;
 		public string ClassName;
 		public List<ConfigField> Fields = new List<ConfigField>();
+		internal string SourceId;
+		internal int Row;
+	}
+
+	internal sealed class SheetXConfigurationSource
+	{
+		internal string SourceId;
+		internal IReadOnlyList<string[]> Table;
 	}
 
 	internal sealed class ConfigSheetData
@@ -61,6 +71,210 @@ namespace RCore.SheetX.Editor
 			"static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
 			"unsafe", "ushort", "using", "virtual", "void", "volatile", "while"
 		};
+
+		internal static bool TryParseCollection(
+			IReadOnlyList<SheetXConfigurationSource> sources,
+			Action<string> onError,
+			out ConfigSheetData data)
+		{
+			data = null;
+			int errorCount = 0;
+			Action<string> error = message =>
+			{
+				errorCount++;
+				onError?.Invoke(message);
+			};
+			var result = new ConfigSheetData();
+			var groupKeys = new Dictionary<string, Owner>(StringComparer.Ordinal);
+			var classNames = new Dictionary<string, Owner>(StringComparer.Ordinal);
+			var groupFields = new Dictionary<string, Dictionary<string, Owner>>(StringComparer.Ordinal);
+			var rootFields = new Dictionary<string, Owner>(StringComparer.Ordinal);
+			var groupsByKey = new Dictionary<string, ConfigGroup>(StringComparer.Ordinal);
+
+			if (sources == null || sources.Count == 0)
+			{
+				error("SheetX: source 'unknown', sheet 'Configuration': no sources provided. Fix: provide at least one source.");
+				return false;
+			}
+
+			for (int sourceIndex = 0; sourceIndex < sources.Count; sourceIndex++)
+			{
+				SheetXConfigurationSource source = sources[sourceIndex];
+				string sourceId = source?.SourceId ?? $"source_{sourceIndex + 1}";
+				IReadOnlyList<string[]> table = source?.Table;
+				if (source == null || table == null || table.Count == 0)
+				{
+					error(FormatDiagnostic(sourceId, "Configuration sheet is missing its header row", "add header row"));
+					continue;
+				}
+				if (!IsExpectedHeader(table[0]))
+				{
+					error(FormatDiagnostic(sourceId, 1, "Configuration header must be: Sub Class, Field Name, Type, Value", "fix header row"));
+					continue;
+				}
+
+				ConfigGroup currentGroup = null;
+				bool rootFieldMode = false;
+				for (int rowIndex = 1; rowIndex < table.Count; rowIndex++)
+				{
+					string[] row = ReadRow(table[rowIndex]);
+					if (row.All(string.IsNullOrEmpty))
+					{
+						currentGroup = null;
+						rootFieldMode = true;
+						continue;
+					}
+
+					int rowNumber = rowIndex + 1;
+					string groupKey = row[0];
+					string fieldName = StripArraySuffix(row[1]);
+					string typeName = row[2];
+					string value = row[3];
+					if (string.IsNullOrEmpty(fieldName))
+					{
+						error(FormatDiagnostic(sourceId, rowNumber, "Field Name is required", "provide field name"));
+						continue;
+					}
+					if (string.IsNullOrEmpty(typeName))
+					{
+						error(FormatDiagnostic(sourceId, rowNumber, $"Type is required for field '{fieldName}'", "provide supported type"));
+						continue;
+					}
+					if (!IsValidIdentifier(fieldName))
+					{
+						error(FormatDiagnostic(sourceId, rowNumber, $"field '{fieldName}' is not a valid C# identifier", "rename field"));
+						continue;
+					}
+					if (!TryParseFieldType(typeName, out ConfigFieldType fieldType))
+					{
+						error(FormatDiagnostic(sourceId, rowNumber, $"type '{typeName}' is not supported", "use supported type"));
+						continue;
+					}
+					if (!TryParseValue(fieldType, value, out object parsedValue, out string parseError))
+					{
+						error(FormatDiagnostic(sourceId, rowNumber, $"field '{fieldName}' {parseError}", "fix field value"));
+						continue;
+					}
+
+					if (!string.IsNullOrEmpty(groupKey))
+					{
+						if (!IsValidIdentifier(groupKey))
+						{
+							error(FormatDiagnostic(sourceId, rowNumber, $"Sub Class '{groupKey}' is not a valid C# identifier", "rename Sub Class"));
+							continue;
+						}
+						string className = UppercaseFirst(groupKey);
+						if (rootFields.TryGetValue(groupKey, out Owner rootOwner))
+						{
+							error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"Sub Class '{groupKey}' collides with root field", rootOwner, "rename Sub Class or root field"));
+							continue;
+						}
+
+						if (groupKeys.TryGetValue(groupKey, out Owner groupOwner))
+						{
+							// When repeating group key on row, check duplicate field in existing group first to surface field collision before group collision.
+							var existingGroupFields = groupFields[groupKey];
+							if (existingGroupFields.TryGetValue(fieldName, out Owner fieldOwner))
+							{
+								error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"duplicate field '{fieldName}' in Sub Class '{groupKey}'", fieldOwner, "rename or remove duplicate field"));
+								continue;
+							}
+							error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"duplicate Sub Class '{groupKey}'", groupOwner, "remove or rename duplicate Sub Class"));
+							continue;
+						}
+
+						if (classNames.TryGetValue(className, out Owner classOwner))
+						{
+							error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"nested class '{className}' collides with Sub Class", classOwner, "rename Sub Class"));
+							continue;
+						}
+
+						var owner = new Owner(sourceId, rowNumber);
+						groupKeys.Add(groupKey, owner);
+						classNames.Add(className, owner);
+						groupFields.Add(groupKey, new Dictionary<string, Owner>(StringComparer.Ordinal));
+						currentGroup = new ConfigGroup { Key = groupKey, ClassName = className, SourceId = sourceId, Row = rowNumber };
+						groupsByKey.Add(groupKey, currentGroup);
+						result.Groups.Add(currentGroup);
+						rootFieldMode = false;
+					}
+
+					var field = new ConfigField { Name = fieldName, Type = fieldType, Value = parsedValue, SourceId = sourceId, Row = rowNumber };
+					if (currentGroup != null && !rootFieldMode)
+					{
+						var fields = groupFields[currentGroup.Key];
+						if (fields.TryGetValue(fieldName, out Owner fieldOwner))
+						{
+							error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"duplicate field '{fieldName}' in Sub Class '{currentGroup.Key}'", fieldOwner, "rename or remove duplicate field"));
+							continue;
+						}
+						fields.Add(fieldName, new Owner(sourceId, rowNumber));
+						currentGroup.Fields.Add(field);
+					}
+					else if (rootFieldMode)
+					{
+						if (groupKeys.TryGetValue(fieldName, out Owner groupOwner))
+						{
+							error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"root field '{fieldName}' collides with Sub Class", groupOwner, "rename root field or Sub Class"));
+							continue;
+						}
+						if (rootFields.TryGetValue(fieldName, out Owner rootOwner))
+						{
+							error(FormatDuplicateDiagnostic(sourceId, rowNumber, $"duplicate root field '{fieldName}'", rootOwner, "rename or remove duplicate root field"));
+							continue;
+						}
+						rootFields.Add(fieldName, new Owner(sourceId, rowNumber));
+						result.RootFields.Add(field);
+					}
+					else
+					{
+						error(FormatDiagnostic(sourceId, rowNumber, $"field '{fieldName}' has no Sub Class before a group", "set Sub Class or add blank row before root fields"));
+					}
+				}
+			}
+
+			foreach (ConfigGroup group in result.Groups)
+			{
+				if (classNames.TryGetValue(group.Key, out Owner classOwner))
+				{
+					error(FormatDuplicateDiagnostic(
+						group.SourceId,
+						group.Row,
+						$"Sub Class '{group.Key}' generates group member '{group.Key}' which collides with nested class '{group.Key}'",
+						classOwner,
+						"rename Sub Class"));
+				}
+				foreach (ConfigField field in group.Fields)
+				{
+					if (string.Equals(field.Name, group.ClassName, StringComparison.Ordinal))
+					{
+						error(FormatDuplicateDiagnostic(
+							field.SourceId,
+							field.Row,
+							$"field '{field.Name}' collides with its containing nested class '{group.ClassName}'",
+							new Owner(group.SourceId, group.Row),
+							"rename field or Sub Class"));
+					}
+				}
+			}
+			foreach (ConfigField root in result.RootFields)
+			{
+				if (classNames.TryGetValue(root.Name, out Owner classOwner))
+				{
+					error(FormatDuplicateDiagnostic(
+						root.SourceId,
+						root.Row,
+						$"root field '{root.Name}' collides with nested class '{root.Name}'",
+						classOwner,
+						"rename root field or Sub Class"));
+				}
+			}
+
+			if (errorCount != 0)
+				return false;
+			data = result;
+			return true;
+		}
 
 		internal static bool TryParse(
 			IReadOnlyList<string[]> table,
@@ -378,7 +592,7 @@ namespace RCore.SheetX.Editor
 			return new JValue(value);
 		}
 
-		private static string ToCSharpType(ConfigFieldType type)
+		internal static string ToCSharpType(ConfigFieldType type)
 		{
 			switch (type)
 			{
@@ -392,6 +606,33 @@ namespace RCore.SheetX.Editor
 				case ConfigFieldType.Vector2: return "Vector2";
 				case ConfigFieldType.Vector3: return "Vector3";
 				default: throw new ArgumentOutOfRangeException(nameof(type));
+			}
+		}
+
+		private static string FormatDiagnostic(string sourceId, string problem, string fix)
+		{
+			return $"SheetX: source '{sourceId}', sheet 'Configuration': {problem}. Fix: {fix}.";
+		}
+
+		private static string FormatDiagnostic(string sourceId, int row, string problem, string fix)
+		{
+			return $"SheetX: source '{sourceId}', sheet 'Configuration', row {row}: {problem}. Fix: {fix}.";
+		}
+
+		private static string FormatDuplicateDiagnostic(string sourceId, int row, string problem, Owner firstOwner, string fix)
+		{
+			return $"SheetX: source '{sourceId}', sheet 'Configuration', row {row}: {problem}. First owner: {firstOwner.SourceId}:{firstOwner.Row}. Fix: {fix}.";
+		}
+
+		private readonly struct Owner
+		{
+			public readonly string SourceId;
+			public readonly int Row;
+
+			public Owner(string sourceId, int row)
+			{
+				SourceId = sourceId;
+				Row = row;
 			}
 		}
 

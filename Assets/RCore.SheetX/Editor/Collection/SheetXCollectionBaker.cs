@@ -28,6 +28,7 @@ namespace RCore.SheetX.Editor
 	{
 		public string SettingsAssetPath;
 		public bool AutoLoadAfterExport;
+		public bool HasAcceptedBindingFilter;
 		public List<PendingCollectionBakeBinding> AcceptedBindings = new List<PendingCollectionBakeBinding>();
 	}
 
@@ -62,6 +63,12 @@ namespace RCore.SheetX.Editor
 			internal List<Table> Tables = new List<Table>();
 		}
 
+		private sealed class Configuration
+		{
+			internal string Json;
+			internal string JsonPath;
+		}
+
 		/// <summary>
 		/// Records one export for post-compilation bake, preserving its Auto Load intent.
 		/// </summary>
@@ -83,6 +90,7 @@ namespace RCore.SheetX.Editor
 				store.Entries.Add(entry);
 			}
 			entry.AutoLoadAfterExport = autoLoadAfterExport;
+			entry.HasAcceptedBindingFilter = acceptedBindings != null;
 			entry.AcceptedBindings = CopyBindings(acceptedBindings);
 			SavePending(store);
 		}
@@ -208,11 +216,13 @@ namespace RCore.SheetX.Editor
 			}
 			if (collections.Count == 0)
 				return true;
-			if (!refreshGlobalOnly
-				&& !TryReadTables(settings, collections, autoLoadOnly, collectionName, out error))
-			{
-				return false;
-			}
+		if (!TryReadConfiguration(settings, collections, out var configuration, out error))
+			return false;
+		if (!refreshGlobalOnly
+			&& !TryReadTables(settings, collections, autoLoadOnly, collectionName, out error))
+		{
+			return false;
+		}
 
 			var snapshots = new Dictionary<ScriptableObject, string>();
 			var createdPaths = new List<string>();
@@ -224,6 +234,9 @@ namespace RCore.SheetX.Editor
 
 				if (!refreshGlobalOnly)
 				{
+					if (configuration != null)
+						JsonConvert.PopulateObject(configuration.Json, global);
+
 					foreach (var collection in collections)
 					{
 						if (autoLoadOnly && !collection.AutoLoad
@@ -347,6 +360,75 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
+		private static bool TryReadConfiguration(
+			SheetXSettings settings,
+			IReadOnlyList<Collection> collections,
+			out Configuration configuration,
+			out string error)
+		{
+			configuration = null;
+			error = null;
+			var global = collections.FirstOrDefault(collection => IsGlobal(collection.Name));
+			if (global == null)
+				return true;
+
+			string typeName = settings.ResolveCollectionNamespace().Trim() + ".SheetXCollectionPaths";
+			Type pathsType = FindType(typeName);
+			if (pathsType == null)
+				return true;
+
+			FieldInfo marker = pathsType.GetField("Configuration",
+				BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+			if (marker == null)
+				return true;
+			if (!marker.IsLiteral || marker.IsInitOnly || marker.FieldType != typeof(string))
+			{
+				error = $"[SheetX Collections] Global / - / Configuration:\nMarker '{typeName}.Configuration' must be an internal const string.\nPath: -\nFix: re-export Collections.";
+				return false;
+			}
+
+			string path = marker.GetRawConstantValue() as string;
+			if (string.IsNullOrWhiteSpace(path) || !SheetXCollectionSettings.IsProjectPath(path))
+			{
+				error = $"[SheetX Collections] Global / - / Configuration:\nMarker '{typeName}.Configuration' has invalid path '{path}'.\nPath: {path}\nFix: re-export Collections.";
+				return false;
+			}
+			if (!File.Exists(path))
+			{
+				error = $"[SheetX Collections] Global / - / Configuration:\nConfiguration JSON was not found.\nPath: {path}\nFix: export Configuration before baking Collections.";
+				return false;
+			}
+
+			string json;
+			try
+			{
+				json = File.ReadAllText(path);
+				if (!(JToken.Parse(json) is JObject))
+				{
+					error = $"[SheetX Collections] Global / - / Configuration:\nConfiguration JSON root must be an object.\nPath: {path}\nFix: export a valid Configuration sheet.";
+					return false;
+				}
+
+				var transient = ScriptableObject.CreateInstance(global.Type);
+				try
+				{
+					JsonConvert.PopulateObject(json, transient);
+				}
+				finally
+				{
+					UnityEngine.Object.DestroyImmediate(transient);
+				}
+			}
+			catch (Exception ex)
+			{
+				error = $"[SheetX Collections] Global / - / Configuration:\n{ex.Message}\nPath: {path}\nFix: export valid Configuration JSON.";
+				return false;
+			}
+
+			configuration = new Configuration { Json = json, JsonPath = path };
+			return true;
+		}
+
 		private static Dictionary<string, SheetXConfigCollectionBase> CreateOrLoadAssets(
 			SheetXSettings settings,
 			IEnumerable<Collection> collections,
@@ -439,11 +521,9 @@ namespace RCore.SheetX.Editor
 				error = $"Asset '{path}' has no serialized m_Script property for collection type '{type.FullName}'.";
 				return false;
 			}
-			if (scriptProperty.objectReferenceValue != null)
-				return true;
 
 			MonoScript script = MonoScript.FromScriptableObject(asset);
-			if (script == null)
+			if (script == null || script.GetClass() != type)
 				script = MonoImporter.GetAllRuntimeMonoScripts().FirstOrDefault(candidate => candidate.GetClass() == type);
 			if (script == null || script.GetClass() != type)
 			{
@@ -451,6 +531,9 @@ namespace RCore.SheetX.Editor
 					+ $"Expected source file '{type.Name}.cs'. Re-export collections, wait for compilation, then retry.";
 				return false;
 			}
+
+			if (scriptProperty.objectReferenceValue as MonoScript == script)
+				return true;
 
 			scriptProperty.objectReferenceValue = script;
 			serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -602,8 +685,8 @@ namespace RCore.SheetX.Editor
 			SheetXSettings settings,
 			IReadOnlyList<PendingCollectionBakeBinding> acceptedBindings)
 		{
-			var bindings = settings.sheetBindings
-				.Where(binding => binding != null && binding.outputMode != SheetXSheetOutputMode.JsonOnly);
+			var bindings = SheetXCollectionSettings.FilterActiveBindings(settings, settings.sheetBindings)
+				.Where(binding => binding.outputMode != SheetXSheetOutputMode.JsonOnly);
 			if (acceptedBindings == null)
 				return bindings.ToList();
 
@@ -633,10 +716,9 @@ namespace RCore.SheetX.Editor
 		private static IReadOnlyList<PendingCollectionBakeBinding> PendingBindings(
 			PendingCollectionBakeEntry entry)
 		{
-			// Entries written before binding filters existed deserialize with no list; keep old all-binding behavior.
-			return entry.AcceptedBindings == null || entry.AcceptedBindings.Count == 0
-				? null
-				: entry.AcceptedBindings;
+			if (entry == null || !entry.HasAcceptedBindingFilter)
+				return null;
+			return entry.AcceptedBindings ?? new List<PendingCollectionBakeBinding>();
 		}
 
 		private static PendingCollectionBakeStore LoadPending()

@@ -1104,10 +1104,17 @@ namespace RCore.SheetX.Editor
 			string baseName = sheetMetadata.Properties.Title.Replace(" ", "_");
 			bool configurationWritten = false;
 			var session = CreateCollectionSession();
-			if (ConfigurationRouteEnabled)
-				TryExportConfiguration(
-					ReadConfigurationTable(sheetMetadata, sourceId, service),
-					out configurationWritten);
+			var configurationTable = ReadConfigurationTable(sheetMetadata, sourceId, service);
+			if (session != null)
+			{
+				if (sheetMetadata.Sheets.Any(sheet => string.Equals(
+					sheet.Properties.Title, SheetXConstants.CONFIGURATION_SHEET, StringComparison.Ordinal)))
+					session.TryAddConfiguration(sourceId, configurationTable, out _);
+			}
+			else if (ConfigurationRouteEnabled)
+			{
+				TryExportConfiguration(configurationTable, out configurationWritten);
+			}
 
 			bool hasJson = Sheets.Any(x => x.selected
 				&& SheetXHelper.IsJsonSheet(x.name)
@@ -1203,9 +1210,9 @@ namespace RCore.SheetX.Editor
 		// Detached and batch exports carry no settings-backed collection bindings, so they keep the
 		// ordinary Json route untouched.
 		private SheetXCollectionExportSession CreateCollectionSession()
-			=> m_settings.enableCollections && !m_writer.Detached
+			=> m_settings.enableCollections && ConfigurationRouteEnabled
 				? new SheetXCollectionExportSession(
-					m_settings, m_writer.Warn, m_writer.Error, ids: m_allIds)
+					m_settings, m_writer.Warn, m_writer.Error, output: m_writer.Output, ids: m_allIds)
 				: null;
 
 		private bool HasOrdinaryJsonSheets(
@@ -1279,8 +1286,11 @@ namespace RCore.SheetX.Editor
 
 		private void BakeCollectionSession(SheetXCollectionExportSession session)
 		{
-			if (session?.WroteArtifacts == true && !session.TryBakeAfterRefresh(out string error))
+			if (!m_writer.Detached && session?.WroteArtifacts == true
+				&& !session.TryBakeAfterRefresh(out string error))
+			{
 				m_writer.Error(error);
+			}
 		}
 
 		/// <summary>Converts Sheets API values to fixed-width collection rows.</summary>
@@ -2015,7 +2025,25 @@ namespace RCore.SheetX.Editor
 			}
 
 			// 2. Read and write other data type
-			if (ConfigurationRouteEnabled)
+			if (session != null)
+			{
+				foreach (var googleSheets in googleSheetsPaths)
+				{
+					if (!googleSheets.selected)
+						continue;
+
+					var metadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+					if (metadata.Sheets.Any(sheet => string.Equals(
+						sheet.Properties.Title, SheetXConstants.CONFIGURATION_SHEET, StringComparison.Ordinal)))
+					{
+						session.TryAddConfiguration(
+							googleSheets.id,
+							ReadConfigurationTable(metadata, googleSheets.id, service),
+							out _);
+					}
+				}
+			}
+			else if (ConfigurationRouteEnabled)
 			{
 				foreach (var googleSheets in googleSheetsPaths)
 				{

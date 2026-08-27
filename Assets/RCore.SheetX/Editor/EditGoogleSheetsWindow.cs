@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -68,7 +69,8 @@ namespace RCore.SheetX.Editor
 				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(this, m_googleSheetsPath.name, isOn =>
 				{
 					foreach (var sheetPath in m_googleSheetsPath.sheets)
-						sheetPath.selected = isOn;
+						if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, sheetPath.name))
+								sheetPath.selected = isOn;
 				}, m_settings, () => m_googleSheetsPath.id);
 				m_tableCollectionsEnabled = m_settings.enableCollections;
 				m_tableSourceId = sourceId;
@@ -94,9 +96,11 @@ namespace RCore.SheetX.Editor
 		
 		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
 		{
-			bool selectAll = sheets.Count > 0;
+			bool selectAll = sheets.Any(sheet =>
+				!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, (sheet as SheetPath)?.name));
 			foreach (var sheet in sheets)
-				if (!sheet.selected)
+				if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, (sheet as SheetPath)?.name)
+					&& !sheet.selected)
 				{
 					selectAll = false;
 					break;

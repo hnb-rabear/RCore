@@ -29,6 +29,8 @@ namespace RCore.SheetX.Editor
 		/// <summary>True when this writer routes through an export context instead of the disk.</summary>
 		public bool Detached => m_context != null;
 
+		internal ISheetXOutput Output => m_context?.Output ?? m_output;
+
 		/// <summary>
 		/// Emits one finished artifact. <paramref name="pLogMessage"/> is the console line the editor
 		/// windows print; an external caller learns the same from the returned file list instead.

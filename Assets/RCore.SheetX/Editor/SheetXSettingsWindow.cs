@@ -164,7 +164,7 @@ namespace RCore.SheetX.Editor
 			bool rated = EditorPrefs.GetBool($"{Application.identifier}.RateClicked", false);
 			if (!rated) GUI.backgroundColor = new Color(0.3f, 0.8f, 0.3f);
 			else GUI.backgroundColor = color;
-			
+
 			if (GUILayout.Button("Rate on Asset Store", GUILayout.Height(30)))
 			{
 				Application.OpenURL("https://assetstore.unity.com/packages/tools/utilities/sheetx-pro-manage-constants-data-localization-with-excel-google--300772");
@@ -181,10 +181,6 @@ namespace RCore.SheetX.Editor
 				EditorPrefs.SetBool($"{Application.identifier}.StarClicked", true);
 			}
 			GUILayout.EndHorizontal();
-
-			GUI.backgroundColor = new Color(0.3f, 0.8f, 0.3f);
-			if (GUILayout.Button("Buy me a coffee", GUILayout.Height(30)))
-				Application.OpenURL("https://ko-fi.com/rabear");
 			GUI.backgroundColor = color;
 		}
 

@@ -254,6 +254,10 @@ Assets/Game/Resources
 - **Collection JSON Folder** stores editor-time bake input in any ordinary project-relative `Assets/` folder. Do not place it under `Resources` or `StreamingAssets`, because Unity includes those folders in player builds.
 - **Collection Asset Folder** stores feature collection assets.
 - **Global Resources Folder** must end exactly in `Resources`. It stores generated `GlobalConfigCollection.asset` directly in that folder for runtime `Resources` lookup.
+- Exact `Configuration` is automatic Collection input when Collections is enabled. Its fields become direct `GlobalConfigCollection` members and values bake into Global; it never uses a binding or standalone Configuration asset.
+- In Collections mode, its sheet row shows checked/disabled with tooltip `Configuration is always exported automatically to GlobalConfigCollection.`; Output Mode, Collection, and Data Class show read-only `Automatic`, `Global`, and `GlobalConfigCollection`.
+- Configuration JSON is written as plaintext `Configuration.txt` in Collection JSON Folder. Generated `SheetXCollectionPaths.Configuration` marks compiled participation; without marker, baker ignores stale file.
+- Collections-disabled mode keeps standalone Configuration lifecycle unchanged. Old standalone files are dormant in Collections mode and are not deleted. Detached and batch exports keep row-array behavior.
 
 Generated source set describes Collection bindings accepted by current export session. For each Excel file or Google spreadsheet processed in that session, include every Collection-bound sheet from that source. A missing binding from a processed source aborts collection writes to avoid replacing shared declarations with an incomplete source. Saved bindings from unrelated, unprocessed sources do not block the export. Their previous JSON remains untouched, but their declarations are not copied into newly generated source set.
 
@@ -435,9 +439,10 @@ Use this exact header after trimming cell text. Only first four columns are read
 - Empty **Sub Class** before any group is an error.
 - Add `[]` only as display suffix to **Field Name**; SheetX removes only final suffix. Actual array shape comes from **Type**.
 - Arrays use `|` between values. Supported type names are case-insensitive: `int`, `float`, `boolean`, `string`, `int-array`, `float-array`, `string-array`, `vector2`, and `vector3`.
-- Duplicate group names, class names, fields, root fields, and root/group collisions are preserved in source order. Duplicate JSON keys remain in output. Generated C# can fail to compile; fix duplicate worksheet data.
+- When Data Config Collections is disabled, duplicate group names, class names, fields, root fields, and root/group collisions are preserved in source order. Duplicate JSON keys remain in output. Generated C# can fail to compile; fix duplicate worksheet data.
+- When Data Config Collections is enabled, exact `Configuration` uses strict duplicate and generated-symbol validation; any collision aborts Collection artifact flush before writes.
 
-Interactive single-file export reads physical exact `Configuration` even when its serialized sheet entry is absent or unchecked. It writes fixed, unencrypted artifacts:
+When Data Config Collections is disabled, interactive single-file export reads physical exact `Configuration` even when its serialized sheet entry is absent or unchecked. It writes fixed, unencrypted artifacts:
 
 - JSON folder: `Configuration.txt`
 - Scripts/Constants folder: `Configuration.cs`
@@ -449,7 +454,13 @@ Generated C# uses configured namespace and contains **Load** inspector context m
 
 SheetX finds existing Configuration assets by exact generated runtime type across project. Zero matching assets creates one beside script; one matching asset is reused even after move or rename; multiple matching assets log one `SheetX:` error and update none. Delete matching asset, then next export creates replacement.
 
-Detached `SheetXExporter` and batch APIs do not generate Configuration artifacts. Both `Config` and `Configuration` remain normal row-array JSON there.
+When Data Config Collections is enabled, exact `Configuration` is automatic Global input. It ignores sheet selection and binding settings, writes plaintext `Configuration.txt` to Collection JSON Folder, emits direct fields and nested classes in `GlobalConfigCollection.cs`, and bakes values into `GlobalConfigCollection.asset`. It does not update `Configuration.cs` or `Configuration.asset`; existing standalone artifacts remain dormant and are not deleted. Strict duplicate, symbol, field, and value collisions abort complete Collection output with source/row diagnostics and a `Fix:` action. Runtime access remains:
+
+```csharp
+var global = GlobalConfigCollectionBase.Instance<GlobalConfigCollection>();
+```
+
+The generated `SheetXCollectionPaths.Configuration` constant marks active Configuration schema. If marker is absent, baker ignores stale Collection `Configuration.txt`. Detached `SheetXExporter` and batch APIs do not generate typed Configuration artifacts; both `Config` and `Configuration` remain ordinary row-array JSON there.
 
 #### Special Data Type: Attributes List
 

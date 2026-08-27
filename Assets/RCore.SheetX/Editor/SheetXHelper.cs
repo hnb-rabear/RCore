@@ -609,6 +609,19 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
+		/// Determines whether a sheet path is effectively selected for export rendering.
+		/// Exact Configuration is always effectively selected when collections are enabled.
+		/// </summary>
+		internal static bool IsEffectivelySelected(SheetXSettings settings, SheetPath sheet)
+		{
+			if (sheet == null)
+				return false;
+			if (SheetXCollectionSettings.IsAutomaticConfiguration(settings, sheet.name))
+				return true;
+			return sheet.selected;
+		}
+
+		/// <summary>
 		/// Creates an EditorTableView for displaying sheet paths with a toggle column.
 		/// </summary>
 		public static EditorTableView<SheetPath> CreateSpreadsheetTable(
@@ -633,13 +646,26 @@ namespace RCore.SheetX.Editor
 			table.AddColumn(null, 25, 25, (rect, item) =>
 				{
 					rect.xMin += 4;
+					if (SheetXCollectionSettings.IsAutomaticConfiguration(settings, item.name))
+					{
+						using (new EditorGUI.DisabledScope(true))
+						{
+							EditorGUI.Toggle(
+								rect,
+								new GUIContent(
+									"",
+									"Configuration is always exported automatically to GlobalConfigCollection."),
+								true);
+						}
+						return;
+					}
 					item.Selected = EditorGUI.Toggle(rect, item.selected);
 				})
 				.ShowToggle(true)
 				.OnToggleChanged(pOnTogSelected);
 			table.AddColumn("Sheet name", 200, 0, (rect, item) =>
 			{
-				var style = item.selected ? labelGUIStyle : disabledLabelGUIStyle;
+				var style = IsEffectivelySelected(settings, item) ? labelGUIStyle : disabledLabelGUIStyle;
 				EditorGUI.LabelField(rect, item.name, style);
 			}).SetSorting((a, b) => String.Compare(a.name, b.name, StringComparison.Ordinal));
 			if (settings != null && settings.enableCollections)

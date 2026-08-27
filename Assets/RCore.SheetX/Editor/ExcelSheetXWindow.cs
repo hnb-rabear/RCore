@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NPOI.SS.UserModel;
@@ -135,7 +136,8 @@ namespace RCore.SheetX.Editor
 				m_tableSheets = SheetXHelper.CreateSpreadsheetTable(editorWindow, m_settings.excelSheetsPath.name, isOn =>
 				{
 					foreach (var sheet in m_settings.excelSheetsPath.sheets)
-						sheet.selected = isOn;
+						if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, sheet.name))
+								sheet.selected = isOn;
 				}, m_settings, () => m_settings.excelSheetsPath.path);
 				m_tableCollectionsEnabled = m_settings.enableCollections;
 				m_tableSourceId = sourceId;
@@ -305,7 +307,7 @@ namespace RCore.SheetX.Editor
 
 			table.AddColumn("Select", 50, 50, (rect, item) =>
 			{
-				if (GUI.Button(rect, $"{item.CountSelected()}/{item.sheets.Count}"))
+				if (GUI.Button(rect, $"{item.sheets.Count(sheet => SheetXHelper.IsEffectivelySelected(m_settings, sheet))}/{item.sheets.Count}"))
 				{
 					item.Load();
 					EditExcelSheetsWindow.ShowWindow(item);
@@ -324,9 +326,11 @@ namespace RCore.SheetX.Editor
 
 		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
 		{
-			bool selectAll = sheets.Count > 0;
+			bool selectAll = sheets.Any(sheet =>
+				!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, (sheet as SheetPath)?.name));
 			foreach (var sheet in sheets)
-				if (!sheet.selected)
+				if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, (sheet as SheetPath)?.name)
+					&& !sheet.selected)
 				{
 					selectAll = false;
 					break;

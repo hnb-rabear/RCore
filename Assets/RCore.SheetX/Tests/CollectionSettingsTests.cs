@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using RCore.SheetX.Editor;
@@ -307,6 +307,187 @@ namespace RCore.SheetX.Tests
 
 				Assert.That(issues.Any(i => i.Message.Contains("not saved in the settings asset")), Is.True);
 				Assert.That(issues.Any(i => i.Message.Contains("both write collection field 'Rows'")), Is.True);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void exact_configuration_is_automatic_only_when_collections_enabled()
+		{
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionSettings.IsAutomaticConfiguration(settings, "Configuration"), Is.False);
+				settings.enableCollections = true;
+				Assert.That(SheetXCollectionSettings.IsAutomaticConfiguration(settings, "Configuration"), Is.True);
+				Assert.That(SheetXCollectionSettings.IsAutomaticConfiguration(null, "Configuration"), Is.False);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void automatic_configuration_does_not_create_binding()
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				Assert.That(SheetXCollectionSettings.GetOrCreateBinding(settings, "book.xlsx", "Configuration"), Is.Null);
+				Assert.That(settings.sheetBindings, Is.Empty);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[TestCase("Cofiguration")]
+		[TestCase("configuration")]
+		[TestCase("Config")]
+		public void misspelled_and_case_changed_configuration_create_ordinary_bindings(string sheetName)
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				Assert.That(SheetXCollectionSettings.GetOrCreateBinding(settings, "book.xlsx", sheetName), Is.Not.Null);
+				Assert.That(settings.sheetBindings.Count, Is.EqualTo(1));
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void stale_configuration_binding_is_ignored_by_validation()
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				SetValidPaths(settings);
+				settings.sheetBindings.Add(new SheetXSheetBinding
+				{
+					sourceId = "book.xlsx", sheetName = "Configuration", collectionName = "MissingCollection",
+					outputMode = SheetXSheetOutputMode.GeneratedDataClass, fieldName = "broken",
+				});
+
+				Assert.That(SheetXCollectionSettings.Validate(settings, null).Any(i => i.SheetName == "Configuration"), Is.False);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void automatic_configuration_is_effectively_selected_without_mutating_stored_state()
+		{
+			var settings = CreateSettings();
+			var sheet = new SheetPath { name = "Configuration", selected = false };
+			try
+			{
+				settings.enableCollections = true;
+
+				Assert.That(SheetXHelper.IsEffectivelySelected(settings, sheet), Is.True);
+				Assert.That(sheet.selected, Is.False);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void select_all_changes_only_ordinary_sheet_rows()
+		{
+			var settings = CreateSettings();
+			var configuration = new SheetPath { name = "Configuration", selected = false };
+			var ordinary = new SheetPath { name = "Items", selected = false };
+			try
+			{
+				settings.enableCollections = true;
+				foreach (var sheet in new[] { configuration, ordinary })
+					if (!SheetXCollectionSettings.IsAutomaticConfiguration(settings, sheet.name))
+						sheet.selected = true;
+
+				Assert.That(configuration.selected, Is.False);
+				Assert.That(ordinary.selected, Is.True);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void select_all_header_excludes_automatic_configuration_row()
+		{
+			var settings = CreateSettings();
+			var configuration = new SheetPath { name = "Configuration", selected = false };
+			var ordinary = new SheetPath { name = "Items", selected = true };
+			try
+			{
+				settings.enableCollections = true;
+
+				Assert.That(new[] { configuration, ordinary }
+					.Where(sheet => !SheetXCollectionSettings.IsAutomaticConfiguration(settings, sheet.name))
+					.All(sheet => sheet.selected), Is.True);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void collections_disabled_uses_stored_configuration_selection_in_ui()
+		{
+			var settings = CreateSettings();
+			var sheet = new SheetPath { name = "Configuration", selected = false };
+			try
+			{
+				Assert.That(SheetXHelper.IsEffectivelySelected(settings, sheet), Is.False);
+				sheet.selected = true;
+				Assert.That(SheetXHelper.IsEffectivelySelected(settings, sheet), Is.True);
+			}
+			finally
+			{
+				Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void stale_configuration_binding_is_ignored_when_active_bindings_are_explicit()
+		{
+			var settings = CreateSettings();
+			try
+			{
+				settings.enableCollections = true;
+				SetValidPaths(settings);
+				var valid = new SheetXSheetBinding
+				{
+					sourceId = "book.xlsx", sheetName = "Items", collectionName = "Global",
+					outputMode = SheetXSheetOutputMode.GeneratedDataClass, fieldName = "items",
+				};
+				settings.sheetBindings.Add(valid);
+				var stale = new SheetXSheetBinding
+				{
+					sourceId = "book.xlsx", sheetName = "Configuration", collectionName = "MissingCollection",
+					outputMode = SheetXSheetOutputMode.GeneratedDataClass,
+				};
+
+				Assert.That(
+					SheetXCollectionSettings.Validate(settings, new[] { valid, stale })
+						.Any(i => i.SheetName == "Configuration"),
+					Is.False);
 			}
 			finally
 			{

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-27
+
 ### Added
 
 - Settings tab now checks SheetX's remote GitHub `package.json`, caches latest version in `EditorPrefs`, displays installed/latest versions and a `NEW` badge, and updates UPM Git or registry installs with `Client.Add()`. Source, embedded, and local installs stay read-only with matching badges.
@@ -24,6 +26,10 @@
 - Global Collection asset now saves before feature assets after references are assigned, preventing later asset saves from clearing a same-bake Global feature reference.
 - `SheetXExporter.ExportExcel` now owns one named, read-only `MemoryStream` through the complete export. NPOI can read workbook parts lazily, so its source stream no longer depends on garbage collection or closes before later selected sheets are read.
 - Per-sheet localization artifacts now have distinct types: language `.txt` data remains `Localization`, `{file}.cs` is `LocalizationConstants`, and `{file}Text.cs` is `LocalizationComponent`. Excel and Google handlers route identically; regression coverage runs on Excel only because Google export requires OAuth and network access.
+
+## [1.5.0] - 2026-08-25
+
+Initial release version for Data Config Collections and standalone exact `Configuration` export. Follow-up hardening and final release notes ship in 1.6.0.
 
 ## [1.4.0] - 2026-08-23
 

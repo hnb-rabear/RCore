@@ -60,6 +60,7 @@ namespace RCore.SheetX.Editor
 		private readonly SheetXSettings m_settings;
 		private readonly List<Candidate> m_candidates = new List<Candidate>();
 		private readonly List<Candidate> m_accepted = new List<Candidate>();
+		private readonly List<SheetXConfigurationSource> m_configurationSources = new List<SheetXConfigurationSource>();
 		private readonly HashSet<string> m_processed = new HashSet<string>(StringComparer.Ordinal);
 		private readonly HashSet<string> m_processedSources = new HashSet<string>(StringComparer.Ordinal);
 		private readonly HashSet<string> m_skipped = new HashSet<string>(StringComparer.Ordinal);
@@ -90,6 +91,23 @@ namespace RCore.SheetX.Editor
 		{
 			var binding = SheetXCollectionSettings.GetOrCreateBinding(m_settings, sourceId, sheetName);
 			return binding?.outputMode ?? SheetXSheetOutputMode.JsonOnly;
+		}
+
+		/// <summary>
+		/// Adds one exact Configuration sheet from a physical source. Parsed strictly during <see cref="Flush"/>.
+		/// </summary>
+		internal bool TryAddConfiguration(
+			string sourceId,
+			IReadOnlyList<string[]> table,
+			out string error)
+		{
+			error = null;
+			m_configurationSources.Add(new SheetXConfigurationSource
+			{
+				SourceId = sourceId,
+				Table = table,
+			});
+			return true;
 		}
 
 		/// <summary>Parses one Generated Data Class sheet into typed JSON without writing files.</summary>
@@ -204,6 +222,21 @@ namespace RCore.SheetX.Editor
 			FlushSucceeded = false;
 			m_accepted.Clear();
 
+			ConfigSheetData configData = null;
+			string configJson = null;
+			string configJsonPath = null;
+			if (m_configurationSources.Count > 0)
+			{
+				var configErrors = new List<string>();
+				if (!SheetXConfigSheet.TryParseCollection(m_configurationSources, configErrors.Add, out configData))
+				{
+					error = string.Join("\n", configErrors);
+					return false;
+				}
+				configJson = SheetXConfigSheet.EmitJson(configData);
+				configJsonPath = SheetXCollectionGenerator.JsonPathFor(m_settings, SheetXConstants.CONFIGURATION_SHEET);
+			}
+
 			var globalIssues = SheetXCollectionSettings.Validate(m_settings, Array.Empty<SheetXSheetBinding>());
 			if (globalIssues.Count > 0)
 			{
@@ -214,11 +247,11 @@ namespace RCore.SheetX.Editor
 				return false;
 			try
 			{
-				SheetXCollectionGenerator.Emit(m_settings, Array.Empty<SheetXCollectionGeneratedTable>());
+				SheetXCollectionGenerator.Emit(m_settings, Array.Empty<SheetXCollectionGeneratedTable>(), configData);
 			}
 			catch (InvalidOperationException ex)
 			{
-				error = $"[SheetX Collections] Global configuration: {ex.Message} Fix: rename the conflicting collection.";
+				error = ex.Message;
 				return false;
 			}
 
@@ -235,28 +268,36 @@ namespace RCore.SheetX.Editor
 				}
 				try
 				{
-					SheetXCollectionGenerator.Emit(m_settings, trial.Select(item => item.Table).ToList());
+					SheetXCollectionGenerator.Emit(m_settings, trial.Select(item => item.Table).ToList(), configData);
 					m_accepted.Add(candidate);
 				}
 				catch (InvalidOperationException ex)
 				{
+					if (configData != null)
+					{
+						try
+						{
+							SheetXCollectionGenerator.Emit(
+								m_settings, trial.Select(item => item.Table).ToList(), configuration: null);
+							error = ex.Message;
+							return false;
+						}
+						catch (InvalidOperationException)
+						{
+							// Candidate is invalid without Configuration too; keep existing sheet-local skip policy.
+						}
+					}
 					SkipSheet(candidate.Binding,
 						ex.Message + " Fix: rename this sheet, generated field, nested object, or collection to make generated names unique.",
 						out _);
 				}
 			}
 
-			if (m_accepted.Count == 0)
-			{
-				FlushSucceeded = true;
-				return true;
-			}
-
 			IReadOnlyDictionary<string, string> sources;
 			try
 			{
 				sources = SheetXCollectionGenerator.EmitFiles(
-					m_settings, m_accepted.Select(item => item.Table).ToList());
+					m_settings, m_accepted.Select(item => item.Table).ToList(), configData);
 			}
 			catch (InvalidOperationException ex)
 			{
@@ -264,11 +305,17 @@ namespace RCore.SheetX.Editor
 				return false;
 			}
 
+			if (m_accepted.Count == 0 && configData == null && !HasGeneratedConfigurationMarker())
+			{
+				FlushSucceeded = true;
+				return true;
+			}
+
 			RequiresScriptReload = SourcesChanged(sources);
 			List<FileSnapshot> snapshots;
 			try
 			{
-				snapshots = CaptureSnapshots(sources.Keys);
+				snapshots = CaptureSnapshots(sources.Keys, configJsonPath);
 			}
 			catch (Exception ex)
 			{
@@ -278,6 +325,12 @@ namespace RCore.SheetX.Editor
 			var context = new SheetXExportContext(
 				new RollbackFileOutput(m_output, snapshots), discardStagedOnError: true);
 			var writer = new SheetXWriter(m_settings, context);
+			if (configData != null && !string.IsNullOrEmpty(configJson))
+			{
+				writer.Write(
+					Path.GetDirectoryName(configJsonPath) ?? "", Path.GetFileName(configJsonPath), configJson,
+					SheetXExportFileType.Json);
+			}
 			foreach (var candidate in m_accepted)
 			{
 				string path = candidate.Table.JsonPath;
@@ -350,7 +403,9 @@ namespace RCore.SheetX.Editor
 					m_settings, autoLoadAfterExport: false, AcceptedBindingIdentities(), out error);
 		}
 
-		private List<FileSnapshot> CaptureSnapshots(IEnumerable<string> sourceFileNames)
+		private List<FileSnapshot> CaptureSnapshots(
+			IEnumerable<string> sourceFileNames,
+			string configJsonPath)
 		{
 			string codeFolder = SheetXCollectionSettings.NormalizePath(
 				m_settings.ResolveCollectionCodeFolder());
@@ -359,6 +414,8 @@ namespace RCore.SheetX.Editor
 				.Concat(sourceFileNames.Select(fileName => codeFolder + "/" + fileName))
 				.Append(legacyPath)
 				.Append(legacyPath + ".meta");
+			if (!string.IsNullOrEmpty(configJsonPath))
+				paths = paths.Append(configJsonPath);
 			return paths.Distinct(StringComparer.Ordinal).Select(path => new FileSnapshot
 			{
 				Path = path,
@@ -432,9 +489,19 @@ namespace RCore.SheetX.Editor
 			});
 		}
 
+		private bool HasGeneratedConfigurationMarker()
+		{
+			string path = Path.Combine(
+				m_settings.ResolveCollectionCodeFolder(), SheetXCollectionGenerator.FileName);
+			return File.Exists(path)
+				&& File.ReadAllText(path).Contains(
+					"const string Configuration", StringComparison.Ordinal);
+		}
+
 		private bool IncludesEveryCollectionBindingFromProcessedSources(out string error)
 		{
-			foreach (var binding in m_settings.sheetBindings)
+			foreach (var binding in SheetXCollectionSettings.FilterActiveBindings(
+				m_settings, m_settings.sheetBindings))
 			{
 				if (binding == null || binding.outputMode == SheetXSheetOutputMode.JsonOnly
 					|| !m_processedSources.Contains(binding.sourceId)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using RCore.SheetX.Editor;
 using UnityEditor;
@@ -225,7 +226,7 @@ namespace RCore.SheetX.Tests
 						Existing("b", "ShopItems", "Shop", "shopItems", "ShopItemsRow"),
 					}),
 					Throws.TypeOf<InvalidOperationException>().With.Message
-						.Contains("Global table field 'shop' collides with a feature collection reference"));
+						.Contains("Global table field 'shop' collides with feature collection reference 'Shop'"));
 			}
 			finally
 			{
@@ -270,6 +271,432 @@ namespace RCore.SheetX.Tests
 				string source = SheetXCollectionGenerator.Emit(settings, tables);
 
 				Assert.That(source, Does.Not.Contain("RawData"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_places_configuration_members_directly_in_global()
+		{
+			var settings = Settings();
+			try
+			{
+				var files = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration());
+				string source = files["GlobalConfigCollection.cs"];
+
+				Assert.That(source, Does.Contain("[Serializable]"));
+				Assert.That(source, Does.Contain("public class Economy"));
+				Assert.That(source, Does.Contain("public int startingCoins;"));
+				Assert.That(source, Does.Contain("public Economy economy;"));
+				Assert.That(source, Does.Contain("public Vector2 position2;"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_omits_standalone_configuration_contract()
+		{
+			var settings = Settings();
+			try
+			{
+				string source = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration())["GlobalConfigCollection.cs"];
+
+				Assert.That(source, Does.Not.Contain("class Configuration"));
+				Assert.That(source, Does.Not.Contain("configJson"));
+				Assert.That(source, Does.Not.Contain("autoLoad"));
+				Assert.That(source, Does.Not.Contain("Load()"));
+				Assert.That(source, Does.Not.Contain("ContextMenu"));
+				Assert.That(source, Does.Not.Contain("TextAsset"));
+				Assert.That(source, Does.Not.Contain("UnityEditor"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_adds_configuration_path_marker_when_present()
+		{
+			var settings = Settings();
+			try
+			{
+				string source = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration())[SheetXCollectionGenerator.FileName];
+
+				Assert.That(source, Does.Contain(
+					"internal const string Configuration = \"Assets/Game/DataConfig/Editor/Json/Configuration.txt\";"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_omits_configuration_marker_when_absent()
+		{
+			var settings = Settings();
+			try
+			{
+				string source = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>())[SheetXCollectionGenerator.FileName];
+
+				Assert.That(source, Does.Not.Contain("const string Configuration"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_uses_system_only_for_configuration_groups()
+		{
+			var settings = Settings();
+			try
+			{
+				var groupsOnly = new ConfigSheetData
+				{
+					Groups = new List<ConfigGroup>
+					{
+						new ConfigGroup { Key = "economy", ClassName = "Economy" },
+					},
+				};
+				groupsOnly.Groups[0].Fields.Add(new ConfigField { Name = "coins", Type = ConfigFieldType.Int });
+
+				string grouped = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), groupsOnly)["GlobalConfigCollection.cs"];
+				string rootOnly = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), RootInt())["GlobalConfigCollection.cs"];
+
+				Assert.That(grouped, Does.Contain("using System;"));
+				Assert.That(rootOnly, Does.Not.Contain("using System;"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_uses_unityengine_only_for_configuration_vectors()
+		{
+			var settings = Settings();
+			try
+			{
+				string vector = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration())["GlobalConfigCollection.cs"];
+				string scalar = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), RootInt())["GlobalConfigCollection.cs"];
+
+				Assert.That(vector, Does.Contain("using UnityEngine;"));
+				Assert.That(scalar, Does.Not.Contain("using UnityEngine;"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_supports_configuration_only_source_set()
+		{
+			var settings = Settings();
+			try
+			{
+				settings.collections.Add(new SheetXCollectionDefinition { name = "Shop" });
+				var files = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration());
+
+				Assert.That(files.Keys, Is.EqualTo(new[]
+				{
+					"SheetXDataCollections.cs",
+					"GlobalConfigCollection.cs",
+					"ShopConfigCollection.cs",
+				}));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_is_deterministic_for_configuration()
+		{
+			var settings = Settings();
+			try
+			{
+				var first = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration());
+				var second = SheetXCollectionGenerator.EmitFiles(settings,
+					Array.Empty<SheetXCollectionGeneratedTable>(), Configuration());
+
+				Assert.That(second[SheetXCollectionGenerator.FileName], Is.EqualTo(first[SheetXCollectionGenerator.FileName]));
+				Assert.That(second["GlobalConfigCollection.cs"], Is.EqualTo(first["GlobalConfigCollection.cs"]));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_member_matching_global_table()
+		{
+			var settings = Settings();
+			try
+			{
+				var config = new ConfigSheetData();
+				config.RootFields.Add(new ConfigField { Name = "items", Type = ConfigFieldType.Int, SourceId = "config.xlsx", Row = 2 });
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(settings, new[] { Existing("a", "Items", "Global", "items", "ItemRow") }, config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("Global table field 'items'")
+						.And.Message.Contains("config.xlsx:2")
+						.And.Message.Contains("First owner:")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_member_matching_feature_reference()
+		{
+			var settings = Settings();
+			try
+			{
+				settings.collections.Add(new SheetXCollectionDefinition { name = "Shop" });
+				var config = new ConfigSheetData();
+				config.RootFields.Add(new ConfigField { Name = "shop", Type = ConfigFieldType.Int, SourceId = "config.xlsx", Row = 2 });
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(settings, Array.Empty<SheetXCollectionGeneratedTable>(), config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("feature collection reference 'Shop'")
+						.And.Message.Contains("source 'config.xlsx'")
+						.And.Message.Contains("row 2")
+						.And.Message.Contains("First owner:")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_type_matching_generated_row_type()
+		{
+			var settings = Settings();
+			try
+			{
+				var config = new ConfigSheetData();
+				config.Groups.Add(new ConfigGroup { Key = "shopItemsSX", ClassName = "ShopItemsSX", SourceId = "config.xlsx", Row = 2 });
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(settings, new[] { Generated("a", "ShopItems", "Global", "shopItems", "id:int") }, config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("ShopItemsSX")
+						.And.Message.Contains("Configuration:config.xlsx:2")
+						.And.Message.Contains("First owner:")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[TestCase("IsLoaded")]
+		[TestCase("SetLoaded")]
+		[TestCase("ResetLoaded")]
+		[TestCase("Instance")]
+		[TestCase("SetInstance")]
+		public void emit_files_rejects_configuration_member_matching_inherited_global_contract(string memberName)
+		{
+			var settings = Settings();
+			try
+			{
+				var config = new ConfigSheetData();
+				config.RootFields.Add(new ConfigField { Name = memberName, Type = ConfigFieldType.Int, SourceId = "config.xlsx", Row = 2 });
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(settings, Array.Empty<SheetXCollectionGeneratedTable>(), config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains(memberName)
+						.And.Message.Contains("source 'config.xlsx'")
+						.And.Message.Contains("row 2")
+						.And.Message.Contains("First owner:")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_path_constant_collision()
+		{
+			var settings = Settings();
+			try
+			{
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(settings, new[] { Existing("a", "Configuration", "Global", "cfg", "Row") }, Configuration()),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("path constant 'Configuration'")
+						.And.Message.Contains("First owner: Configuration (configuration.xlsx:2)")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_nested_type_matching_global_collection_type()
+		{
+			var settings = Settings();
+			try
+			{
+				var config = new ConfigSheetData();
+				config.Groups.Add(new ConfigGroup
+				{
+					Key = "globalConfigCollection",
+					ClassName = "GlobalConfigCollection",
+					SourceId = "config.xlsx",
+					Row = 2,
+				});
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(
+						settings, Array.Empty<SheetXCollectionGeneratedTable>(), config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("GlobalConfigCollection")
+						.And.Message.Contains("collection type 'Global'")
+						.And.Message.Contains("config.xlsx")
+						.And.Message.Contains("row 2")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_group_member_matching_its_nested_type()
+		{
+			var settings = Settings();
+			try
+			{
+				var config = new ConfigSheetData();
+				config.Groups.Add(new ConfigGroup
+				{
+					Key = "Economy",
+					ClassName = "Economy",
+					SourceId = "config.xlsx",
+					Row = 2,
+				});
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(
+						settings, Array.Empty<SheetXCollectionGeneratedTable>(), config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("Economy")
+						.And.Message.Contains("config.xlsx:2")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_root_member_matching_nested_type()
+		{
+			var settings = Settings();
+			try
+			{
+				var config = new ConfigSheetData();
+				config.Groups.Add(new ConfigGroup
+				{
+					Key = "economy",
+					ClassName = "Economy",
+					SourceId = "config.xlsx",
+					Row = 2,
+				});
+				config.RootFields.Add(new ConfigField
+				{
+					Name = "Economy",
+					Type = ConfigFieldType.Int,
+					SourceId = "config.xlsx",
+					Row = 4,
+				});
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(
+						settings, Array.Empty<SheetXCollectionGeneratedTable>(), config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("Economy")
+						.And.Message.Contains("source 'config.xlsx'")
+						.And.Message.Contains("row 4")
+						.And.Message.Contains("config.xlsx:2")
+						.And.Message.Contains("Fix:"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_files_rejects_configuration_field_matching_its_containing_type()
+		{
+			var settings = Settings();
+			try
+			{
+				var group = new ConfigGroup
+				{
+					Key = "economy",
+					ClassName = "Economy",
+					SourceId = "config.xlsx",
+					Row = 2,
+				};
+				group.Fields.Add(new ConfigField
+				{
+					Name = "Economy",
+					Type = ConfigFieldType.Int,
+					SourceId = "config.xlsx",
+					Row = 2,
+				});
+				var config = new ConfigSheetData();
+				config.Groups.Add(group);
+
+				Assert.That(
+					() => SheetXCollectionGenerator.Emit(
+						settings, Array.Empty<SheetXCollectionGeneratedTable>(), config),
+					Throws.TypeOf<InvalidOperationException>()
+						.With.Message.Contains("field 'Economy'")
+						.And.Message.Contains("containing nested class 'Economy'")
+						.And.Message.Contains("config.xlsx:2")
+						.And.Message.Contains("Fix:"));
 			}
 			finally
 			{
@@ -800,6 +1227,296 @@ namespace RCore.SheetX.Tests
 			}
 		}
 
+		[Test]
+		public void configuration_is_staged_until_flush()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				var session = new SheetXCollectionExportSession(settings);
+				var table = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "general", "timeout", "int", "5" },
+				};
+				Assert.That(session.TryAddConfiguration(SourceId, table, out string error), Is.True, error);
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.False);
+				Assert.That(File.Exists(GlobalCollectionSource), Is.False);
+
+				Assert.That(session.Flush(out error), Is.True, error);
+				Assert.That(session.WroteArtifacts, Is.True);
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.True);
+				string globalSource = File.ReadAllText(GlobalCollectionSource);
+				Assert.That(globalSource, Does.Contain("public General general;"));
+				Assert.That(globalSource, Does.Contain("public int timeout;"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_only_flush_writes_full_source_set_and_json()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				var session = new SheetXCollectionExportSession(settings);
+				var table = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "economy", "rate", "float", "1.5" },
+				};
+				Assert.That(session.TryAddConfiguration(SourceId, table, out string error), Is.True, error);
+				Assert.That(session.Flush(out error), Is.True, error);
+
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.True);
+				Assert.That(File.Exists(GeneratedSource), Is.True);
+				Assert.That(File.Exists(GlobalCollectionSource), Is.True);
+				Assert.That(File.ReadAllText(GeneratedSource), Does.Contain(
+					"internal const string Configuration = \"Assets/SheetXTestsTemp/Editor/Json/Configuration.txt\";"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_and_tables_flush_as_one_transaction()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Bind(settings, "GenTable", SheetXSheetOutputMode.GeneratedDataClass);
+				var session = new SheetXCollectionExportSession(settings);
+				var table = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "meta", "name", "string", "Game" },
+				};
+				Assert.That(session.TryAddConfiguration(SourceId, table, out string error), Is.True, error);
+				Assert.That(session.TryAddGeneratedTable(
+					SourceId, "GenTable", new[] { "id:int" },
+					new IReadOnlyList<string>[] { new[] { "1" } }, out error), Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.True, error);
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.True);
+				Assert.That(File.Exists(GeneratedJson), Is.True);
+				string globalSource = File.ReadAllText(GlobalCollectionSource);
+				Assert.That(globalSource, Does.Contain("public GenTableSX[] GenTable;"));
+				Assert.That(globalSource, Does.Contain("public Meta meta;"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void stale_configuration_binding_does_not_block_configuration_flush()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				settings.sheetBindings.Add(new SheetXSheetBinding
+				{
+					sourceId = SourceId,
+					sheetName = "Configuration",
+					collectionName = "MissingCollection",
+					outputMode = SheetXSheetOutputMode.GeneratedDataClass,
+					fieldName = "broken",
+				});
+				var session = new SheetXCollectionExportSession(settings);
+				var table = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "economy", "rate", "float", "1.5" },
+				};
+
+				Assert.That(session.TryAddConfiguration(SourceId, table, out string error), Is.True, error);
+				Assert.That(session.Flush(out error), Is.True, error);
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.True);
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_does_not_require_unprocessed_ordinary_binding_from_same_source()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Bind(settings, "UncheckedTable", SheetXSheetOutputMode.GeneratedDataClass);
+				var session = new SheetXCollectionExportSession(settings);
+				var table = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "economy", "rate", "float", "1.5" },
+				};
+
+				Assert.That(session.TryAddConfiguration(SourceId, table, out string error), Is.True, error);
+				Assert.That(session.Flush(out error), Is.True, error);
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.True);
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_collision_with_global_table_aborts_complete_flush()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Bind(settings, "GenTable", SheetXSheetOutputMode.GeneratedDataClass);
+				settings.sheetBindings.Single(binding => binding.sheetName == "GenTable").fieldName = "Economy";
+				Directory.CreateDirectory(JsonFolder);
+				Directory.CreateDirectory(CodeFolder);
+				File.WriteAllText(JsonFolder + "/Configuration.txt", "prior config json");
+				File.WriteAllText(GeneratedJson, "prior table json");
+				File.WriteAllText(GeneratedSource, "prior source");
+				File.WriteAllText(GlobalCollectionSource, "prior global");
+
+				var session = new SheetXCollectionExportSession(settings);
+				var configuration = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "economy", "rate", "float", "1.5" },
+				};
+				Assert.That(session.TryAddConfiguration(SourceId, configuration, out string error), Is.True, error);
+				Assert.That(session.TryAddGeneratedTable(
+					SourceId, "GenTable", new[] { "id:int" },
+					new IReadOnlyList<string>[] { new[] { "1" } }, out error), Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.False);
+				Assert.That(error, Does.Contain("Economy"));
+				Assert.That(session.SkippedSheetCount, Is.EqualTo(0));
+				Assert.That(File.ReadAllText(JsonFolder + "/Configuration.txt"), Is.EqualTo("prior config json"));
+				Assert.That(File.ReadAllText(GeneratedJson), Is.EqualTo("prior table json"));
+				Assert.That(File.ReadAllText(GeneratedSource), Is.EqualTo("prior source"));
+				Assert.That(File.ReadAllText(GlobalCollectionSource), Is.EqualTo("prior global"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void invalid_configuration_leaves_previous_files_untouched()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Directory.CreateDirectory(JsonFolder);
+				Directory.CreateDirectory(CodeFolder);
+				File.WriteAllText(JsonFolder + "/Configuration.txt", "prior config json");
+				File.WriteAllText(GeneratedSource, "prior source");
+				File.WriteAllText(GlobalCollectionSource, "prior global");
+
+				var session = new SheetXCollectionExportSession(settings);
+				var badTable = new[]
+				{
+					new[] { "Wrong", "Header" },
+					new[] { "a", "b" },
+				};
+				Assert.That(session.TryAddConfiguration(SourceId, badTable, out string error), Is.True, error);
+				Assert.That(session.Flush(out error), Is.False);
+				Assert.That(error, Does.Contain("Configuration"));
+
+				Assert.That(File.ReadAllText(JsonFolder + "/Configuration.txt"), Is.EqualTo("prior config json"));
+				Assert.That(File.ReadAllText(GeneratedSource), Is.EqualTo("prior source"));
+				Assert.That(File.ReadAllText(GlobalCollectionSource), Is.EqualTo("prior global"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_write_failure_rolls_back_json_and_every_generated_script()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Directory.CreateDirectory(JsonFolder);
+				Directory.CreateDirectory(CodeFolder);
+				File.WriteAllText(JsonFolder + "/Configuration.txt", "prior config json");
+				File.WriteAllText(GeneratedSource, "prior source");
+				File.WriteAllText(GlobalCollectionSource, "prior global");
+
+				var session = new SheetXCollectionExportSession(
+					settings, output: new FailingFileOutput(failAfterWrite: 2));
+				var table = new[]
+				{
+					new[] { "Sub Class", "Field Name", "Type", "Value" },
+					new[] { "general", "timeout", "int", "5" },
+				};
+				Assert.That(session.TryAddConfiguration(SourceId, table, out string error), Is.True, error);
+				Assert.That(session.Flush(out error), Is.False);
+				Assert.That(error, Does.Contain("Injected write failure"));
+
+				Assert.That(File.ReadAllText(JsonFolder + "/Configuration.txt"), Is.EqualTo("prior config json"));
+				Assert.That(File.ReadAllText(GeneratedSource), Is.EqualTo("prior source"));
+				Assert.That(File.ReadAllText(GlobalCollectionSource), Is.EqualTo("prior global"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void removing_configuration_regenerates_source_without_members_or_marker()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Directory.CreateDirectory(CodeFolder);
+				foreach (var source in SheetXCollectionGenerator.EmitFiles(
+					settings, Array.Empty<SheetXCollectionGeneratedTable>(), Configuration()))
+				{
+					File.WriteAllText(CodeFolder + "/" + source.Key, source.Value);
+				}
+
+				var session = new SheetXCollectionExportSession(settings);
+				Assert.That(session.Flush(out string error), Is.True, error);
+				Assert.That(session.WroteArtifacts, Is.True);
+				Assert.That(File.ReadAllText(GeneratedSource), Does.Not.Contain("const string Configuration"));
+				Assert.That(File.ReadAllText(GlobalCollectionSource), Does.Not.Contain("public class Economy"));
+				Assert.That(File.ReadAllText(GlobalCollectionSource), Does.Not.Contain("public Economy economy;"));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void no_configuration_and_no_accepted_tables_remains_no_op()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				var session = new SheetXCollectionExportSession(settings);
+				Assert.That(session.Flush(out string error), Is.True, error);
+				Assert.That(session.WroteArtifacts, Is.False);
+				Assert.That(File.Exists(JsonFolder + "/Configuration.txt"), Is.False);
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
 		private sealed class FailingFileOutput : ISheetXOutput
 		{
 			private readonly int m_failAfterWrite;
@@ -875,6 +1592,47 @@ namespace RCore.SheetX.Tests
 			settings.collectionNamespace = "Game.DataConfig";
 			settings.collectionJsonFolder = "Assets/Game/DataConfig/Editor/Json";
 			return settings;
+		}
+
+		private static ConfigSheetData Configuration()
+		{
+			var data = new ConfigSheetData();
+			var group = new ConfigGroup
+			{
+				Key = "economy",
+				ClassName = "Economy",
+				SourceId = "configuration.xlsx",
+				Row = 2,
+			};
+			group.Fields.Add(new ConfigField
+			{
+				Name = "startingCoins",
+				Type = ConfigFieldType.Int,
+				SourceId = "configuration.xlsx",
+				Row = 2,
+			});
+			data.Groups.Add(group);
+			data.RootFields.Add(new ConfigField
+			{
+				Name = "position2",
+				Type = ConfigFieldType.Vector2,
+				SourceId = "configuration.xlsx",
+				Row = 4,
+			});
+			return data;
+		}
+
+		private static ConfigSheetData RootInt()
+		{
+			var data = new ConfigSheetData();
+			data.RootFields.Add(new ConfigField
+			{
+				Name = "version",
+				Type = ConfigFieldType.Int,
+				SourceId = "configuration.xlsx",
+				Row = 2,
+			});
+			return data;
 		}
 
 		private static SheetXCollectionGeneratedTable Generated(

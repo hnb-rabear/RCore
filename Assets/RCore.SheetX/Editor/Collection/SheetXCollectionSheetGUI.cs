@@ -63,6 +63,11 @@ namespace RCore.SheetX.Editor
 		{
 			table.AddColumn("Output Mode", 110, 140, (rect, item) =>
 			{
+				if (SheetXCollectionSettings.IsAutomaticConfiguration(settings, item?.name))
+				{
+					EditorGUI.LabelField(rect, "Automatic");
+					return;
+				}
 				if (!TryBinding(settings, sourceId, item, out var binding))
 					return;
 				var mode = (SheetXSheetOutputMode)EditorGUI.Popup(
@@ -80,6 +85,11 @@ namespace RCore.SheetX.Editor
 
 			table.AddColumn("Collection", 100, 140, (rect, item) =>
 			{
+				if (SheetXCollectionSettings.IsAutomaticConfiguration(settings, item?.name))
+				{
+					EditorGUI.LabelField(rect, "Global");
+					return;
+				}
 				if (!TryBinding(settings, sourceId, item, out var binding)
 					|| binding.outputMode == SheetXSheetOutputMode.JsonOnly)
 				{
@@ -96,6 +106,11 @@ namespace RCore.SheetX.Editor
 
 			table.AddColumn("Data Class", 140, 260, (rect, item) =>
 			{
+				if (SheetXCollectionSettings.IsAutomaticConfiguration(settings, item?.name))
+				{
+					EditorGUI.LabelField(rect, "GlobalConfigCollection");
+					return;
+				}
 				if (!TryBinding(settings, sourceId, item, out var binding)
 					|| binding.outputMode == SheetXSheetOutputMode.JsonOnly)
 				{
