@@ -16,12 +16,7 @@ MonoBehaviour:
   m_Data:
     m_SerializedData: []
   m_GUID: de287685088ec4e42b73c28ea4a0df90
-  m_SerializeEntries:
-  - m_GUID: 71f0e90d094af0146af786562cc26615
-    m_Address: Assets/Demo/Addressables/FastFollow
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 3fc3d101e9613744f8c32610c31d9cd5, type: 2}
   m_SchemaSet:

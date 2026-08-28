@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using RCore.SheetX;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -18,7 +20,6 @@ namespace SheetXExample
 		[ContextMenu("Load")]
 		public void Load()
 		{
-			
 #if UNITY_EDITOR
 			var txt = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/SheetXExample/DataConfig/ExampleData1.txt");
 			exampleData1s = JsonConvert.DeserializeObject<ExampleData1[]>(txt.text);

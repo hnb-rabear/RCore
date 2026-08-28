@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added full Vietnamese documentation (`Document_VN.md`) with bilingual navigation links between English and Vietnamese guides.
+- Added comprehensive documentation for Enum definitions in `IDs` sheets (`[enum]` group suffix), `onlyEnumAsIDs` setting, and automatic symbolic ID resolution in data table JSON export.
+
 ## [1.6.0] - 2026-08-27
 
 ### Added

@@ -1,5 +1,7 @@
 # SheetX Document
 
+[English Document](Document.md) | [Tài liệu Tiếng Việt](Document_VN.md)
+
 ## 1. Introduction
 
 This tool simplifies database design and management for game developers and designers, allowing easy modification of game statistics without needing developer help.
@@ -278,7 +280,7 @@ id | price | enabled | tags[] | reward.amount
 id:string | price:float | enabled:bool | tags[]:string | reward.amount:int
 ```
 
-Plain headers infer `int`, `float`, `bool`, or `string` from longest non-empty cell in their column. Empty columns infer `string`. Scalar arrays use `[]`; dotted names generate nested objects. Add `:type` only to override inference, such as `id:string` for leading-zero IDs or `price:float` when current values are all integers.
+Plain headers infer `int`, `float`, `bool`, or `string` from longest non-empty cell in their column. Empty columns infer `string`. Scalar arrays use `[]`; dotted names generate nested objects. Add `:type` only to override inference, such as `id:string` for leading-zero IDs or `price:float` when current values are all integers. Supported scalar type annotations are `int`, `float`, `bool`, and `string`. Enum types cannot be declared directly in data sheet headers (e.g. `type:enum` or `type:MyEnum` is not supported); define enums in `[%IDs]` sheets and reference their symbolic keys in data cells instead.
 
 Any header containing exact, case-sensitive `[x]` text anywhere is ignored. A path containing an exact C# keyword segment, such as `fixed` or `reward.class`, is skipped with a warning. Ignored columns retain their source positions, so later field values stay aligned. Other invalid identifiers, malformed or unsupported annotations, duplicate normalized paths, object/leaf conflicts, invalid values, and generated-name collisions log an actionable error and skip only that sheet. Later valid sheets continue. Diagnostics identify source, sheet, 1-based column, raw header when applicable, cause, and a `Fix:` action. Previous JSON for a skipped sheet remains untouched but is excluded from current automatic bake.
 
@@ -313,16 +315,19 @@ Collection JSON is not secret. Serialized ScriptableObject data remains extracta
 |        |     |         | BUILDING_7    | 7   |         | PET_7    | 7   |         |                   |     |
 |        |     |         | BUILDING_8    | 8   |         |          |     |         |                   |     |
 
-ID Sheets, named with the suffix `IDs` are used to compile all IDs into Integer Constants. The design rules are:
+ID Sheets, named with the suffix `IDs` are used to compile all IDs into Integer Constants or C# `enum`s. The design rules are:
 
 - The sheet name must end with `IDs`.
 - Only the Integer data type is allowed.
-- Each group is organized in 3 consecutive columns.
+- Each group is organized in 3 consecutive columns: Key Name, Key Value, Comment.
 - The first row contains the group name for easy reference.
 - The first column holds the Key Name, and the next column holds the Key Value.
 - Key Value must be an integer.
-- By default, all IDs in a column will be exported as Integer Constants. Add the suffix `[enum]` to the group name to export them as an enum.
-- To only export enums and skip Integer Constants, select `Only enum as IDs` in the Settings.
+- By default, all IDs in a column will be exported as Integer Constants (`public const int KEY = VALUE;`).
+- **Enum Header Annotation:** Add the suffix `[enum]` to the group name in Row 0 (e.g. `Gender[enum]`, `ItemType[enum]`) to export that group as a C# `public enum Name { KEY = VALUE, ... }`.
+  - With default settings (`Only enum as IDs` = FALSE), SheetX exports **both** `public const int` constants and `public enum`.
+  - With `Only enum as IDs` = TRUE in Settings, SheetX exports **only** `public enum` and omits `const int` declarations for that group.
+  - In data tables, referring to symbolic enum keys (e.g. `GENDER_MALE`) automatically resolves to integer values in exported JSON.
 
 ```
 | Group | Key | Comment |

@@ -10,7 +10,8 @@ namespace RCore.SheetX.Tests
 {
 	public class CollectionBakeTests
 	{
-		private const string TempRoot = "Assets/SheetXTestsTemp/Editor";
+		private const string TestRoot = "Assets/SheetXTestsTemp";
+		private const string TempRoot = TestRoot + "/Editor";
 		private const string JsonFolder = TempRoot + "/Json";
 		private const string AssetFolder = TempRoot + "/Collections";
 		private const string ResourcesFolder = TempRoot + "/Resources";
@@ -29,20 +30,27 @@ namespace RCore.SheetX.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			AssetDatabase.DeleteAsset("Assets/SheetXTestsTemp");
-			Directory.CreateDirectory(JsonFolder);
-			Directory.CreateDirectory(AssetFolder);
-			Directory.CreateDirectory(ResourcesFolder);
+			AssetDatabase.DeleteAsset(TempRoot);
+			EnsureFolder(TestRoot);
+			EnsureFolder(TempRoot);
+			EnsureFolder(JsonFolder);
+			EnsureFolder(AssetFolder);
+			EnsureFolder(ResourcesFolder);
 			File.WriteAllText(JsonFolder + "/Configuration.txt", "{}");
-			AssetDatabase.Refresh();
+			AssetDatabase.ImportAsset(JsonFolder + "/Configuration.txt");
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
 			SheetXCollectionBaker.TestBeforeSave = null;
-			AssetDatabase.DeleteAsset("Assets/SheetXTestsTemp");
-			AssetDatabase.Refresh();
+			AssetDatabase.DeleteAsset(TempRoot);
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			AssetDatabase.DeleteAsset(TestRoot);
 		}
 
 		[Test]
@@ -507,6 +515,15 @@ namespace RCore.SheetX.Tests
 			var deserialized = JsonUtility.FromJson<PendingCollectionBakeStore>(json);
 			var entry = deserialized.Entries.Single();
 			Assert.That(entry.HasAcceptedBindingFilter, Is.False);
+		}
+
+		private static void EnsureFolder(string path)
+		{
+			if (AssetDatabase.IsValidFolder(path))
+				return;
+
+			string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');
+			AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
 		}
 
 		private static SheetXSettings CreateSettings()

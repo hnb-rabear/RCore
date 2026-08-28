@@ -6,91 +6,354 @@
 	
 	using System;
 	
-	public class IDs
+	public partial class IDs
 	{
-		#region Hero
-		public const int HERO_1 = 1; /* Comment */ 
-		public const int HERO_2 = 2; /* Comment */ 
-		public const int HERO_3 = 3;
-		public const int HERO_4 = 4;
-		public const int HERO_5 = 5;
+		#region Condition Type
+		public const int TASK_COMPLETE_MAP = 1; /* Target Id will be -1/0 or a map Id */ 
+		public const int TASK_KILL_ENEMY = 2; /* Target Id will be -1/0 or a enemy Id */ 
+		public const int TASK_OPEN_CHEST = 3; /* Target Id will be -1/0 or a supply Id */ 
+		public const int TASK_REACH_LEVEL = 4; /* Target Id will be -1/0 */ 
+		public const int TASK_WATCH_ADS = 5; /* Target Id will be -1/0 */ 
+		public const int TASK_COMPLETE_DAILY_QUESTS = 6; /* Target Id will be -1/0 or a daily quest id */ 
+		public const int TASK_CLEAR_AREAS = 7; /* Target Id will be -1/0 */ 
+		public const int TASK_SPEND_CURRENCY = 8; /* Target Id will be currency id */ 
+		public const int TASK_UPGRADE_EQUIPMENT = 9; /* Target Id will be -1/0 */ 
+		public const int TASK_DIE = 10;
+		public const int TASK_RANKUP_EQUIPMENT_RARE = 11;
+		public const int TASK_RANKUP_EQUIPMENT_EPIC = 12;
+		public const int TASK_RANKUP_EQUIPMENT_LEGENDARY = 13;
 		#endregion
-		#region Building
-		public const int BUILDING_NULL = 0; /* Comment */ 
-		public const int BUILDING_1 = 1; /* Comment */ 
-		public const int BUILDING_2 = 2;
-		public const int BUILDING_3 = 3;
-		public const int BUILDING_4 = 4;
-		public const int BUILDING_5 = 5;
-		public const int BUILDING_6 = 6;
-		public const int BUILDING_7 = 7;
-		public const int BUILDING_8 = 8;
-		public const int BUILDING_9 = 9;
-		public const int BUILDING_10 = 10;
-		public const int BUILDING_11 = 11;
-		public const int BUILDING_12 = 12;
-		public const int BUILDING_13 = 13;
+		#region None
+		public const int NONE = 0;
 		#endregion
-		#region Pet Id
-		public const int PET_NULL = 0; /* Comment */ 
-		public const int PET_1 = 1; /* Comment */ 
-		public const int PET_2 = 2;
-		public const int PET_3 = 3;
-		public const int PET_4 = 4;
-		public const int PET_5 = 5;
-		public const int PET_6 = 6;
-		public const int PET_7 = 7;
-		public const int PET_8 = 8;
-		public const int PET_9 = 9;
+		#region Gun Slot
+		public const int SLOT_HANDGUN = 1;
+		public const int SLOT_SHOTGUN = 2;
+		public const int SLOT_CROSSBOW = 3;
+		public const int SLOT_SNIPER = 4;
+		public const int SLOT_MACHINEGUN = 5;
+		public const int SLOT_HEAVY = 6;
+		public const int SLOT_LAUNCHER = 7;
+		public const int SLOT_BOW = 8;
 		#endregion
-		#region Race
-		public const int RACE_NONE = 0; /* Comment */ 
-		public const int RACE_HUMAN = 1; /* Comment */ 
-		public const int RACE_ELF = 2;
-		public const int RACE_ORC = 3;
+		#region Mod[enum]
+		public const int MOD_MAXIMUM_HP = 1;
+		public const int MOD_MAXIMUM_HP_INC = 2;
+		public const int MOD_ATK = 3;
+		public const int MOD_ATK_INC = 4;
+		public const int MOD_KNOCKBACK = 5;
+		public const int MOD_KNOCKBACK_INC = 6;
+		public const int MOD_KNOCKBACK_RESISTANCE = 7;
+		public const int MOD_KNOCKBACK_RESISTANCE_INC = 8;
+		public const int MOD_ATTACK_RANGE = 9;
+		public const int MOD_ATTACK_RANGE_INC = 10;
+		public const int MOD_CRIT_CHANCE = 11;
+		public const int MOD_CRIT_CHANCE_INC = 12;
+		public const int MOD_MOVE_SPEED = 13;
+		public const int MOD_MOVE_SPEED_INC = 14;
+		public const int MOD_PROJECTILE_SPEED = 15;
+		public const int MOD_PROJECTILE_SPEED_INC = 16;
+		public const int MOD_RELOAD_TIME = 17;
+		public const int MOD_RELOAD_TIME_INC = 18;
+		public const int MOD_MAGAZINE = 19;
+		public const int MOD_MAGAZINE_INC = 20;
+		public const int MOD_MAXIMUM_AMMO = 21;
+		public const int MOD_MAXIMUM_AMMO_INC = 22;
+		public const int MOD_FIRE_RATE = 23;
+		public const int MOD_FIRE_RATE_INC = 24;
+		public const int MOD_PIERCING = 25;
+		public const int MOD_CRIT_MULTIPLIER = 26;
+		public const int MOD_CRIT_MULTIPLIER_INC = 27;
+		public const int MOD_GUARD = 28;
+		public const int MOD_DODGE_CHANCE = 29;
+		public const int MOD_ACCURACY = 30;
+		public const int MOD_ACCURACY_INC = 31;
+		public const int MOD_INVINCIBLE = 32;
+		public const int MOD_INSTANT_RELOAD = 33;
+		public const int MOD_LAND_MINE = 34;
+		public const int MOD_BONUS_LIFE = 35;
+		public const int MOD_TIMER_INVINCIBLE = 36;
+		public const int MOD_INSTANT_KILL_CHANCE = 37;
+		public const int MOD_CORPSE_BLAST = 38;
+		public const int MOD_FAST_LEVEL_UP = 39;
+		public const int MOD_SKILL_CHARGE_TIME_INC = 40;
+		public const int MOD_AUTO_SKILL = 41;
+		public const int MOD_SELF_DESTRUCTION = 42;
+		public const int MOD_PROJECTILE_SPREAD = 43;
+		public const int MOD_SKY_BEAM = 44;
+		public const int MOD_PROJECTILE_RICOCHET = 45;
+		public const int MOD_GOD = 46;
+		public const int MOD_STANDSTILL = 47;
+		public const int MOD_ATK_TOTAL_INC = 48;
+		public const int MOD_AOE_RADIUS = 49;
+		public const int MOD_CORPSE_SHARD = 50;
+		public const int MOD_PROJECTILE_PARALLEL = 51;
+		public const int MOD_ADDITIONAL_SHOOT = 52;
+		public const int MOD_SLOW_PROJECTILES = 53;
+		public const int MOD_INSTANT_RELOAD_CHANCE = 54;
+		public const int MOD_PARALYZE_CHANCE = 55;
+		public const int MOD_SLOW_ENEMIES = 56;
+		public const int MOD_FAKE_DISPLAY = 57;
+		public const int MOD_RELOAD_X_ATTACK = 58;
+		public const int MOD_RELOAD_X_AGILE = 59;
+		public const int MOD_RELOAD_X_INVINCIBLE = 60;
+		public const int MOD_PARALYZED = 61;
+		public const int MOD_EPIC_BONUS_RATE = 62;
+		public const int MOD_MORE_EXP = 63;
+		public const int MOD_MORE_GOLD = 64;
+		public const int MOD_ATK_INC_MACHINEGUN = 65;
+		public const int MOD_ATK_INC_SHOTGUN = 66;
+		public const int MOD_ATK_INC_SNIPER = 67;
+		public const int MOD_ATK_INC_HANDGUN = 68;
+		public const int MOD_MOVE_SPEED_INC_MACHINEGUN = 69;
+		public const int MOD_MOVE_SPEED_INC_SHOTGUN = 70;
+		public const int MOD_MOVE_SPEED_INC_SNIPER = 71;
+		public const int MOD_MOVE_SPEED_INC_HANDGUN = 72;
+		public const int MOD_ATK_INC_FULL_LIFE = 73;
+		public const int MOD_SKILL_CHARGE_TIME_INC_1_LIFE = 74;
+		public const int MOD_FULL_CHARGE_X_AGILE = 75;
+		public const int MOD_FULL_CHARGE_X_ATTACK = 76;
+		public const int MOD_FULL_CHARGE_X_INVINCIBLE = 77;
+		public const int MOD_AUTO_CHARGE = 78;
+		public const int MOD_MOVING_ATTACK = 79;
+		public const int MOD_CORE_EXPLOSION = 80;
+		public const int MOD_SHARDED_PROJECTILE = 81;
+		public const int MOD_EXPLOSIVE_PROJECTILE = 82;
+		public const int MOD_AURA_FIRE = 83;
+		public const int MOD_MISSILE = 84;
+		public const int MOD_MOLOTOV = 85;
+		public const int MOD_DRONE = 86;
+		public const int MOD_BOOMERANG = 87;
+		public const int MOD_SWING_BLADE = 88;
+		public const int MOD_BOUCING_BALL = 89;
+		public const int MOD_HOMING_PROJECTILE = 90;
+		public const int MOD_EVOL_ATK_INC = 91;
+		public const int MOD_EVOL_ATK_RANGE_INC = 92;
+		public enum Mod { MOD_MAXIMUM_HP = 1, MOD_MAXIMUM_HP_INC = 2, MOD_ATK = 3, MOD_ATK_INC = 4, MOD_KNOCKBACK = 5, MOD_KNOCKBACK_INC = 6, MOD_KNOCKBACK_RESISTANCE = 7, MOD_KNOCKBACK_RESISTANCE_INC = 8, MOD_ATTACK_RANGE = 9, MOD_ATTACK_RANGE_INC = 10, MOD_CRIT_CHANCE = 11, MOD_CRIT_CHANCE_INC = 12, MOD_MOVE_SPEED = 13, MOD_MOVE_SPEED_INC = 14, MOD_PROJECTILE_SPEED = 15, MOD_PROJECTILE_SPEED_INC = 16, MOD_RELOAD_TIME = 17, MOD_RELOAD_TIME_INC = 18, MOD_MAGAZINE = 19, MOD_MAGAZINE_INC = 20, MOD_MAXIMUM_AMMO = 21, MOD_MAXIMUM_AMMO_INC = 22, MOD_FIRE_RATE = 23, MOD_FIRE_RATE_INC = 24, MOD_PIERCING = 25, MOD_CRIT_MULTIPLIER = 26, MOD_CRIT_MULTIPLIER_INC = 27, MOD_GUARD = 28, MOD_DODGE_CHANCE = 29, MOD_ACCURACY = 30, MOD_ACCURACY_INC = 31, MOD_INVINCIBLE = 32, MOD_INSTANT_RELOAD = 33, MOD_LAND_MINE = 34, MOD_BONUS_LIFE = 35, MOD_TIMER_INVINCIBLE = 36, MOD_INSTANT_KILL_CHANCE = 37, MOD_CORPSE_BLAST = 38, MOD_FAST_LEVEL_UP = 39, MOD_SKILL_CHARGE_TIME_INC = 40, MOD_AUTO_SKILL = 41, MOD_SELF_DESTRUCTION = 42, MOD_PROJECTILE_SPREAD = 43, MOD_SKY_BEAM = 44, MOD_PROJECTILE_RICOCHET = 45, MOD_GOD = 46, MOD_STANDSTILL = 47, MOD_ATK_TOTAL_INC = 48, MOD_AOE_RADIUS = 49, MOD_CORPSE_SHARD = 50, MOD_PROJECTILE_PARALLEL = 51, MOD_ADDITIONAL_SHOOT = 52, MOD_SLOW_PROJECTILES = 53, MOD_INSTANT_RELOAD_CHANCE = 54, MOD_PARALYZE_CHANCE = 55, MOD_SLOW_ENEMIES = 56, MOD_FAKE_DISPLAY = 57, MOD_RELOAD_X_ATTACK = 58, MOD_RELOAD_X_AGILE = 59, MOD_RELOAD_X_INVINCIBLE = 60, MOD_PARALYZED = 61, MOD_EPIC_BONUS_RATE = 62, MOD_MORE_EXP = 63, MOD_MORE_GOLD = 64, MOD_ATK_INC_MACHINEGUN = 65, MOD_ATK_INC_SHOTGUN = 66, MOD_ATK_INC_SNIPER = 67, MOD_ATK_INC_HANDGUN = 68, MOD_MOVE_SPEED_INC_MACHINEGUN = 69, MOD_MOVE_SPEED_INC_SHOTGUN = 70, MOD_MOVE_SPEED_INC_SNIPER = 71, MOD_MOVE_SPEED_INC_HANDGUN = 72, MOD_ATK_INC_FULL_LIFE = 73, MOD_SKILL_CHARGE_TIME_INC_1_LIFE = 74, MOD_FULL_CHARGE_X_AGILE = 75, MOD_FULL_CHARGE_X_ATTACK = 76, MOD_FULL_CHARGE_X_INVINCIBLE = 77, MOD_AUTO_CHARGE = 78, MOD_MOVING_ATTACK = 79, MOD_CORE_EXPLOSION = 80, MOD_SHARDED_PROJECTILE = 81, MOD_EXPLOSIVE_PROJECTILE = 82, MOD_AURA_FIRE = 83, MOD_MISSILE = 84, MOD_MOLOTOV = 85, MOD_DRONE = 86, MOD_BOOMERANG = 87, MOD_SWING_BLADE = 88, MOD_BOUCING_BALL = 89, MOD_HOMING_PROJECTILE = 90, MOD_EVOL_ATK_INC = 91, MOD_EVOL_ATK_RANGE_INC = 92, }
 		#endregion
-		#region Attribute[enum]
-		public const int ATT_MAXIMUM_HP = 1;
-		public const int ATT_MAXIMUM_HP_INC = 2;
-		public const int ATT_ATK = 3;
-		public const int ATT_ATK_INC = 4;
-		public const int ATT_KNOCKBACK = 5;
-		public const int ATT_KNOCKBACK_INC = 6;
-		public const int ATT_KNOCKBACK_RESISTANCE = 7;
-		public const int ATT_KNOCKBACK_RESISTANCE_INC = 8;
-		public const int ATT_ATTACK_RANGE = 9;
-		public const int ATT_ATTACK_RANGE_INC = 10;
-		public const int ATT_CRIT_CHANCE = 11;
-		public const int ATT_CRIT_CHANCE_INC = 12;
-		public const int ATT_MOVE_SPEED = 13;
-		public const int ATT_MOVE_SPEED_INC = 14;
-		public const int ATT_PROJECTILE_SPEED = 15;
-		public const int ATT_PROJECTILE_SPEED_INC = 16;
-		public const int ATT_RELOAD_TIME = 17;
-		public const int ATT_RELOAD_TIME_INC = 18;
-		public const int ATT_MAGAZINE = 19;
-		public const int ATT_MAGAZINE_INC = 20;
-		public const int ATT_MAXIMUM_AMMO = 21;
-		public const int ATT_MAXIMUM_AMMO_INC = 22;
-		public const int ATT_FIRE_RATE = 23;
-		public const int ATT_FIRE_RATE_INC = 24;
-		public const int ATT_PIERCING = 25;
-		public const int ATT_CRIT_MULTIPLIER = 26;
-		public const int ATT_CRIT_MULTIPLIER_INC = 27;
-		public const int ATT_GUARD = 28;
-		public const int ATT_DODGE_CHANCE = 29;
-		public const int ATT_ACCURACY = 30;
-		public const int ATT_ACCURACY_INC = 31;
-		public enum Attribute { ATT_MAXIMUM_HP = 1, ATT_MAXIMUM_HP_INC = 2, ATT_ATK = 3, ATT_ATK_INC = 4, ATT_KNOCKBACK = 5, ATT_KNOCKBACK_INC = 6, ATT_KNOCKBACK_RESISTANCE = 7, ATT_KNOCKBACK_RESISTANCE_INC = 8, ATT_ATTACK_RANGE = 9, ATT_ATTACK_RANGE_INC = 10, ATT_CRIT_CHANCE = 11, ATT_CRIT_CHANCE_INC = 12, ATT_MOVE_SPEED = 13, ATT_MOVE_SPEED_INC = 14, ATT_PROJECTILE_SPEED = 15, ATT_PROJECTILE_SPEED_INC = 16, ATT_RELOAD_TIME = 17, ATT_RELOAD_TIME_INC = 18, ATT_MAGAZINE = 19, ATT_MAGAZINE_INC = 20, ATT_MAXIMUM_AMMO = 21, ATT_MAXIMUM_AMMO_INC = 22, ATT_FIRE_RATE = 23, ATT_FIRE_RATE_INC = 24, ATT_PIERCING = 25, ATT_CRIT_MULTIPLIER = 26, ATT_CRIT_MULTIPLIER_INC = 27, ATT_GUARD = 28, ATT_DODGE_CHANCE = 29, ATT_ACCURACY = 30, ATT_ACCURACY_INC = 31, }
+		#region Reward Types
+		public const int REWARD_CURRENCY = 1;
+		public const int REWARD_EXP = 2;
+		public const int REWARD_G_COIN_PACK = 3;
+		public const int REWARD_CHEST = 4;
 		#endregion
-		#region Gender[enum]
-		public const int GENDER_NONE = 1;
-		public const int GENDER_MALE = 2;
-		public const int GENDER_FEMALE = 3;
-		public const int GENDER_HELICOPTER = 4;
-		public enum Gender { GENDER_NONE = 1, GENDER_MALE = 2, GENDER_FEMALE = 3, GENDER_HELICOPTER = 4, }
+		#region Currency[enum]
+		public const int CURRENCY_G_COIN = 1;
+		public const int CURRENCY_V_COIN = 2;
+		public const int CURRENCY_STAMINA = 3;
+		public const int CURRENCY_MONEY = 4;
+		public const int CURRENCY_COMMON_PART = 5;
+		public const int CURRENCY_RARE_PART = 6;
+		public const int CURRENCY_EPIC_PART = 7;
+		public const int CURRENCY_HEROIC_PART = 8;
+		public const int CURRENCY_LEGENDARY_PART = 9;
+		public const int CURRENCY_RELIC_PART = 10;
+		public enum Currency { CURRENCY_G_COIN = 1, CURRENCY_V_COIN = 2, CURRENCY_STAMINA = 3, CURRENCY_MONEY = 4, CURRENCY_COMMON_PART = 5, CURRENCY_RARE_PART = 6, CURRENCY_EPIC_PART = 7, CURRENCY_HEROIC_PART = 8, CURRENCY_LEGENDARY_PART = 9, CURRENCY_RELIC_PART = 10, }
 		#endregion
-	
-	
+		#region Rarity[enum]
+		public const int RARITY_NONE = 0;
+		public const int RARITY_COMMON = 1;
+		public const int RARITY_RARE = 2;
+		public const int RARITY_EPIC = 3;
+		public const int RARITY_HEROIC = 4;
+		public const int RARITY_LEGENDARY = 5;
+		public const int RARITY_RELIC = 6;
+		public enum Rarity { RARITY_NONE = 0, RARITY_COMMON = 1, RARITY_RARE = 2, RARITY_EPIC = 3, RARITY_HEROIC = 4, RARITY_LEGENDARY = 5, RARITY_RELIC = 6, }
+		#endregion
+		#region EquipmentSlot[enum]
+		public const int EQUIP_SLOT_WEAPON = 1;
+		public enum EquipmentSlot { EQUIP_SLOT_WEAPON = 1, }
+		#endregion
+		#region EquipmentType[enum]
+		public const int ArmorHeavy = 1;
+		public const int ArmorMedium = 2;
+		public const int ArmorLight = 3;
+		public const int WeaponHandgun = 4;
+		public const int WeaponAssaultRiffle = 5;
+		public const int WeaponShotgun = 6;
+		public const int WeaponSniperRifle = 7;
+		public const int WeaponLauncher = 8;
+		public const int WeaponFlamethrower = 9;
+		public const int WeaponHeavygun = 10;
+		public enum EquipmentType { ArmorHeavy = 1, ArmorMedium = 2, ArmorLight = 3, WeaponHandgun = 4, WeaponAssaultRiffle = 5, WeaponShotgun = 6, WeaponSniperRifle = 7, WeaponLauncher = 8, WeaponFlamethrower = 9, WeaponHeavygun = 10, }
+		#endregion
+		#region PerksGroup[enum]
+		public const int P_INTRINSIC = 1;
+		public const int P_SIGHTS = 2;
+		public const int P_MAGAZINES = 3;
+		public const int P_STOCKS = 4;
+		public const int P_TRAITS = 5;
+		public enum PerksGroup { P_INTRINSIC = 1, P_SIGHTS = 2, P_MAGAZINES = 3, P_STOCKS = 4, P_TRAITS = 5, }
+		#endregion
+		#region EnemyID[enum]
+		public const int R_CREEP_BLUE = 1;
+		public const int R_CREEP_PURPLE = 2;
+		public const int R_CREEP_RED = 3;
+		public const int R_CREEP_GREY = 4;
+		public const int R_EMOK_MAGENTA = 5;
+		public const int R_EMOK_GREY = 6;
+		public const int R_EMOK_PURPLE = 7;
+		public const int R_ORB_BLUE = 8;
+		public const int R_ORB_RED = 9;
+		public const int R_ORB_ORANGE = 10;
+		public const int R_ORB_GREY = 11;
+		public const int R_ROLLER_BLUE = 12;
+		public const int R_ROLLER_GREEN = 13;
+		public const int R_ROLLER_RED = 14;
+		public const int R_ROLLER_GREY = 15;
+		public const int R_TANKER_BLUE = 16;
+		public const int R_TANKER_RED = 17;
+		public const int R_TANKER_PURPLE = 18;
+		public const int R_TANKER_GREY = 19;
+		public const int TOWER_SENTRY_BASIC = 20;
+		public const int TOWER_SENTRY_FOCUS = 21;
+		public const int TOWER_SENTRY_LASER = 22;
+		public const int R_TECH = 23;
+		public const int R_HERMIT = 24;
+		public const int R_BOXY = 25;
+		public const int R_BLAST = 26;
+		public const int R_JELLYFISH = 27;
+		public const int R_TENTACLES = 28;
+		public const int R_TECH_2 = 29;
+		public const int R_HERMIT_2 = 30;
+		public enum EnemyID { R_CREEP_BLUE = 1, R_CREEP_PURPLE = 2, R_CREEP_RED = 3, R_CREEP_GREY = 4, R_EMOK_MAGENTA = 5, R_EMOK_GREY = 6, R_EMOK_PURPLE = 7, R_ORB_BLUE = 8, R_ORB_RED = 9, R_ORB_ORANGE = 10, R_ORB_GREY = 11, R_ROLLER_BLUE = 12, R_ROLLER_GREEN = 13, R_ROLLER_RED = 14, R_ROLLER_GREY = 15, R_TANKER_BLUE = 16, R_TANKER_RED = 17, R_TANKER_PURPLE = 18, R_TANKER_GREY = 19, TOWER_SENTRY_BASIC = 20, TOWER_SENTRY_FOCUS = 21, TOWER_SENTRY_LASER = 22, R_TECH = 23, R_HERMIT = 24, R_BOXY = 25, R_BLAST = 26, R_JELLYFISH = 27, R_TENTACLES = 28, R_TECH_2 = 29, R_HERMIT_2 = 30, }
+		#endregion
+		#region TriggerType[enum]
+		public const int trAuto = 1;
+		public const int trByDeath = 2;
+		public const int trByKill = 3;
+		public const int trByReloading = 4;
+		public const int trByFullReloading = 5;
+		public const int trByActiveSkill = 6;
+		public const int trByFullCharge = 7;
+		public enum TriggerType { trAuto = 1, trByDeath = 2, trByKill = 3, trByReloading = 4, trByFullReloading = 5, trByActiveSkill = 6, trByFullCharge = 7, }
+		#endregion
+		#region ASType[enum]
+		public const int AS_ATACK = 1;
+		public const int AS_DEFENSE = 2;
+		public const int AS_SUPPORT = 3;
+		public enum ASType { AS_ATACK = 1, AS_DEFENSE = 2, AS_SUPPORT = 3, }
+		#endregion
+		#region EnemyType[enum]
+		public const int E_NORMAL = 1;
+		public const int E_BOSS = 2;
+		public const int E_SENTRY = 3;
+		public enum EnemyType { E_NORMAL = 1, E_BOSS = 2, E_SENTRY = 3, }
+		#endregion
+		#region GM[enum]
+		public const int GM_NONE = 0;
+		public const int GM_ATTACK = 1;
+		public const int GM_ATTACK_EFFECT = 2;
+		public const int GM_PROJECTILE = 3;
+		public const int GM_PROJECTILE_EFFECT = 4;
+		public const int GM_AMMO = 5;
+		public const int GM_CHARACTER = 6;
+		public enum GM { GM_NONE = 0, GM_ATTACK = 1, GM_ATTACK_EFFECT = 2, GM_PROJECTILE = 3, GM_PROJECTILE_EFFECT = 4, GM_AMMO = 5, GM_CHARACTER = 6, }
+		#endregion
+		#region PA[enum]
+		public const int PA_DMG_BOOST = 1;
+		public const int PA_CRIT_MASTER = 2;
+		public const int PA_CORPSE_BLAST = 3;
+		public const int PA_BULLSEYE_1 = 4;
+		public const int PA_BULLSEYE_2 = 5;
+		public const int PA_BULLSEYE_3 = 6;
+		public const int PA_BULLSEYE_4 = 7;
+		public const int PA_INVINCILITY = 8;
+		public const int PA_GUARD = 9;
+		public const int PA_DANCER = 10;
+		public const int PA_FAST_LEVEL_UP = 11;
+		public const int PA_MAG_DRILLS_1 = 12;
+		public const int PA_SKILL_CHARGER = 13;
+		public const int PA_AUTO_CHARGE = 14;
+		public const int PA_PRO_STANCE_1 = 15;
+		public const int PA_PRO_STANCE_2 = 16;
+		public const int PA_PRO_STANCE_3 = 17;
+		public const int PA_PRO_STANCE_4 = 18;
+		public const int PA_SELF_DESTRUCTION = 19;
+		public const int PA_SPREAD_BULLET_1 = 20;
+		public const int PA_SPREAD_BULLET_2 = 21;
+		public const int PA_SPREAD_BULLET_3 = 22;
+		public const int PA_RICOCHET_BULLET = 23;
+		public const int PA_RUNNER_1 = 24;
+		public const int PA_RUNNER_2 = 25;
+		public const int PA_STANDSTILL = 26;
+		public const int PA_CORPSE_SHARD = 27;
+		public const int PA_PARALLEL_BULLET = 28;
+		public const int PA_MULTI_SHOOT = 29;
+		public const int PA_EMP_BULLET_1 = 30;
+		public const int PA_EMP_BULLET_2 = 31;
+		public const int PA_EMP_BULLET_3 = 32;
+		public const int PA_EMP_BULLET_4 = 33;
+		public const int PA_SLOW_PROJECTILES = 34;
+		public const int PA_RELOADER_1 = 35;
+		public const int PA_RELOADER_2 = 36;
+		public const int PA_RELOADER_3 = 37;
+		public const int PA_RELOADER_4 = 38;
+		public const int PA_SLOW_ENEMIES = 39;
+		public const int PA_AUTOMATIC_TRIGGER = 40;
+		public const int PA_SUPER_POWER = 41;
+		public const int PA_PIERCING_BULLET_1 = 42;
+		public const int PA_PIERCING_BULLET_2 = 43;
+		public const int PA_RELOAD_X_ATTACK = 44;
+		public const int PA_RELOAD_X_AGILE = 45;
+		public const int PA_RELOAD_X_INVINCIBLE = 46;
+		public const int PA_HOMING_BULLET = 47;
+		public const int PA_MAG_DRILLS_2 = 48;
+		public const int PA_FULL_CHARGE_X_AGILE = 49;
+		public const int PA_FULL_CHARGE_X_ATTACK = 50;
+		public const int PA_FULL_CHARGE_X_INVINCIBLE = 51;
+		public const int PA_EXPLOSIVE_BULLET = 52;
+		public const int PA_EXO_BULLET = 53;
+		public const int PA_GUARD_EPIC = 54;
+		public const int PA_DANCER_EPIC = 55;
+		public const int PA_RUNNER_EPIC_1 = 56;
+		public const int PA_RUNNER_EPIC_2 = 57;
+		public const int PA_CORE_EXPLOSION = 58;
+		public const int PA_LAND_MINE = 59;
+		public const int PA_SKY_BEAM = 60;
+		public const int PA_MISSILE = 61;
+		public const int PA_MOLOTOV = 62;
+		public const int PA_AURA_FIRE = 63;
+		public const int PE_DRONE = 64;
+		public const int PA_BOOMERANG = 65;
+		public const int PA_SWING_BLADE = 66;
+		public const int PE_BOUNCING_BALL = 67;
+		public const int PA_LAND_MINE_EVOL = 68;
+		public const int PA_SKY_BEAM_EVOL = 69;
+		public const int PA_MISSILE_EVOL = 70;
+		public const int PA_MOLOTOV_EVOL = 71;
+		public const int PA_AURA_FIRE_EVOL = 72;
+		public const int PE_DRONE_EVOL = 73;
+		public const int PA_BOOMERANG_EVOL = 74;
+		public const int PA_SWING_BLADE_EVOL = 75;
+		public const int PE_BOUNCING_BALL_EVOL = 76;
+		public enum PA { PA_DMG_BOOST = 1, PA_CRIT_MASTER = 2, PA_CORPSE_BLAST = 3, PA_BULLSEYE_1 = 4, PA_BULLSEYE_2 = 5, PA_BULLSEYE_3 = 6, PA_BULLSEYE_4 = 7, PA_INVINCILITY = 8, PA_GUARD = 9, PA_DANCER = 10, PA_FAST_LEVEL_UP = 11, PA_MAG_DRILLS_1 = 12, PA_SKILL_CHARGER = 13, PA_AUTO_CHARGE = 14, PA_PRO_STANCE_1 = 15, PA_PRO_STANCE_2 = 16, PA_PRO_STANCE_3 = 17, PA_PRO_STANCE_4 = 18, PA_SELF_DESTRUCTION = 19, PA_SPREAD_BULLET_1 = 20, PA_SPREAD_BULLET_2 = 21, PA_SPREAD_BULLET_3 = 22, PA_RICOCHET_BULLET = 23, PA_RUNNER_1 = 24, PA_RUNNER_2 = 25, PA_STANDSTILL = 26, PA_CORPSE_SHARD = 27, PA_PARALLEL_BULLET = 28, PA_MULTI_SHOOT = 29, PA_EMP_BULLET_1 = 30, PA_EMP_BULLET_2 = 31, PA_EMP_BULLET_3 = 32, PA_EMP_BULLET_4 = 33, PA_SLOW_PROJECTILES = 34, PA_RELOADER_1 = 35, PA_RELOADER_2 = 36, PA_RELOADER_3 = 37, PA_RELOADER_4 = 38, PA_SLOW_ENEMIES = 39, PA_AUTOMATIC_TRIGGER = 40, PA_SUPER_POWER = 41, PA_PIERCING_BULLET_1 = 42, PA_PIERCING_BULLET_2 = 43, PA_RELOAD_X_ATTACK = 44, PA_RELOAD_X_AGILE = 45, PA_RELOAD_X_INVINCIBLE = 46, PA_HOMING_BULLET = 47, PA_MAG_DRILLS_2 = 48, PA_FULL_CHARGE_X_AGILE = 49, PA_FULL_CHARGE_X_ATTACK = 50, PA_FULL_CHARGE_X_INVINCIBLE = 51, PA_EXPLOSIVE_BULLET = 52, PA_EXO_BULLET = 53, PA_GUARD_EPIC = 54, PA_DANCER_EPIC = 55, PA_RUNNER_EPIC_1 = 56, PA_RUNNER_EPIC_2 = 57, PA_CORE_EXPLOSION = 58, PA_LAND_MINE = 59, PA_SKY_BEAM = 60, PA_MISSILE = 61, PA_MOLOTOV = 62, PA_AURA_FIRE = 63, PE_DRONE = 64, PA_BOOMERANG = 65, PA_SWING_BLADE = 66, PE_BOUNCING_BALL = 67, PA_LAND_MINE_EVOL = 68, PA_SKY_BEAM_EVOL = 69, PA_MISSILE_EVOL = 70, PA_MOLOTOV_EVOL = 71, PA_AURA_FIRE_EVOL = 72, PE_DRONE_EVOL = 73, PA_BOOMERANG_EVOL = 74, PA_SWING_BLADE_EVOL = 75, PE_BOUNCING_BALL_EVOL = 76, }
+		#endregion
+		#region PA_Condition[enum]
+		public const int PAC_MINIMUM_LIFE_2 = 1;
+		public const int PAC_HALF_MAXMUM_LEVEL = 2;
+		public const int PAC_DISTANCE_BATTLE = 3;
+		public const int PAC_CLOSE_BATTLE = 4;
+		public const int PAC_ACTIVE_SKILL = 5;
+		public const int PAC_EVOL = 6;
+		public enum PA_Condition { PAC_MINIMUM_LIFE_2 = 1, PAC_HALF_MAXMUM_LEVEL = 2, PAC_DISTANCE_BATTLE = 3, PAC_CLOSE_BATTLE = 4, PAC_ACTIVE_SKILL = 5, PAC_EVOL = 6, }
+		#endregion
+		#region Chests
+		public const int CHEST_NORMAL = 1;
+		public const int CHEST_SPECIAL = 2;
+		public const int CHEST_SPECIAL_X8 = 3;
+		#endregion
+		#region Shop Session
+		public const int SHOP_SESSION_EVERYDAY = 0;
+		public const int SHOP_SESSION_SUNDAY = 1;
+		public const int SHOP_SESSION_MONDAY = 2;
+		public const int SHOP_SESSION_TUESDAY = 3;
+		public const int SHOP_SESSION_WEDNESDAY = 4;
+		public const int SHOP_SESSION_THURSDAY = 5;
+		public const int SHOP_SESSION_FRIDAY = 6;
+		public const int SHOP_SESSION_SATURDAY = 7;
+		public const int SHOP_SESSION_WEEKDAY = 8;
+		public const int SHOP_SESSION_WEEKEND = 9;
+		#endregion
 	}
 }

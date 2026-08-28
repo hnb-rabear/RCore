@@ -310,10 +310,10 @@ MonoBehaviour:
     rowTypeName: 
     fieldName: 
   collectionCodeFolder: 
-  collectionAssetFolder: 
+  collectionAssetFolder: Assets/SheetXExample/Resources
   collectionJsonFolder: 
   collectionNamespace: 
-  globalResourcesFolder: 
+  globalResourcesFolder: Assets/SheetXExample/Resources
   autoLoadAfterExport: 1
   autoLoadBeforePlay: 0
   onlyEnumAsIDs: 0

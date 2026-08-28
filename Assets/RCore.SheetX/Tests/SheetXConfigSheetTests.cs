@@ -414,8 +414,8 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes["Generated/Configuration.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes, Contains.Key("Generated/Configuration.cs"));
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/Configuration.cs"));
 			}
 			finally
 			{
@@ -438,8 +438,8 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes["Generated/Game_Data.txt"], Does.Contain("\"Config\":["));
-				Assert.That(output.Writes.Keys, Does.Not.Contain("Generated/Configuration.txt"));
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Game_Data.txt"], Does.Contain("\"Config\":["));
+				Assert.That(output.Writes.Keys, Does.Not.Contain("Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"));
 				Assert.That(output.Writes.Keys.Any(key => key.EndsWith(".cs", StringComparison.Ordinal)), Is.False);
 			}
 			finally
@@ -465,9 +465,9 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes["Generated/Configuration.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes, Contains.Key("Generated/Game_Data.txt"));
-				string aggregate = settings.GetEncryption().Decrypt(output.Writes["Generated/Game_Data.txt"]);
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Json/Game_Data.txt"));
+				string aggregate = settings.GetEncryption().Decrypt(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Game_Data.txt"]);
 				Assert.That(aggregate, Does.Contain("\"Items\":["));
 				Assert.That(aggregate, Does.Not.Contain("\"Configuration\":"));
 			}
@@ -498,10 +498,10 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				string json = output.Writes["Generated/Configuration.txt"];
+				string json = output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"];
 				Assert.That(json.IndexOf("\"economy\"", StringComparison.Ordinal), Is.LessThan(
 					json.IndexOf("\"visual\"", StringComparison.Ordinal)));
-				Assert.That(output.Writes, Contains.Key("Generated/Configuration.cs"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/Configuration.cs"));
 				Assert.That(output.Writes.Keys.Any(key => key.Contains("ConfigurationConfiguration")), Is.False);
 				Assert.That(output.Writes.Values.Any(value => value.Contains("\"Configuration\":")), Is.False);
 			}
@@ -523,11 +523,11 @@ namespace RCore.SheetX.Tests
 				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
 				{
 					SpreadsheetPath = path,
-					JsonOutputPath = "Generated",
+					JsonOutputPath = "Assets/SheetXTestsTemp/Editor/Generated/Json",
 				}, output);
 
 				Assert.That(result.Success, Is.True);
-				Assert.That(output.Writes[$"Generated/{sheetName}.txt"], Does.StartWith("["));
+				Assert.That(output.Writes[$"Assets/SheetXTestsTemp/Editor/Generated/Json/{sheetName}.txt"], Does.StartWith("["));
 				Assert.That(output.Writes.Keys.Any(key => key.EndsWith(".cs", StringComparison.Ordinal)), Is.False);
 			}
 			finally
@@ -545,10 +545,6 @@ namespace RCore.SheetX.Tests
 			var settings = InteractiveSettings(new SheetPath { name = "Configuration", selected = false });
 			settings.enableCollections = true;
 			settings.collectionNamespace = "RCore.SheetX.Tests.Config";
-				settings.collectionJsonFolder = "Assets/CollectionJson";
-			settings.collectionCodeFolder = "Assets/CollectionCode";
-				settings.collectionAssetFolder = "Assets/CollectionAsset";
-			settings.globalResourcesFolder = "Assets/Resources";
 
 			try
 			{
@@ -556,11 +552,10 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes, Contains.Key("Assets/CollectionJson/Configuration.txt"));
-				Assert.That(output.Writes["Assets/CollectionJson/Configuration.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes, Contains.Key("Assets/CollectionCode/GlobalConfigCollection.cs"));
-				Assert.That(output.Writes, Contains.Key("Assets/CollectionCode/SheetXDataCollections.cs"));
-				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Generated/Configuration")), Is.False);
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/GlobalConfigCollection.cs"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/SheetXDataCollections.cs"));
+				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Assets/SheetXTestsTemp/Editor/Generated/Code/Configuration.cs")), Is.False);
 			}
 			finally
 			{
@@ -577,10 +572,6 @@ namespace RCore.SheetX.Tests
 			var settings = InteractiveSettings();
 			settings.enableCollections = true;
 			settings.collectionNamespace = "RCore.SheetX.Tests.Config";
-				settings.collectionJsonFolder = "Assets/CollectionJson";
-			settings.collectionCodeFolder = "Assets/CollectionCode";
-				settings.collectionAssetFolder = "Assets/CollectionAsset";
-			settings.globalResourcesFolder = "Assets/Resources";
 
 			try
 			{
@@ -588,10 +579,10 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes, Contains.Key("Assets/CollectionJson/Configuration.txt"));
-				Assert.That(output.Writes["Assets/CollectionJson/Configuration.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes, Contains.Key("Assets/CollectionCode/GlobalConfigCollection.cs"));
-				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Generated/Configuration")), Is.False);
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"));
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/GlobalConfigCollection.cs"));
+				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Assets/SheetXTestsTemp/Editor/Generated/Code/Configuration.cs")), Is.False);
 			}
 			finally
 			{
@@ -609,10 +600,6 @@ namespace RCore.SheetX.Tests
 			var settings = InteractiveSettings(new SheetPath { name = "configuration", selected = true });
 			settings.enableCollections = true;
 			settings.collectionNamespace = "RCore.SheetX.Tests.Config";
-				settings.collectionJsonFolder = "Assets/CollectionJson";
-			settings.collectionCodeFolder = "Assets/CollectionCode";
-				settings.collectionAssetFolder = "Assets/CollectionAsset";
-			settings.globalResourcesFolder = "Assets/Resources";
 
 			try
 			{
@@ -620,8 +607,8 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes, Contains.Key("Generated/configuration.txt"));
-				Assert.That(output.Writes["Generated/configuration.txt"], Does.StartWith("["));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Json/configuration.txt"));
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/configuration.txt"], Does.StartWith("["));
 				Assert.That(output.Writes.Keys.Any(k => k.Contains("Configuration")), Is.False);
 			}
 			finally
@@ -645,9 +632,9 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				Assert.That(output.Writes, Contains.Key("Generated/Configuration.txt"));
-				Assert.That(output.Writes["Generated/Configuration.txt"], Does.StartWith("{"));
-				Assert.That(output.Writes, Contains.Key("Generated/Configuration.cs"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"));
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"], Does.StartWith("{"));
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/Configuration.cs"));
 				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Collection")), Is.False);
 			}
 			finally
@@ -666,11 +653,11 @@ namespace RCore.SheetX.Tests
 				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
 				{
 					SpreadsheetPath = path,
-					JsonOutputPath = "Generated",
+					JsonOutputPath = "Assets/SheetXTestsTemp/Editor/Generated/Json",
 				}, output);
 
 				Assert.That(result.Success, Is.True);
-				Assert.That(output.Writes["Generated/Configuration.txt"], Does.StartWith("["));
+				Assert.That(output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"], Does.StartWith("["));
 				Assert.That(output.Writes.Keys.Any(key => key.EndsWith(".cs", StringComparison.Ordinal)), Is.False);
 			}
 			finally
@@ -691,10 +678,6 @@ namespace RCore.SheetX.Tests
 				var settings = InteractiveSettings();
 				settings.enableCollections = true;
 				settings.collectionNamespace = "RCore.SheetX.Tests.Config";
-				settings.collectionJsonFolder = "Assets/CollectionJson";
-				settings.collectionCodeFolder = "Assets/CollectionCode";
-				settings.collectionAssetFolder = "Assets/CollectionAsset";
-				settings.globalResourcesFolder = "Assets/Resources";
 				settings.excelSheetsPaths = new List<ExcelSheetsPath>
 				{
 					new ExcelSheetsPath { path = firstPath, selected = true },
@@ -705,11 +688,11 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				string json = output.Writes["Assets/CollectionJson/Configuration.txt"];
+				string json = output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"];
 				Assert.That(json.IndexOf("\"economy\"", StringComparison.Ordinal), Is.LessThan(
 					json.IndexOf("\"visual\"", StringComparison.Ordinal)));
-				Assert.That(output.Writes, Contains.Key("Assets/CollectionCode/GlobalConfigCollection.cs"));
-				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Generated/Configuration")), Is.False);
+				Assert.That(output.Writes, Contains.Key("Assets/SheetXTestsTemp/Editor/Generated/Code/GlobalConfigCollection.cs"));
+				Assert.That(output.Writes.Keys.Any(k => k.StartsWith("Assets/SheetXTestsTemp/Editor/Generated/Code/Configuration.cs")), Is.False);
 			}
 			finally
 			{
@@ -730,10 +713,6 @@ namespace RCore.SheetX.Tests
 				var settings = InteractiveSettings();
 				settings.enableCollections = true;
 				settings.collectionNamespace = "RCore.SheetX.Tests.Config";
-				settings.collectionJsonFolder = "Assets/CollectionJson";
-				settings.collectionCodeFolder = "Assets/CollectionCode";
-				settings.collectionAssetFolder = "Assets/CollectionAsset";
-				settings.globalResourcesFolder = "Assets/Resources";
 				settings.excelSheetsPaths = new List<ExcelSheetsPath>
 				{
 					new ExcelSheetsPath { path = firstPath, selected = true },
@@ -744,7 +723,7 @@ namespace RCore.SheetX.Tests
 				context.Flush();
 
 				Assert.That(context.ToResult().Errors, Is.Empty);
-				string json = output.Writes["Assets/CollectionJson/Configuration.txt"];
+				string json = output.Writes["Assets/SheetXTestsTemp/Editor/Generated/Json/Configuration.txt"];
 				Assert.That(json, Does.Contain("\"economy\""));
 				Assert.That(json, Does.Not.Contain("\"visual\""));
 			}
@@ -846,8 +825,8 @@ namespace RCore.SheetX.Tests
 		{
 			var settings = SheetXSettings.CreateTransient(new SheetXExportRequest
 			{
-				ConstantsOutputPath = "Generated",
-				JsonOutputPath = "Generated",
+				ConstantsOutputPath = "Assets/SheetXTestsTemp/Editor/Generated/Code",
+				JsonOutputPath = "Assets/SheetXTestsTemp/Editor/Generated/Json",
 			});
 			settings.silent = true;
 			settings.excelSheetsPath = new ExcelSheetsPath
