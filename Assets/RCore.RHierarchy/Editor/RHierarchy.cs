@@ -177,9 +177,17 @@ namespace RCore.RHierarchy.Editor
             var icon = EditorGUIUtility.IconContent(iconName);
             if (GUI.Button(rect, icon.image, GUIStyle.none))
             {
-                Undo.RecordObject(gameObject, "Toggle Visibility");
-                gameObject.SetActive(!isActive);
-                EditorUtility.SetDirty(gameObject);
+                // Clicking the icon of a selected object toggles the whole selection to the same state.
+                var targets = Array.IndexOf(Selection.gameObjects, gameObject) >= 0
+                    ? Selection.gameObjects
+                    : new[] { gameObject };
+
+                Undo.RecordObjects(targets, "Toggle Visibility");
+                foreach (var go in targets)
+                {
+                    go.SetActive(!isActive);
+                    EditorUtility.SetDirty(go);
+                }
             }
             GUI.color = color;
         }

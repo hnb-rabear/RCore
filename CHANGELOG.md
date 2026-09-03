@@ -6,6 +6,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- `RCore.RHierarchy`: Visibility toggle now applies to the entire selection when the clicked object is part of it, so multiple GameObjects switch active state together in a single undo step. Clicking an unselected object still toggles only that object.
 - `RCore.UI`: Refactored `UICircleArranger` to inherit `UICircleArrangerBase`.
 - `RCore.Addressables`: Prevented concurrent async instantiation in `AssetBundleWrap` and `ComponentRef`; synced `ComponentRef.instance` in `PanelStack` and `PanelRoot`.
 - `RCore.SheetX` **1.6.0**: Collections mode now treats exact `Configuration` as automatic direct Global schema/value input. UI shows checked-disabled `Configuration` with read-only `Automatic / Global / GlobalConfigCollection`; Collection-folder plaintext JSON and compiled path marker drive strict, rollback-capable bake. Standalone Configuration artifacts stay dormant and untouched; detached and batch APIs retain row-array behavior. `Assets/RCore.SheetX/package.json` bumped 1.5.0 → 1.6.0; no tag path exists through current RevCore-only release workflow.
@@ -34,6 +35,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 ### Fixed
 
 - `RCore.UI`: Clamp `ProgressBar` fill limits; fix `PanelRoot` dimmer check; guard `OptimizedVerticalScrollView` animation with `#if DOTWEEN`.
+- `RCore.SheetX`: Data Class dropdown in Edit Spreadsheets windows was always empty. `TypeCache.GetTypesWithAttribute<SerializableAttribute>()` never matches, because `[Serializable]` is a pseudo-custom attribute the compiler emits as the `TypeAttributes.Serializable` metadata flag instead of a custom-attribute entry. Row-type discovery now scans loaded non-framework assemblies for `Type.IsSerializable`.
 - `RCore.SheetX`: Data Class dropdown in Edit Spreadsheets windows no longer closes immediately on click. `EditExcelSheetsWindow` and `EditGoogleSheetsWindow` called `Focus()` from `OnLostFocus`, which stole focus back from the `AdvancedDropdown` popup window and dismissed it; both overrides removed.
 - `RCore.SheetX`: Compacted Scene View Localization overlay UI by removing redundant current-language label and setting fixed 64px dropdown width.
 - `RCore.SheetX`: Existing collection assets with missing `m_Script` references now bind to matching generated `MonoScript` during bake without asset recreation or serialized-data loss.
