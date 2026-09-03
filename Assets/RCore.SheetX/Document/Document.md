@@ -273,7 +273,7 @@ Ordinary data sheets gain **Output Mode**, **Collection**, and **Data Class** co
 - **Generated Data Class** infers field types from longest non-empty cell in each column, generates partial data and collection classes, and derives data class name from sheet name.
 - **Existing Data Class** keeps legacy JSON shape. Pick a type you have marked with `[SheetXBindable]`. Missing or invalid types log an error and skip that sheet.
 
-Existing Data Class row types are opt-in. Both attributes are required: `[Serializable]` so Unity serializes the baked array, and `[SheetXBindable]` so SheetX offers the type. Classes and structs are both accepted; the type must be concrete and non-generic. `[SheetXBindable]` lives in the auto-referenced runtime assembly, so game code needs no asmdef change.
+Existing Data Class row types are opt-in. Both attributes are required: `[Serializable]` so Unity serializes the baked array, and `[SheetXBindable]` so SheetX offers the type. Classes and structs are both accepted; the type must be concrete and non-generic. The type must also be **publicly visible** — `public`, and, if nested, nested only inside `public` types — because the generated collection declares a `public` field of it; an `internal`, `private`, or privately nested type is rejected even when the generated file lands in the same assembly. `[SheetXBindable]` lives in the auto-referenced runtime assembly, so game code needs no asmdef change.
 
 ```csharp
 using System;

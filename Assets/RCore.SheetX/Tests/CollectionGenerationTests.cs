@@ -1108,6 +1108,28 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		public void existing_table_with_an_unmarked_row_type_is_rejected()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(UnmarkedBakeRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings);
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", "[{\"id\":2,\"name\":\"potion\"}]", out string error), Is.False);
+				Assert.That(error, Does.Contain("SheetXBindable"));
+				Assert.That(error, Does.Contain("UnmarkedBakeRow"));
+				Assert.That(session.SkippedSheetCount, Is.EqualTo(1));
+			}
+			finally
+			{
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
 		public void session_ignores_a_json_only_sheet()
 		{
 			var settings = SessionSettings();

@@ -147,6 +147,26 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		public void load_data_rejects_a_row_type_without_the_bindable_marker()
+		{
+			// TryFindRowType runs before the JSON is read, so valid JSON proves the marker is what rejects.
+			File.WriteAllText(JsonPath, "[]");
+			var settings = CreateSettings();
+			settings.sheetBindings.Single(binding => binding.sheetName == "BakeItems").rowTypeName
+				= typeof(UnmarkedBakeRow).AssemblyQualifiedName;
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "BakeShop", out string error), Is.False);
+				Assert.That(error, Does.Contain("SheetXBindable"));
+				Assert.That(error, Does.Contain("UnmarkedBakeRow"));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
 		public void auto_load_skips_disabled_collection_rows_but_refreshes_global_reference()
 		{
 			var feature = CreateFeatureAsset(7, "old");

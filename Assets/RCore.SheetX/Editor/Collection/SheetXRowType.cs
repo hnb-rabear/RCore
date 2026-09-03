@@ -19,7 +19,7 @@ namespace RCore.SheetX.Editor
 		/// </summary>
 		/// <param name="type">The candidate row type. <c>null</c> is rejected, not thrown on.</param>
 		/// <param name="error">Null when valid; otherwise a message naming the type and the required edit.</param>
-		/// <returns><c>true</c> when the type is a concrete, non-generic, [Serializable] and [SheetXBindable] class or struct.</returns>
+		/// <returns><c>true</c> when the type is a publicly visible, concrete, non-generic, [Serializable] and [SheetXBindable] class or struct.</returns>
 		internal static bool Validate(Type type, out string error)
 		{
 			error = null;
@@ -65,6 +65,15 @@ namespace RCore.SheetX.Editor
 			if (type.IsGenericType || type.IsGenericTypeDefinition)
 			{
 				error = $"row type '{type.FullName}' must not be generic.";
+				return false;
+			}
+			// IsVisible is true only when the type AND every enclosing type are public, which is
+			// exactly what the generated `public <RowType>[] field;` needs. An internal type fails
+			// even in the same assembly: a public field of an internal type is CS0052.
+			if (!type.IsVisible)
+			{
+				error = $"row type '{type.FullName}' is not publicly visible. "
+					+ $"Fix: make {type.Name} public, along with every type it is nested in, so the generated collection field can reference it.";
 				return false;
 			}
 			return true;

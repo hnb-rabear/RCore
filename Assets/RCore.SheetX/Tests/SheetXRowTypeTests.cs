@@ -7,14 +7,23 @@ namespace RCore.SheetX.Tests
 {
 	public class SheetXRowTypeTests
 	{
+		/// <summary>A fully valid row fixture. Public because <c>Validate</c> requires <c>Type.IsVisible</c>.</summary>
 		[Serializable, SheetXBindable]
-		private sealed class ValidRow
+		public sealed class ValidRow
 		{
 			public int id;
 		}
 
+		/// <summary>A fully valid struct row fixture. Public for the same visibility rule as <see cref="ValidRow"/>.</summary>
 		[Serializable, SheetXBindable]
-		private struct ValidStructRow
+		public struct ValidStructRow
+		{
+			public int id;
+		}
+
+		// Correct in every other way; only its private nesting makes it invalid.
+		[Serializable, SheetXBindable]
+		private sealed class NonPublicRow
 		{
 			public int id;
 		}
@@ -48,12 +57,6 @@ namespace RCore.SheetX.Tests
 		private enum BindableEnum
 		{
 			None = 0,
-		}
-
-		[Serializable]
-		private sealed class UnmarkedBakeRow
-		{
-			public int id;
 		}
 
 		[Test]
@@ -131,7 +134,18 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
-		public void enum_fails()
+		public void non_public_type_fails_naming_the_visibility_rule()
+		{
+			bool ok = SheetXRowType.Validate(typeof(NonPublicRow), out string error);
+
+			Assert.That(ok, Is.False);
+			Assert.That(error, Does.Contain("NonPublicRow"));
+			Assert.That(error, Does.Contain("public"));
+			Assert.That(error, Does.Contain("Fix:"));
+		}
+
+		[Test]
+		public void enum_without_marker_fails()
 		{
 			bool ok = SheetXRowType.Validate(typeof(BindableEnum), out string error);
 
@@ -146,21 +160,12 @@ namespace RCore.SheetX.Tests
 			{
 				typeof(ValidRow), typeof(ValidStructRow), typeof(SerializableOnlyRow),
 				typeof(BindableOnlyRow), typeof(AbstractRow), typeof(BindableEnum),
+				typeof(NonPublicRow),
 			};
 
 			var accepted = candidates.FindAll(type => SheetXRowType.Validate(type, out _));
 
 			Assert.That(accepted, Is.EquivalentTo(new[] { typeof(ValidRow), typeof(ValidStructRow) }));
-		}
-
-		[Test]
-		public void bake_rule_matches_picker_rule_for_an_unmarked_row()
-		{
-			bool ok = SheetXRowType.Validate(typeof(UnmarkedBakeRow), out string error);
-
-			Assert.That(ok, Is.False);
-			Assert.That(error, Does.Contain("SheetXBindable"));
-			Assert.That(error, Does.Contain("Fix:"));
 		}
 	}
 }

@@ -15,4 +15,12 @@ namespace RCore.SheetX.Tests
 		public int level;
 		public float multiplier;
 	}
+
+	/// <summary>Serializable but unmarked, for the bake-side rejection of a type missing [SheetXBindable].</summary>
+	[Serializable]
+	public sealed class UnmarkedBakeRow
+	{
+		public int id;
+		public string name;
+	}
 }

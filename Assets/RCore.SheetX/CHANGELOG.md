@@ -13,8 +13,9 @@
 ### Changed
 
 - `Existing Data Class` row types must now carry `[SheetXBindable]` in addition to `[Serializable]`. The Data Class dropdown previously listed every serializable type in the project and now lists only marked types, showing `No [SheetXBindable] type found` when a project has marked none. Export and bake reject an unmarked type with a message naming the fix. Structs are now valid row types alongside classes.
+- A row type must also be publicly visible: `public`, and, when nested, nested only inside `public` types. The generated collection declares a `public` field of the row type, so an `internal` or privately nested type would break the consuming project's compile (CS0122 / CS0052) — `internal` fails even when the generated file lands in the same assembly. The picker, export, and bake all reject such a type with a message naming the requirement.
 
-  **Migration:** add `[RCore.SheetX.SheetXBindable]` to every class or struct already bound as an `Existing Data Class`. An unmarked type disappears from the picker and is rejected at export and bake.
+  **Migration:** add `[RCore.SheetX.SheetXBindable]` to every class or struct already bound as an `Existing Data Class`, and make it — plus every type it is nested in — `public`. An unmarked or non-public type disappears from the picker and is rejected at export and bake.
 
 ### Fixed
 

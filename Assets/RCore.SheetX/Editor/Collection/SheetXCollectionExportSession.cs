@@ -582,7 +582,8 @@ namespace RCore.SheetX.Editor
 			error = null;
 			if (string.IsNullOrWhiteSpace(rowTypeName))
 			{
-				error = "Existing Data Class needs a row type name.";
+				error = "Existing Data Class needs a row type name. "
+					+ "Fix: pick a type in the Data Class column of the Edit Spreadsheets window.";
 				return false;
 			}
 
@@ -590,7 +591,8 @@ namespace RCore.SheetX.Editor
 			type = Type.GetType(rowTypeName, throwOnError: false) ?? SearchLoadedAssemblies(rowTypeName);
 			if (type == null)
 			{
-				error = $"row type '{rowTypeName}' was not found in any loaded assembly.";
+				error = $"row type '{rowTypeName}' was not found in any loaded assembly. "
+					+ "Fix: re-pick the type in the Data Class column of the Edit Spreadsheets window; it may have been renamed, moved, or deleted.";
 				return false;
 			}
 			if (!SheetXRowType.Validate(type, out error))

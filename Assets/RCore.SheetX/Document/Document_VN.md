@@ -153,7 +153,7 @@ Tính năng tùy chọn giúp tự động sinh mã nguồn data class, quản l
 - **Generated Data Class:** Tự động suy luận kiểu dữ liệu (`int`, `float`, `bool`, `string`) từ ô dài nhất, sinh partial class tương ứng.
 - **Existing Data Class:** Sử dụng một kiểu dữ liệu có sẵn trong project đã được đánh dấu `[SheetXBindable]`. Kiểu bị thiếu hoặc không hợp lệ sẽ ghi log lỗi và bỏ qua sheet đó.
 
-Kiểu dữ liệu dùng cho Existing Data Class phải được khai báo tường minh. Bắt buộc có cả hai attribute: `[Serializable]` để Unity serialize mảng dữ liệu sau khi bake, và `[SheetXBindable]` để SheetX đưa kiểu đó vào danh sách chọn. Hỗ trợ cả `class` lẫn `struct`; kiểu phải là kiểu cụ thể (không abstract) và không generic. `[SheetXBindable]` nằm trong assembly runtime được auto-reference, nên mã nguồn game không cần chỉnh asmdef.
+Kiểu dữ liệu dùng cho Existing Data Class phải được khai báo tường minh. Bắt buộc có cả hai attribute: `[Serializable]` để Unity serialize mảng dữ liệu sau khi bake, và `[SheetXBindable]` để SheetX đưa kiểu đó vào danh sách chọn. Hỗ trợ cả `class` lẫn `struct`; kiểu phải là kiểu cụ thể (không abstract) và không generic. Kiểu còn phải **truy cập được công khai** — khai báo `public`, và nếu là kiểu lồng nhau thì mọi kiểu bao ngoài cũng phải `public` — vì mã sinh ra khai báo field `public` của kiểu đó; kiểu `internal`, `private` hoặc lồng trong một kiểu không `public` đều bị từ chối, kể cả khi file sinh ra nằm cùng assembly. `[SheetXBindable]` nằm trong assembly runtime được auto-reference, nên mã nguồn game không cần chỉnh asmdef.
 
 ```csharp
 using System;
