@@ -6,6 +6,8 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- `RCore.UI`: Refactored `UICircleArranger` to inherit `UICircleArrangerBase`.
+- `RCore.Addressables`: Prevented concurrent async instantiation in `AssetBundleWrap` and `ComponentRef`; synced `ComponentRef.instance` in `PanelStack` and `PanelRoot`.
 - `RCore.SheetX` **1.6.0**: Collections mode now treats exact `Configuration` as automatic direct Global schema/value input. UI shows checked-disabled `Configuration` with read-only `Automatic / Global / GlobalConfigCollection`; Collection-folder plaintext JSON and compiled path marker drive strict, rollback-capable bake. Standalone Configuration artifacts stay dormant and untouched; detached and batch APIs retain row-array behavior. `Assets/RCore.SheetX/package.json` bumped 1.5.0 → 1.6.0; no tag path exists through current RevCore-only release workflow.
 - `RCore.SheetX` **1.5.0**: Optional Data Config Collections generate typed collection shells, bake editor-time JSON into serialized ScriptableObject arrays, and create a Global Resources root with feature references. Generated Data Class infers `int`, `float`, `bool`, or `string` from longest non-empty column cells; optional header annotations override inference. Collection JSON may use any project-relative `Assets/` folder except `Resources` or `StreamingAssets`; an `Editor` segment is no longer required. `SheetXDataCollections.cs` contains row models and JSON paths, while every collection `ScriptableObject` gets matching `GlobalConfigCollection.cs` or `<Name>ConfigCollection.cs` so Unity displays its Mono Script. Every generated file carries SheetX banner; export replaces legacy `.g.cs` file. Runtime parses no collection JSON. Detached and batch APIs exclude collection metadata. `Assets/RCore.SheetX/package.json` bumped 1.4.0 → 1.5.0; no tag path exists through current RevCore-only release workflow.
 - Legacy AssetCatalog Direct Usage now uses RAsset Filter at runtime. Without `com.rabear.rcore.assetfilter`, AssetCatalog compiles and other features work, but Direct Usage reports package requirement.
@@ -15,6 +17,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
+- `RCore.UI`: Added `UICircleArrangerBase`, `UICircleRewardArranger`, and `IgnoreSafeEdge` flags.
 - `RCore.SheetX`: Added complete Vietnamese documentation (`Document_VN.md`) and bilingual navigation headers across English and Vietnamese guides; clarified enum definition syntax in IDs sheets (`[enum]` suffix), `onlyEnumAsIDs` behavior, and symbolic ID resolution in data tables.
 - `RCore.SheetX`: Added Check New Update / Update mechanism in Settings tab. Fetches remote `package.json` from GitHub, compares SemVer versions, displays update notification badge, and allows one-click update for UPM Git or registry installs via `Client.Add()`. Source, embedded, and local installs stay read-only with matching badges.
 - `RCore/Check For Updates` now checks RCore Main, SheetX, RAsset Filter, and RHierarchy against their GitHub package versions. Unity shows one combined update popup after a six-hour cache interval; users can mute prompts for 48 hours or open RCore Packages Manager to review updates.
@@ -30,6 +33,8 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- `RCore.UI`: Clamp `ProgressBar` fill limits; fix `PanelRoot` dimmer check; guard `OptimizedVerticalScrollView` animation with `#if DOTWEEN`.
+- `RCore.SheetX`: Data Class dropdown in Edit Spreadsheets windows no longer closes immediately on click. `EditExcelSheetsWindow` and `EditGoogleSheetsWindow` called `Focus()` from `OnLostFocus`, which stole focus back from the `AdvancedDropdown` popup window and dismissed it; both overrides removed.
 - `RCore.SheetX`: Compacted Scene View Localization overlay UI by removing redundant current-language label and setting fixed 64px dropdown width.
 - `RCore.SheetX`: Existing collection assets with missing `m_Script` references now bind to matching generated `MonoScript` during bake without asset recreation or serialized-data loss.
 - `RCore.SheetX`: Generated Data Class ignores any header containing `[x]`, skips exact C# keyword path segments with actionable warnings, and preserves source-column alignment after ignored fields. Malformed headers, invalid values, binding errors, and generated-name collisions now log once and skip only offending sheet; later valid sheets continue. Accepted JSON and generated source still write atomically, skipped JSON stays untouched and is excluded from current automatic bake. A missing Collection binding from a processed source still aborts collection flush, while bindings from unrelated, unprocessed sources no longer block the current export. Generated source contains accepted current-session bindings only.

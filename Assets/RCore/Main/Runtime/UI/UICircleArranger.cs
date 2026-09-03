@@ -1,113 +1,89 @@
 using UnityEngine;
-#if DOTWEEN
-using DG.Tweening;
-#endif
 using System;
 using System.Collections;
+using System.Linq;
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
-using System.Collections.Generic;
-using System.Linq;
 
 namespace RCore.UI
 {
-	public interface ITweenItem
-	{
-		public void OnStart();
-		public void OnFinish();
-	}
-
 	/// <summary>
-	/// Arranges child RectTransforms in a circle or multiple circles, with support for animations.
+	/// Arranges child RectTransforms in a 2-tier circle layout with support for animations.
 	/// </summary>
-	public class UICircleArranger : MonoBehaviour
+	public class UICircleArranger : UICircleArrangerBase
 	{
-		public float radius = 500f;
+		[Header("2-Tier Circle Configuration")]
 		public float radiusStep = 200f;
 		public bool enableRotation;
-		public float tweenDuration = 0.4f;
 		[Range(0, 90)] public float maxDegreeBetween = 30;
 		[Range(0, 360)] public float startDegree = 45;
 		[Range(0, 360)] public float maxDegree = 90;
 		public bool centerOnTop = true;
-		public float emitInterval = 0.03f;
-		public AnimationCurve scaleOverLifeTime;
-		public AnimationCurve positionXOverMoveTime;
-		public AnimationCurve positionYOverMoveTime;
-		public RectTransform[] exceptions;
 
-		private List<RectTransform> m_targets;
-		private Vector3[] m_newPositions;
-		private Quaternion[] m_newRotations;
-
-		/// <summary>
-		/// Arranges the children immediately.
-		/// </summary>
-		private void Start()
+		protected override void CalculatePositions()
 		{
-			Arrange();
-		}
-
-		private void OnValidate()
-		{
-			Arrange();
-		}
-
-		private void CalculatePositions()
-		{
-			m_targets = new List<RectTransform>();
-			foreach (Transform t in transform)
-			{
-				if (t.gameObject.activeSelf && !exceptions.Contains(t))
-				{
-					m_targets.Add(t as RectTransform);
-				}
-			}
-
-			m_newPositions = new Vector3[m_targets.Count];
-			m_newRotations = new Quaternion[m_targets.Count];
+			if (m_targets == null)
+				return;
 
 			int totalTargets = m_targets.Count;
+			if (totalTargets == 0)
+				return;
+
+			if (m_newPositions == null || m_newPositions.Length != totalTargets)
+				m_newPositions = new Vector3[totalTargets];
+			if (m_newRotations == null || m_newRotations.Length != totalTargets)
+				m_newRotations = new Quaternion[totalTargets];
+			if (m_targetScales == null || m_targetScales.Length != totalTargets)
+				m_targetScales = new float[totalTargets];
+
+			for (int i = 0; i < totalTargets; i++)
+				m_targetScales[i] = 1f;
+
 			int outerCount, innerCount;
-			float currentRadius;
 
 			// Determine the number of targets per circle
 			if (totalTargets <= 8)
 			{
 				outerCount = Mathf.Min(5, totalTargets);
 				innerCount = Mathf.Min(3, totalTargets - outerCount);
-				currentRadius = radius;
 			}
 			else if (totalTargets <= 10)
 			{
 				outerCount = 6;
 				innerCount = Mathf.Min(4, totalTargets - outerCount);
-				currentRadius = radius;
 			}
 			else
 			{
 				outerCount = totalTargets * 2 / 3;
 				innerCount = totalTargets - outerCount;
-				currentRadius = radius;
 			}
 
+			float outerRadius = GetRadius(outerCount, GetAngleStep(outerCount));
 			// Arrange outer circle
-			ArrangeTargetsOnCircle(0, outerCount, currentRadius);
+			ArrangeTargetsOnCircle(0, outerCount, outerRadius);
 			// Arrange inner circle
-			ArrangeTargetsOnCircle(outerCount, innerCount, currentRadius - radiusStep);
+			ArrangeTargetsOnCircle(outerCount, innerCount, outerRadius - radiusStep);
 		}
 
-		private void ArrangeTargetsOnCircle(int startIdx, int count, float radius)
+		private float GetAngleStep(int pCount)
+		{
+			if (pCount <= 0) return 0f;
+			float step = maxDegree <= 0 || maxDegree > 360 ? 360f / pCount : (pCount > 1 ? maxDegree / (pCount - 1) : 0f);
+			if (step > maxDegreeBetween && maxDegreeBetween > 0)
+				step = maxDegreeBetween;
+			return step;
+		}
+
+		private void ArrangeTargetsOnCircle(int startIdx, int count, float currentRadius)
 		{
 			if (count == 0)
 				return;
 
-			float angleStep = maxDegree <= 0 || maxDegree > 360 ? 360f / count : maxDegree / (count - 1);
-			if (angleStep > maxDegreeBetween && maxDegreeBetween > 0)
-				angleStep = maxDegreeBetween;
+			float angleStep = GetAngleStep(count);
 
 			float startAngle = centerOnTop ? 90f - angleStep * (count - 1) / 2 : startDegree;
+			Vector2 center = GetCenterPosition();
 
 			for (int i = 0; i < count; i++)
 			{
@@ -115,10 +91,10 @@ namespace RCore.UI
 				if (idx >= m_targets.Count)
 					break;
 
-				float xPos = Mathf.Cos(startAngle * Mathf.Deg2Rad) * radius;
-				float yPos = Mathf.Sin(startAngle * Mathf.Deg2Rad) * radius;
+				float xPos = Mathf.Cos(startAngle * Mathf.Deg2Rad) * currentRadius;
+				float yPos = Mathf.Sin(startAngle * Mathf.Deg2Rad) * currentRadius;
 
-				m_newPositions[idx] = new Vector2(xPos, yPos);
+				m_newPositions[idx] = new Vector2(xPos, yPos) + center;
 
 				if (enableRotation)
 				{
@@ -135,23 +111,6 @@ namespace RCore.UI
 		}
 
 #if ODIN_INSPECTOR
-		[Button]
-#endif
-		/// <summary>
-		/// Calculates positions and applies them immediately to the children.
-		/// </summary>
-		private void Arrange()
-		{
-			CalculatePositions();
-
-			for (var i = 0; i < m_targets.Count; i++)
-			{
-				m_targets[i].anchoredPosition = m_newPositions[i];
-				m_targets[i].rotation = m_newRotations[i];
-			}
-		}
-
-#if ODIN_INSPECTOR
 		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
 #endif
 		/// <summary>
@@ -159,9 +118,9 @@ namespace RCore.UI
 		/// </summary>
 		public void ArrangeFromEdgeWithTween(bool leftToRight)
 		{
+			CollectTargets();
 			CalculatePositions();
 
-			// If left to right = true, reverse the array
 			if (leftToRight)
 			{
 				Array.Reverse(m_newPositions);
@@ -170,7 +129,7 @@ namespace RCore.UI
 
 			for (var i = 0; i < m_targets.Count; i++)
 			{
-				if (exceptions.Contains(m_targets[i]))
+				if (exceptions != null && exceptions.Contains(m_targets[i]))
 					continue;
 
 				var target = m_targets[i];
@@ -178,16 +137,6 @@ namespace RCore.UI
 				target.rotation = m_newRotations[0];
 
 				StartCoroutine(MoveToPosition(target, m_newPositions, m_newRotations, i));
-
-				// var moveSequence = DOTween.Sequence();
-				// for (int index = 0; index <= i; index++)
-				// {
-				// 	var position = m_newPositions[index];
-				// 	moveSequence.Append(target.DOAnchorPos(position, tweenDuration / m_newPositions.Length));
-				// 	if (m_newRotations[index] != Quaternion.identity)
-				// 		moveSequence.Join(target.DORotateQuaternion(m_newRotations[index], tweenDuration / m_newPositions.Length));
-				// }
-				// moveSequence.Play();
 			}
 		}
 
@@ -211,209 +160,10 @@ namespace RCore.UI
 					yield return null;
 				}
 
-				// Ensure final position and rotation are exactly at the target
 				target.anchoredPosition = endPosition;
 				if (endRotation != Quaternion.identity)
-				{
 					target.rotation = endRotation;
-				}
 			}
-		}
-
-
-#if ODIN_INSPECTOR
-		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
-#endif
-		/// <summary>
-		/// Arranges children by expanding them from the center of the circle.
-		/// </summary>
-		public void ArrangeFromCenterWithTween(Action pCallback)
-		{
-			CalculatePositions();
-
-			if (m_targets.Count == 0)
-			{
-				pCallback?.Invoke();
-				return;
-			}
-#if DOTWEEN
-			for (var i = 0; i < m_targets.Count; i++)
-			{
-				int index = i;
-				var target = m_targets[i];
-				if (m_newRotations[i] != Quaternion.identity)
-					target.DORotateQuaternion(m_newRotations[i], tweenDuration).SetUpdate(true);
-
-				float lerp = 0;
-				target.localPosition = Vector3.zero;
-				target.localScale = Vector3.zero;
-				DOTween.To(() => lerp, x => lerp = x, 1, tweenDuration)
-					.OnStart(() =>
-					{
-						if (target.TryGetComponent(out ITweenItem item))
-							item.OnStart();
-					})
-					.OnUpdate(() =>
-					{
-						var pos = m_newPositions[index];
-						if (m_newPositions.Length > 0)
-							pos.x = Mathf.LerpUnclamped(0, m_newPositions[index].x, positionXOverMoveTime.Evaluate(lerp));
-						if (m_newPositions.Length > 0)
-							pos.y = Mathf.LerpUnclamped(0, m_newPositions[index].y, positionYOverMoveTime.Evaluate(lerp));
-						target.anchoredPosition = pos;
-
-						if (scaleOverLifeTime.keys.Length > 0)
-						{
-							var scale = Vector3.LerpUnclamped(Vector3.zero, Vector3.one, scaleOverLifeTime.Evaluate(lerp));
-							target.transform.localScale = scale;
-						}
-					})
-					.OnComplete(() =>
-					{
-						if (index == m_targets.Count - 1)
-							pCallback?.Invoke();
-
-						if (target.TryGetComponent(out ITweenItem item))
-							item.OnFinish();
-					})
-					.SetDelay(emitInterval * index)
-					.SetUpdate(true);
-			}
-#else
-			StartCoroutine(ArrangeFromCenterCoroutine(pCallback));
-#endif
-		}
-
-#if !DOTWEEN
-		private IEnumerator ArrangeFromCenterCoroutine(Action pCallback)
-		{
-			for (var i = 0; i < m_targets.Count; i++)
-			{
-				int index = i;
-				var target = m_targets[i];
-				float delay = emitInterval * index;
-				StartCoroutine(ArrangeOneTargetFromCenter(target, index, delay, index == m_targets.Count - 1 ? pCallback : null));
-			}
-			yield return null;
-		}
-
-		private IEnumerator ArrangeOneTargetFromCenter(RectTransform target, int index, float delay, Action pCallback)
-		{
-			if (delay > 0)
-				yield return new WaitForSeconds(delay);
-
-			if (m_newRotations[index] != Quaternion.identity)
-				target.rotation = m_newRotations[index];
-
-			target.localPosition = Vector3.zero;
-			target.localScale = Vector3.zero;
-
-			if (target.TryGetComponent(out ITweenItem item))
-				item.OnStart();
-
-			float elapsed = 0;
-			while (elapsed < tweenDuration)
-			{
-				elapsed += Time.deltaTime;
-				float lerp = elapsed / tweenDuration;
-
-				var pos = m_newPositions[index];
-				if (m_newPositions.Length > 0)
-					pos.x = Mathf.LerpUnclamped(0, m_newPositions[index].x, positionXOverMoveTime.Evaluate(lerp));
-				if (m_newPositions.Length > 0)
-					pos.y = Mathf.LerpUnclamped(0, m_newPositions[index].y, positionYOverMoveTime.Evaluate(lerp));
-				target.anchoredPosition = pos;
-
-				if (scaleOverLifeTime.keys.Length > 0)
-				{
-					var scale = Vector3.LerpUnclamped(Vector3.zero, Vector3.one, scaleOverLifeTime.Evaluate(lerp));
-					target.transform.localScale = scale;
-				}
-				yield return null;
-			}
-
-			// Finalize
-			var finalPos = m_newPositions[index];
-			target.anchoredPosition = finalPos;
-			target.localScale = Vector3.one;
-
-			pCallback?.Invoke();
-			if (target.TryGetComponent(out ITweenItem itemFinish))
-				itemFinish.OnFinish();
-		}
-#endif
-
-#if ODIN_INSPECTOR
-		[Button, ShowIf("@UnityEngine.Application.isPlaying")]
-#endif
-		/// <summary>
-		/// Recalculates and smoothly moves children to their new positions.
-		/// </summary>
-		public void RefreshTargetPositionsWithTween()
-		{
-			CalculatePositions();
-#if DOTWEEN
-			for (var i = 0; i < m_targets.Count; i++)
-			{
-				int i1 = i;
-				var target = m_targets[i];
-				var targetPrePosition = target.anchoredPosition;
-				float lerp = 0;
-				DOTween.Kill(GetInstanceID());
-				DOTween.To(() => lerp, x => lerp = x, 1f, tweenDuration)
-					.OnUpdate(() =>
-					{
-						if (m_newRotations[i1] != Quaternion.identity)
-						{
-							var rotation = Quaternion.LerpUnclamped(Quaternion.identity, m_newRotations[i1], lerp);
-							target.rotation = rotation;
-						}
-						target.anchoredPosition = Vector3.LerpUnclamped(targetPrePosition, m_newPositions[i1], lerp);
-					}).SetUpdate(true).SetId(GetInstanceID());
-			}
-#else
-			StopAllCoroutines();
-			StartCoroutine(RefreshTargetPositionsCoroutine());
-#endif
-		}
-		
-		private IEnumerator RefreshTargetPositionsCoroutine()
-		{
-			for (var i = 0; i < m_targets.Count; i++)
-			{
-				int index = i;
-				var target = m_targets[i];
-				StartCoroutine(RefreshOneTargetPosition(target, index));
-			}
-			yield return null;
-		}
-
-		private IEnumerator RefreshOneTargetPosition(RectTransform target, int index)
-		{
-			var targetPrePosition = target.anchoredPosition;
-			var startRotation = target.rotation;
-			float elapsed = 0;
-
-			while (elapsed < tweenDuration)
-			{
-				elapsed += Time.deltaTime;
-				float lerp = elapsed / tweenDuration;
-
-				if (index < m_newRotations.Length && m_newRotations[index] != Quaternion.identity)
-				{
-					var rotation = Quaternion.LerpUnclamped(startRotation, m_newRotations[index], lerp);
-					target.rotation = rotation;
-				}
-				if (index < m_newPositions.Length)
-					target.anchoredPosition = Vector3.LerpUnclamped(targetPrePosition, m_newPositions[index], lerp);
-
-				yield return null;
-			}
-
-			if (index < m_newRotations.Length && m_newRotations[index] != Quaternion.identity)
-				target.rotation = m_newRotations[index];
-			if (index < m_newPositions.Length)
-				target.anchoredPosition = m_newPositions[index];
 		}
 	}
 }

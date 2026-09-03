@@ -508,10 +508,10 @@ namespace RCore.UI
 			StartCoroutine(MoveItemToIndex(a, b));
 		}
 
-#if DOTWEEN
 #if ODIN_INSPECTOR
 		[Button]
 #endif
+#if DOTWEEN
 		/// <summary>
 		/// Test the AnimateItemMove VFX in Play mode from the Inspector.
 		/// Animates an item flying from index 'from' to index 'to' using the Smooth Scrolling Snapshot technique.
@@ -540,7 +540,6 @@ namespace RCore.UI
 		// Animate Item Move — Smooth Scrolling Snapshot VFX
 		//=========================================================================
 
-#if DOTWEEN
 		private const int ANIM_MOVE_TWEEN_ID = 92701;
 		private GameObject m_animClone;
 		private Coroutine m_animCoroutine;
@@ -574,6 +573,7 @@ namespace RCore.UI
 
 		private void SetItemAlphaForAnim(OptimizedScrollItem item, int index)
 		{
+#if DOTWEEN
 			if (m_hiddenIndicesForAnim.Contains(index))
 			{
 				if (!item.TryGetComponent(out CanvasGroup cg))
@@ -584,14 +584,17 @@ namespace RCore.UI
 			{
 				cg2.alpha = 1f;
 			}
+#endif
 		}
 
 		private void UpdateAllVisibleItemsAlpha()
 		{
+#if DOTWEEN
 			foreach (var item in m_itemsScrolled)
 			{
 				SetItemAlphaForAnim(item, item.Index);
 			}
+#endif
 		}
 
 		/// <summary>
@@ -823,8 +826,5 @@ namespace RCore.UI
 		{
 			StopAnimateItemMove();
 		}
-#else
-		private void SetItemAlphaForAnim(OptimizedScrollItem item, int index) { }
-#endif
 	}
 }

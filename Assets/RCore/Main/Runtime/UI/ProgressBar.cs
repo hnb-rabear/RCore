@@ -67,9 +67,17 @@ namespace RCore.UI
             set
             {
                 mFill = Mathf.Clamp01(value);
-                float interpolatedFill = mFill == 0 ? 0 : Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
-                FillBar(interpolatedFill);
+                FillBar(InterpolatedFill(mFill));
             }
+        }
+
+        private float InterpolatedFill(float pFill)
+        {
+            if (pFill <= 0f)
+                return 0f;
+            if (pFill >= 1f)
+                return 1f;
+            return Mathf.Lerp(minFillRatio, maxFillRatio, pFill);
         }
         /// <summary>
         /// Gets or sets the current value of the progress bar.
@@ -239,8 +247,7 @@ namespace RCore.UI
 
             Validate();
 
-            float interpolatedFill = mFill == 0 ? 0 : Mathf.Lerp(minFillRatio, maxFillRatio, mFill);
-            FillBar(interpolatedFill);
+            FillBar(InterpolatedFill(mFill));
         }
 #endif
 

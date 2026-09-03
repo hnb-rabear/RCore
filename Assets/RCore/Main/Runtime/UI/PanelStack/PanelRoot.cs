@@ -91,9 +91,8 @@ namespace RCore.UI
 		{
 			base.OnAnyChildShow(pPanel);
 
-			if (pPanel.needDimmerOverlay)
-				ToggleDimmerOverlay();
-			
+			ToggleDimmerOverlay();
+
 			onAnyPanelShow?.Invoke(pPanel);
 		}
 
@@ -106,7 +105,9 @@ namespace RCore.UI
 			if (m_dimmerOverlay == null)
 				m_dimmerOverlay = CreatDimmerOverlay();
 			var highestPanel = GetHighestPanel();
-			if (highestPanel != this)
+			var topPanel = highestPanel as PanelController;
+			bool shouldShowDimmer = highestPanel != this && (topPanel == null || topPanel.needDimmerOverlay);
+			if (shouldShowDimmer)
 			{
 				m_dimmerOverlay.gameObject.SetActive(true);
 				m_dimmerOverlay.transform.SetParent(highestPanel.transform.parent);
@@ -168,7 +169,12 @@ namespace RCore.UI
 			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
 			if (prefab == null)
 				return null;
-			return AddPanelToQueue(ref prefab);
+			// Same as PushPanelAsync: the queued/pushed panel is the real instance for this reference.
+			// Subclasses can refuse it and return null; keep the old instance then.
+			var panel = AddPanelToQueue(ref prefab);
+			if (panel != null)
+				pReference.instance = panel;
+			return panel;
 		}
 #endif
 
@@ -324,7 +330,7 @@ namespace RCore.UI
 			EventDispatcher.Raise(@event);
 			return @event.panel as T;
 		}
-		
+
 #if ADDRESSABLES
 		/// <summary>
 		/// Loads a panel prefab from an addressable reference, then pushes it to the root of the given type.
@@ -336,14 +342,16 @@ namespace RCore.UI
 		/// <param name="pKeepCurrentAndReplace">Only used by <see cref="PushMode.Replacement"/>; keeps the current panel in the stack.</param>
 		/// <param name="pToken">Token used to cancel the load.</param>
 		/// <returns>The pushed panel, or null if the prefab could not be loaded.</returns>
-		public static async UniTask<T> PushOuterPanelAsync<T>(Type root, ComponentRef<T> pReference, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true,
-			CancellationToken pToken = default) where T : PanelController
+		public static async UniTask<T> PushOuterPanelAsync<T>(Type root, ComponentRef<T> pReference, PushMode pPushMode = PushMode.OnTop, bool pKeepCurrentAndReplace = true, CancellationToken pToken = default) where T : PanelController
 		{
 			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
 			if (prefab == null)
 				return null;
 
-			return PushOuterPanel(root, prefab, pPushMode, pKeepCurrentAndReplace);
+			var panel = PushOuterPanel(root, prefab, pPushMode, pKeepCurrentAndReplace);
+			if (panel != null)
+				pReference.instance = panel;
+			return panel;
 		}
 #endif
 

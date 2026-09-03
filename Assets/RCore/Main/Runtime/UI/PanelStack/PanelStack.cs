@@ -420,7 +420,13 @@ namespace RCore.UI
 			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
 			if (prefab == null)
 				return null;
-			return PushPanel(ref prefab, pKeepCurrentInStack, pOnlyInactivePanel, pInstantPopAndPush);
+			// The stack, not ComponentRef.InstantiateAsync, creates the panel object here.
+			// Publish it back so callers can keep reading pReference.instance.
+			// Subclasses can refuse the push (e.g. tutorial gating) and return null; keep the old instance then.
+			var panel = PushPanel(ref prefab, pKeepCurrentInStack, pOnlyInactivePanel, pInstantPopAndPush);
+			if (panel != null)
+				pReference.instance = panel;
+			return panel;
 		}
 
 		/// <summary>
@@ -436,7 +442,12 @@ namespace RCore.UI
 			var prefab = await LoadPanelPrefabAsync(pReference, pToken);
 			if (prefab == null)
 				return null;
-			return PushPanelToTop(ref prefab, pHidePusher);
+			// Same as PushPanelAsync: the pushed panel is the real instance for this reference.
+			// Subclasses can refuse the push (e.g. tutorial gating) and return null; keep the old instance then.
+			var panel = PushPanelToTop(ref prefab, pHidePusher);
+			if (panel != null)
+				pReference.instance = panel;
+			return panel;
 		}
 
 		/// <summary>

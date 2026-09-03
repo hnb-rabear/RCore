@@ -47,6 +47,7 @@ namespace RCore
 		[NonSerialized] public T instance;
 		
 		private AsyncOperationHandle<GameObject> m_operation;
+		private bool m_isInstantiating;
 
 		/// <summary>
 		/// Instantiates the loaded asset.
@@ -70,15 +71,30 @@ namespace RCore
 			UnityEngine.Debug.Assert(parent != null, "parent != null");
 			if (instance != null) return instance;
 
-			var loadedAsset = await LoadAsync(null, pToken);
-			if (instance != null) return instance;
+			// A concurrent caller is already instantiating; wait for it instead of creating a second instance.
+			if (m_isInstantiating)
+			{
+				await UniTask.WaitUntil(() => !m_isInstantiating, cancellationToken: pToken);
+				return instance;
+			}
 
-			instance = Object.Instantiate(loadedAsset, parent);
-			instance.gameObject.SetActive(defaultActive);
-			instance.name = loadedAsset.name;
-			
-			Debug.Log($"Instantiate Asset Bundle {instance.name}");
-			return instance;
+			m_isInstantiating = true;
+			try
+			{
+				var loadedAsset = await LoadAsync(null, pToken);
+				if (instance != null) return instance;
+
+				instance = Object.Instantiate(loadedAsset, parent);
+				instance.gameObject.SetActive(defaultActive);
+				instance.name = loadedAsset.name;
+
+				Debug.Log($"Instantiate Asset Bundle {instance.name}");
+				return instance;
+			}
+			finally
+			{
+				m_isInstantiating = false;
+			}
 		}
 
 		/// <summary>

@@ -45,6 +45,7 @@ namespace RCore
 		public bool IsLoading => m_operation.IsValid() && !m_operation.IsDone;
 
 		private AsyncOperationHandle<GameObject> m_operation;
+		private bool m_isInstantiating;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ComponentRef{TComponent}"/> class with the specified GUID.
@@ -106,15 +107,32 @@ namespace RCore
 		/// <returns>A UniTask that completes with the instantiated component.</returns>
 		public async new UniTask<TComponent> InstantiateAsync(Transform parent, bool pDefaultActive = false, CancellationToken pToken = default)
 		{
-			var loadedAsset = await LoadAssetAsync(pToken);
 			if (instance != null) return instance;
 
-			instance = Object.Instantiate(loadedAsset, parent);
-			instance.gameObject.SetActive(pDefaultActive);
-			instance.name = loadedAsset.name;
-			
-			Debug.Log($"Instantiate Asset Bundle {instance.name}");
-			return instance;
+			// A concurrent caller is already instantiating; wait for it instead of creating a second instance.
+			if (m_isInstantiating)
+			{
+				await UniTask.WaitUntil(() => !m_isInstantiating, cancellationToken: pToken);
+				return instance;
+			}
+
+			m_isInstantiating = true;
+			try
+			{
+				var loadedAsset = await LoadAssetAsync(pToken);
+				if (instance != null) return instance;
+
+				instance = Object.Instantiate(loadedAsset, parent);
+				instance.gameObject.SetActive(pDefaultActive);
+				instance.name = loadedAsset.name;
+
+				Debug.Log($"Instantiate Asset Bundle {instance.name}");
+				return instance;
+			}
+			finally
+			{
+				m_isInstantiating = false;
+			}
 		}
 
 		/// <summary>

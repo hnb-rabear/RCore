@@ -10,8 +10,18 @@ using Screen = UnityEngine.Device.Screen;
 
 namespace RCore.UI
 {
+	[System.Flags]
+	public enum IgnoreSafeEdge
+	{
+		Top = 1 << 0,
+		Bottom = 1 << 1,
+		Both = Top | Bottom,
+	}
+
 	public class IgnoreScreenSafe : MonoBehaviour
 	{
+		public IgnoreSafeEdge ignoreEdge = IgnoreSafeEdge.Both;
+
 		private Vector2 m_originalOffsetMin;
 		private Vector2 m_originalOffsetMax;
 		private RectTransform m_rectTransform;
@@ -85,8 +95,10 @@ namespace RCore.UI
 			// Apply offsets to Top and Bottom
 			// offsetMax.y corresponds to -Top in Inspector (so +TopUnsafe expands Up)
 			// offsetMin.y corresponds to Bottom in Inspector (so -BottomUnsafe expands Down)
-			m_rectTransform.offsetMax = new Vector2(m_originalOffsetMax.x, m_originalOffsetMax.y + topUnsafeLocal);
-			m_rectTransform.offsetMin = new Vector2(m_originalOffsetMin.x, m_originalOffsetMin.y - bottomUnsafeLocal);
+			m_rectTransform.offsetMax = new Vector2(m_originalOffsetMax.x,
+				m_originalOffsetMax.y + (ignoreEdge.HasFlag(IgnoreSafeEdge.Top) ? topUnsafeLocal : 0f));
+			m_rectTransform.offsetMin = new Vector2(m_originalOffsetMin.x,
+				m_originalOffsetMin.y - (ignoreEdge.HasFlag(IgnoreSafeEdge.Bottom) ? bottomUnsafeLocal : 0f));
 		}
 	}
 }
