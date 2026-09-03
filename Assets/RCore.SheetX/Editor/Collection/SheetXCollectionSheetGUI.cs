@@ -160,15 +160,49 @@ namespace RCore.SheetX.Editor
 			return binding != null;
 		}
 
+		// [Serializable] is a pseudo-custom attribute: the compiler emits it as the
+		// TypeAttributes.Serializable metadata flag, not into the custom-attribute
+		// table, so TypeCache.GetTypesWithAttribute<SerializableAttribute> never
+		// matches. Type.IsSerializable reads the flag.
 		private static void EnsureRowTypes()
 		{
 			if (s_rowTypes != null)
 				return;
-			s_rowTypes = TypeCache.GetTypesWithAttribute<SerializableAttribute>()
-				.Where(type => type.IsClass && !type.IsAbstract
+			s_rowTypes = AppDomain.CurrentDomain.GetAssemblies()
+				.Where(assembly => !IsFrameworkAssembly(assembly))
+				.SelectMany(SafeGetTypes)
+				.Where(type => type.IsClass && !type.IsAbstract && type.IsSerializable
 					&& !type.IsGenericType && !type.IsGenericTypeDefinition)
 				.OrderBy(type => type.FullName, StringComparer.Ordinal)
 				.ToArray();
+		}
+
+		private static bool IsFrameworkAssembly(System.Reflection.Assembly assembly)
+		{
+			string name = assembly.GetName().Name;
+			return name.StartsWith("Unity", StringComparison.Ordinal)
+				|| name.StartsWith("System", StringComparison.Ordinal)
+				|| name.StartsWith("Mono.", StringComparison.Ordinal)
+				|| name.StartsWith("nunit.", StringComparison.Ordinal)
+				|| name == "mscorlib"
+				|| name == "netstandard"
+				|| name == "ExCSS.Unity";
+		}
+
+		private static Type[] SafeGetTypes(System.Reflection.Assembly assembly)
+		{
+			try
+			{
+				return assembly.GetTypes();
+			}
+			catch (System.Reflection.ReflectionTypeLoadException e)
+			{
+				return e.Types.Where(type => type != null).ToArray();
+			}
+			catch (Exception)
+			{
+				return Array.Empty<Type>();
+			}
 		}
 	}
 }

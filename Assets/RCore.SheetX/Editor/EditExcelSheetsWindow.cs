@@ -55,12 +55,6 @@ namespace RCore.SheetX.Editor
 			m_tableSheets.DrawOnGUI(m_excelSheetsPath.sheets);
 		}
 		
-		private void OnLostFocus()
-		{
-			// Force window to regain focus to prevent clicking on other editor windows
-			Focus();
-		}
-		
 		private void ValidateTopToggle<T>(List<T> sheets, EditorTableView<T> tableSheets) where T : Selectable
 		{
 			bool selectAll = sheets.Any(sheet =>

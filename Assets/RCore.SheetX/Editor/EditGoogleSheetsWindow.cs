@@ -82,12 +82,6 @@ namespace RCore.SheetX.Editor
 			GUILayout.EndVertical();
 		}
 
-		private void OnLostFocus()
-		{
-			// Force window to regain focus to prevent clicking on other editor windows
-			Focus();
-		}
-
 		private void OnDestroy()
 		{
 			if (m_googleSheetsPath.sheets.Count > 0)
