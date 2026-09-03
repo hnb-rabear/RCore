@@ -151,7 +151,25 @@ Tính năng tùy chọn giúp tự động sinh mã nguồn data class, quản l
 ### 7.2. Chế độ xuất dữ liệu của sheet (Output Modes)
 - **JSON Only:** Xuất JSON thông thường theo cấu trúc truyền thống.
 - **Generated Data Class:** Tự động suy luận kiểu dữ liệu (`int`, `float`, `bool`, `string`) từ ô dài nhất, sinh partial class tương ứng.
-- **Existing Data Class:** Sử dụng một class C# `[Serializable]` có sẵn trong project.
+- **Existing Data Class:** Sử dụng một kiểu dữ liệu có sẵn trong project đã được đánh dấu `[SheetXBindable]`. Kiểu bị thiếu hoặc không hợp lệ sẽ ghi log lỗi và bỏ qua sheet đó.
+
+Kiểu dữ liệu dùng cho Existing Data Class phải được khai báo tường minh. Bắt buộc có cả hai attribute: `[Serializable]` để Unity serialize mảng dữ liệu sau khi bake, và `[SheetXBindable]` để SheetX đưa kiểu đó vào danh sách chọn. Hỗ trợ cả `class` lẫn `struct`; kiểu phải là kiểu cụ thể (không abstract) và không generic. `[SheetXBindable]` nằm trong assembly runtime được auto-reference, nên mã nguồn game không cần chỉnh asmdef.
+
+```csharp
+using System;
+using RCore.SheetX;
+
+[Serializable, SheetXBindable]
+public class EnemyAttackRow
+{
+    public int id;
+    public float damage;
+}
+```
+
+Dropdown Data Class chỉ liệt kê các kiểu đã đánh dấu. Nếu project chưa đánh dấu kiểu nào, dropdown hiển thị `No [SheetXBindable] type found`. Dropdown, quá trình export và quá trình bake dùng chung một quy tắc kiểm tra, nên kiểu đã xuất hiện trong dropdown chắc chắn export và bake được.
+
+**Nâng cấp từ phiên bản 1.6.0 trở về trước.** Trước đây mọi class `[Serializable]` đều hợp lệ. Hãy thêm `[SheetXBindable]` vào từng class hoặc struct đang được gán làm Existing Data Class; kiểu chưa đánh dấu sẽ biến mất khỏi dropdown và bị từ chối khi export cũng như khi bake, kèm thông báo lỗi nêu rõ attribute còn thiếu. `struct` là điểm mới — quy tắc cũ chỉ chấp nhận `class`.
 
 Cú pháp header cho Generated Data Class:
 ```text

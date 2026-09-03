@@ -2,10 +2,25 @@
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-03
+
 ### Added
 
+- `[SheetXBindable]` (`RCore.SheetX.SheetXBindableAttribute`) — the marker a class or struct carries to be selectable as an `Existing Data Class` row type. It ships in the auto-referenced runtime assembly, so game code needs no asmdef change. `SheetXRowType.Validate` is the single rule the Data Class picker, export, and bake all apply, so a type offered in the dropdown is guaranteed to export and bake.
 - Added full Vietnamese documentation (`Document_VN.md`) with bilingual navigation links between English and Vietnamese guides.
 - Added comprehensive documentation for Enum definitions in `IDs` sheets (`[enum]` group suffix), `onlyEnumAsIDs` setting, and automatic symbolic ID resolution in data table JSON export.
+
+### Changed
+
+- `Existing Data Class` row types must now carry `[SheetXBindable]` in addition to `[Serializable]`. The Data Class dropdown previously listed every serializable type in the project and now lists only marked types, showing `No [SheetXBindable] type found` when a project has marked none. Export and bake reject an unmarked type with a message naming the fix. Structs are now valid row types alongside classes.
+
+  **Migration:** add `[RCore.SheetX.SheetXBindable]` to every class or struct already bound as an `Existing Data Class`. An unmarked type disappears from the picker and is rejected at export and bake.
+
+### Fixed
+
+- `Existing Data Class` export rejected every row type. `SheetXCollectionExportSession.TryResolveRowType` tested for `[Serializable]` with `Type.IsDefined`, which never matches because the compiler emits that attribute as the `TypeAttributes.Serializable` metadata flag rather than a custom-attribute entry. Validation now runs through `SheetXRowType.Validate`, which reads `Type.IsSerializable`.
+- Data Class dropdown in the Edit Spreadsheets windows was always empty, for the same `[Serializable]` reason: `TypeCache.GetTypesWithAttribute<SerializableAttribute>()` never matches. The picker now lists `[SheetXBindable]` types through `TypeCache`, filtered by `SheetXRowType.Validate`.
+- Data Class dropdown no longer closes immediately on click. `EditExcelSheetsWindow` and `EditGoogleSheetsWindow` called `Focus()` from `OnLostFocus`, which stole focus back from the `AdvancedDropdown` popup and dismissed it; both overrides are removed.
 
 ## [1.6.0] - 2026-08-27
 

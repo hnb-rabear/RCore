@@ -271,7 +271,25 @@ Ordinary data sheets gain **Output Mode**, **Collection**, and **Data Class** co
 
 - **JSON Only** preserves legacy JSON export.
 - **Generated Data Class** infers field types from longest non-empty cell in each column, generates partial data and collection classes, and derives data class name from sheet name.
-- **Existing Data Class** keeps legacy JSON shape. Pick a concrete, non-generic `[Serializable]` data class. Missing or invalid types log an error and skip that sheet.
+- **Existing Data Class** keeps legacy JSON shape. Pick a type you have marked with `[SheetXBindable]`. Missing or invalid types log an error and skip that sheet.
+
+Existing Data Class row types are opt-in. Both attributes are required: `[Serializable]` so Unity serializes the baked array, and `[SheetXBindable]` so SheetX offers the type. Classes and structs are both accepted; the type must be concrete and non-generic. `[SheetXBindable]` lives in the auto-referenced runtime assembly, so game code needs no asmdef change.
+
+```csharp
+using System;
+using RCore.SheetX;
+
+[Serializable, SheetXBindable]
+public class EnemyAttackRow
+{
+    public int id;
+    public float damage;
+}
+```
+
+The Data Class dropdown lists only marked types. A project that has marked none sees `No [SheetXBindable] type found`. The picker, export, and bake share one rule, so a type offered in the dropdown is guaranteed to export and bake.
+
+**Migration from 1.6.0 and earlier.** Any serializable class used to qualify. Add `[SheetXBindable]` to every class or struct already bound as an Existing Data Class; an unmarked type disappears from the dropdown and is rejected at export and bake with an error naming the missing marker. Structs are new — the old rule accepted classes only.
 
 Generated Data Class header grammar:
 
