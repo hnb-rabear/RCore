@@ -652,13 +652,20 @@ namespace RCore.SheetX.Editor
 			SheetXSettings settings, SheetXSheetBinding binding, out Type type, out string error)
 		{
 			error = null;
-			string name = binding.outputMode == SheetXSheetOutputMode.GeneratedDataClass
+			bool generated = binding.outputMode == SheetXSheetOutputMode.GeneratedDataClass;
+			string name = generated
 				? settings.ResolveCollectionNamespace().Trim() + "." + SheetXCollectionNaming.RowTypeName(binding.sheetName)
 				: binding.rowTypeName;
 			type = Type.GetType(name, throwOnError: false) ?? FindType(name);
 			if (type == null)
 			{
 				error = $"Row type '{name}' was not found after reload.";
+				return false;
+			}
+			// Generated rows are emitted by SheetX itself and carry no [SheetXBindable].
+			if (!generated && !SheetXRowType.Validate(type, out error))
+			{
+				type = null;
 				return false;
 			}
 			return true;

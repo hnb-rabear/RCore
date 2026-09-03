@@ -50,6 +50,12 @@ namespace RCore.SheetX.Tests
 			None = 0,
 		}
 
+		[Serializable]
+		private sealed class UnmarkedBakeRow
+		{
+			public int id;
+		}
+
 		[Test]
 		public void valid_class_with_both_attributes_passes()
 		{
@@ -145,6 +151,16 @@ namespace RCore.SheetX.Tests
 			var accepted = candidates.FindAll(type => SheetXRowType.Validate(type, out _));
 
 			Assert.That(accepted, Is.EquivalentTo(new[] { typeof(ValidRow), typeof(ValidStructRow) }));
+		}
+
+		[Test]
+		public void bake_rule_matches_picker_rule_for_an_unmarked_row()
+		{
+			bool ok = SheetXRowType.Validate(typeof(UnmarkedBakeRow), out string error);
+
+			Assert.That(ok, Is.False);
+			Assert.That(error, Does.Contain("SheetXBindable"));
+			Assert.That(error, Does.Contain("Fix:"));
 		}
 	}
 }

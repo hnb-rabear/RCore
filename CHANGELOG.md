@@ -6,6 +6,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
+- `RCore.SheetX` **1.7.0**: `Existing Data Class` row types must now carry `[SheetXBindable]` in addition to `[Serializable]`. The Data Class picker lists only marked types, and export and bake reject an unmarked one with a message naming the fix. **Migration:** add `[RCore.SheetX.SheetXBindable]` to every class or struct already bound as an Existing Data Class.
 - `RCore.RHierarchy` **1.0.1**: Visibility toggle now applies to the entire selection when the clicked object is part of it, so multiple GameObjects switch active state together in a single undo step. Clicking an unselected object still toggles only that object. `Assets/RCore.RHierarchy/package.json` bumped 1.0.0 → 1.0.1.
 - `RCore.UI`: Refactored `UICircleArranger` to inherit `UICircleArrangerBase`.
 - `RCore.Addressables`: Prevented concurrent async instantiation in `AssetBundleWrap` and `ComponentRef`; synced `ComponentRef.instance` in `PanelStack` and `PanelRoot`.
