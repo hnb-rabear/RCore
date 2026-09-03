@@ -18,7 +18,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Added
 
-- `RCore.SheetX`: Added `[SheetXBindable]` (`RCore.SheetX.SheetXBindableAttribute`), the marker a class or struct carries to be selectable as an `Existing Data Class` row type.
+- `RCore.SheetX`: Added `[SheetXBindable]` (`RCore.SheetX.SheetXBindableAttribute`), the marker a class or struct carries to be selectable as an `Existing Data Class` row type. `SheetXRowType.Validate` is the single rule the picker, export, and bake all apply.
 - `RCore.UI`: Added `UICircleArrangerBase`, `UICircleRewardArranger`, and `IgnoreSafeEdge` flags.
 - `RCore.SheetX`: Added complete Vietnamese documentation (`Document_VN.md`) and bilingual navigation headers across English and Vietnamese guides; clarified enum definition syntax in IDs sheets (`[enum]` suffix), `onlyEnumAsIDs` behavior, and symbolic ID resolution in data tables.
 - `RCore.SheetX`: Added Check New Update / Update mechanism in Settings tab. Fetches remote `package.json` from GitHub, compares SemVer versions, displays update notification badge, and allows one-click update for UPM Git or registry installs via `Client.Add()`. Source, embedded, and local installs stay read-only with matching badges.
