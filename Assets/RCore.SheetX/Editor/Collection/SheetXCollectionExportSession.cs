@@ -179,7 +179,7 @@ namespace RCore.SheetX.Editor
 				return false;
 
 			if (!TryResolveRowType(binding.rowTypeName, out var rowType, out error))
-				return SkipSheet(binding, error + " Fix: set Existing Data Class to a loaded concrete [Serializable] row type.", out error);
+				return SkipSheet(binding, error, out error);
 
 			string json = string.IsNullOrEmpty(legacyJson) ? "[]" : legacyJson;
 			try
@@ -593,15 +593,8 @@ namespace RCore.SheetX.Editor
 				error = $"row type '{rowTypeName}' was not found in any loaded assembly.";
 				return false;
 			}
-			if (!type.IsClass || type.IsAbstract || type.IsGenericType || type.IsGenericTypeDefinition)
+			if (!SheetXRowType.Validate(type, out error))
 			{
-				error = $"row type '{type.FullName}' must be a concrete, non-generic class.";
-				type = null;
-				return false;
-			}
-			if (!type.IsDefined(typeof(SerializableAttribute), inherit: false))
-			{
-				error = $"row type '{type.FullName}' must be marked [Serializable] so Unity can bake it.";
 				type = null;
 				return false;
 			}

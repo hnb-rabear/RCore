@@ -2,7 +2,7 @@ using System;
 
 namespace RCore.SheetX.Tests
 {
-	[Serializable]
+	[Serializable, SheetXBindable]
 	public sealed class BakeItemsRow
 	{
 		public int id;

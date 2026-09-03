@@ -10,7 +10,7 @@ using UnityEngine;
 namespace RCore.SheetX.Tests
 {
 	/// <summary>Stands in for a row type a consuming project owns, for Existing Data Class coverage.</summary>
-	[Serializable]
+	[Serializable, SheetXBindable]
 	public sealed class CollectionGenerationExistingRow
 	{
 		public int id;

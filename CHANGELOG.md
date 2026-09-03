@@ -35,6 +35,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Fixed
 
+- `RCore.SheetX`: `Existing Data Class` export rejected every row type. `SheetXCollectionExportSession.TryResolveRowType` tested for `[Serializable]` with `Type.IsDefined`, which never matches because the compiler emits that attribute as the `TypeAttributes.Serializable` metadata flag rather than a custom-attribute entry. Validation now runs through `SheetXRowType.Validate`, which reads `Type.IsSerializable`.
 - `RCore.UI`: Clamp `ProgressBar` fill limits; fix `PanelRoot` dimmer check; guard `OptimizedVerticalScrollView` animation with `#if DOTWEEN`.
 - `RCore.SheetX`: Data Class dropdown in Edit Spreadsheets windows was always empty. `TypeCache.GetTypesWithAttribute<SerializableAttribute>()` never matches, because `[Serializable]` is a pseudo-custom attribute the compiler emits as the `TypeAttributes.Serializable` metadata flag instead of a custom-attribute entry. Row-type discovery now scans loaded non-framework assemblies for `Type.IsSerializable`.
 - `RCore.SheetX`: Data Class dropdown in Edit Spreadsheets windows no longer closes immediately on click. `EditExcelSheetsWindow` and `EditGoogleSheetsWindow` called `Focus()` from `OnLostFocus`, which stole focus back from the `AdvancedDropdown` popup window and dismissed it; both overrides removed.
