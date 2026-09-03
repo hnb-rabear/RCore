@@ -8,4 +8,11 @@ namespace RCore.SheetX.Tests
 		public int id;
 		public string name;
 	}
+
+	[Serializable, SheetXBindable]
+	public struct BakeStatsRow
+	{
+		public int level;
+		public float multiplier;
+	}
 }

@@ -18,6 +18,7 @@ namespace RCore.SheetX.Tests
 		private const string FeaturePath = AssetFolder + "/BakeShopConfigCollection.asset";
 		private const string GlobalPath = ResourcesFolder + "/GlobalConfigCollection.asset";
 		private const string JsonPath = JsonFolder + "/BakeItems.txt";
+		private const string StatsJsonPath = JsonFolder + "/BakeStats.txt";
 
 		private class TestGlobalCollection : GlobalConfigCollectionBase
 		{
@@ -107,6 +108,37 @@ namespace RCore.SheetX.Tests
 				Assert.That(feature.IsLoaded, Is.True);
 				Assert.That(AssetDatabase.GetAssetPath(feature), Is.EqualTo(FeaturePath));
 				Assert.That(ContainsTextAssetReference(feature), Is.False);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void load_data_bakes_struct_rows_into_the_collection()
+		{
+			File.WriteAllText(JsonPath, "[]");
+			File.WriteAllText(StatsJsonPath, "[{\"level\":3,\"multiplier\":1.5}]");
+			var settings = CreateSettings();
+			settings.sheetBindings.Add(new SheetXSheetBinding
+			{
+				sourceId = "book.xlsx",
+				sheetName = "BakeStats",
+				outputMode = SheetXSheetOutputMode.ExistingDataClass,
+				collectionName = "BakeShop",
+				rowTypeName = typeof(BakeStatsRow).AssemblyQualifiedName,
+				fieldName = "stats",
+			});
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "BakeShop", out string error), Is.True, error);
+
+				var feature = AssetDatabase.LoadAssetAtPath<BakeShopConfigCollection>(FeaturePath);
+				Assert.That(feature, Is.Not.Null);
+				Assert.That(feature.stats, Has.Length.EqualTo(1));
+				Assert.That(feature.stats[0].level, Is.EqualTo(3));
+				Assert.That(feature.stats[0].multiplier, Is.EqualTo(1.5f).Within(0.0001f));
 			}
 			finally
 			{
