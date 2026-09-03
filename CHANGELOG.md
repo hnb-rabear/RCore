@@ -6,7 +6,7 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ### Changed
 
-- `RCore.RHierarchy`: Visibility toggle now applies to the entire selection when the clicked object is part of it, so multiple GameObjects switch active state together in a single undo step. Clicking an unselected object still toggles only that object.
+- `RCore.RHierarchy` **1.0.1**: Visibility toggle now applies to the entire selection when the clicked object is part of it, so multiple GameObjects switch active state together in a single undo step. Clicking an unselected object still toggles only that object. `Assets/RCore.RHierarchy/package.json` bumped 1.0.0 → 1.0.1.
 - `RCore.UI`: Refactored `UICircleArranger` to inherit `UICircleArrangerBase`.
 - `RCore.Addressables`: Prevented concurrent async instantiation in `AssetBundleWrap` and `ComponentRef`; synced `ComponentRef.instance` in `PanelStack` and `PanelRoot`.
 - `RCore.SheetX` **1.6.0**: Collections mode now treats exact `Configuration` as automatic direct Global schema/value input. UI shows checked-disabled `Configuration` with read-only `Automatic / Global / GlobalConfigCollection`; Collection-folder plaintext JSON and compiled path marker drive strict, rollback-capable bake. Standalone Configuration artifacts stay dormant and untouched; detached and batch APIs retain row-array behavior. `Assets/RCore.SheetX/package.json` bumped 1.5.0 → 1.6.0; no tag path exists through current RevCore-only release workflow.

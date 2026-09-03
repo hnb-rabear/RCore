@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1] - 2026-09-03
+
+### Changed
+
+- Visibility toggle now applies to entire selection when clicked object is part of it, toggling active state together in single undo step.
+
 ## [1.0.0] - 2026-08-21
 
 Initial release. Extracted unchanged from `Assets/RCore/Main/Editor/RHierarchy/`.
