@@ -2,11 +2,12 @@
 
 ## [Unreleased]
 
-## [1.8.0] - 2026-09-07
+## [1.7.1] - 2026-09-07
 
 ### Added
 
 - `Export Multi Files` tab now accepts drag & drop onto a drop area above the Excel path table, adding several spreadsheets in one gesture. Dropping a folder adds its top-level `.xlsx` files; non-Excel and missing paths are skipped. Unity's file dialog is single-select, so the `Add Excel SpreadSheets` button still adds one file at a time.
+- `Add Folder` button in the `Export Multi Files` tab adds every top-level `.xlsx` file in a chosen folder, for adding a whole spreadsheet directory without dragging.
 
 ## [1.7.0] - 2026-09-03
 

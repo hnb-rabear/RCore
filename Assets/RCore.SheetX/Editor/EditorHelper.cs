@@ -320,6 +320,17 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
+		/// Opens the standard folder selection dialog and returns the selected folder path.
+		/// </summary>
+		public static string OpenFolderPanel(string title, string directory = null)
+		{
+			string path = EditorUtility.OpenFolderPanel(title, directory ?? LastOpenedDirectory, "");
+			if (!string.IsNullOrEmpty(path))
+				LastOpenedDirectory = path;
+			return path;
+		}
+
+		/// <summary>
 		/// Opens the standard save file dialog. If a file is selected, it writes the content to it.
 		/// </summary>
 		public static string SaveFilePanel(string mainDirectory, string defaultName, string content, string extension = "json,txt", string header = "Save File")

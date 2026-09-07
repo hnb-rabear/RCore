@@ -191,6 +191,16 @@ namespace RCore.SheetX.Editor
 			GUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Add Excel SpreadSheets", pWidth: 200, pHeight: 30))
 				AddExcelPath(EditorHelper.OpenFilePanel("Select Excel SpreadSheets", "xlsx"));
+			if (EditorHelper.Button("Add Folder", pWidth: 120, pHeight: 30, tooltip: "Add every .xlsx file in the selected folder"))
+			{
+				string folder = EditorHelper.OpenFolderPanel("Select Folder Of Excel SpreadSheets");
+				if (!string.IsNullOrEmpty(folder))
+				{
+					foreach (string path in CollectExcelPaths(new[] { folder }))
+						AddExcelPath(path);
+					ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
+				}
+			}
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
 			{
