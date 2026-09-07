@@ -190,17 +190,7 @@ namespace RCore.SheetX.Editor
 		{
 			GUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Add Excel SpreadSheets", pWidth: 200, pHeight: 30))
-			{
-				var path = EditorHelper.OpenFilePanel("Select Excel SpreadSheets", "xlsx");
-				if (!string.IsNullOrEmpty(path))
-				{
-					if (path.StartsWith(Application.dataPath))
-						path = EditorHelper.FormatPathToUnityPath(path);
-					var excel = m_settings.AddExcelFileFile(path);
-					if (excel != null)
-						excel.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
-				}
-			}
+				AddExcelPath(EditorHelper.OpenFilePanel("Select Excel SpreadSheets", "xlsx"));
 			GUILayout.FlexibleSpace();
 			if (EditorHelper.Button("Export All", pWidth: 200, pHeight: 30))
 			{
@@ -219,7 +209,66 @@ namespace RCore.SheetX.Editor
 					sheetsPath.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
 				ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
 			}
+			DrawExcelDropArea();
 			m_tableExcelSheetsPaths.DrawOnGUI(m_settings.excelSheetsPaths);
+		}
+
+		/// <summary>
+		/// Adds one Excel file to the multi-file list, converting an in-project absolute path to a Unity path.
+		/// </summary>
+		private void AddExcelPath(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+				return;
+			path = path.Replace('\\', '/');
+			if (path.StartsWith(Application.dataPath))
+				path = EditorHelper.FormatPathToUnityPath(path);
+			var excel = m_settings.AddExcelFileFile(path);
+			if (excel != null)
+				excel.onSelected = _ => ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
+		}
+
+		/// <summary>
+		/// Draws the drop area that accepts multiple dragged .xlsx files or folders containing them.
+		/// Unity's file dialog is single-select, so this is how several files are added at once.
+		/// </summary>
+		private void DrawExcelDropArea()
+		{
+			var rect = GUILayoutUtility.GetRect(0, 34, GUILayout.ExpandWidth(true));
+			GUI.Box(rect, "Drag & drop .xlsx files or folders here to add multiple", EditorStyles.helpBox);
+
+			var evt = Event.current;
+			if (evt.type != EventType.DragUpdated && evt.type != EventType.DragPerform)
+				return;
+			if (!rect.Contains(evt.mousePosition))
+				return;
+
+			var paths = CollectExcelPaths(DragAndDrop.paths);
+			DragAndDrop.visualMode = paths.Count > 0 ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Rejected;
+			if (evt.type == EventType.DragPerform && paths.Count > 0)
+			{
+				DragAndDrop.AcceptDrag();
+				foreach (string path in paths)
+					AddExcelPath(path);
+				ValidateTopToggle(m_settings.excelSheetsPaths, m_tableExcelSheetsPaths);
+			}
+			evt.Use();
+		}
+
+		/// <summary>
+		/// Expands dragged paths into .xlsx files: a folder contributes its top-level .xlsx files, a file itself if it is one.
+		/// </summary>
+		public static List<string> CollectExcelPaths(IEnumerable<string> droppedPaths)
+		{
+			var result = new List<string>();
+			foreach (string dropped in droppedPaths)
+			{
+				if (Directory.Exists(dropped))
+					result.AddRange(Directory.GetFiles(dropped, "*.xlsx"));
+				else if (File.Exists(dropped) && Path.GetExtension(dropped).ToLower() == ".xlsx")
+					result.Add(dropped);
+			}
+			return result;
 		}
 
 		private EditorTableView<ExcelSheetsPath> CreateTableExcelSheetsPaths(Action<bool> pOnTogSelected)
