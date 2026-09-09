@@ -56,12 +56,19 @@ namespace RCore.SheetX.Editor
 				Directory.CreateDirectory(pFolderPath);
 
 			string filePath = Path.Combine(pFolderPath, pFileName);
-			if (!File.Exists(filePath))
-				using (File.Create(filePath)) { }
+			// Write beside the target and swap: truncate-then-write destroys the previous artifact if
+			// the process dies mid-write, and the interactive window path has no snapshot to restore.
+			// Encoding.UTF8 emits EF BB BF, which some consumers of the generated .cs choke on.
+			string tempPath = filePath + ".tmp";
+			using (var sw = new StreamWriter(tempPath, false, new UTF8Encoding(false)))
+				sw.Write(pContent);
 
-			using var sw = new StreamWriter(filePath, false, Encoding.UTF8);
-			sw.Write(pContent);
-			sw.Close();
+			// File.Replace needs the destination to exist and throws across volumes; the temp file is
+			// always on the same volume, so a plain Move covers the first-export case.
+			if (File.Exists(filePath))
+				File.Replace(tempPath, filePath, null);
+			else
+				File.Move(tempPath, filePath);
 		}
 
 		/// <summary>
@@ -161,18 +168,14 @@ namespace RCore.SheetX.Editor
 				{
 					if (string.IsNullOrEmpty(filedValue))
 						fieldValueType.type = ValueType.Text;
+					else if (TryParseDecimal(filedValue, out decimal _))
+						fieldValueType.type = ValueType.Number;
+					else if (bool.TryParse(filedValue.ToLowerInvariant(), out bool _))
+						fieldValueType.type = ValueType.Bool;
+					else if (fieldName.EndsWith("{}"))
+						fieldValueType.type = ValueType.Json;
 					else
-					{
-						if (TryParseDecimal(filedValue, out decimal _))
-							fieldValueType.type = ValueType.Number;
-						else if (bool.TryParse(filedValue.ToLower(), out bool _))
-							fieldValueType.type = ValueType.Bool;
-						else if (fieldName.EndsWith("{}"))
-							fieldValueType.type = ValueType.Json;
-						else
-							fieldValueType.type = ValueType.Text;
-						fieldValueTypes.Add(fieldValueType);
-					}
+						fieldValueType.type = ValueType.Text;
 				}
 				else
 				{
@@ -187,28 +190,18 @@ namespace RCore.SheetX.Editor
 							longestValue = val;
 						}
 					}
-					if (values.Length > 0)
-					{
-						if (string.IsNullOrEmpty(longestValue))
-							fieldValueType.type = ValueType.ArrayText;
-						else
-						{
-							if (TryParseDecimal(longestValue, out decimal _))
-								fieldValueType.type = ValueType.ArrayNumber;
-							else if (bool.TryParse(longestValue.ToLower(), out bool _))
-								fieldValueType.type = ValueType.ArrayBool;
-							else
-								fieldValueType.type = ValueType.ArrayText;
-							fieldValueTypes.Add(fieldValueType);
-						}
-					}
-					else
-					{
+					if (string.IsNullOrEmpty(longestValue))
 						fieldValueType.type = ValueType.ArrayText;
-						if (!string.IsNullOrEmpty(longestValue))
-							fieldValueTypes.Add(fieldValueType);
-					}
+					else if (TryParseDecimal(longestValue, out decimal _))
+						fieldValueType.type = ValueType.ArrayNumber;
+					else if (bool.TryParse(longestValue.ToLowerInvariant(), out bool _))
+						fieldValueType.type = ValueType.ArrayBool;
+					else
+						fieldValueType.type = ValueType.ArrayText;
 				}
+				// An all-empty column is still a column: it must reach ConvertSheetToJson so that
+				// persistentFields can keep it in the artifact.
+				fieldValueTypes.Add(fieldValueType);
 			}
 
 			return fieldValueTypes;
@@ -231,11 +224,14 @@ namespace RCore.SheetX.Editor
 			for (int col = 0; col < firstRowData.LastCellNum; col++)
 			{
 				var cell = firstRowData.GetCell(col);
-				if (cell == null || !cell.IsMergedCell && cell.CellType != CellType.String)
+				if (cell == null)
 					continue;
 
-				if (!string.IsNullOrEmpty(cell.StringCellValue))
-					fieldsName[col] = cell.ToString().Replace(" ", "_");
+				// A header cell typed as a number (2024, 1) is still a column name, so read it through
+				// ToCellString rather than dropping the whole column.
+				string headerValue = cell.ToCellString().Trim();
+				if (!string.IsNullOrEmpty(headerValue))
+					fieldsName[col] = headerValue.Replace(" ", "_");
 				else
 					fieldsName[col] = "";
 
@@ -282,18 +278,14 @@ namespace RCore.SheetX.Editor
 				{
 					if (string.IsNullOrEmpty(fieldValue))
 						fieldValueType.type = ValueType.Text;
+					else if (TryParseDecimal(fieldValue, out decimal _))
+						fieldValueType.type = ValueType.Number;
+					else if (bool.TryParse(fieldValue.ToLowerInvariant(), out bool _))
+						fieldValueType.type = ValueType.Bool;
+					else if (fieldName.EndsWith("{}"))
+						fieldValueType.type = ValueType.Json;
 					else
-					{
-						if (TryParseDecimal(fieldValue, out decimal _))
-							fieldValueType.type = ValueType.Number;
-						else if (bool.TryParse(fieldValue.ToLower(), out bool _))
-							fieldValueType.type = ValueType.Bool;
-						else if (fieldName.EndsWith("{}"))
-							fieldValueType.type = ValueType.Json;
-						else
-							fieldValueType.type = ValueType.Text;
-						fieldValueTypes.Add(fieldValueType);
-					}
+						fieldValueType.type = ValueType.Text;
 				}
 				else
 				{
@@ -308,28 +300,18 @@ namespace RCore.SheetX.Editor
 							longestValue = val;
 						}
 					}
-					if (values.Length > 0)
-					{
-						if (string.IsNullOrEmpty(longestValue))
-							fieldValueType.type = ValueType.ArrayText;
-						else
-						{
-							if (TryParseDecimal(longestValue, out decimal _))
-								fieldValueType.type = ValueType.ArrayNumber;
-							else if (bool.TryParse(longestValue.ToLower(), out bool _))
-								fieldValueType.type = ValueType.ArrayBool;
-							else
-								fieldValueType.type = ValueType.ArrayText;
-							fieldValueTypes.Add(fieldValueType);
-						}
-					}
-					else
-					{
+					if (string.IsNullOrEmpty(longestValue))
 						fieldValueType.type = ValueType.ArrayText;
-						if (!string.IsNullOrEmpty(longestValue))
-							fieldValueTypes.Add(fieldValueType);
-					}
+					else if (TryParseDecimal(longestValue, out decimal _))
+						fieldValueType.type = ValueType.ArrayNumber;
+					else if (bool.TryParse(longestValue.ToLowerInvariant(), out bool _))
+						fieldValueType.type = ValueType.ArrayBool;
+					else
+						fieldValueType.type = ValueType.ArrayText;
 				}
+				// An all-empty column is still a column: it must reach ConvertSheetToJson so that
+				// persistentFields can keep it in the artifact.
+				fieldValueTypes.Add(fieldValueType);
 			}
 
 			return fieldValueTypes;
@@ -583,15 +565,89 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
+		/// Maps a localization column name to the UnityEngine.SystemLanguage member it stands for,
+		/// or null when no member matches. Two columns can map to the same member ("English" and
+		/// "English (US)"), which the caller must report: two identical case labels do not compile.
+		/// </summary>
+		public static string GetSystemLanguage(string lang)
+		{
+			string langLower = lang.ToLowerInvariant();
+			if (langLower.Contains("english") || langLower == "en")
+				return "English";
+			if (langLower.Contains("vietnam") || langLower == "vn" || langLower == "vi")
+				return "Vietnamese";
+			if (langLower.Contains("spanish") || langLower == "es")
+				return "Spanish";
+			if (langLower.Contains("portugal") || langLower.Contains("portuguese") || langLower == "pt")
+				return "Portuguese";
+			if (langLower.Contains("russia") || langLower == "ru")
+				return "Russian";
+			if (langLower.Contains("germany") || langLower.Contains("german") || langLower == "de")
+				return "German";
+			if (langLower.Contains("indonesia") || langLower == "id")
+				return "Indonesian";
+			if (langLower.Contains("thai") || langLower == "th")
+				return "Thai";
+			if (langLower.Contains("korea") || langLower.Contains("korean") || langLower == "kr" || langLower == "ko")
+				return "Korean";
+			if (langLower.Contains("japan") || langLower == "jp")
+				return "Japanese";
+			if (langLower.Contains("french") || langLower == "fr")
+				return "French";
+			if (langLower.Contains("italian") || langLower == "it")
+				return "Italian";
+			if (langLower.Contains("turk") || langLower.Contains("turkish") || langLower == "tr")
+				return "Turkish";
+			// Traditional must be tested before the plain Chinese fallback below.
+			if (langLower.Contains("chinese") && (langLower.Contains("traditional") || langLower.Contains("tw")))
+				return "ChineseTraditional";
+			if (langLower.Contains("chinese") || langLower == "cn" || langLower == "zh")
+				return "ChineseSimplified";
+			if (langLower.Contains("czech") || langLower == "cs")
+				return "Czech";
+			if (langLower.Contains("danish") || langLower == "da")
+				return "Danish";
+			if (langLower.Contains("dutch") || langLower == "nl")
+				return "Dutch";
+			if (langLower.Contains("finnish") || langLower == "fi")
+				return "Finnish";
+			if (langLower.Contains("greek") || langLower == "el")
+				return "Greek";
+			if (langLower.Contains("hebrew") || langLower == "he")
+				return "Hebrew";
+			if (langLower.Contains("hungarian") || langLower == "hu")
+				return "Hungarian";
+			if (langLower.Contains("icelandic") || langLower == "is")
+				return "Icelandic";
+			if (langLower.Contains("norwegian") || langLower == "no")
+				return "Norwegian";
+			if (langLower.Contains("polish") || langLower == "pl")
+				return "Polish";
+			if (langLower.Contains("romanian") || langLower == "ro")
+				return "Romanian";
+			if (langLower.Contains("slovak") || langLower == "sk")
+				return "Slovak";
+			if (langLower.Contains("swedish") || langLower == "sv")
+				return "Swedish";
+			if (langLower.Contains("ukrainian") || langLower == "uk")
+				return "Ukrainian";
+			if (langLower.Contains("arabic") || langLower == "ar")
+				return "Arabic";
+			return null;
+		}
+
+		/// <summary>
 		/// Wraps the file content in a C# namespace block.
 		/// </summary>
 		public static string AddNamespace(string fileContent, string @namespace)
 		{
 			if (!string.IsNullOrEmpty(@namespace))
 			{
-				fileContent = fileContent.Replace(Environment.NewLine, "NEW_LINE");
-				fileContent = fileContent.Replace("\n", "NEW_LINE");
-				fileContent = fileContent.Replace("NEW_LINE", $"{Environment.NewLine}\t");
+				// Split and rejoin rather than round-tripping through a literal sentinel: the old
+				// "NEW_LINE" marker also matched content, so a constant named NEW_LINE was replaced
+				// by an actual line break and the generated file no longer compiled.
+				fileContent = string.Join(Environment.NewLine + "\t",
+					fileContent.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None));
 				fileContent = $"namespace {@namespace}{Environment.NewLine}{"{"}{Environment.NewLine}\t{fileContent}{Environment.NewLine}{"}"}";
 			}
 			return fileContent;

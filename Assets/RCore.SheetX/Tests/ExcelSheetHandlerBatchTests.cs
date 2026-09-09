@@ -50,6 +50,68 @@ namespace RCore.SheetX.Tests
 			return path;
 		}
 
+		// One workbook holding an IDs sheet and one Constants sheet that references it by name.
+		private static IWorkbook IdsAndConstantsWorkbook(string constantsSheet, string idValue)
+		{
+			var workbook = new XSSFWorkbook();
+			var ids = workbook.CreateSheet("HeroIDs");
+			ids.CreateRow(0).CreateCell(0).SetCellValue("Hero");
+			var idRow = ids.CreateRow(1);
+			idRow.CreateCell(0).SetCellValue("HERO_1");
+			idRow.CreateCell(1).SetCellValue(idValue);
+
+			var constants = workbook.CreateSheet(constantsSheet);
+			var constantRow = constants.CreateRow(0);
+			constantRow.CreateCell(0).SetCellValue("REF");
+			constantRow.CreateCell(1).SetCellValue("int");
+			constantRow.CreateCell(2).SetCellValue("HERO_1");
+			return workbook;
+		}
+
+		[Test]
+		public void second_export_operation_rereads_ids_instead_of_reusing_the_first_ones()
+		{
+			// The handler outlives the window, so a second Export button press must not resolve symbolic
+			// references against the ID table — or the sorted lookup built from it — that the first
+			// press left behind.
+			var settings = SheetXSettings.CreateTransient(new SheetXExportRequest
+			{
+				ConstantsOutputPath = "Generated",
+				SeparateConstants = true,
+			});
+			settings.silent = true;
+			string firstPath = SaveWorkbook(IdsAndConstantsWorkbook("FirstConstants", "1"));
+			string secondPath = SaveWorkbook(IdsAndConstantsWorkbook("SecondConstants", "999"));
+			settings.excelSheetsPath = new ExcelSheetsPath
+			{
+				path = firstPath,
+				sheets = new List<SheetPath>
+				{
+					new SheetPath { name = "HeroIDs", selected = true },
+					new SheetPath { name = "FirstConstants", selected = true },
+					new SheetPath { name = "SecondConstants", selected = true },
+				},
+			};
+			var output = new MemoryOutput();
+			var context = new SheetXExportContext(output, discardStagedOnError: true);
+			var handler = new ExcelSheetHandler(settings, context);
+			try
+			{
+				handler.ExportConstants();
+				settings.excelSheetsPath.path = secondPath;
+				handler.ExportConstants();
+				context.Flush();
+
+				Assert.That(output.Writes["Generated/FirstConstants.cs"], Does.Contain("public const int REF = 1;"));
+				Assert.That(output.Writes["Generated/SecondConstants.cs"], Does.Contain("public const int REF = 999;"));
+			}
+			finally
+			{
+				File.Delete(firstPath);
+				File.Delete(secondPath);
+			}
+		}
+
 		[Test]
 		public void export_all_files_emits_preloaded_ids_constants()
 		{

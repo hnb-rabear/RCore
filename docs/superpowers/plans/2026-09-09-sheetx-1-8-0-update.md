@@ -15,10 +15,18 @@
 - Conventional commits with package scope: `fix(sheetx):`, `test(sheetx):`, `chore(sheetx):`. One PR-sized change per commit.
 - **Both `CHANGELOG.md` (root, canonical) and `Assets/RCore.SheetX/CHANGELOG.md` get an entry before every commit.**
 - Compile gate before every commit: `dotnet build RCore.SheetX.Tests.csproj` **without** `--no-restore` (Unity regenerates `Temp/obj`).
-- **`Unity.exe` is not on PATH.** EditMode tests run only when the maintainer opens the Editor. No task may exceed one sitting's eyeball review.
+- ~~**`Unity.exe` is not on PATH.** EditMode tests run only when the maintainer opens the Editor.~~ **Falsified during execution.** Headless EditMode runs work and take ~60s for the whole suite. Note there is no `-quit`: the run ends on its own, and the launcher returns *before* the XML is written, so wait for the results file to appear rather than trusting the call's exit.
+
+  ```powershell
+  & "D:/Program Files/Unity/Hub/Editor/2022.3.62f3/Editor/Unity.exe" -batchmode -projectPath "E:/Projects/_/RCore" `
+    -runTests -testPlatform EditMode -testFilter "RCore.SheetX.Tests" `
+    -testResults "E:/Projects/_/RCore/Temp/t1.xml" -logFile "E:/Projects/_/RCore/Temp/t1.log"
+  ```
+
+  Use a fresh `tN.xml` per run — a stale file from the previous run reads as a pass. On a compile error no XML is written at all; the reason is at the tail of the `.log`. No task may exceed one sitting's eyeball review.
 - Public API frozen: `SheetXExporter`, `ISheetXOutput`, `SheetXExportRequest`, `SheetXBatchExportRequest`, `SheetXExportResult`.
 - **Do not commit or push unless explicitly requested.**
-- Test baseline is **261 `[Test]` methods across 19 files**, effectively all on the Excel path. The Google path needs OAuth + network and has none. Every Google-side change ships on one manual export.
+- Test baseline is **261 `[Test]` methods across 19 files** (a static count; the runner reports **337 cases**, since parameterized tests expand). Effectively all on the Excel path. The Google path needs OAuth + network and has none. Every Google-side change ships on one manual export.
 
 ## Ordering
 
@@ -43,17 +51,17 @@ A cell reading `C:\Icons\a.png` emits `"C:\Icons\a.png"`, which Newtonsoft reads
 
 **The fix is one call, not a helper.** `Newtonsoft.Json` is already a dependency and `JsonConvert.ToString(value)` returns the value quoted and fully escaped. Precedent in this package: `SheetXConfigSheet.cs:420`.
 
-- [ ] **Step 1: Write `json_sheet_with_a_backslash_value_round_trips_exactly`**
+- [x] **Step 1: Write `json_sheet_with_a_backslash_value_round_trips_exactly`**
 
 Assert **exact string equality** on the emitted artifact, matching the idiom at `SheetXExportTests.cs:18-38` (`Is.EqualTo("[{\"id\":\"hero\"}]")`). Parsing successfully is not enough — this defect produces valid JSON with wrong content. Cover a text column, an `ArrayText` column, and a value ending in a backslash. Add `[SetCulture("tr-TR")]`.
 
-- [ ] **Step 2: Run it, watch it fail** on the backslash row.
+- [x] **Step 2: Run it, watch it fail** on the backslash row.
 
-- [ ] **Step 3: Replace the manual quote-and-escape with `JsonConvert.ToString(...)`** at all four sites (two per handler). Delete the manual escaping.
+- [x] **Step 3: Replace the manual quote-and-escape with `JsonConvert.ToString(...)`** at all four sites (two per handler). Delete the manual escaping.
 
-- [ ] **Step 4: Run, watch it pass.**
+- [x] **Step 4: Run, watch it pass.**
 
-- [ ] **Step 5: `dotnet build`, run EditMode, commit** — `fix(sheetx): escape generated JSON string values with JsonConvert`
+- [x] **Step 5: `dotnet build`, run EditMode, commit** — `fix(sheetx): escape generated JSON string values with JsonConvert`
 
 **Estimate:** 1h.
 
@@ -67,8 +75,8 @@ Assert **exact string equality** on the emitted artifact, matching the idiom at 
 
 Cheap, additive, and it is the standing detector for the parts of this 450-line method no test reaches.
 
-- [ ] **Step 1: Call `IsValidJson(content)` before the write; turn false into a named error.**
-- [ ] **Step 2: `dotnet build`, run EditMode, commit** — `fix(sheetx): reject invalid generated JSON before writing it`
+- [x] **Step 1: Call `IsValidJson(content)` before the write; turn false into a named error.**
+- [x] **Step 2: `dotnet build`, run EditMode, commit** — `fix(sheetx): reject invalid generated JSON before writing it`
 
 **Estimate:** 0.25h.
 
@@ -87,9 +95,9 @@ string nextFieldName = rowContent.fieldNames[j + 1];   // runs regardless
 
 Any JSON sheet whose **last** header contains "attribute" throws `ArgumentOutOfRangeException` mid-export.
 
-- [ ] **Step 1: Write `json_sheet_with_a_trailing_attribute_column_exports_without_throwing`, watch it fail.**
-- [ ] **Step 2: Fold the guard into one `&&` in both handlers.**
-- [ ] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): stop reading past the last field when detecting attributes`
+- [x] **Step 1: Write `json_sheet_with_a_trailing_attribute_column_exports_without_throwing`, watch it fail.**
+- [x] **Step 2: Fold the guard into one `&&` in both handlers.**
+- [x] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): stop reading past the last field when detecting attributes`
 
 **Estimate:** 0.25h.
 
@@ -111,11 +119,11 @@ Second half: `SheetXHelper.cs:234` reads `if (cell == null || !cell.IsMergedCell
 
 **Test through the exported JSON, not through `GetFieldValueTypes`.** Keeping the inferred type is necessary but not sufficient: the row reader also skips null cells at `ExcelSheetHandler.cs:1499-1501`. A unit test on the helper would pass while the artifact stays broken.
 
-- [ ] **Step 1: Write `all_empty_persistent_column_still_appears_in_the_exported_json`** — full export through `SheetXExporter.ExportExcel` with a memory sink, exact-string assertion.
-- [ ] **Step 2: Run, watch it fail.**
-- [ ] **Step 3: Move four `Add` calls out of their `else` across the two overloads; collapse the dead branch; use `cell.ToCellString()` for headers.**
-- [ ] **Step 4: Run. If the reader still drops the column, fix `ExcelSheetHandler.cs:1499-1501` to emit the persistent field's default rather than skipping it.**
-- [ ] **Step 5: `dotnet build`, run EditMode, commit** — `fix(sheetx): keep empty and numeric-header columns in the exported JSON`
+- [x] **Step 1: Write `all_empty_persistent_column_still_appears_in_the_exported_json`** — full export through `SheetXExporter.ExportExcel` with a memory sink, exact-string assertion.
+- [x] **Step 2: Run, watch it fail.**
+- [x] **Step 3: Move four `Add` calls out of their `else` across the two overloads; collapse the dead branch; use `cell.ToCellString()` for headers.**
+- [x] **Step 4: Run. If the reader still drops the column, fix `ExcelSheetHandler.cs:1499-1501` to emit the persistent field's default rather than skipping it.**
+- [x] **Step 5: `dotnet build`, run EditMode, commit** — `fix(sheetx): keep empty and numeric-header columns in the exported JSON`
 
 **Estimate:** 1.5h.
 
@@ -133,8 +141,8 @@ Six guards read `if (m_allIds == null || m_allIds.Count == 0)`: `ExcelSheetHandl
 
 Invisible today only because `RequestScriptCompilation()` destroys the handler on domain reload. `Export Json` (`ExcelSheetXWindow.cs:178-179`) already omits the recompile and is exactly where it bites.
 
-- [ ] **Step 1: Clear `m_allIds` and `m_allIDsSorted` together at every operation boundary in both handlers, `ExportAll`'s internal path included.**
-- [ ] **Step 2: `dotnet build`, run EditMode, commit** — `fix(sheetx): clear both ID caches at every export operation boundary`
+- [x] **Step 1: Clear `m_allIds` and `m_allIDsSorted` together at every operation boundary in both handlers, `ExportAll`'s internal path included.**
+- [x] **Step 2: `dotnet build`, run EditMode, commit** — `fix(sheetx): clear both ID caches at every export operation boundary`
 
 **Estimate:** 0.75h. **Manual check:** *Export IDs* (one sheet) → *Export Json* (all sheets), no recompile between. Symbolic references must resolve correctly.
 
@@ -151,9 +159,9 @@ Invisible today only because `RequestScriptCompilation()` destroys the handler o
 
 **Do not touch D3 (Google's missing `m_declaredIds` gate) here.** `ExportAllFiles` prepopulates `m_allIds` at `:2065-2078` before `BuildContentOfFileIDs` at `:2129`; adding an Excel-shaped gate without care makes Google multi-file ID export skip every const.
 
-- [ ] **Step 1: Write `duplicate_id_resolves_first_wins_when_json_loads_ids`, watch it fail.**
-- [ ] **Step 2: Add `continue;` after `Blocking` in both handlers.**
-- [ ] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): resolve duplicate IDs first-wins in JSON as well as in code`
+- [x] **Step 1: Write `duplicate_id_resolves_first_wins_when_json_loads_ids`, watch it fail.**
+- [x] **Step 2: Add `continue;` after `Blocking` in both handlers.**
+- [x] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): resolve duplicate IDs first-wins in JSON as well as in code`
 
 **Estimate:** 0.75h.
 
@@ -167,9 +175,9 @@ Invisible today only because `RequestScriptCompilation()` destroys the handler o
 - **C4:** `vector2Values[0]/[1]` and `vector3Values[0..2]` are indexed unguarded. `SplitValueToArray` uses `RemoveEmptyEntries`, so a cell reading `3` or blank yields a short array and an `IndexOutOfRangeException` aborts the whole Constants export.
 - **C5:** `= \"{value.Trim()}\"` is unescaped. `C:\Builds\out` or `He said "hi"` emits a non-compiling `.cs` and blocks the entire consuming project. Use `JsonConvert.ToString` here too — C# and JSON string escaping agree on backslash, quote, `\r`, `\n`, `\t`.
 
-- [ ] **Step 1: Write `constants_string_value_with_quotes_and_backslashes_compiles` and `constants_vector2_with_one_component_reports_an_error_instead_of_throwing`. Watch both fail.**
-- [ ] **Step 2: Add the length guard with a named error; escape via `JsonConvert.ToString`. Both handlers.**
-- [ ] **Step 3: Run, watch them pass. `dotnet build`, commit** — `fix(sheetx): guard short vector constants and escape string constants`
+- [x] **Step 1: Write `constants_string_value_with_quotes_and_backslashes_compiles` and `constants_vector2_with_one_component_reports_an_error_instead_of_throwing`. Watch both fail.**
+- [x] **Step 2: Add the length guard with a named error; escape via `JsonConvert.ToString`. Both handlers.**
+- [x] **Step 3: Run, watch them pass. `dotnet build`, commit** — `fix(sheetx): guard short vector constants and escape string constants`
 
 **Estimate:** 0.75h.
 
@@ -180,8 +188,8 @@ Invisible today only because `RequestScriptCompilation()` destroys the handler o
 
 The literal `NEW_LINE` is used as an unescaped sentinel, so a constant *named* `NEW_LINE` becomes a newline plus a tab and the generated file no longer compiles.
 
-- [ ] **Step 1: Replace with `string.Join(Environment.NewLine + "\t", content.Split(new[]{"\r\n","\n"}, StringSplitOptions.None))`.**
-- [ ] **Step 2: `dotnet build`, run EditMode, commit** — `fix(sheetx): stop using NEW_LINE as a text sentinel`
+- [x] **Step 1: Replace with `string.Join(Environment.NewLine + "\t", content.Split(new[]{"\r\n","\n"}, StringSplitOptions.None))`.**
+- [x] **Step 2: `dotnet build`, run EditMode, commit** — `fix(sheetx): stop using NEW_LINE as a text sentinel`
 
 **Estimate:** 0.25h.
 
@@ -198,9 +206,9 @@ Three defects. **Report, do not silently dedupe** — the enum members after the
 - `:827` / `:841` — `RemoveSpecialCharacters` **preserves dots** (`SheetXHelper.cs:906` allows `'.'`), so `SHOP.BUY` does not collapse into `SHOP_BUY` — it stays an invalid C# identifier. `2X_REWARD` is invalid too. A HashSet fixes neither. Validate each generated identifier before the write — `SheetXCollectionNaming.IsValidIdentifier` (`Editor/Collection/SheetXCollectionSchema.cs:63`) is `internal static` in the same assembly, so call it directly — and report the offending row.
 - `lang.ToLower()` at `:957` is culture-sensitive. Sweep `.ToLowerInvariant()` across both handlers — grep-verifiable, 14 hits in `GoogleSheetHandler.cs` alone. Fold in `Path.GetExtension(dropped).ToLower()` in `ExcelSheetXWindow` for free.
 
-- [ ] **Step 1: Write `two_english_language_columns_report_a_collision` and `localization_key_with_a_dot_reports_an_invalid_identifier`. Watch both fail.**
-- [ ] **Step 2: Add collision detection and identifier validation with named errors; sweep `.ToLowerInvariant()`.**
-- [ ] **Step 3: Run, watch them pass. `dotnet build`, commit** — `fix(sheetx): report localization collisions and invalid identifiers instead of emitting broken code`
+- [x] **Step 1: Write `two_english_language_columns_report_a_collision` and `localization_key_with_a_dot_reports_an_invalid_identifier`. Watch both fail.**
+- [x] **Step 2: Add collision detection and identifier validation with named errors; sweep `.ToLowerInvariant()`.**
+- [x] **Step 3: Run, watch them pass. `dotnet build`, commit** — `fix(sheetx): report localization collisions and invalid identifiers instead of emitting broken code`
 
 **Estimate:** 2h.
 
@@ -213,8 +221,8 @@ The first `ExportAllFiles` loop iterates `googleSheetsPaths` with **no source-le
 
 One line, matching the three loops below it.
 
-- [ ] **Step 1: Add `if (!googleSheets.selected) continue;` at the top of the loop.**
-- [ ] **Step 2: `dotnet build`, commit** — `fix(sheetx): skip unchecked spreadsheets when exporting Google IDs`
+- [x] **Step 1: Add `if (!googleSheets.selected) continue;` at the top of the loop.**
+- [x] **Step 2: `dotnet build`, commit** — `fix(sheetx): skip unchecked spreadsheets when exporting Google IDs`
 
 **Estimate:** 0.25h. **Manual check:** uncheck one spreadsheet, Export All, confirm its IDs are absent.
 
@@ -229,9 +237,9 @@ One line, matching the three loops below it.
 
 **Only the BOM half gets a test.** `grep -E 'ReadAllBytes|Encoding|BOM|65279' Tests/*.cs` returns zero hits — every existing on-disk assertion goes through `File.ReadAllText`, which strips a BOM transparently. That is exactly why it survived. The atomicity half ships untested: `CollectionGenerationTests.FailingFileOutput` throws **after** `SheetXHelper.WriteFile` returns (`CollectionGenerationTests.cs:1552-1558`), so it exercises transaction rollback, not `WriteFile` atomicity, and no existing fake can interrupt a write mid-flight. `File.Replace` is atomic by construction; that is the whole argument for it.
 
-- [ ] **Step 1: Write `write_file_emits_no_byte_order_mark` using `File.ReadAllBytes`; assert the first three bytes are not `EF BB BF`. Watch it fail.**
-- [ ] **Step 2: Switch to `new UTF8Encoding(false)`; add temp-write plus `File.Replace` with the `File.Move` fallback.**
-- [ ] **Step 3: Run, watch it pass; confirm the existing collection rollback tests are still green. `dotnet build`, commit** — `fix(sheetx): write files atomically without a BOM`
+- [x] **Step 1: Write `write_file_emits_no_byte_order_mark` using `File.ReadAllBytes`; assert the first three bytes are not `EF BB BF`. Watch it fail.**
+- [x] **Step 2: Switch to `new UTF8Encoding(false)`; add temp-write plus `File.Replace` with the `File.Move` fallback.**
+- [x] **Step 3: Run, watch it pass; confirm the existing collection rollback tests are still green. `dotnet build`, commit** — `fix(sheetx): write files atomically without a BOM`
 
 **Estimate:** 1h.
 
@@ -248,9 +256,9 @@ Two returns, and only the second one was found before:
 
 Either way `:1148`'s `if (m_settings.combineJson && json != null)` drops the key, and the consumer gets a `KeyNotFoundException` for a sheet they can see in the picker. Emit `[]` in both places; keep the warning.
 
-- [ ] **Step 1: Write `empty_sheet_appears_as_an_empty_array_in_combined_json`, watch it fail.**
-- [ ] **Step 2: Return `"[]"` from both sites in both handlers.**
-- [ ] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): emit an empty array for empty sheets instead of dropping the key`
+- [x] **Step 1: Write `empty_sheet_appears_as_an_empty_array_in_combined_json`, watch it fail.**
+- [x] **Step 2: Return `"[]"` from both sites in both handlers.**
+- [x] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): emit an empty array for empty sheets instead of dropping the key`
 
 **Estimate:** 0.5h.
 
@@ -267,9 +275,9 @@ return m_encryption ?? Encryption.Singleton;
 
 `SheetXHelper.CreateEncryption:561-583` returns null if any token fails `byte.TryParse`. A key like `"12, 34, 256, 78"` produces no error — the default-key warning at `:415` compares strings and is false here — and every JSON ships encrypted with the key published in this repository.
 
-- [ ] **Step 1: Write `encryption_key_with_a_non_byte_token_is_reported_not_silently_defaulted`** — assert the result is not `Encryption.Singleton`, `LogAssert.Expect` the message. Watch it fail.
-- [ ] **Step 2: Error instead of falling back.**
-- [ ] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): report a malformed encryption key instead of falling back`
+- [x] **Step 1: Write `encryption_key_with_a_non_byte_token_is_reported_not_silently_defaulted`** — assert the result is not `Encryption.Singleton`, `LogAssert.Expect` the message. Watch it fail.
+- [x] **Step 2: Error instead of falling back.**
+- [x] **Step 3: Run, watch it pass. `dotnet build`, commit** — `fix(sheetx): report a malformed encryption key instead of falling back`
 
 **Estimate:** 0.5h.
 
@@ -285,9 +293,9 @@ return m_encryption ?? Encryption.Singleton;
 
 Note also that the current replacement preserves the surrounding quotes, so `"GOLD"` becomes `"3"` — a string. Any future fix that emits a bare `3` is itself a breaking change for consumers deserializing that field as `string`.
 
-- [ ] **Step 1: Write `Characterization_json_column_substitutes_bare_and_quoted_symbolic_ids`** — assert the documented `{"id":HERO_2}` form works and that `"GOLD"` becomes `"3"`. This test **passes immediately**; it is a lock on existing behaviour, not a TDD cycle. The `Characterization_` prefix is the repo convention for exactly that.
-- [ ] **Step 2: Add a comment at `:1911` naming the containment hazard and pointing at this test.**
-- [ ] **Step 3: `dotnet build`, run EditMode, commit** — `test(sheetx): pin the documented symbolic-ID substitution behaviour`
+- [x] **Step 1: Write `Characterization_json_column_substitutes_bare_and_quoted_symbolic_ids`** — assert the documented `{"id":HERO_2}` form works and that `"GOLD"` becomes `"3"`. This test **passes immediately**; it is a lock on existing behaviour, not a TDD cycle. The `Characterization_` prefix is the repo convention for exactly that.
+- [x] **Step 2: Add a comment at `:1911` naming the containment hazard and pointing at this test.**
+- [x] **Step 3: `dotnet build`, run EditMode, commit** — `test(sheetx): pin the documented symbolic-ID substitution behaviour`
 
 **Estimate:** 0.75h.
 
@@ -302,10 +310,10 @@ Note also that the current replacement preserves the surrounding quotes, so `"GO
 
 `ExcelDropAreaTests.cs` has no committed `.meta` — `git ls-files Assets/RCore.SheetX/Tests/` shows the `.cs` alone, and `.gitignore` carries `!/[Aa]ssets/**/*.meta`, so every clone generates a fresh GUID and a spurious untracked file.
 
-- [ ] **Step 1: Bump `package.json` to `1.8.0`.**
-- [ ] **Step 2: Commit the missing `.meta`.**
-- [ ] **Step 3: Write the CHANGELOG entry in both files.**
-- [ ] **Step 4: `dotnet build`, run EditMode, commit** — `chore(sheetx): cut 1.8.0`
+- [x] **Step 1: Bump `package.json` to `1.8.0`.**
+- [x] **Step 2: Commit the missing `.meta`.**
+- [x] **Step 3: Write the CHANGELOG entry in both files.**
+- [x] **Step 4: `dotnet build`, run EditMode, commit** — `chore(sheetx): cut 1.8.0`
 
 **Estimate:** 0.25h.
 
@@ -379,8 +387,8 @@ Per commit:
 2. `git diff --check`; confirm tabs + CRLF on `.cs`.
 3. CHANGELOG entry in both files.
 
-Per release, in the Editor (`Unity.exe` is not on PATH):
-4. EditMode → Run All. 261 existing plus the new tests, zero failures.
+Per release, headless or in the Editor:
+4. EditMode → Run All. Baseline was 337 cases; this release ends at **349, zero failures**.
 5. Manual Excel matrix: Export IDs → Export Constants → Export Json → Export Localizations, single file and multi-file, with and without `combineJson`.
 6. Manual Google export covering Tasks 5, 9, 10, 11 and 12 — the Google half of every shared fix has no automated coverage.
 7. The S4 sequence: *Export IDs* with one sheet selected, then *Export Json* with all sheets, no recompile between.
@@ -390,7 +398,7 @@ Per release, in the Editor (`Unity.exe` is not on PATH):
 Measured, not asserted. Kept so a later reader does not re-derive them.
 
 - The `ConvertSheetToJson` tail diff is **22 lines**, not 35.
-- The test baseline is **261 `[Test]` across 19 files** — not 234/23, not 230/23, not 261/23.
+- The test baseline is **261 `[Test]` across 19 files** — not 234/23, not 230/23, not 261/23. That is the static attribute count; the runner expands them to **337 cases**, which is the number to compare a run against. After this release: 277 attributes, 349 cases.
 - `m_allIDsSorted` is a **`Dictionary<string,int>`** (`ExcelSheetHandler.cs:29`), not a `List<>`, and it is **assigned inside** the proposed extraction region at `:1909`.
 - The `Blocking` sites are Excel `172, 198, 357, 1923` and Google `219, 241, 399, 1894`. Google `:1894` **is** a `Blocking` call.
 - `SheetXExportTests.cs:64-83` does **not** pin Excel's `break` — its fixture is flat, so `break` and `continue` are indistinguishable there.

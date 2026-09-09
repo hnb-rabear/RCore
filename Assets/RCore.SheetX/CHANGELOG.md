@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-09-09
+
+Correctness release. No new features; every entry is a defect that produced a wrong or unusable artifact.
+
+### Fixed
+
+- Generated JSON string values were not escaped for backslashes, carriage returns or tabs; array text values were not escaped at all.
+- Generated JSON was written without being validated.
+- A trailing column whose header contained "attribute" crashed the JSON export.
+- Empty and numeric-header columns were dropped from exported JSON, defeating `persistentFields`.
+- ID caches persisted across export buttons within one window session, so a second export could substitute IDs from the first spreadsheet.
+- Duplicate IDs resolved to different values in generated code and in JSON. Both now keep the first row.
+- Short vector constants crashed the Constants export; string constants were not escaped.
+- Constants named `NEW_LINE` corrupted the generated file.
+- Localization emitted duplicate `switch` arms and invalid C# identifiers without reporting them. Two columns mapping to the same `SystemLanguage` and a key that is not an identifier are now errors.
+- Google "Export All" exported IDs from unchecked spreadsheets.
+- Generated files were written non-atomically and carried a UTF-8 BOM. Writes now go through a temp file and swap, without a BOM.
+- Empty sheets disappeared from combined JSON instead of appearing as an empty array.
+- A malformed `encryptionKey` (a token outside 0-255, or non-numeric) silently fell back to SheetX's published default key, so "encrypted" output was readable by anyone. It is now reported and the export fails.
+
 ## [1.7.1] - 2026-09-07
 
 ### Added

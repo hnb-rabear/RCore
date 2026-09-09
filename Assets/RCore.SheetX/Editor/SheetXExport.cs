@@ -427,6 +427,17 @@ namespace RCore.SheetX.Editor
 			settings.silent = true;
 			if (settings.encryptJson && settings.UsesDefaultEncryptionKey)
 				context.Warn("encryptJson is using SheetX's published default key. Set EncryptionKey before shipping encrypted data.");
+
+			// GetEncryption() throws on a malformed key, deep inside the handler, where the catch below
+			// would relabel it "Could not read spreadsheet". Report it here, before any work.
+			string keyError = settings.encryptJson
+				? SheetXSettings.InvalidEncryptionKeyMessage(settings.encryptionKey)
+				: null;
+			if (keyError != null)
+			{
+				context.Error(keyError);
+				settings = null;
+			}
 			return context;
 		}
 

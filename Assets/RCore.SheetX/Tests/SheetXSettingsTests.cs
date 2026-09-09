@@ -3,6 +3,7 @@
  * https://github.com/hnb-rabear
  */
 
+using System;
 using System.IO;
 using NUnit.Framework;
 using RCore.SheetX.Editor;
@@ -128,6 +129,27 @@ namespace RCore.SheetX.Tests
 			{
 				EditorPrefs.DeleteKey(legacyKey);
 				settings.ObfGoogleClientSecret = original;
+			}
+		}
+
+		[Test]
+		public void encryption_key_with_a_non_byte_token_is_reported_not_silently_defaulted()
+		{
+			// 256 does not fit a byte, so CreateEncryption returned null and GetEncryption fell back to
+			// Encryption.Singleton — the key published in this repository. Every "encrypted" artifact
+			// was then readable by anyone, with nothing said about it.
+			var settings = ScriptableObject.CreateInstance<SheetXSettings>();
+			try
+			{
+				settings.encryptJson = true;
+				settings.encryptionKey = "12, 34, 256, 78";
+
+				var ex = Assert.Throws<InvalidOperationException>(() => settings.GetEncryption());
+				Assert.That(ex.Message, Does.Contain("256"));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
 			}
 		}
 

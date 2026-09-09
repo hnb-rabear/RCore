@@ -3,8 +3,10 @@
  * https://github.com/hnb-rabear
  */
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using RCore.SheetX.Editor;
@@ -110,6 +112,57 @@ namespace RCore.SheetX.Tests
 			{
 				CultureInfo.CurrentCulture = previous;
 			}
+		}
+
+		[Test]
+		public void write_file_emits_no_byte_order_mark()
+		{
+			// Every existing on-disk assertion reads through File.ReadAllText, which strips a BOM
+			// transparently — which is why EF BB BF at the head of every generated .cs survived.
+			string folder = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}");
+			try
+			{
+				SheetXHelper.WriteFile(folder, "Generated.cs", "public class A { }");
+
+				byte[] bytes = File.ReadAllBytes(Path.Combine(folder, "Generated.cs"));
+				Assert.That(bytes[0], Is.Not.EqualTo(0xEF), "File starts with a UTF-8 byte order mark.");
+			}
+			finally
+			{
+				Directory.Delete(folder, true);
+			}
+		}
+
+		[Test]
+		public void write_file_overwrites_an_existing_file()
+		{
+			// The atomic path replaces the target through a temp file; the second write must still
+			// land, and must leave no .tmp behind.
+			string folder = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}");
+			try
+			{
+				SheetXHelper.WriteFile(folder, "Generated.cs", "first");
+				SheetXHelper.WriteFile(folder, "Generated.cs", "second");
+
+				Assert.That(File.ReadAllText(Path.Combine(folder, "Generated.cs")), Is.EqualTo("second"));
+				Assert.That(Directory.GetFiles(folder), Has.Length.EqualTo(1));
+			}
+			finally
+			{
+				Directory.Delete(folder, true);
+			}
+		}
+
+		[Test]
+		public void add_namespace_keeps_a_constant_named_new_line_intact()
+		{
+			// NEW_LINE was an unescaped sentinel, so a constant that happens to be called NEW_LINE
+			// was rewritten into an actual line break and the generated file stopped compiling.
+			string content = "public const int NEW_LINE = 1;";
+
+			string wrapped = SheetXHelper.AddNamespace(content, "Game");
+
+			Assert.That(wrapped, Does.Contain("\tpublic const int NEW_LINE = 1;"));
 		}
 	}
 }

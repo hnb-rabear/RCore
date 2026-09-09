@@ -76,6 +76,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (!TryOpenWorkbook(out var workBook))
 				return;
+			ResetIdCaches();
 			ExportIDs(workBook);
 		}
 
@@ -95,7 +96,7 @@ namespace RCore.SheetX.Editor
 			}
 
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
-			m_allIds = new Dictionary<string, int>();
+			ResetIdCaches();
 			m_declaredIds = new HashSet<string>(StringComparer.Ordinal);
 
 			foreach (var m in sheets)
@@ -297,6 +298,18 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
+		/// <summary>
+		/// Drops both ID caches. The handler is one per window and outlives every export, so a second
+		/// button press must rebuild them: <see cref="m_allIDsSorted"/> in particular is derived from
+		/// <see cref="m_allIds"/>, and reusing one built from a different ID set resolves symbolic
+		/// references against stale data while the other cache looks fresh.
+		/// </summary>
+		private void ResetIdCaches()
+		{
+			m_allIds = new Dictionary<string, int>();
+			m_allIDsSorted = null;
+		}
+
 		private int GetReferenceId(string pKey, out bool pFound)
 		{
 			if (m_allIDsSorted == null || m_allIDsSorted.Count == 0)
@@ -353,8 +366,13 @@ namespace RCore.SheetX.Editor
 						m_writer.Error($"Sheet {pSheetName}: ID {key} has a non-integer value '{cellValue}'.");
 						continue;
 					}
+					// First wins, matching BuildContentOfFileIDs: the generated constant and the ID this
+					// table resolves references against have to name the same row.
 					if (m_allIds.ContainsKey(key))
+					{
 						m_writer.Blocking("Duplicated ID!", $"ID {key} is duplicated in sheet {pSheetName}");
+						continue;
+					}
 					m_allIds[key] = value;
 				}
 			}
@@ -417,6 +435,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (!TryOpenWorkbook(out var workBook))
 				return;
+			ResetIdCaches();
 			ExportConstants(workBook);
 		}
 
@@ -434,7 +453,7 @@ namespace RCore.SheetX.Editor
 
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
-				m_allIds = new Dictionary<string, int>();
+				ResetIdCaches();
 				foreach (var sheet in sheets)
 					if (sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
 						LoadSheetIDsValues(workBook, sheet.name);
@@ -519,7 +538,7 @@ namespace RCore.SheetX.Editor
 					{
 						name = name,
 						value = value,
-						valueType = valueType.ToLower(),
+						valueType = valueType.ToLowerInvariant(),
 						comment = comment,
 					});
 				}
@@ -591,14 +610,18 @@ namespace RCore.SheetX.Editor
 						break;
 					case "vector2":
 						string[] vector2Values = SheetXHelper.SplitValueToArray(value);
+						if (!HasVectorComponents(name, valueType, vector2Values, 2))
+							break;
 						fieldStr = $"\tpublic static readonly Vector2 {name} = new Vector2({SheetXHelper.FormatFloatLiteral(vector2Values[0])}, {SheetXHelper.FormatFloatLiteral(vector2Values[1])});";
 						break;
 					case "vector3":
 						string[] vector3Values = SheetXHelper.SplitValueToArray(value);
+						if (!HasVectorComponents(name, valueType, vector3Values, 3))
+							break;
 						fieldStr = $"\tpublic static readonly Vector3 {name} = new Vector3({SheetXHelper.FormatFloatLiteral(vector3Values[0])}, {SheetXHelper.FormatFloatLiteral(vector3Values[1])}, {SheetXHelper.FormatFloatLiteral(vector3Values[2])});";
 						break;
 					case "string":
-						fieldStr = $"\tpublic const string {name} = \"{value.Trim()}\";";
+						fieldStr = $"\tpublic const string {name} = {JsonConvert.ToString(value.Trim())};";
 						break;
 					case "string-array":
 					{
@@ -631,6 +654,19 @@ namespace RCore.SheetX.Editor
 			m_constantsBuilderDict[constantsSheet].Append(constantsSB);
 		}
 
+		/// <summary>
+		/// SplitValueToArray drops empty entries, so a short or partly blank cell yields fewer
+		/// components than the vector emitter indexes. Report the row instead of throwing an
+		/// IndexOutOfRangeException the caller surfaces as an unrelated "could not read" error.
+		/// </summary>
+		private bool HasVectorComponents(string name, string valueType, string[] values, int required)
+		{
+			if (values.Length >= required)
+				return true;
+			m_writer.Error($"Constant {name} of type {valueType} needs {required} values but has {values.Length}.");
+			return false;
+		}
+
 #endregion
 
 #region Export Localizations
@@ -642,6 +678,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (!TryOpenWorkbook(out var workBook))
 				return;
+			ResetIdCaches();
 			ExportLocalizations(workBook);
 		}
 
@@ -664,7 +701,7 @@ namespace RCore.SheetX.Editor
 
 			if (m_allIds == null || m_allIds.Count == 0)
 			{
-				m_allIds = new Dictionary<string, int>();
+				ResetIdCaches();
 				foreach (var sheet in sheets)
 					if (sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
 						LoadSheetIDsValues(workBook, sheet.name);
@@ -808,9 +845,29 @@ namespace RCore.SheetX.Editor
 				});
 		}
 
+		/// <summary>
+		/// RemoveSpecialCharacters preserves dots and leading digits, so SHOP.BUY and 2X_REWARD reach
+		/// the artifact as constant names C# cannot parse. Report every offending key and skip the
+		/// file: dropping just the bad rows would misalign the implicitly numbered enum members.
+		/// </summary>
+		private bool ValidateLocalizationKeys(List<string> pIdsString, string pFileName)
+		{
+			bool valid = true;
+			foreach (var idString in pIdsString)
+				if (!SheetXCollectionNaming.IsValidIdentifier(idString.RemoveSpecialCharacters()))
+				{
+					m_writer.Error($"Localization key {idString} in sheet {pFileName} is not a valid C# identifier.");
+					valid = false;
+				}
+			return valid;
+		}
+
 		private void CreateLocalizationFile(List<string> pIdsString, Dictionary<string, List<string>> pLanguageTextDict, string pFileName)
 		{
 			if (pLanguageTextDict.Count == 0 || pLanguageTextDict.Count == 0)
+				return;
+
+			if (!ValidateLocalizationKeys(pIdsString, pFileName))
 				return;
 
 			//Build id integer array
@@ -910,7 +967,7 @@ namespace RCore.SheetX.Editor
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY_KEY_STRING", idStringDictBuilder.ToString());
 			fileContent = fileContent.Replace("//LOCALIZED_DICTIONARY", languagesDictBuilder.ToString());
 			fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
-			fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
+			fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLowerInvariant());
 			fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 			m_writer.Write(m_settings.constantsOutputFolder, $"{pFileName}.cs", fileContent,
 				SheetXExportFileType.LocalizationConstants, $"Exported {pFileName}.cs!");
@@ -949,72 +1006,24 @@ namespace RCore.SheetX.Editor
 				//Build language dictionary
 				var languagesDictBuilder = new StringBuilder();
 				var systemLanguages = new StringBuilder();
+				var claimedLanguages = new Dictionary<string, string>();
 				languagesDictBuilder.Append("\tpublic static readonly List<string> languages = new List<string>() { ");
 				foreach (var lang in m_localizedLanguages)
 				{
 					languagesDictBuilder.Append($"\"{lang}\", ");
 
-					string langLower = lang.ToLower();
-					if (langLower.Contains("english") || langLower == "en")
-						systemLanguages.Append($"\t\t\tSystemLanguage.English => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("vietnam") || langLower == "vn" || langLower == "vi")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Vietnamese => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("spanish") || langLower == "es")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Spanish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("portugal") || langLower.Contains("portuguese") || langLower == "pt")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Portuguese => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("russia") || langLower == "ru")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Russian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("germany") || langLower.Contains("german") || langLower == "de")
-						systemLanguages.Append($"\t\t\tSystemLanguage.German => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("indonesia") || langLower == "id")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Indonesian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("thai") || langLower == "th")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Thai => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("korea") || langLower.Contains("korean") || langLower == "kr" || langLower == "ko")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Korean => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("japan") || langLower == "jp")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Japanese => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("french") || langLower == "fr")
-						systemLanguages.Append($"\t\t\tSystemLanguage.French => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("italian") || langLower == "it")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Italian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("turk") || langLower.Contains("turkish") || langLower == "tr")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Turkish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("chinese") && (langLower.Contains("traditional") || langLower.Contains("tw")))
-						systemLanguages.Append($"\t\t\tSystemLanguage.ChineseTraditional => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("chinese") || langLower == "cn" || langLower == "zh")
-						systemLanguages.Append($"\t\t\tSystemLanguage.ChineseSimplified => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("czech") || langLower == "cs")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Czech => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("danish") || langLower == "da")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Danish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("dutch") || langLower == "nl")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Dutch => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("finnish") || langLower == "fi")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Finnish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("greek") || langLower == "el")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Greek => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("hebrew") || langLower == "he")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Hebrew => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("hungarian") || langLower == "hu")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Hungarian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("icelandic") || langLower == "is")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Icelandic => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("norwegian") || langLower == "no")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Norwegian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("polish") || langLower == "pl")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Polish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("romanian") || langLower == "ro")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Romanian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("slovak") || langLower == "sk")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Slovak => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("swedish") || langLower == "sv")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Swedish => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("ukrainian") || langLower == "uk")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Ukrainian => \"{lang}\",").AppendLine();
-					else if (langLower.Contains("arabic") || langLower == "ar")
-						systemLanguages.Append($"\t\t\tSystemLanguage.Arabic => \"{lang}\",").AppendLine();
+					string systemLanguage = SheetXHelper.GetSystemLanguage(lang);
+					if (systemLanguage == null)
+						continue;
+					// Two columns matching the same member emit the same case label twice, which does
+					// not compile. Report both names instead of silently keeping one.
+					if (claimedLanguages.TryGetValue(systemLanguage, out string claimedBy))
+					{
+						m_writer.Error($"Languages {claimedBy} and {lang} both map to SystemLanguage.{systemLanguage}.");
+						continue;
+					}
+					claimedLanguages.Add(systemLanguage, lang);
+					systemLanguages.Append($"\t\t\tSystemLanguage.{systemLanguage} => \"{lang}\",").AppendLine();
 				}
 				systemLanguages.Append($"\t\t\t_ => \"{m_localizedLanguages[0]}\",").AppendLine();
 				languagesDictBuilder.Append($"}};{Environment.NewLine}");
@@ -1054,7 +1063,7 @@ namespace RCore.SheetX.Editor
 				fileContent = fileContent.Replace("//LOCALIZATION_USE_ADDRESSABLE", useAddressable.ToString());
 				fileContent = fileContent.Replace("//LOCALIZATION_SYSTEM_LANGUAGE", systemLanguages.ToString());
 				fileContent = fileContent.Replace("LOCALIZATION_FOLDER", m_settings.GetLocalizationFolder(out bool isAddressable));
-				fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLower());
+				fileContent = fileContent.Replace("IS_ADDRESSABLE", isAddressable.ToString().ToLowerInvariant());
 				fileContent = SheetXHelper.AddNamespace(fileContent, m_settings.@namespace);
 				m_writer.Write(m_settings.constantsOutputFolder, "LocalizationsManager.cs", fileContent,
 					SheetXExportFileType.LocalizationManager, "Exported LocalizationsManager.cs!");
@@ -1069,6 +1078,7 @@ namespace RCore.SheetX.Editor
 		{
 			if (!TryOpenWorkbook(out var workBook))
 				return;
+			ResetIdCaches();
 			ExportJson(workBook);
 		}
 
@@ -1107,10 +1117,9 @@ namespace RCore.SheetX.Editor
 			var sheets = m_settings.excelSheetsPath.sheets;
 			if (!sheets.Any(x => x.selected && SheetXHelper.IsJsonSheet(x.name)))
 				return;
-			if (m_allIds == null)
-				m_allIds = new Dictionary<string, int>();
-			if (m_allIds.Count == 0)
+			if (m_allIds == null || m_allIds.Count == 0)
 			{
+				ResetIdCaches();
 				foreach (var sheet in sheets)
 					if (sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
 						LoadSheetIDsValues(workBook, sheet.name);
@@ -1447,8 +1456,11 @@ namespace RCore.SheetX.Editor
 			var sheet = pWorkBook.GetSheet(pSheetName);
 			if (sheet == null || sheet.LastRowNum == 0)
 			{
+				// Return the empty array rather than null: null drops the key from the combined file
+				// and the consumer gets a KeyNotFoundException for a sheet they can see in the picker.
+				// Returning before the write block keeps the empty sheet out of its own file.
 				m_writer.Warn($"Sheet {pSheetName} is empty!");
-				return null;
+				return "[]";
 			}
 
 			var persistentFields = m_settings.GetPersistentFields();
@@ -1553,7 +1565,7 @@ namespace RCore.SheetX.Editor
 					var fieldType = filedValueType.type;
 					string fieldValue = rowContent.fieldValues[j];
 					string fieldNameTrim = fieldName.Replace("[]", "").Replace("{}", "");
-					bool isAttribute = fieldNameTrim.ToLower().Contains("attribute") && fieldNameTrim.Length <= 11;
+					bool isAttribute = fieldNameTrim.ToLowerInvariant().Contains("attribute") && fieldNameTrim.Length <= 11;
 
 					// Encountered a situation where the data contains an attribute field like "value". This causes confusion for the Exporter, 
 					// which mistakes it for an attribute from the Attribute System.
@@ -1562,9 +1574,12 @@ namespace RCore.SheetX.Editor
 					{
 						if (j + 1 >= rowContent.fieldNames.Count)
 							isAttribute = false;
-						string nextFieldName = rowContent.fieldNames[j + 1];
-						if (!nextFieldName.ToLower().Contains("value") || nextFieldName.Length > 9)
-							isAttribute = false;
+						else
+						{
+							string nextFieldName = rowContent.fieldNames[j + 1];
+							if (!nextFieldName.ToLowerInvariant().Contains("value") || nextFieldName.Length > 9)
+								isAttribute = false;
+						}
 					}
 
 					if (!string.IsNullOrEmpty(fieldValue))
@@ -1581,7 +1596,7 @@ namespace RCore.SheetX.Editor
 						{
 							fieldValue = rowContent.fieldValues[j + 1].Trim();
 							fieldName = rowContent.fieldNames[j + 1].Trim();
-							if (fieldName.ToLower().Contains("unlock"))
+							if (fieldName.ToLowerInvariant().Contains("unlock"))
 							{
 								bool isArray = fieldName.EndsWith("[]");
 								j++;
@@ -1602,7 +1617,7 @@ namespace RCore.SheetX.Editor
 									att.unlocks = outValues;
 								}
 							}
-							else if (fieldName.ToLower().Contains("increase"))
+							else if (fieldName.ToLowerInvariant().Contains("increase"))
 							{
 								bool isArray = fieldName.EndsWith("[]");
 								j++;
@@ -1623,7 +1638,7 @@ namespace RCore.SheetX.Editor
 									att.increases = outValues;
 								}
 							}
-							else if (fieldName.ToLower().Contains("value"))
+							else if (fieldName.ToLowerInvariant().Contains("value"))
 							{
 								bool isArray = fieldName.EndsWith("[]"); //If attribute value is array
 								j++;
@@ -1648,7 +1663,7 @@ namespace RCore.SheetX.Editor
 									att.values = outValues;
 								}
 							}
-							else if (fieldName.ToLower().Contains("max"))
+							else if (fieldName.ToLowerInvariant().Contains("max"))
 							{
 								bool isArray = fieldName.EndsWith("[]");
 								j++;
@@ -1736,16 +1751,16 @@ namespace RCore.SheetX.Editor
 									case ValueType.Text:
 										for (int k = 0; k < splits.Length; k++)
 										{
-											if (k == 0) arrayStr += $"\"{splits[k]}\"";
-											else arrayStr += $",\"{splits[k]}\"";
+											if (k == 0) arrayStr += JsonConvert.ToString(splits[k]);
+											else arrayStr += "," + JsonConvert.ToString(splits[k]);
 										}
 										arrayStr += "]";
 										break;
 									case ValueType.Bool:
 										for (int k = 0; k < splits.Length; k++)
 										{
-											if (k == 0) arrayStr += splits[k].ToLower();
-											else arrayStr += "," + splits[k].ToLower();
+											if (k == 0) arrayStr += splits[k].ToLowerInvariant();
+											else arrayStr += "," + splits[k].ToLowerInvariant();
 										}
 										arrayStr += "]";
 										break;
@@ -1755,7 +1770,7 @@ namespace RCore.SheetX.Editor
 							else
 							{
 								if (type == ValueType.Text)
-									value = $"\"{value}\"";
+									value = JsonConvert.ToString(value);
 								combinedCols[fieldNameTrim] += $"{value},";
 							}
 						}
@@ -1792,11 +1807,10 @@ namespace RCore.SheetX.Editor
 								break;
 
 							case ValueType.Text:
-								fieldValue = fieldValue.Replace("\n", "\\n").Replace("\"", "\\\"");
 								if (!combinedCols.ContainsKey(fieldNameTrim))
 								{
 									if (!nestedField)
-										fieldContentStr += $"\"{fieldNameTrim}\":\"{fieldValue}\",";
+										fieldContentStr += $"\"{fieldNameTrim}\":{JsonConvert.ToString(fieldValue)},";
 								}
 								else
 									AppendCombinedCols(fieldValue, fieldType);
@@ -1805,7 +1819,7 @@ namespace RCore.SheetX.Editor
 								break;
 
 							case ValueType.Bool:
-								fieldValue = fieldValue.ToLower();
+								fieldValue = fieldValue.ToLowerInvariant();
 								if (!combinedCols.ContainsKey(fieldNameTrim))
 								{
 									if (!nestedField)
@@ -1853,8 +1867,8 @@ namespace RCore.SheetX.Editor
 								var arrayStr = "[";
 								for (int k = 0; k < splits.Length; k++)
 								{
-									if (k == 0) arrayStr += $"\"{splits[k]}\"";
-									else arrayStr += $",\"{splits[k]}\"";
+									if (k == 0) arrayStr += JsonConvert.ToString(splits[k]);
+									else arrayStr += "," + JsonConvert.ToString(splits[k]);
 								}
 								arrayStr += "]";
 								if (!combinedCols.ContainsKey(fieldNameTrim))
@@ -1880,8 +1894,8 @@ namespace RCore.SheetX.Editor
 								var arrayStr = "[";
 								for (int k = 0; k < splits.Length; k++)
 								{
-									if (k == 0) arrayStr += splits[k].ToLower();
-									else arrayStr += "," + splits[k].ToLower();
+									if (k == 0) arrayStr += splits[k].ToLowerInvariant();
+									else arrayStr += "," + splits[k].ToLowerInvariant();
 								}
 								arrayStr += "]";
 								if (!combinedCols.ContainsKey(fieldNameTrim))
@@ -1908,6 +1922,13 @@ namespace RCore.SheetX.Editor
 								{
 									m_allIDsSorted = SheetXHelper.SortIDsByLength(m_allIds);
 								}
+								// Substitution is by containment, not by token, so an ID also gets replaced inside
+								// prose and inside quotes: GOLD = 3 turns "Buy GOLD now" into "Buy 3 now" and
+								// "GOLD" into the string "3". It cannot be parser-based — Document.md:443
+								// documents bare, unquoted IDs ({"id":HERO_2}) that no JSON parser accepts, so
+								// this must run before parsing. Locked by
+								// SheetXExportTests.Characterization_json_column_substitutes_bare_and_quoted_symbolic_ids;
+								// fixing it needs a tokenizer for that dialect, and is a breaking change.
 								foreach (var id in m_allIDsSorted)
 								{
 									if (fieldValue.Contains(id.Key))
@@ -1972,6 +1993,13 @@ namespace RCore.SheetX.Editor
 			if (content == "[]")
 			{
 				m_writer.Warn($"Sheet {pSheetName} is empty!");
+				return content;
+			}
+			// This method assembles JSON by string concatenation. Parse the result once so a broken
+			// cell becomes a named error instead of a corrupt file on disk.
+			if (!SheetXHelper.IsValidJson(content))
+			{
+				m_writer.Error($"Sheet {pSheetName} produced invalid Json. Check its cell values for unbalanced quotes or brackets.");
 				return null;
 			}
 			string finalContent = content;
@@ -2005,6 +2033,7 @@ namespace RCore.SheetX.Editor
 		/// <summary>Exports every artifact kind from a workbook the caller already opened.</summary>
 		internal void ExportAll(IWorkbook workBook)
 		{
+			ResetIdCaches();
 			ExportIDs(workBook);
 			ExportConstants(workBook);
 			ExportJson(workBook, reportCollectionCompletion: true);
@@ -2049,8 +2078,7 @@ namespace RCore.SheetX.Editor
 			m_idsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_constantsBuilderDict = new Dictionary<string, StringBuilder>();
 			m_localizationsDict = new Dictionary<string, LocalizationBuilder>();
-			m_allIDsSorted = null;
-			m_allIds = new Dictionary<string, int>();
+			ResetIdCaches();
 			m_declaredIds = new HashSet<string>(StringComparer.Ordinal);
 			m_localizedSheetsExported = new List<string>();
 			m_localizedLanguages = new List<string>();

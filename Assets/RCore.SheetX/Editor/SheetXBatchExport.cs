@@ -289,6 +289,18 @@ namespace RCore.SheetX.Editor
 						+ "Set EncryptionKey before shipping encrypted data.");
 				}
 
+				// GetEncryption() throws on a malformed key, deep inside a handler, where the catch below
+				// would relabel it "Batch export failed". Report it here, before any work.
+				if (m_settings.encryptJson)
+				{
+					string keyError = SheetXSettings.InvalidEncryptionKeyMessage(m_settings.encryptionKey);
+					if (keyError != null)
+					{
+						m_context.Error(keyError);
+						return m_context.ToResult();
+					}
+				}
+
 				m_excel = new ExcelSheetHandler(m_settings, m_context, m_state);
 
 				if (HasGoogleSource())

@@ -421,7 +421,26 @@ namespace RCore.SheetX.Editor
 					+ "Set your own key before shipping encrypted data.");
 			}
 			m_encryption ??= SheetXHelper.CreateEncryption(encryptionKey);
-			return m_encryption ?? Encryption.Singleton;
+			// Falling back to Encryption.Singleton here shipped every artifact encrypted with the key
+			// published in this repository while the user believed their own key was in force. Fail
+			// closed instead: all seven call sites encrypt straight into an output file.
+			if (m_encryption == null)
+				throw new InvalidOperationException(InvalidEncryptionKeyMessage(encryptionKey));
+			return m_encryption;
+		}
+
+		/// <summary>
+		/// Describes why <see cref="encryptionKey"/> cannot be parsed, or null when it can. A key is a
+		/// comma-separated list of bytes; one out-of-range or non-numeric token invalidates all of it.
+		/// </summary>
+		internal static string InvalidEncryptionKeyMessage(string key)
+		{
+			string[] bad = (key ?? "").Trim().Replace(" ", "").Split(',')
+				.Where(token => !byte.TryParse(token, out _)).ToArray();
+			if (bad.Length == 0)
+				return null;
+			return $"SheetX encryptionKey is malformed — {string.Join(", ", bad.Select(t => $"'{t}'"))} "
+				+ "is not a byte. Every comma-separated value must be 0-255.";
 		}
 
 		/// <summary>

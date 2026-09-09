@@ -57,7 +57,7 @@ namespace RCore.SheetX.Editor
 
 		private bool ValidateExcelPath(string path, out string status)
 		{
-			string extension = Path.GetExtension(path)?.ToLower();
+			string extension = Path.GetExtension(path)?.ToLowerInvariant();
 			if (extension != ".xlsx")
 			{
 				status = "Not Excel";
@@ -275,7 +275,7 @@ namespace RCore.SheetX.Editor
 			{
 				if (Directory.Exists(dropped))
 					result.AddRange(Directory.GetFiles(dropped, "*.xlsx"));
-				else if (File.Exists(dropped) && Path.GetExtension(dropped).ToLower() == ".xlsx")
+				else if (File.Exists(dropped) && Path.GetExtension(dropped).ToLowerInvariant() == ".xlsx")
 					result.Add(dropped);
 			}
 			return result;

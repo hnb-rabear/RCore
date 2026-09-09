@@ -39,6 +39,111 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		[SetCulture("tr-TR")]
+		public void json_sheet_with_a_backslash_value_round_trips_exactly()
+		{
+			string path = CreateWorkbook("Data",
+				new[] { "id", "path", "trail", "tags[]" },
+				new[] { "hero", @"C:\Icons\a.png", @"end\", "a\\b|c\"d" });
+			try
+			{
+				var output = new MemoryOutput();
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+				}, output);
+
+				Assert.That(result.Success, Is.True);
+				Assert.That(output.Writes["Generated/Data.txt"], Is.EqualTo(
+					@"[{""id"":""hero"",""path"":""C:\\Icons\\a.png"",""trail"":""end\\"",""tags"":[""a\\b"",""c\""d""]}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void json_sheet_with_a_trailing_attribute_column_exports_without_throwing()
+		{
+			string path = CreateWorkbook("Data", new[] { "id", "attribute" }, new[] { "hero", "atk" });
+			try
+			{
+				var output = new MemoryOutput();
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+				}, output);
+
+				Assert.That(result.Success, Is.True);
+				Assert.That(output.Writes["Generated/Data.txt"], Is.EqualTo(@"[{""id"":""hero"",""attribute"":""atk""}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void all_empty_persistent_column_still_appears_in_the_exported_json()
+		{
+			// PersistentFields exists so a column survives to JSON even when every cell is blank.
+			string path = CreateWorkbook("Data", new[] { "id", "key" }, new[] { "hero", "" });
+			try
+			{
+				var output = new MemoryOutput();
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+					PersistentFields = "id, key",
+				}, output);
+
+				Assert.That(result.Success, Is.True);
+				Assert.That(output.Writes["Generated/Data.txt"], Is.EqualTo(@"[{""id"":""hero"",""key"":""""}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void numeric_header_column_still_appears_in_the_exported_json()
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			var sheet = workbook.CreateSheet("Data");
+			var headerRow = sheet.CreateRow(0);
+			headerRow.CreateCell(0).SetCellValue("id");
+			headerRow.CreateCell(1).SetCellValue(2024); // numeric header cell
+			var valueRow = sheet.CreateRow(1);
+			valueRow.CreateCell(0).SetCellValue("hero");
+			valueRow.CreateCell(1).SetCellValue("season");
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+
+			try
+			{
+				var output = new MemoryOutput();
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+				}, output);
+
+				Assert.That(result.Success, Is.True);
+				Assert.That(output.Writes["Generated/Data.txt"], Is.EqualTo(@"[{""id"":""hero"",""2024"":""season""}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
 		public void export_excel_empty_sheet_selection_writes_nothing()
 		{
 			string path = CreateWorkbook("Data", new[] { "id" }, new[] { "hero" });
@@ -159,6 +264,56 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		public void two_english_language_columns_report_a_collision()
+		{
+			// "English" and "English (US)" both contain "english", so both emitted
+			// "SystemLanguage.English =>" — a duplicate case label the consumer cannot compile.
+			string path = CreateLocalizationWorkbook("greeting", "English", "English (US)");
+			try
+			{
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					ConstantsOutputPath = "Generated",
+					LocalizationOutputPath = "Generated",
+					SeparateLocalizations = true,
+				}, new MemoryOutput());
+
+				Assert.That(result.Errors, Has.Exactly(1)
+					.EqualTo("Languages English and English (US) both map to SystemLanguage.English."));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void localization_key_with_a_dot_reports_an_invalid_identifier()
+		{
+			// RemoveSpecialCharacters keeps dots, so SHOP.BUY reaches the artifact as
+			// "public const int SHOP.BUY = 0;" — not a C# identifier.
+			string path = CreateLocalizationWorkbook("SHOP.BUY", "English");
+			try
+			{
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					ConstantsOutputPath = "Generated",
+					LocalizationOutputPath = "Generated",
+					SeparateLocalizations = true,
+				}, new MemoryOutput());
+
+				Assert.That(result.Errors, Has.Exactly(1)
+					.EqualTo("Localization key SHOP.BUY in sheet LocalizationExample is not a valid C# identifier."));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
 		public void export_google_requires_request_credentials()
 		{
 			var result = SheetXExporter.ExportGoogle(new SheetXExportRequest
@@ -218,6 +373,169 @@ namespace RCore.SheetX.Tests
 				string generated = output.Writes["Generated/IDs.cs"];
 				Assert.That(generated, Does.Contain("public const int HERO_1 = 1;"));
 				Assert.That(generated, Does.Not.Contain("HERO_1 = 2"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void constants_string_value_with_quotes_and_backslashes_compiles()
+		{
+			// The value goes into a C# string literal, so a quote or a backslash that reaches the
+			// artifact verbatim generates a file the consumer project cannot compile.
+			string path = CreateConstantsWorkbook("string", @"say ""hi"" C:\a");
+			try
+			{
+				var output = new MemoryOutput();
+				SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					ConstantsOutputPath = "Generated",
+				}, output);
+
+				Assert.That(output.Writes["Generated/Constants.cs"],
+					Does.Contain(@"public const string VALUE = ""say \""hi\"" C:\\a"";"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void constants_vector2_with_one_component_reports_an_error_instead_of_throwing()
+		{
+			string path = CreateConstantsWorkbook("vector2", "1");
+			try
+			{
+				var result = SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					ConstantsOutputPath = "Generated",
+				}, new MemoryOutput());
+
+				Assert.That(result.Success, Is.False);
+				Assert.That(result.Errors, Has.Exactly(1)
+					.EqualTo("Constant VALUE of type vector2 needs 2 values but has 1."));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void Characterization_json_column_substitutes_bare_and_quoted_symbolic_ids()
+		{
+			// Substitution is textual and by containment, and it has to be: Document.md:443 documents
+			// BARE, unquoted symbolic IDs ({"id":HERO_2}) as supported input, which no JSON parser will
+			// accept, so the replace must run before parsing. The cost is that a symbolic ID is also
+			// replaced inside ordinary prose — "Buy GOLD now" becomes "Buy 3 now" — and inside quotes,
+			// where "GOLD" becomes the string "3" rather than the number 3. Both are locked here: a
+			// future fix that changes either is a breaking change for consumers, not a bug fix.
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			var ids = workbook.CreateSheet("HeroIDs");
+			ids.CreateRow(0).CreateCell(0).SetCellValue("KEY");
+			WriteId(ids.CreateRow(1), "HERO_2", "7");
+			WriteId(ids.CreateRow(2), "GOLD", "3");
+
+			var data = workbook.CreateSheet("Data");
+			var header = data.CreateRow(0);
+			header.CreateCell(0).SetCellValue("bare{}");
+			header.CreateCell(1).SetCellValue("quoted{}");
+			var row = data.CreateRow(1);
+			row.CreateCell(0).SetCellValue("{\"id\":HERO_2}");
+			row.CreateCell(1).SetCellValue("{\"reward\":\"GOLD\",\"label\":\"Buy GOLD now\"}");
+
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+
+			try
+			{
+				var output = new MemoryOutput();
+				SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+				}, output);
+
+				Assert.That(output.Writes["Generated/Data.txt"], Is.EqualTo(
+					@"[{""bare"":{""id"":7},""quoted"":{""reward"":""3"",""label"":""Buy 3 now""}}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void duplicate_id_resolves_first_wins_when_json_loads_ids()
+		{
+			// Two paths load IDs. The code generator keeps the first row and drops the conflicting one;
+			// the JSON path lazily loads the same sheet and used to overwrite, so the same workbook
+			// produced HERO_1 = 1 in the generated constants and HERO_1 = 2 in the data.
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			var ids = workbook.CreateSheet("HeroIDs");
+			ids.CreateRow(0).CreateCell(0).SetCellValue("KEY");
+			WriteId(ids.CreateRow(1), "HERO_1", "1");
+			WriteId(ids.CreateRow(2), "HERO_1", "2");
+
+			var data = workbook.CreateSheet("Data");
+			data.CreateRow(0).CreateCell(0).SetCellValue("ref");
+			data.CreateRow(1).CreateCell(0).SetCellValue("HERO_1");
+
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+
+			try
+			{
+				var output = new MemoryOutput();
+				// No ConstantsOutputPath, so the IDs phase bails and the JSON phase is what loads the
+				// sheet — the path the code generator's first-wins rule never covered.
+				SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+				}, output);
+
+				Assert.That(output.Writes["Generated/Data.txt"], Is.EqualTo(@"[{""ref"":1}]"));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
+		[Test]
+		public void empty_sheet_appears_as_an_empty_array_in_combined_json()
+		{
+			// Dropping the key gives the consumer a KeyNotFoundException for a sheet they can see
+			// in the picker. An empty array says the same thing without the crash.
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			CreateDataSheet(workbook, "Data", "hero");
+			// Header only: nothing to serialize.
+			workbook.CreateSheet("Empty").CreateRow(0).CreateCell(0).SetCellValue("id");
+
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+
+			try
+			{
+				var output = new MemoryOutput();
+				SheetXExporter.ExportExcel(new SheetXExportRequest
+				{
+					SpreadsheetPath = path,
+					JsonOutputPath = "Generated",
+					CombineJson = true,
+				}, output);
+
+				Assert.That(output.Writes[$"Generated/{Path.GetFileNameWithoutExtension(path)}.txt"],
+					Is.EqualTo(@"{""Data"":[{""id"":""hero""}],""Empty"":[]}"));
 			}
 			finally
 			{
@@ -330,6 +648,42 @@ namespace RCore.SheetX.Tests
 		{
 			row.CreateCell(0).SetCellValue(key);
 			row.CreateCell(1).SetCellValue(value);
+		}
+
+		// One Constants sheet holding a single row: name VALUE, the given type, the given value.
+		private static string CreateConstantsWorkbook(string valueType, string value)
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			var row = workbook.CreateSheet("Constants").CreateRow(0);
+			row.CreateCell(0).SetCellValue("VALUE");
+			row.CreateCell(1).SetCellValue(valueType);
+			row.CreateCell(2).SetCellValue(value);
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+			return path;
+		}
+
+		// One LocalizationExample sheet: idString, relativeId, then one column per language.
+		private static string CreateLocalizationWorkbook(string key, params string[] languages)
+		{
+			string path = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}.xlsx");
+			var workbook = new XSSFWorkbook();
+			var sheet = workbook.CreateSheet("LocalizationExample");
+			var header = sheet.CreateRow(0);
+			header.CreateCell(0).SetCellValue("idString");
+			header.CreateCell(1).SetCellValue("relativeId");
+			var row = sheet.CreateRow(1);
+			row.CreateCell(0).SetCellValue(key);
+			row.CreateCell(1).SetCellValue("");
+			for (int i = 0; i < languages.Length; i++)
+			{
+				header.CreateCell(i + 2).SetCellValue(languages[i]);
+				row.CreateCell(i + 2).SetCellValue("Hello");
+			}
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+				workbook.Write(stream);
+			return path;
 		}
 
 		private static void CreateDataSheet(XSSFWorkbook workbook, string sheetName, string value)
