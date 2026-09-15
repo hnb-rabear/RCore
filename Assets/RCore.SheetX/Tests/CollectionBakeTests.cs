@@ -19,6 +19,8 @@ namespace RCore.SheetX.Tests
 		private const string GlobalPath = ResourcesFolder + "/GlobalConfigCollection.asset";
 		private const string JsonPath = JsonFolder + "/BakeItems.txt";
 		private const string StatsJsonPath = JsonFolder + "/BakeStats.txt";
+		private const string InlineGlobalPath = ResourcesFolder + "/GlobalConfigCollection.asset";
+		private const string InlineJsonPath = JsonFolder + "/InlineCharacters.txt";
 
 		private class TestGlobalCollection : GlobalConfigCollectionBase
 		{
@@ -569,6 +571,197 @@ namespace RCore.SheetX.Tests
 			Assert.That(entry.HasAcceptedBindingFilter, Is.False);
 		}
 
+		[Test]
+		public void inline_depth_bakes_rows_into_global_and_creates_no_feature_asset()
+		{
+			File.WriteAllText(InlineJsonPath, "[{\"id\":7,\"name\":\"mage\"}]");
+			var settings = CreateInlineSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "Player", out string error), Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<Inline.GlobalConfigCollection>(InlineGlobalPath);
+				Assert.That(global, Is.Not.Null);
+				Assert.That(global.player, Is.Not.Null);
+				Assert.That(global.player.Characters, Has.Length.EqualTo(1));
+				Assert.That(global.player.Characters[0].id, Is.EqualTo(7));
+				Assert.That(global.player.Characters[0].name, Is.EqualTo("mage"));
+
+				// An inline group has no asset of its own. Creating one would defeat the whole point.
+				Assert.That(
+					AssetDatabase.LoadMainAssetAtPath(AssetFolder + "/PlayerConfigCollection.asset"),
+					Is.Null);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void inline_bake_leaves_sibling_global_data_untouched()
+		{
+			File.WriteAllText(InlineJsonPath, "[{\"id\":7,\"name\":\"mage\"}]");
+			var settings = CreateInlineSettings();
+			try
+			{
+				EnsureFolder(ResourcesFolder);
+				var seeded = ScriptableObject.CreateInstance<Inline.GlobalConfigCollection>();
+				seeded.environment = "staging";
+				AssetDatabase.CreateAsset(seeded, InlineGlobalPath);
+				AssetDatabase.SaveAssets();
+
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "Player", out string error), Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<Inline.GlobalConfigCollection>(InlineGlobalPath);
+				// PopulateObject writes only the keys present in the JSON, so a sibling group that
+				// this bake did not touch must survive it verbatim.
+				Assert.That(global.environment, Is.EqualTo("staging"));
+				Assert.That(global.player.Characters, Has.Length.EqualTo(1));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void inline_bake_builds_the_group_when_global_is_created_fresh()
+		{
+			File.WriteAllText(InlineJsonPath, "[{\"id\":1,\"name\":\"rogue\"}]");
+			var settings = CreateInlineSettings();
+			try
+			{
+				// No Global asset exists yet, so `player` starts null and Newtonsoft's default
+				// ObjectCreationHandling.Auto has to construct it rather than reuse one.
+				Assert.That(AssetDatabase.LoadMainAssetAtPath(InlineGlobalPath), Is.Null);
+
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "Player", out string error), Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<Inline.GlobalConfigCollection>(InlineGlobalPath);
+				Assert.That(global.player.Characters[0].name, Is.EqualTo("rogue"));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void mixed_depths_put_a_nested_group_and_an_asset_reference_on_one_global()
+		{
+			File.WriteAllText(InlineJsonPath, "[{\"id\":7,\"name\":\"mage\"}]");
+			File.WriteAllText(JsonPath, "[{\"id\":2,\"name\":\"potion\"}]");
+			var settings = CreateInlineSettings();
+			try
+			{
+				settings.collections.Add(new SheetXCollectionDefinition
+				{
+					name = "BakeShop",
+					autoLoad = true,
+					depth = SheetXCollectionDepth.SeparateAsset,
+				});
+				settings.sheetBindings.Add(new SheetXSheetBinding
+				{
+					sourceId = "book.xlsx",
+					sheetName = "BakeItems",
+					outputMode = SheetXSheetOutputMode.ExistingDataClass,
+					collectionName = "BakeShop",
+					rowTypeName = typeof(BakeItemsRow).AssemblyQualifiedName,
+					fieldName = "items",
+				});
+
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, autoLoadOnly: false, out string error),
+					Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<Inline.GlobalConfigCollection>(InlineGlobalPath);
+				// This is the feature as it will actually be used: one of each on the same root.
+				Assert.That(global.player.Characters[0].id, Is.EqualTo(7));
+				Assert.That(global.bakeShop, Is.Not.Null);
+				Assert.That(global.bakeShop.items[0].id, Is.EqualTo(2));
+				Assert.That(AssetDatabase.GetAssetPath(global.bakeShop), Is.EqualTo(FeaturePath));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void inline_group_bakes_under_auto_load_even_when_its_own_flag_is_false()
+		{
+			File.WriteAllText(InlineJsonPath, "[{\"id\":9,\"name\":\"ranger\"}]");
+			var settings = CreateInlineSettings();
+			try
+			{
+				// A collection switched to Inline keeps whatever autoLoad it had. Honouring that flag
+				// would skip its rows while Global is saved anyway, persisting a stale group.
+				settings.collections.First(c => c.name == "Player").autoLoad = false;
+				settings.collections.First(c => c.builtInGlobal).autoLoad = true;
+
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, autoLoadOnly: true, out string error),
+					Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<Inline.GlobalConfigCollection>(InlineGlobalPath);
+				Assert.That(global.player.Characters, Has.Length.EqualTo(1));
+				Assert.That(global.player.Characters[0].id, Is.EqualTo(9));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void configuration_and_inline_group_do_not_clobber_each_other()
+		{
+			File.WriteAllText(InlineJsonPath, "[{\"id\":4,\"name\":\"cleric\"}]");
+			// A stale Configuration export can still carry a key that later became an inline group.
+			// Nothing validates that at bake time, so order is what decides who wins.
+			File.WriteAllText(JsonFolder + "/Configuration.txt",
+				"{\"environment\":\"prod\",\"player\":{\"Characters\":[]}}");
+			var settings = CreateInlineSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, autoLoadOnly: false, out string error),
+					Is.True, error);
+
+				var global = AssetDatabase.LoadAssetAtPath<Inline.GlobalConfigCollection>(InlineGlobalPath);
+				// Configuration is applied to Global at Baker.cs:238, before inline rows. Both write
+				// into the same asset, so each must survive the other.
+				Assert.That(global.environment, Is.EqualTo("prod"));
+				Assert.That(global.player.Characters[0].name, Is.EqualTo("cleric"));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void returning_to_separate_asset_reuses_the_original_asset_and_guid()
+		{
+			File.WriteAllText(JsonPath, "[{\"id\":2,\"name\":\"potion\"}]");
+			var settings = CreateSettings();
+			try
+			{
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "BakeShop", out string first), Is.True, first);
+				string guid = AssetDatabase.AssetPathToGUID(FeaturePath);
+				Assert.That(guid, Is.Not.Empty);
+
+				// Simulate the round trip: the asset is deliberately never deleted when a collection
+				// goes Inline, so coming back must find it rather than mint a new GUID. That is what
+				// lets Prefab references that were left alone start resolving again.
+				Assert.That(SheetXCollectionBaker.TryLoadData(settings, "BakeShop", out string second), Is.True, second);
+
+				Assert.That(AssetDatabase.AssetPathToGUID(FeaturePath), Is.EqualTo(guid));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
+
 		private static void EnsureFolder(string path)
 		{
 			if (AssetDatabase.IsValidFolder(path))
@@ -601,6 +794,34 @@ namespace RCore.SheetX.Tests
 				collectionName = "BakeShop",
 				rowTypeName = typeof(BakeItemsRow).AssemblyQualifiedName,
 				fieldName = "items",
+			});
+			return settings;
+		}
+
+		private static SheetXSettings CreateInlineSettings()
+		{
+			var settings = ScriptableObject.CreateInstance<SheetXSettings>();
+			settings.ResetToDefault();
+			settings.enableCollections = true;
+			settings.collectionNamespace = "RCore.SheetX.Tests.Inline";
+			settings.collectionCodeFolder = TempRoot + "/Code";
+			settings.collectionAssetFolder = AssetFolder;
+			settings.collectionJsonFolder = JsonFolder;
+			settings.globalResourcesFolder = ResourcesFolder;
+			settings.collections.Add(new SheetXCollectionDefinition
+			{
+				name = "Player",
+				autoLoad = true,
+				depth = SheetXCollectionDepth.Inline,
+			});
+			settings.sheetBindings.Add(new SheetXSheetBinding
+			{
+				sourceId = "book.xlsx",
+				sheetName = "InlineCharacters",
+				outputMode = SheetXSheetOutputMode.ExistingDataClass,
+				collectionName = "Player",
+				rowTypeName = typeof(BakeItemsRow).AssemblyQualifiedName,
+				fieldName = "Characters",
 			});
 			return settings;
 		}

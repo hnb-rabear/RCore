@@ -56,6 +56,17 @@ namespace RCore.SheetX.Editor
 	}
 
 	/// <summary>
+	/// Where a collection's data is stored. Global is always an asset and has no depth.
+	/// </summary>
+	public enum SheetXCollectionDepth
+	{
+		/// <summary>Serialized inside the Global asset. No separate asset is created.</summary>
+		Inline = 1,
+		/// <summary>Its own ScriptableObject asset, referenced from Global.</summary>
+		SeparateAsset = 2,
+	}
+
+	/// <summary>
 	/// Defines one managed data-config collection.
 	/// </summary>
 	[Serializable]
@@ -65,6 +76,8 @@ namespace RCore.SheetX.Editor
 		public string name;
 		/// <summary>Gets or sets whether Editor loading includes this collection automatically.</summary>
 		public bool autoLoad = true;
+		/// <summary>Gets or sets where this collection's data is stored. Ignored for Global.</summary>
+		public SheetXCollectionDepth depth = SheetXCollectionDepth.SeparateAsset;
 		/// <summary>Gets or sets whether this is the immutable built-in Global collection.</summary>
 		public bool builtInGlobal;
 	}

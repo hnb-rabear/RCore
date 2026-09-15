@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-09-15
+
+### Fixed
+
+- Inline collections now show Global's effective `Auto Load` value, including when Global Auto Load is disabled, so their locked checkbox matches bake behavior.
+- Restore Migration Snapshot now offers Discard, which removes an abandoned snapshot without restoring sources so later migrations can capture their own rollback data.
+
+### Added
+
+- Per-collection storage mode. Each collection now chooses between `Separate Asset` (its own `.asset`, referenced from Global — the previous and still default behaviour) and `Inline` (serialized inside `GlobalConfigCollection.asset`, no separate file). Game code reads the same path in both modes: `global.player.Characters`.
+- A collection changing storage mode now asks for confirmation before its generated source is replaced, and the sources it replaces are saved outside `Assets/` so a bake that fails after the domain reload can be undone.
+
+### Changed
+
+- An `Inline` collection has no asset, so it has no `IsLoaded` and cannot be assigned to a `ScriptableObject` field. It is loaded exactly when Global is, and its `Auto Load` follows Global's.
+- `RCore > SheetX: Restore Migration Snapshot` now names the collections it would revert and asks for confirmation, so a snapshot left over from an abandoned migration cannot silently revert the wrong export. Restore puts back generated sources only: Global's reference to the restored collection stays empty until the next bake (`Manage Collections > Load All Collections`, or export again).
+- Restoring a migration snapshot writes each source through the same write-beside-and-swap path as every other generated file, so an editor crash mid-restore cannot leave a truncated or empty `.cs` behind, and the restored file carries no BOM.
+- The migration snapshot is retired only by a post-reload bake sweep that succeeds for the settings asset the migration was captured from. A later unrelated export of a different settings asset no longer deletes a still-needed snapshot.
+- Switching a collection to `Inline` leaves its previous `.asset` in place rather than deleting it. The asset stops being baked, but switching back reuses the same file and GUID so existing references resolve again. **A `[SerializeField]` of that collection's type still compiles after the switch and silently becomes an empty inline copy — those fields have to be found and fixed by hand.**
+
 ## [1.8.0] - 2026-09-09
 
 Correctness release. No new features; every entry is a defect that produced a wrong or unusable artifact.

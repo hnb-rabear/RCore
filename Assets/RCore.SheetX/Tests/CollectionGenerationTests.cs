@@ -1695,5 +1695,130 @@ namespace RCore.SheetX.Tests
 			Assert.That(index, Is.GreaterThanOrEqualTo(0), value);
 			return index;
 		}
+
+		[Test]
+		public void collection_definitions_default_to_separate_asset_depth()
+		{
+			// SeparateAsset is what every project shipped before this feature had, so it has to be
+			// the value a freshly constructed definition carries — otherwise upgrading rewrites layouts.
+			var definition = new SheetXCollectionDefinition { name = "Player" };
+
+			Assert.That(definition.depth, Is.EqualTo(SheetXCollectionDepth.SeparateAsset));
+			Assert.That((int)SheetXCollectionDepth.Inline, Is.EqualTo(1));
+			Assert.That((int)SheetXCollectionDepth.SeparateAsset, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void inline_depth_emits_a_serializable_group_in_its_own_file()
+		{
+			var settings = Settings();
+			try
+			{
+				settings.collections.Add(new SheetXCollectionDefinition
+				{
+					name = "Player",
+					depth = SheetXCollectionDepth.Inline,
+				});
+
+				var files = SheetXCollectionGenerator.EmitFiles(settings, new[]
+				{
+					Generated("excel-a", "Characters", "Player", "Characters", "id:int"),
+				});
+				string playerSource = files["PlayerConfigCollection.cs"];
+				string globalSource = files["GlobalConfigCollection.cs"];
+
+				// The file must still exist: DeleteLegacyGeneratedSource only removes the one legacy
+				// name, so dropping this file would leave the old ": SheetXConfigCollectionBase"
+				// declaration on disk and break the build with CS0101.
+				Assert.That(playerSource, Does.Contain("[Serializable]"));
+				Assert.That(playerSource, Does.Contain("public partial class PlayerConfigCollection"));
+				Assert.That(playerSource, Does.Not.Contain("SheetXConfigCollectionBase"));
+				Assert.That(playerSource, Does.Contain("using System;"));
+				Assert.That(playerSource, Does.Contain("public CharactersSX[] Characters;"));
+
+				// The read path is what must not move: global.player.Characters in both modes.
+				Assert.That(globalSource, Does.Contain("public PlayerConfigCollection player;"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void separate_asset_depth_still_emits_the_scriptable_object_declaration()
+		{
+			var settings = Settings();
+			try
+			{
+				settings.collections.Add(new SheetXCollectionDefinition
+				{
+					name = "Player",
+					depth = SheetXCollectionDepth.SeparateAsset,
+				});
+
+				string playerSource = SheetXCollectionGenerator.EmitFiles(settings, new[]
+				{
+					Generated("excel-a", "Characters", "Player", "Characters", "id:int"),
+				})["PlayerConfigCollection.cs"];
+
+				Assert.That(playerSource, Does.Contain(
+					"public partial class PlayerConfigCollection : SheetXConfigCollectionBase"));
+				Assert.That(playerSource, Does.Not.Contain("[Serializable]"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void depth_of_reports_separate_asset_for_global_and_undefined_collections()
+		{
+			var settings = Settings();
+			try
+			{
+				settings.collections.Add(new SheetXCollectionDefinition
+				{
+					name = "Player",
+					depth = SheetXCollectionDepth.Inline,
+				});
+
+				Assert.That(SheetXCollectionGenerator.DepthOf(settings, "Player"),
+					Is.EqualTo(SheetXCollectionDepth.Inline));
+				// Global is the composition root and is always an asset.
+				Assert.That(SheetXCollectionGenerator.DepthOf(settings, "Global"),
+					Is.EqualTo(SheetXCollectionDepth.SeparateAsset));
+				// CollectionOrder accepts a table naming a collection with no definition; it must not throw.
+				Assert.That(SheetXCollectionGenerator.DepthOf(settings, "Missing"),
+					Is.EqualTo(SheetXCollectionDepth.SeparateAsset));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void depth_of_reports_separate_asset_for_an_unset_depth_field()
+		{
+			var settings = Settings();
+			try
+			{
+				// A settings asset serialized before `depth` existed deserializes the field as 0,
+				// which is neither enum member. Reporting it as anything but SeparateAsset would
+				// make every untouched consumer project look like a pending depth migration.
+				var definition = new SheetXCollectionDefinition { name = "Player" };
+				definition.depth = default;
+				settings.collections.Add(definition);
+
+				Assert.That(SheetXCollectionGenerator.DepthOf(settings, "Player"),
+					Is.EqualTo(SheetXCollectionDepth.SeparateAsset));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
 	}
 }

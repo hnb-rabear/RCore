@@ -195,6 +195,28 @@ var global = GlobalConfigCollectionBase.Instance<GlobalConfigCollection>();
 GlobalConfigCollectionBase.SetInstance(customGlobal);
 ```
 
+### 7.4. Chế độ lưu trữ Collection (Separate Asset và Inline)
+
+Mỗi collection chọn một trong hai chế độ lưu trữ trong cửa sổ **Manage Collections...**:
+
+- **Separate Asset (mặc định):** Collection được sinh ra dưới dạng `ScriptableObject` kế thừa `SheetXConfigCollectionBase` và bake vào một file `.asset` riêng trong Collection Asset Folder. `GlobalConfigCollection` chỉ giữ một object reference trỏ tới asset đó.
+- **Inline:** Collection được sinh ra dưới dạng class `[Serializable]` thông thường, không kế thừa base class, và được serialize trực tiếp bên trong `GlobalConfigCollection.asset`. Không có file `.asset` riêng nào được tạo.
+
+Ở cả hai chế độ, generator đều sinh file `<Name>ConfigCollection.cs`; chỉ khác nhau ở khai báo class (`: SheetXConfigCollectionBase` so với `[Serializable]` không base class). Giữ file ở cả hai chế độ để tránh lỗi biên dịch trùng kiểu do một file cũ bị bỏ lại.
+
+**Khác biệt và hành vi khi chuyển chế độ:**
+
+- **Cách đọc dữ liệu không đổi:** Mã game truy xuất dữ liệu y hệt nhau ở cả hai chế độ (`global.player.Characters`).
+- **Inline không có asset độc lập:** Collection ở chế độ `Inline` không có file asset, nên không thể kéo thả vào Prefab hay field trong Inspector, không có property `IsLoaded`, và không thể nạp riêng lẻ. Nó được nạp cùng lúc với Global, và **Auto Load** của nó đi theo Global chứ không dùng cờ đã lưu của chính nó.
+- **Asset cũ được giữ lại khi chuyển sang Inline:** Khi chuyển một collection sang `Inline`, file `.asset` cũ vẫn nằm nguyên trên ổ đĩa chứ không bị xóa. Nó chỉ ngừng được bake, và Inspector của Unity sẽ hiển thị "associated script can not be loaded" cho asset đó vì class tương ứng không còn là `ScriptableObject` nữa. Khi chuyển ngược lại, SheetX dùng lại đúng file và GUID đó, nên các reference chưa bị đụng tới sẽ trỏ đúng trở lại.
+- **Cảnh báo: field `[SerializeField]` không báo lỗi biên dịch.** Một field `[SerializeField]` mang kiểu của collection (ví dụ `[SerializeField] private PlayerConfigCollection m_player;`) **vẫn biên dịch bình thường** sau khi chuyển sang `Inline`, nhưng âm thầm trở thành một bản sao inline rỗng thay vì trỏ tới dữ liệu của Global. Đây là mất dữ liệu ngầm, không phải lỗi compile — bắt buộc phải tự rà soát và sửa tay từng field như vậy.
+- **Xác nhận migration và khôi phục snapshot:** Việc đổi chế độ lưu trữ của một collection sẽ hỏi xác nhận trước khi ghi đè mã nguồn sinh ra, đồng thời lưu một snapshot bền tại `Library/SheetX/migration-snapshot.json` — snapshot này tồn tại xuyên qua domain reload. Nếu bake thất bại sau domain reload, lỗi được báo là một lần đổi chế độ lưu trữ chưa hoàn tất, và menu **RCore > SheetX: Restore Migration Snapshot** sẽ đưa mã nguồn cũ trở lại rồi refresh. Với collection mà file sinh ra là mới hoàn toàn trong lần migration đó (trước đây chưa từng có trên ổ đĩa), restore giữ nguyên file, không xóa.
+
+  Restore chỉ hoàn nguyên **mã nguồn sinh ra**. Field trong Global đã đổi từ object reference sang giá trị inline rồi đổi ngược lại qua hai lần domain reload, nên Unity đã bỏ mất reference đó: `Global.player` sẽ rỗng cho đến lần bake kế tiếp. Không có dữ liệu nào bị mất — file `.asset` vẫn còn nguyên cùng GUID, và lần bake thành công tiếp theo sẽ trỏ lại đúng nó. Hãy chạy **Manage Collections > Load All Collections**, hoặc export lại.
+
+  Restore cũng hỏi xác nhận và nêu rõ tên những collection sẽ bị hoàn nguyên, vì `Capture` giữ lại cả snapshot của một lần migration đã bỏ dở — nếu không hỏi, nó có thể âm thầm hoàn nguyên nhầm một lần export khác. Chọn **Discard** để xóa snapshot cũ đó mà không restore và không đụng vào mã nguồn nào; các lần migration sau sẽ tự tạo snapshot rollback riêng.
+- **Export headless (batch mode):** `EditorUtility.DisplayDialog` luôn trả về false trong batch mode, nên một script export gặp thay đổi chế độ lưu trữ sẽ dừng lại với thông báo "was not confirmed" thay vì migrate. Script migration chạy headless phải gán `SheetXCollectionExportSession.ConfirmDepthChange` trước khi export.
+
 ## 8. Quy tắc thiết kế trong Spreadsheet
 
 ### 8.1. Sheet IDs (`[%IDs]`)

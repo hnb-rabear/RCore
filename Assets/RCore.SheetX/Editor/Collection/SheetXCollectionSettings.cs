@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace RCore.SheetX.Editor
@@ -32,6 +33,17 @@ namespace RCore.SheetX.Editor
 	{
 		/// <summary>The immutable built-in collection every unassigned sheet falls back to.</summary>
 		internal const string GlobalName = "Global";
+
+		/// <summary>
+		/// Resolves Auto Load as the baker does. Inline collections follow Global while retaining their
+		/// stored value for a later switch to a separate asset.
+		/// </summary>
+		internal static bool ResolveAutoLoad(
+			SheetXSettings settings, SheetXCollectionDefinition definition, SheetXCollectionDepth depth)
+			=> depth == SheetXCollectionDepth.Inline
+				? settings?.collections?.FirstOrDefault(c =>
+					c != null && string.Equals(c.name, GlobalName, StringComparison.Ordinal))?.autoLoad ?? definition.autoLoad
+				: definition.autoLoad;
 
 		private static readonly HashSet<string> s_reservedKeywords = new HashSet<string>(StringComparer.Ordinal)
 		{
@@ -324,6 +336,44 @@ namespace RCore.SheetX.Editor
 		#endregion
 
 		#region Validation
+
+		/// <summary>
+		/// Names the collections whose stored depth disagrees with the generated source already on
+		/// disk. The generated file is the record of what was last exported, so there is no
+		/// separate "last exported depth" field to drift from it. A collection with no generated
+		/// file yet is a first export, not a change.
+		/// </summary>
+		internal static List<string> DetectDepthChanges(SheetXSettings settings)
+		{
+			var changed = new List<string>();
+			if (settings == null || !settings.enableCollections)
+				return changed;
+
+			string folder = NormalizePath(settings.ResolveCollectionCodeFolder());
+			foreach (var definition in settings.collections ?? new List<SheetXCollectionDefinition>())
+			{
+				if (definition == null || definition.builtInGlobal
+					|| string.Equals(definition.name, GlobalName, StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				string typeName = SheetXCollectionNaming.CollectionTypeName(definition.name);
+				string path = string.IsNullOrEmpty(folder) ? typeName + ".cs" : folder + "/" + typeName + ".cs";
+				if (!File.Exists(path))
+					continue;
+
+				bool onDiskIsAsset = File.ReadAllText(path)
+					.IndexOf(typeName + " : SheetXConfigCollectionBase", StringComparison.Ordinal) >= 0;
+				var onDisk = onDiskIsAsset
+					? SheetXCollectionDepth.SeparateAsset
+					: SheetXCollectionDepth.Inline;
+				if (onDisk != SheetXCollectionGenerator.DepthOf(settings, definition.name))
+					changed.Add(definition.name);
+			}
+			changed.Sort(StringComparer.Ordinal);
+			return changed;
+		}
 
 		/// <summary>
 		/// Reports every collection configuration problem at once — a preflight, not a fail-fast guard, so one

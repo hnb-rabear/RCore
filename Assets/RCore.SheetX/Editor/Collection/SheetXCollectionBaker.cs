@@ -59,6 +59,7 @@ namespace RCore.SheetX.Editor
 		{
 			internal string Name;
 			internal bool AutoLoad;
+			internal SheetXCollectionDepth Depth;
 			internal Type Type;
 			internal List<Table> Tables = new List<Table>();
 		}
@@ -103,6 +104,10 @@ namespace RCore.SheetX.Editor
 				return;
 
 			var remaining = new List<PendingCollectionBakeEntry>();
+			// The snapshot is one global store while entries are per settings asset, so clearing it
+			// inside this loop would let a healthy entry discard the route back for a failing one.
+			bool anyFailed = false;
+			var baked = new List<string>();
 			foreach (var entry in store.Entries)
 			{
 				if (entry == null || string.IsNullOrEmpty(entry.SettingsAssetPath))
@@ -112,17 +117,33 @@ namespace RCore.SheetX.Editor
 				if (settings == null)
 				{
 					Debug.LogError($"SheetX: pending collection bake settings were not found at '{entry.SettingsAssetPath}'.");
+					anyFailed = true;
 					continue;
 				}
 
 				if (TryFinishPendingBake(
 					settings, entry.AutoLoadAfterExport, PendingBindings(entry), out string error))
+				{
+					baked.Add(entry.SettingsAssetPath);
 					continue;
+				}
 
+				anyFailed = true;
 				if (error.IndexOf("was not found", StringComparison.Ordinal) >= 0)
 				{
 					Debug.LogError($"SheetX: Pending bake: compilation failed. {error}");
 					remaining.Add(entry);
+				}
+				else if (SheetXMigrationSnapshot.Exists)
+				{
+					// The generated sources were replaced by a depth change and the bake then
+					// failed. Writing the sources was not success, so say so and name the way back.
+					Debug.LogError(
+						$"{error}\nSheetX: the collection storage change did not complete. "
+						+ "Use 'RCore > SheetX: Restore Migration Snapshot' to put the previous "
+						+ "generated sources back. A collection whose generated file is new in this "
+						+ "migration was never on disk before, so it is left in place. Or fix the "
+						+ "error above and export again.");
 				}
 				else
 				{
@@ -130,10 +151,42 @@ namespace RCore.SheetX.Editor
 				}
 			}
 
+			string snapshotOwner = SheetXMigrationSnapshot.TryPeek(out _, out string owner) ? owner : null;
+			if (ShouldClearSnapshot(anyFailed, remaining.Count, baked, snapshotOwner))
+				SheetXMigrationSnapshot.Clear();
 			if (remaining.Count == 0)
 				SessionState.EraseString(PendingKey);
 			else
 				SavePending(new PendingCollectionBakeStore { Entries = remaining });
+		}
+
+		/// <summary>
+		/// Decides whether this reload sweep may retire the migration snapshot. A clean sweep is not
+		/// enough: the snapshot is one global file while pending bakes are per settings asset, so a
+		/// later unrelated export succeeding would otherwise delete the recovery route for a failed
+		/// migration on a different asset. Only a sweep that successfully baked the very settings
+		/// asset the snapshot was captured from owns it.
+		/// </summary>
+		/// <param name="anyFailed">True when any entry in this sweep failed.</param>
+		/// <param name="remainingCount">Entries re-queued for the next reload.</param>
+		/// <param name="bakedSettingsPaths">Asset paths of the entries that baked successfully.</param>
+		/// <param name="snapshotSettingsPath">
+		/// Settings asset path stored in the pending snapshot, or null when no snapshot exists.
+		/// </param>
+		internal static bool ShouldClearSnapshot(
+			bool anyFailed,
+			int remainingCount,
+			IReadOnlyCollection<string> bakedSettingsPaths,
+			string snapshotSettingsPath)
+		{
+			if (anyFailed || remainingCount != 0)
+				return false;
+			// Nothing to protect: Clear() on an absent snapshot is a no-op, so say yes and keep the
+			// old behaviour for every project that never migrated.
+			if (snapshotSettingsPath == null)
+				return true;
+			return bakedSettingsPaths != null && bakedSettingsPaths.Any(path =>
+				string.Equals(path, snapshotSettingsPath, StringComparison.Ordinal));
 		}
 
 		/// <summary>
@@ -234,6 +287,8 @@ namespace RCore.SheetX.Editor
 
 				if (!refreshGlobalOnly)
 				{
+					// Configuration must be applied before inline rows: both write into Global, and
+					// whichever runs last wins for any key they share.
 					if (configuration != null)
 						JsonConvert.PopulateObject(configuration.Json, global);
 
@@ -245,7 +300,12 @@ namespace RCore.SheetX.Editor
 						{
 							continue;
 						}
-						if (!ApplyRows(assets[collection.Name], collection, out error))
+						bool inline = collection.Depth == SheetXCollectionDepth.Inline;
+						object target = inline ? (object)global : assets[collection.Name];
+						string groupField = inline
+							? SheetXCollectionNaming.ToCamelIdentifier(collection.Name)
+							: null;
+						if (!ApplyRows(target, collection, groupField, out error))
 							throw new InvalidOperationException(error);
 					}
 				}
@@ -265,6 +325,9 @@ namespace RCore.SheetX.Editor
 				{
 					foreach (var collection in collections)
 					{
+						// An inline group has no asset and no IsLoaded flag; Global carries its state.
+						if (collection.Depth == SheetXCollectionDepth.Inline)
+							continue;
 						if ((!autoLoadOnly || collection.AutoLoad)
 							&& (string.IsNullOrEmpty(collectionName)
 								|| string.Equals(collection.Name, collectionName, StringComparison.Ordinal)))
@@ -293,12 +356,14 @@ namespace RCore.SheetX.Editor
 			error = null;
 			foreach (var definition in settings.collections)
 			{
-				if (!TryFindCollectionType(settings, definition.name, out var collectionType, out error))
+				var depth = SheetXCollectionGenerator.DepthOf(settings, definition.name);
+				if (!TryFindCollectionType(settings, definition.name, depth, out var collectionType, out error))
 					return false;
 				collections.Add(new Collection
 				{
 					Name = definition.name,
-					AutoLoad = definition.autoLoad,
+					AutoLoad = SheetXCollectionSettings.ResolveAutoLoad(settings, definition, depth),
+					Depth = depth,
 					Type = collectionType,
 				});
 			}
@@ -440,7 +505,8 @@ namespace RCore.SheetX.Editor
 			error = null;
 			global = null;
 			var assets = new Dictionary<string, SheetXConfigCollectionBase>(StringComparer.Ordinal);
-			foreach (var collection in collections.Where(collection => !IsGlobal(collection.Name)))
+			foreach (var collection in collections.Where(collection =>
+				!IsGlobal(collection.Name) && collection.Depth != SheetXCollectionDepth.Inline))
 			{
 				string path = SheetXCollectionSettings.NormalizePath(settings.ResolveCollectionAssetFolder())
 					+ "/" + collection.Type.Name + ".asset";
@@ -540,29 +606,54 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
-		private static bool ApplyRows(SheetXConfigCollectionBase asset, Collection collection, out string error)
+		/// <summary>
+		/// Writes each table's rows into <paramref name="target"/>. When <paramref name="groupFieldName"/>
+		/// is set the rows land one level down, inside that inline group on the Global asset.
+		/// </summary>
+		private static bool ApplyRows(
+			object target, Collection collection, string groupFieldName, out string error)
 		{
 			error = null;
-			var serializedObject = new SerializedObject(asset);
+			var unityTarget = (UnityEngine.Object)target;
+			var serializedObject = new SerializedObject(unityTarget);
+			bool inline = !string.IsNullOrEmpty(groupFieldName);
+			Type rowOwnerType = collection.Type;
+			if (inline)
+			{
+				var groupField = unityTarget.GetType().GetField(
+					groupFieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				if (groupField == null || groupField.FieldType != collection.Type)
+				{
+					error = $"Global collection has no inline group '{groupFieldName}' of type '{collection.Type.FullName}'.";
+					return false;
+				}
+			}
+
 			foreach (var table in collection.Tables)
 			{
-				var property = serializedObject.FindProperty(SheetXCollectionSettings.ResolveFieldName(table.Binding));
+				string fieldName = SheetXCollectionSettings.ResolveFieldName(table.Binding);
+				// A dotted path resolves nested [Serializable] fields: "player.Characters".
+				string propertyPath = inline ? groupFieldName + "." + fieldName : fieldName;
+				var property = serializedObject.FindProperty(propertyPath);
 				if (property == null || !property.isArray || property.propertyType == SerializedPropertyType.String)
 				{
 					error = TableError(table, "Collection field is missing or is not an array.");
 					return false;
 				}
-				var field = collection.Type.GetField(
-					SheetXCollectionSettings.ResolveFieldName(table.Binding),
-					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				var field = rowOwnerType.GetField(
+					fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 				if (field == null || !field.FieldType.IsArray
 					|| field.FieldType.GetElementType() != table.RowType)
 				{
 					error = TableError(table, "Collection field array type does not match the selected row type.");
 					return false;
 				}
+				// ObjectCreationHandling defaults to Auto: it reuses an existing group instance and
+				// constructs one when the field is null, which a freshly created Global needs.
+				string payload = "{\"" + field.Name + "\":" + table.Json + "}";
 				JsonConvert.PopulateObject(
-					"{\"" + field.Name + "\":" + table.Json + "}", asset);
+					inline ? "{\"" + groupFieldName + "\":" + payload + "}" : payload,
+					unityTarget);
 				serializedObject.UpdateIfRequiredOrScript();
 			}
 			serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -577,7 +668,8 @@ namespace RCore.SheetX.Editor
 		{
 			error = null;
 			var serializedObject = new SerializedObject(global);
-			foreach (var collection in collections.Where(collection => !IsGlobal(collection.Name)))
+			foreach (var collection in collections.Where(collection =>
+				!IsGlobal(collection.Name) && collection.Depth != SheetXCollectionDepth.Inline))
 			{
 				string fieldName = SheetXCollectionNaming.ToCamelIdentifier(collection.Name);
 				var property = serializedObject.FindProperty(fieldName);
@@ -599,7 +691,8 @@ namespace RCore.SheetX.Editor
 				property.objectReferenceValue = featureAsset;
 			}
 			serializedObject.ApplyModifiedPropertiesWithoutUndo();
-			foreach (var collection in collections.Where(collection => !IsGlobal(collection.Name)))
+			foreach (var collection in collections.Where(collection =>
+				!IsGlobal(collection.Name) && collection.Depth != SheetXCollectionDepth.Inline))
 			{
 				string fieldName = SheetXCollectionNaming.ToCamelIdentifier(collection.Name);
 				var field = global.GetType().GetField(
@@ -626,7 +719,8 @@ namespace RCore.SheetX.Editor
 		}
 
 		private static bool TryFindCollectionType(
-			SheetXSettings settings, string collectionName, out Type type, out string error)
+			SheetXSettings settings, string collectionName, SheetXCollectionDepth depth,
+			out Type type, out string error)
 		{
 			error = null;
 			string collectionNamespace = settings.ResolveCollectionNamespace();
@@ -638,6 +732,17 @@ namespace RCore.SheetX.Editor
 			{
 				error = $"Collection type '{name}' was not found after reload.";
 				return false;
+			}
+			if (depth == SheetXCollectionDepth.Inline)
+			{
+				// An inline group is a plain serializable class held by Global, not an asset type.
+				if (type.IsAbstract || !type.IsSerializable)
+				{
+					error = $"Inline collection type '{name}' must be a concrete [Serializable] class.";
+					type = null;
+					return false;
+				}
+				return true;
 			}
 			if (!typeof(SheetXConfigCollectionBase).IsAssignableFrom(type) || type.IsAbstract)
 			{

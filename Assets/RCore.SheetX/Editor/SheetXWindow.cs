@@ -100,5 +100,69 @@ namespace RCore.SheetX.Editor
 			var window = GetWindow<SheetXWindow>(NAME, true);
 			window.Show();
 		}
+
+		// A sibling, not a child: "RCore/SheetX" is a leaf command, and nesting under it would turn
+		// it into a submenu and hide the window itself.
+#if !IKIT_SHEETX
+#if ASSETS_STORE
+		[MenuItem("Window/" + MENU + ": Restore Migration Snapshot")]
+#else
+		[MenuItem("RCore/" + MENU + ": Restore Migration Snapshot", priority = 25)]
+#endif
+#endif
+		/// <summary>
+		/// Puts back the generated collection sources a failed depth migration replaced, then
+		/// refreshes so the restored sources recompile. Greyed out when nothing is pending.
+		/// Names the collections first: a snapshot an abandoned migration left behind is the one
+		/// Capture keeps, so a later restore can revert sources the user no longer expects.
+		/// </summary>
+		private static void RestoreMigrationSnapshot()
+		{
+			if (!SheetXMigrationSnapshot.TryPeek(out var collections, out _))
+			{
+				Debug.LogError("No migration snapshot to restore.");
+				return;
+			}
+
+			string names = collections.Count == 0 ? "(none recorded)" : string.Join(", ", collections);
+			int choice = EditorUtility.DisplayDialogComplex(
+				"Restore Migration Snapshot",
+				$"This reverts the generated sources for: {names}.\n\n"
+				+ "If that is not the storage change you just made, the snapshot is left over "
+				+ "from an earlier migration and restoring it would undo the wrong export. "
+				+ "Discard throws the snapshot away without touching any file.",
+				"Restore", "Cancel", "Discard");
+			if (choice == 2)
+			{
+				SheetXMigrationSnapshot.Clear();
+				Debug.LogWarning("SheetX: migration snapshot discarded without restoring anything. "
+					+ "Future migrations can now capture their own snapshot.");
+				return;
+			}
+			if (choice != 0)
+				return;
+
+			if (!SheetXMigrationSnapshot.TryRestore(out string error))
+			{
+				Debug.LogError(error);
+				return;
+			}
+			AssetDatabase.Refresh();
+			// Global's field changed from object reference to inline value and back across the
+			// reloads, so Unity dropped the reference. The .asset survives with its GUID; only a
+			// bake repoints at it, and restore itself does not bake.
+			Debug.LogWarning("SheetX: previous collection sources restored. Global's reference to the "
+				+ "restored collection is empty until you re-bake — use Manage Collections > Load All "
+				+ "Collections, or export again.");
+		}
+
+#if !IKIT_SHEETX
+#if ASSETS_STORE
+		[MenuItem("Window/" + MENU + ": Restore Migration Snapshot", true)]
+#else
+		[MenuItem("RCore/" + MENU + ": Restore Migration Snapshot", true)]
+#endif
+#endif
+		private static bool RestoreMigrationSnapshotEnabled() => SheetXMigrationSnapshot.Exists;
 	}
 }
