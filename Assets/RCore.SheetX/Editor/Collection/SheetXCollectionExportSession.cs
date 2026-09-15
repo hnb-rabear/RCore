@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using UnityEditor;
 
 namespace RCore.SheetX.Editor
 {
@@ -56,6 +57,23 @@ namespace RCore.SheetX.Editor
 				}
 			}
 		}
+
+		/// <summary>
+		/// Asks the developer to confirm one collection's depth change. Injectable so headless and
+		/// test runs neither block on a dialog nor depend on one. Receives the message, returns
+		/// whether to proceed. In batch mode <see cref="EditorUtility.DisplayDialog"/> returns false
+		/// without showing anything, so a headless export meeting a depth change aborts with "was
+		/// not confirmed"; a caller scripting a headless migration must assign this field.
+		/// </summary>
+		internal static Func<string, bool> ConfirmDepthChange = collectionName =>
+			EditorUtility.DisplayDialog(
+				"Change collection storage",
+				$"'{collectionName}' is changing how it is stored.\n\n"
+				+ "Its data will be re-baked from the spreadsheet. Any existing asset is kept, not deleted, "
+				+ "so switching back reuses it.\n\n"
+				+ "A MonoBehaviour field of this collection's type still compiles after the change but "
+				+ "silently becomes an empty copy — find and fix those by hand.",
+				"Change", "Cancel");
 
 		private readonly SheetXSettings m_settings;
 		private readonly List<Candidate> m_candidates = new List<Candidate>();
@@ -312,6 +330,29 @@ namespace RCore.SheetX.Editor
 			}
 
 			RequiresScriptReload = SourcesChanged(sources);
+			var depthChanges = SheetXCollectionSettings.DetectDepthChanges(m_settings);
+			if (depthChanges.Count > 0)
+			{
+				foreach (string changed in depthChanges)
+				{
+					if (ConfirmDepthChange(changed))
+						continue;
+					error = $"Export cancelled: '{changed}' storage change was not confirmed.";
+					return false;
+				}
+				// A depth change outlives this call: the bake happens after a domain reload, where
+				// the local snapshots below no longer exist. Persist what we are about to replace.
+				string codeFolder = SheetXCollectionSettings.NormalizePath(
+					m_settings.ResolveCollectionCodeFolder());
+				var previousSources = sources.Keys
+					// Path.Combine, not concatenation: an empty code folder would yield a rooted
+					// "/Type.cs", every File.Exists would miss, and Capture would store an empty
+					// snapshot — a migration with no way back, silently.
+					.Select(name => Path.Combine(codeFolder, name))
+					.Where(File.Exists)
+					.ToDictionary(path => path, File.ReadAllText);
+				SheetXMigrationSnapshot.Capture(m_settings, depthChanges, previousSources);
+			}
 			List<FileSnapshot> snapshots;
 			try
 			{

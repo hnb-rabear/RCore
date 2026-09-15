@@ -317,6 +317,24 @@ GlobalConfigCollectionBase.SetInstance(customGlobal);
 
 Collection JSON is not secret. Serialized ScriptableObject data remains extractable from player builds; validate sensitive state server-side. Detached `SheetXExporter` and batch APIs do not support Collections.
 
+### 7.4. Collection storage modes (Separate Asset vs. Inline)
+
+Each collection chooses between two storage modes in the **Manage Collections...** window:
+
+- **Separate Asset (default):** The collection is generated as a `ScriptableObject` deriving from `SheetXConfigCollectionBase` and baked to its own `.asset` file in the Collection Asset Folder. The Global collection holds an object reference to it.
+- **Inline:** The collection is generated as an ordinary `[Serializable]` class without a base class and serialized directly inside `GlobalConfigCollection.asset`. No separate `.asset` file is created.
+
+The generator emits `<Name>ConfigCollection.cs` in both modes; only the class declaration differs (`: SheetXConfigCollectionBase` vs. `[Serializable]` with no base). Keeping the file present in both modes prevents duplicate-type compiler errors from a stranded file.
+
+**Key differences and migration behavior:**
+
+- **Identical read path:** Game code accesses data identically in both modes (`global.player.Characters`).
+- **No standalone asset for Inline:** An `Inline` collection has no asset file, so it cannot be dragged into a Prefab or Inspector field, has no `IsLoaded` property, and cannot be loaded independently. It is loaded whenever Global is loaded, and its `Auto Load` follows Global's rather than its own stored flag.
+- **Asset preservation on switch to Inline:** Switching a collection to `Inline` keeps its previous `.asset` on disk rather than deleting it. It stops being baked, and the Unity Inspector will show "associated script can not be loaded" for it because the class is no longer a `ScriptableObject`. Switching back reuses that same file and GUID, so references left alone resolve again.
+- **`[SerializeField]` migration hazard:** A `[SerializeField]` of the collection's type (e.g. `[SerializeField] private PlayerConfigCollection m_player;`) **still compiles** after a switch to `Inline` and silently becomes an empty inline copy instead of referencing Global's data. These fields must be found and fixed by hand.
+- **Migration confirmation and snapshot restore:** Changing a collection's storage mode asks for confirmation before generated source is replaced and captures a durable snapshot under `Library/SheetX/migration-snapshot.json` that outlives the domain reload. If the bake fails after the reload, the failure is reported as an incomplete storage change, and **RCore > SheetX: Restore Migration Snapshot** puts the previous sources back and refreshes. A collection whose generated file is new in the migration was never on disk before, so restore leaves it in place. Restore reverts **generated sources only**: Global's field changed from an object reference to an inline value and back across the domain reloads, so Unity dropped the reference and `Global.player` stays empty until the next bake — use **Manage Collections > Load All Collections**, or export again. No data is lost; the `.asset` survives with its GUID and the next successful bake repoints at it. Restore asks for confirmation naming the collections the snapshot would revert, because a snapshot an abandoned migration left behind is kept by `Capture` and would otherwise silently revert the wrong export. Choose **Discard** instead to delete that stale snapshot without restoring or touching any source; later migrations can then capture their own rollback snapshot.
+- **Headless scripted export:** `EditorUtility.DisplayDialog` returns false in batch mode, so a scripted export that encounters a depth change aborts with "was not confirmed" rather than migrating. Scripted headless migrations must assign `SheetXCollectionExportSession.ConfirmDepthChange` before export.
+
 ## 8. Rules in Spreadsheet
 
 ### 8.1. IDs

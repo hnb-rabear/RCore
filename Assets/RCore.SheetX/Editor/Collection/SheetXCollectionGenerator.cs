@@ -88,10 +88,13 @@ namespace RCore.SheetX.Editor
 			foreach (string collection in collectionOrder)
 			{
 				bool isGlobal = IsGlobal(collection);
-				bool includeSystem = isGlobal && configuration != null && configuration.Groups.Count > 0;
+				bool inline = DepthOf(settings, collection) == SheetXCollectionDepth.Inline;
+				// An inline group is declared [Serializable], which needs System in scope. Global
+				// only needed it when Configuration emitted nested classes.
+				bool includeSystem = inline || isGlobal && configuration != null && configuration.Groups.Count > 0;
 				bool includeUnityEngine = isGlobal && UsesUnityEngine(configuration);
 				var collectionSource = BeginSource(settings, includeSystem, includeUnityEngine);
-				AppendCollection(collectionSource, indent, collection, collectionOrder, ordered, configuration);
+				AppendCollection(collectionSource, indent, collection, collectionOrder, ordered, configuration, inline);
 				EndSource(collectionSource, settings);
 				string typeName = SheetXCollectionNaming.CollectionTypeName(collection);
 				files.Add(typeName + ".cs", collectionSource.ToString());
@@ -416,13 +419,18 @@ namespace RCore.SheetX.Editor
 		private static void AppendCollection(
 			StringBuilder source, string indent, string collection,
 			IEnumerable<string> collectionOrder, List<SheetXCollectionGeneratedTable> tables,
-			ConfigSheetData configuration)
+			ConfigSheetData configuration, bool inline)
 		{
 			bool global = IsGlobal(collection);
-			string baseType = global ? "GlobalConfigCollectionBase" : "SheetXConfigCollectionBase";
+			if (inline)
+				source.Append(indent).Append("[Serializable]").Append(NL);
 			source.Append(indent).Append("public partial class ")
-				.Append(SheetXCollectionNaming.CollectionTypeName(collection))
-				.Append(" : ").Append(baseType).Append(NL);
+				.Append(SheetXCollectionNaming.CollectionTypeName(collection));
+			if (!inline)
+			{
+				source.Append(" : ").Append(global ? "GlobalConfigCollectionBase" : "SheetXConfigCollectionBase");
+			}
+			source.Append(NL);
 			source.Append(indent).Append('{').Append(NL);
 
 			if (global && configuration != null)
@@ -491,6 +499,26 @@ namespace RCore.SheetX.Editor
 					.Append(" = \"").Append(table.JsonPath).Append("\";").Append(NL);
 			}
 			source.Append(indent).Append('}').Append(NL);
+		}
+
+		/// <summary>
+		/// Resolves a collection's storage depth. Global is the composition root and is always an
+		/// asset; a name with no definition (CollectionOrder accepts table-only names) keeps the
+		/// default so an unknown collection never silently becomes inline. Anything other than an
+		/// explicit <see cref="SheetXCollectionDepth.Inline"/> resolves to
+		/// <see cref="SheetXCollectionDepth.SeparateAsset"/> — including an unset 0 from a settings
+		/// asset serialized before this field existed, which would otherwise read as a pending
+		/// depth migration in every project that never opened the dropdown.
+		/// </summary>
+		internal static SheetXCollectionDepth DepthOf(SheetXSettings settings, string collectionName)
+		{
+			if (IsGlobal(collectionName))
+				return SheetXCollectionDepth.SeparateAsset;
+			var definition = settings?.collections?.FirstOrDefault(candidate =>
+				candidate != null && string.Equals(candidate.name, collectionName, StringComparison.Ordinal));
+			return definition != null && definition.depth == SheetXCollectionDepth.Inline
+				? SheetXCollectionDepth.Inline
+				: SheetXCollectionDepth.SeparateAsset;
 		}
 
 		private static bool IsGlobal(string collection)

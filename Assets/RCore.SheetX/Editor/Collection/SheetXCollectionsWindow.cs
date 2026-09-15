@@ -101,6 +101,7 @@ namespace RCore.SheetX.Editor
 			GUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField(new GUIContent("Collection Name", "Unique identifier for this collection."), EditorStyles.boldLabel);
 			EditorGUILayout.LabelField(new GUIContent("Generated Class", "The C# ScriptableObject class name that will be generated."), EditorStyles.boldLabel, GUILayout.Width(180));
+			EditorGUILayout.LabelField(new GUIContent("Storage", "Inline: serialized inside GlobalConfigCollection.asset. Separate Asset: its own .asset file, referenced from Global."), EditorStyles.boldLabel, GUILayout.Width(110));
 			EditorGUILayout.LabelField(new GUIContent("Auto", "Automatically bake JSON into ScriptableObject asset after export."), EditorStyles.boldLabel, GUILayout.Width(35));
 			EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel, GUILayout.Width(145));
 			GUILayout.EndHorizontal();
@@ -117,6 +118,10 @@ namespace RCore.SheetX.Editor
 
 			EditorGUILayout.LabelField(
 				SheetXCollectionNaming.CollectionTypeName(collection.name), GUILayout.Width(180));
+
+			GUI.enabled = false;
+			EditorGUILayout.LabelField("Root", GUILayout.Width(110));
+			GUI.enabled = true;
 
 			EditorGUI.BeginChangeCheck();
 			collection.autoLoad = EditorGUILayout.Toggle(
@@ -155,11 +160,26 @@ namespace RCore.SheetX.Editor
 				SheetXCollectionNaming.CollectionTypeName(collection.name), GUILayout.Width(180));
 
 			EditorGUI.BeginChangeCheck();
-			collection.autoLoad = EditorGUILayout.Toggle(
-				new GUIContent("", "Automatically bake JSON into ScriptableObject asset after export"),
-				collection.autoLoad, GUILayout.Width(35));
+			collection.depth = (SheetXCollectionDepth)EditorGUILayout.EnumPopup(
+				collection.depth, GUILayout.Width(110));
 			if (EditorGUI.EndChangeCheck())
 				EditorUtility.SetDirty(m_settings);
+
+			bool allowsEdit = AllowsAutoLoadEdit(collection);
+			EditorGUI.BeginChangeCheck();
+			GUI.enabled = allowsEdit;
+			bool shown = EditorGUILayout.Toggle(
+				new GUIContent("", allowsEdit
+					? "Automatically bake JSON into ScriptableObject asset after export"
+					: "Follows Global's Auto Load: an inline group is serialized inside GlobalConfigCollection.asset."),
+				ShowsAutoLoadAsOn(m_settings, collection), GUILayout.Width(35));
+			GUI.enabled = true;
+			if (EditorGUI.EndChangeCheck() && allowsEdit)
+			{
+				// Only an editable row writes back, so an inline collection keeps the value it had.
+				collection.autoLoad = shown;
+				EditorUtility.SetDirty(m_settings);
+			}
 
 			if (GUILayout.Button(new GUIContent("Load Data", "Bake JSON data into this collection's ScriptableObject asset now"), GUILayout.Width(80)))
 				LoadData(collection.name);
@@ -181,6 +201,19 @@ namespace RCore.SheetX.Editor
 
 			GUILayout.EndHorizontal();
 		}
+
+		/// <summary>
+		/// Whether the Auto Load checkbox renders as on using the baker's resolved collection value.
+		/// </summary>
+		internal static bool ShowsAutoLoadAsOn(SheetXSettings settings, SheetXCollectionDefinition collection)
+			=> SheetXCollectionSettings.ResolveAutoLoad(settings, collection, collection.depth);
+
+		/// <summary>
+		/// Whether the Auto Load checkbox accepts edits. Inline collections follow Global, so the
+		/// control is read-only — but the stored value is preserved for a switch back.
+		/// </summary>
+		internal static bool AllowsAutoLoadEdit(SheetXCollectionDefinition collection)
+			=> collection.depth != SheetXCollectionDepth.Inline;
 
 		private void LoadData(string collectionName)
 		{
