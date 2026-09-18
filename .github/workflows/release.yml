@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+      - "sheetx-v*"
+      - "assetfilter-v*"
+      - "rhierarchy-v*"
 
 permissions:
   contents: write
@@ -19,16 +22,34 @@ jobs:
       - name: Validate tag matches package.json versions
         run: |
           set -euo pipefail
-          TAG="${GITHUB_REF_NAME#v}"
+          # One repository holds several separately-versioned code bases, so the tag prefix
+          # selects which package.json files the tag has to agree with. A bare v* tag stays
+          # RevCore's, unchanged, so existing tags keep their meaning.
+          case "$GITHUB_REF_NAME" in
+            sheetx-v*)      SCOPE="Assets/RCore.SheetX";      TAG="${GITHUB_REF_NAME#sheetx-v}" ;;
+            assetfilter-v*) SCOPE="Assets/RCore.RAssetFilter"; TAG="${GITHUB_REF_NAME#assetfilter-v}" ;;
+            rhierarchy-v*)  SCOPE="Assets/RCore.RHierarchy";   TAG="${GITHUB_REF_NAME#rhierarchy-v}" ;;
+            v*)             SCOPE="Assets/RevCore";            TAG="${GITHUB_REF_NAME#v}" ;;
+            *)              echo "::error::unrecognised tag $GITHUB_REF_NAME"; exit 1 ;;
+          esac
+          echo "Scope: $SCOPE"
           echo "Tag version: $TAG"
+          found=0
           mismatch=0
           while IFS= read -r pkg; do
+            found=1
             pkg_version=$(jq -r '.version' "$pkg")
             if [[ "$pkg_version" != "$TAG" ]]; then
               echo "::error file=$pkg::version $pkg_version != tag $TAG"
               mismatch=1
             fi
-          done < <(find Assets/RevCore -name "package.json" -not -path "*/Tests/*")
+          done < <(find "$SCOPE" -name "package.json" -not -path "*/Tests/*")
+          # A scope that matches nothing would otherwise pass silently and publish a release
+          # for a package that does not exist.
+          if [[ $found -eq 0 ]]; then
+            echo "::error::no package.json found under $SCOPE"
+            exit 1
+          fi
           if [[ $mismatch -eq 1 ]]; then
             exit 1
           fi
@@ -40,4 +61,4 @@ jobs:
           name: ${{ github.ref_name }}
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
