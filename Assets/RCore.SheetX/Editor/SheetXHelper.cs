@@ -678,6 +678,52 @@ namespace RCore.SheetX.Editor
 		}
 
 		/// <summary>
+		/// Whether one sheet has a row structure a preview can show truthfully.
+		/// </summary>
+		/// <remarks>
+		/// Configuration is excluded by exact name rather than through
+		/// <see cref="SheetXCollectionSettings.IsAutomaticConfiguration"/>, which also requires
+		/// <c>enableCollections</c>. The interactive windows build their handler with a null context, so
+		/// <c>ConfigurationRouteEnabled</c> is true regardless of that flag and <c>ExportOrdinaryJson</c>
+		/// routes an exact Configuration sheet to the typed config exporter on it alone. With collections
+		/// off, an IsAutomaticConfiguration filter would therefore offer a preview showing a legacy row
+		/// array for a sheet export writes as a typed config class.
+		/// </remarks>
+		internal static bool ShouldOfferStructurePreview(SheetXSettings settings, SheetPath sheet)
+		{
+			return settings != null
+				&& !string.IsNullOrEmpty(sheet?.name)
+				&& IsJsonSheet(sheet.name)
+				&& !string.Equals(sheet.name, SheetXConstants.CONFIGURATION_SHEET, StringComparison.Ordinal);
+		}
+
+		/// <summary>
+		/// Adds the per-sheet Structure button to a spreadsheet table. Separate from
+		/// <see cref="CreateSpreadsheetTable"/> because that method is public and cannot take the internal
+		/// source type.
+		/// </summary>
+		/// <param name="table">Table to extend, straight from <see cref="CreateSpreadsheetTable"/>.</param>
+		/// <param name="settings">Settings the preview reads. Never written.</param>
+		/// <param name="source">Reads the live spreadsheet at click time, not at table-construction time.</param>
+		internal static void AddStructureColumn(
+			EditorTableView<SheetPath> table, SheetXSettings settings, Func<SheetXSheetSource> source)
+		{
+			if (table == null)
+				return;
+			table.AddColumn("Structure", 80, 90, (rect, item) =>
+			{
+				if (!ShouldOfferStructurePreview(settings, item))
+					return;
+				if (!GUI.Button(rect, new GUIContent("Structure",
+						"Preview this sheet's C# structure without exporting files.")))
+				{
+					return;
+				}
+				SheetXSheetStructureWindow.Open(settings, source?.Invoke(), item.name);
+			});
+		}
+
+		/// <summary>
 		/// Creates an EditorTableView for displaying sheet paths with a toggle column.
 		/// </summary>
 		public static EditorTableView<SheetPath> CreateSpreadsheetTable(

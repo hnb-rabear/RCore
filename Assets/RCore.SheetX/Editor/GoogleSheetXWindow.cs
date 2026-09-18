@@ -105,6 +105,15 @@ namespace RCore.SheetX.Editor
 						if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, sheetPath.name))
 								sheetPath.selected = isOn;
 				}, m_settings, () => m_settings.googleSheetsPath.id);
+				SheetXHelper.AddStructureColumn(m_tableSheets, m_settings, () => new SheetXSheetSource
+				{
+					Kind = SheetXSourceKind.Google,
+					Id = m_settings.googleSheetsPath.id,
+					Sheets = m_settings.googleSheetsPath.sheets,
+					// The Single File tab's own buttons export this spreadsheet alone — so the preview
+					// beside them must too, even when this same id is also in the multi list.
+					Scope = SheetXPreviewScope.Local,
+				});
 				m_tableCollectionsEnabled = m_settings.enableCollections;
 				m_tableSourceId = sourceId;
 				foreach (var sheetPath in m_settings.googleSheetsPath.sheets)
