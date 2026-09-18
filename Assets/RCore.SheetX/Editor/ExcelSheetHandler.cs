@@ -1191,6 +1191,9 @@ namespace RCore.SheetX.Editor
 			=> m_settings.enableCollections && ConfigurationRouteEnabled
 				? new SheetXCollectionExportSession(
 					m_settings, m_writer.Warn, m_writer.Error, output: m_writer.Output, ids: m_allIds)
+				{
+					SuppressDialogs = m_writer.Detached,
+				}
 				: null;
 
 		// Ordinary Json needs its output folder; a collection-only export does not, so the folder check
@@ -2463,6 +2466,252 @@ namespace RCore.SheetX.Editor
 		internal void BatchEmitLocalizationsManager()
 		{
 			CreateLocalizationsManagerFile();
+		}
+
+		/// <summary>
+		/// The Export Multi Files entries whose IDs an export of <paramref name="sourceId"/> would load,
+		/// or null when the preview stays single-workbook.
+		/// <para>
+		/// <paramref name="multiHost"/> decides first. The same workbook can be both the single-file source
+		/// and a listed file, and the two tabs run different exports over it (<c>ExportAll</c> reads that one
+		/// workbook; <c>ExportAllFiles</c> reads the list), so membership cannot say which export a preview
+		/// predicts — only the window that opened it can.
+		/// </para>
+		/// </summary>
+		private List<ExcelSheetsPath> MultiFilePreviewSet(string sourceId, bool multiHost)
+		{
+			if (!multiHost)
+				return null;
+			var paths = m_settings?.excelSheetsPaths;
+			if (paths == null || string.IsNullOrEmpty(sourceId))
+				return null;
+			// Ordinal, matching AddExcelFileFile's own '==' membership test: the list cannot hold two
+			// entries that differ only by case, so a looser compare would only widen a namespace the
+			// export never widens.
+			bool member = paths.Any(file =>
+				file != null && string.Equals(file.path, sourceId, StringComparison.Ordinal));
+			return member ? paths : null;
+		}
+
+		/// <summary>
+		/// Loads '*IDs' from every listed workbook the way <see cref="ExportAllFiles"/> does: same order,
+		/// no per-sheet checkbox filter, a null workbook skipped. Duplicates and empty sheets are notes,
+		/// never errors — see <see cref="LoadPreviewIdsFromSheet"/>.
+		/// </summary>
+		private void LoadPreviewIdsAcrossFiles(
+			List<ExcelSheetsPath> files, string sourceId, IWorkbook openWorkbook, List<string> notes)
+		{
+			foreach (var file in files)
+			{
+				if (file == null)
+					continue;
+
+				// The caller already holds this one open and owns closing it; reopening would read the
+				// same bytes twice and leak the second workbook.
+				bool isOpenSource = string.Equals(file.path, sourceId, StringComparison.Ordinal);
+				IWorkbook workbook = openWorkbook;
+				if (!isOpenSource)
+				{
+					try
+					{
+						workbook = file.GetWorkBook();
+					}
+					catch (Exception ex)
+					{
+						// ExportAllFiles skips a workbook it cannot open rather than failing the run.
+						notes.Add($"IDs from '{file.path}' were skipped: {ex.Message}");
+						continue;
+					}
+					if (workbook == null)
+						continue;
+				}
+
+				try
+				{
+					foreach (var sheet in file.sheets ?? new List<SheetPath>())
+					{
+						if (sheet?.name == null || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+							continue;
+						if (workbook.GetSheet(sheet.name) == null)
+							continue;
+						LoadPreviewIdsFromSheet(workbook, sheet.name, file.path, notes);
+					}
+				}
+				finally
+				{
+					// GetWorkBook hands back a fresh MemoryStream-backed workbook per call, so one preview
+					// over an N-file list would otherwise strand N-1 of them.
+					if (!isOpenSource)
+						workbook.Close();
+				}
+			}
+		}
+
+		/// <summary>
+		/// The ID pass of <see cref="LoadSheetIDsValues"/> with its reporting changed, and nothing else:
+		/// first-wins, same 3-column stride, same integer rule.
+		/// <para>
+		/// A duplicate is a note here, not an error. <see cref="LoadSheetIDsValues"/> reports one through
+		/// <c>m_writer.Blocking</c>, which for the windows that actually run <see cref="ExportAllFiles"/>
+		/// is a dialog the user clicks through while the export keeps going and writes its files. Through
+		/// the preview's detached context the same call becomes a result error, which rejects the whole
+		/// snapshot — so reusing it across the file set would make the preview refuse projects whose
+		/// multi-file export succeeds. The preview must not be stricter than the export it predicts.
+		/// </para>
+		/// </summary>
+		private void LoadPreviewIdsFromSheet(
+			IWorkbook workbook, string sheetName, string filePath, List<string> notes)
+		{
+			var sheet = workbook.GetSheet(sheetName);
+			if (sheet == null || sheet.LastRowNum == 0)
+				return;
+
+			for (int row = 1; row <= sheet.LastRowNum; row++)
+			{
+				var rowData = sheet.GetRow(row);
+				if (rowData == null)
+					continue;
+				for (int col = 0; col < rowData.LastCellNum; col += 3)
+				{
+					var cellKey = rowData.GetCell(col);
+					if (cellKey == null)
+						continue;
+					string key = cellKey.ToString().Trim();
+					if (string.IsNullOrEmpty(key))
+						continue;
+					var cellValue = rowData.GetCell(col + 1);
+					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
+						continue;
+					if (!SheetXHelper.TryParseInt(cellValue.ToString().Trim(), out int value))
+					{
+						notes.Add($"Sheet {sheetName} in '{filePath}': "
+							+ $"ID {key} has a non-integer value '{cellValue}'.");
+						continue;
+					}
+					if (m_allIds.ContainsKey(key))
+					{
+						// First wins, exactly as LoadSheetIDsValues does.
+						notes.Add($"ID {key} is duplicated in sheet {sheetName} of '{filePath}'; "
+							+ "the first definition in the Export Multi Files order wins, as export does.");
+						continue;
+					}
+					m_allIds[key] = value;
+				}
+			}
+		}
+
+		private static IReadOnlyList<string> MergeNotes(
+			List<string> notes, IReadOnlyList<string> warnings)
+		{
+			if (notes.Count == 0)
+				return warnings ?? Array.Empty<string>();
+			if (warnings != null && warnings.Count > 0)
+				notes.AddRange(warnings);
+			return notes;
+		}
+
+		/// <summary>
+		/// Reads one sheet exactly as an export would, and stops there: nothing is written, staged, or
+		/// bound. A sheet previewed from an Export Multi Files host resolves IDs against that whole set, as
+		/// <see cref="ExportAllFiles"/> does; any other host keeps to its own workbook, where every
+		/// '*IDs' sheet loads regardless of selection as <c>ExportOrdinaryJson</c> does.
+		/// </summary>
+		/// <param name="workbook">Open workbook. Not closed here — the caller owns it.</param>
+		/// <param name="sheets">Every sheet of the source, used to find the '*IDs' sheets to load.</param>
+		/// <param name="sourceId">Workbook path, matched against the Export Multi Files list when
+		/// <paramref name="multiHost"/> says this preview predicts that export.</param>
+		/// <param name="sheetName">Sheet to read.</param>
+		/// <param name="mode">Output mode bound to this sheet; selects the grammar used to read it.</param>
+		/// <param name="multiHost">True when an Export Multi Files host opened this preview, so its symbolic
+		/// IDs resolve across the listed set rather than this one workbook.</param>
+		/// <param name="json">Legacy row-array Json. Null in Generated Data Class mode.</param>
+		/// <param name="schema">Generated Data Class schema. Null in the legacy modes.</param>
+		/// <param name="warnings">Schema warnings, plus anything the ID pass reported. Never fatal.</param>
+		/// <param name="multiFileIds">True when the ID namespace came from the whole Export Multi Files
+		/// set rather than this one workbook, so the window can say which it showed.</param>
+		/// <param name="error">Why the sheet could not be read, when this returns false.</param>
+		/// <returns>True when the sheet was read. Errors this handler reported to its context are the
+		/// caller's to inspect — a parseable result can still be a rejected one.</returns>
+		internal bool TryPreviewSheet(
+			IWorkbook workbook,
+			IReadOnlyList<SheetPath> sheets,
+			string sourceId,
+			string sheetName,
+			SheetXSheetOutputMode mode,
+			bool multiHost,
+			out string json,
+			out SheetXCollectionSchema schema,
+			out IReadOnlyList<string> warnings,
+			out bool multiFileIds,
+			out string error)
+		{
+			json = null;
+			schema = null;
+			warnings = Array.Empty<string>();
+			multiFileIds = false;
+			error = null;
+
+			if (workbook == null)
+			{
+				error = "No workbook was supplied.";
+				return false;
+			}
+			if (workbook.GetSheet(sheetName) == null)
+			{
+				error = $"Sheet '{sheetName}' was not found in the workbook.";
+				return false;
+			}
+
+			ResetIdCaches();
+			var idNotes = new List<string>();
+
+			// A sheet previewed from an Export Multi Files host is exported by ExportAllFiles, which loads
+			// every listed file's IDs before converting anything. Resolving against this one workbook would
+			// make the preview disagree with the export it exists to predict.
+			var multiFileSet = MultiFilePreviewSet(sourceId, multiHost);
+			multiFileIds = multiFileSet != null;
+			if (multiFileIds)
+			{
+				LoadPreviewIdsAcrossFiles(multiFileSet, sourceId, workbook, idNotes);
+			}
+			else
+			{
+				// Same rule as ExportOrdinaryJson: no `selected` filter, because an unchecked IDs sheet
+				// still resolves references for the sheets that are exported.
+				foreach (var sheet in sheets ?? Array.Empty<SheetPath>())
+				{
+					if (sheet != null && sheet.name != null && sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+						LoadSheetIDsValues(workbook, sheet.name);
+				}
+			}
+
+			if (mode == SheetXSheetOutputMode.GeneratedDataClass)
+			{
+				ReadCollectionTable(workbook, sheetName, out var headers, out var rows);
+				var session = new SheetXCollectionExportSession(m_settings, ids: m_allIds);
+				bool parsed = session.TryParseGeneratedSchema(
+					sheetName, headers, rows, out schema, out warnings, out error);
+				warnings = MergeNotes(idNotes, warnings);
+				return parsed;
+			}
+			warnings = idNotes;
+
+			// pEncrypt false: a preview reads structure, and ciphertext has none. pWriteFile false: a
+			// preview must never produce a file.
+			string fileName = SheetXCollectionNaming.NormalizeFileName(sheetName);
+			json = ConvertSheetToJson(workbook, sheetName, fileName, pEncrypt: false, pWriteFile: false);
+			if (json == null)
+			{
+				error = $"Sheet '{sheetName}' produced invalid Json. "
+					+ "Check its cell values for unbalanced quotes or brackets.";
+				return false;
+			}
+			if (json == "{}")
+			{
+				error = $"Sheet '{sheetName}' has no header row.";
+				return false;
+			}
+			return true;
 		}
 	}
 }

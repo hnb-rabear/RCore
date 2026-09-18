@@ -1539,6 +1539,314 @@ namespace RCore.SheetX.Tests
 			}
 		}
 
+		[Test]
+		public void unmatched_members_ask_once_and_cancelling_writes_nothing()
+		{
+			var settings = SessionSettings();
+			var confirm = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			var prompts = new List<string>();
+			var warnings = new List<string>();
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => false;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = message =>
+				{
+					prompts.Add(message);
+					return false;
+				};
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+				Bind(settings, "SecondTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings, warnings.Add);
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", "[{\"id\":1,\"name\":\"a\",\"extra\":5}]", out string error),
+					Is.True, error);
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "SecondTable", "[{\"id\":2,\"name\":\"b\",\"bonus\":7}]", out error),
+					Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.False);
+
+				// One aggregated question for the whole flush, naming every offending sheet.
+				Assert.That(prompts, Has.Count.EqualTo(1));
+				Assert.That(prompts[0], Does.Contain("ExistingTable").And.Contain("extra"));
+				Assert.That(prompts[0], Does.Contain("SecondTable").And.Contain("bonus"));
+				Assert.That(prompts[0], Does.Contain(nameof(CollectionGenerationExistingRow)));
+				Assert.That(error, Does.StartWith("Collection export cancelled"));
+
+				// Cancelling must abort ahead of every write, not roll one back.
+				Assert.That(session.WroteArtifacts, Is.False);
+				Assert.That(session.FlushSucceeded, Is.False);
+				Assert.That(File.Exists(ExistingJson), Is.False);
+				Assert.That(File.Exists(JsonFolder + "/SecondTable.txt"), Is.False);
+				Assert.That(File.Exists(GeneratedSource), Is.False);
+				Assert.That(File.Exists(GlobalCollectionSource), Is.False);
+
+				// The dialog may truncate; the console must carry every line regardless.
+				Assert.That(warnings.Any(w => w.Contains("extra")), Is.True, string.Join(" | ", warnings));
+				Assert.That(warnings.Any(w => w.Contains("bonus")), Is.True, string.Join(" | ", warnings));
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirm;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void exporting_anyway_writes_byte_identical_json()
+		{
+			var settings = SessionSettings();
+			var confirm = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			const string legacy = "[{\"id\":1,\"name\":\"a\",\"extra\":5}]";
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => false;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = _ => true;
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings);
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", legacy, out string error), Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.True, error);
+
+				Assert.That(session.WroteArtifacts, Is.True);
+				Assert.That(session.FlushSucceeded, Is.True);
+				Assert.That(File.ReadAllText(ExistingJson), Is.EqualTo(legacy));
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirm;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void class_members_absent_from_the_data_do_not_ask()
+		{
+			var settings = SessionSettings();
+			var confirm = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			var prompts = new List<string>();
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => false;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = message =>
+				{
+					prompts.Add(message);
+					return false;
+				};
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings);
+				// 'name' has no column here. A class member the data never mentions proves nothing.
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", "[{\"id\":1}]", out string error), Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.True, error);
+
+				Assert.That(prompts, Is.Empty);
+				Assert.That(File.ReadAllText(ExistingJson), Is.EqualTo("[{\"id\":1}]"));
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirm;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void headless_export_warns_about_unmatched_members_and_continues()
+		{
+			var settings = SessionSettings();
+			var confirm = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			var prompts = new List<string>();
+			var warnings = new List<string>();
+			const string legacy = "[{\"id\":1,\"name\":\"a\",\"extra\":5}]";
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => true;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = message =>
+				{
+					prompts.Add(message);
+					return false;
+				};
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings, warnings.Add);
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", legacy, out string error), Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.True, error);
+
+				// Nobody is there to answer, so a dialog would either hang or silently cancel the export.
+				Assert.That(prompts, Is.Empty);
+				Assert.That(warnings.Any(w => w.Contains("extra")), Is.True, string.Join(" | ", warnings));
+				Assert.That(File.ReadAllText(ExistingJson), Is.EqualTo(legacy));
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirm;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void suppressed_dialogs_warn_about_unmatched_members_and_continue()
+		{
+			var settings = SessionSettings();
+			var confirm = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			var prompts = new List<string>();
+			var warnings = new List<string>();
+			const string legacy = "[{\"id\":1,\"name\":\"a\",\"extra\":5}]";
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => false;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = message =>
+				{
+					prompts.Add(message);
+					return false;
+				};
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings, warnings.Add)
+				{
+					SuppressDialogs = true,
+				};
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", legacy, out string error), Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.True, error);
+
+				Assert.That(prompts, Is.Empty);
+				Assert.That(warnings.Any(w => w.Contains("extra")), Is.True, string.Join(" | ", warnings));
+				Assert.That(File.ReadAllText(ExistingJson), Is.EqualTo(legacy));
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirm;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void a_sheet_that_fails_conversion_is_skipped_before_any_member_question()
+		{
+			var settings = SessionSettings();
+			var confirm = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			var prompts = new List<string>();
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => false;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = message =>
+				{
+					prompts.Add(message);
+					return true;
+				};
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+
+				var session = new SheetXCollectionExportSession(settings);
+				// 'id' cannot hold "abc", so the row type rejection stands and Export Anyway never applies.
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", "[{\"id\":\"abc\",\"extra\":5}]", out string error), Is.False);
+				Assert.That(error, Does.Contain("does not map onto"));
+
+				Assert.That(session.Flush(out error), Is.True, error);
+
+				Assert.That(prompts, Is.Empty);
+				Assert.That(session.SkippedSheetCount, Is.EqualTo(1));
+				Assert.That(File.Exists(ExistingJson), Is.False);
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirm;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void member_question_precedes_the_depth_change_question()
+		{
+			var settings = SessionSettings();
+			var confirmMembers = SheetXCollectionExportSession.ConfirmMemberMismatch;
+			var confirmDepth = SheetXCollectionExportSession.ConfirmDepthChange;
+			var headless = SheetXCollectionExportSession.IsHeadless;
+			var order = new List<string>();
+			try
+			{
+				SheetXCollectionExportSession.IsHeadless = () => false;
+				SheetXCollectionExportSession.ConfirmMemberMismatch = _ =>
+				{
+					order.Add("members");
+					return true;
+				};
+				SheetXCollectionExportSession.ConfirmDepthChange = _ =>
+				{
+					order.Add("depth");
+					return false;
+				};
+				settings.collections.Add(new SheetXCollectionDefinition
+				{
+					name = "Player",
+					depth = SheetXCollectionDepth.Inline,
+				});
+				Bind(settings, "ExistingTable", SheetXSheetOutputMode.ExistingDataClass,
+					typeof(CollectionGenerationExistingRow).AssemblyQualifiedName);
+				SheetXCollectionSettings.GetOrCreateBinding(settings, SourceId, "ExistingTable")
+					.collectionName = "Player";
+				// On disk the collection is still a separate asset, so this flush is also a depth change.
+				Directory.CreateDirectory(CodeFolder);
+				File.WriteAllText(CodeFolder + "/PlayerConfigCollection.cs",
+					"public partial class PlayerConfigCollection : SheetXConfigCollectionBase\r\n{\r\n}\r\n");
+
+				var session = new SheetXCollectionExportSession(settings);
+				Assert.That(session.TryAddExistingTable(
+					SourceId, "ExistingTable", "[{\"id\":1,\"name\":\"a\",\"extra\":5}]", out string error),
+					Is.True, error);
+
+				Assert.That(session.Flush(out error), Is.False);
+
+				// Both are asked before anything is written, and the cheaper data question comes first.
+				Assert.That(order, Is.EqualTo(new[] { "members", "depth" }));
+				Assert.That(session.WroteArtifacts, Is.False);
+				Assert.That(File.Exists(ExistingJson), Is.False);
+			}
+			finally
+			{
+				SheetXCollectionExportSession.ConfirmMemberMismatch = confirmMembers;
+				SheetXCollectionExportSession.ConfirmDepthChange = confirmDepth;
+				SheetXCollectionExportSession.IsHeadless = headless;
+				SheetXMigrationSnapshot.Clear();
+				Cleanup(settings);
+			}
+		}
+
+		[Test]
+		public void member_mismatch_seams_are_wired_up_by_default()
+		{
+			Assert.That(SheetXCollectionExportSession.ConfirmMemberMismatch, Is.Not.Null);
+			Assert.That(SheetXCollectionExportSession.IsHeadless, Is.Not.Null);
+		}
+
 		private sealed class FailingFileOutput : ISheetXOutput
 		{
 			private readonly int m_failAfterWrite;
@@ -1818,6 +2126,132 @@ namespace RCore.SheetX.Tests
 			finally
 			{
 				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_row_types_emits_row_and_nested_classes_with_banner_and_usings_and_excludes_paths_and_collections()
+		{
+			var settings = Settings();
+			try
+			{
+				bool ok = SheetXCollectionSchemaParser.TryParse(
+					new[] { "id:int", "reward.itemId:int", "reward.amount:int" },
+					"QuestsSX",
+					out var schema,
+					out var error);
+				Assert.That(ok, Is.True, error);
+
+				string source = SheetXCollectionGenerator.EmitRowTypes(settings, schema);
+
+				Assert.That(source, Does.Contain("/***"));
+				Assert.That(source, Does.Contain(" * This script is automatically generated by SheetX."));
+				Assert.That(source, Does.Contain("using System;"));
+				Assert.That(source, Does.Contain("using RCore.SheetX;"));
+				Assert.That(source, Does.Not.Contain("using UnityEngine;"));
+				Assert.That(source, Does.Contain("namespace Game.DataConfig"));
+				Assert.That(source, Does.Contain("public partial class QuestsSX"));
+				Assert.That(source, Does.Contain("public int id;"));
+				Assert.That(source, Does.Contain("public Reward reward;"));
+				Assert.That(source, Does.Contain("public partial class Reward"));
+				Assert.That(source, Does.Contain("public int itemId;"));
+				Assert.That(source, Does.Contain("public int amount;"));
+
+				Assert.That(source, Does.Not.Contain("SheetXCollectionPaths"));
+				Assert.That(source, Does.Not.Contain("SheetXConfigCollectionBase"));
+				Assert.That(source, Does.Not.Contain("GlobalConfigCollection"));
+				Assert.That(source, Does.Not.Contain("Collection"));
+
+				string secondCall = SheetXCollectionGenerator.EmitRowTypes(settings, schema);
+				Assert.That(secondCall, Is.EqualTo(source));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void emit_row_types_with_annotated_headers_and_no_rows_emits_class()
+		{
+			var settings = Settings();
+			try
+			{
+				bool ok = SheetXCollectionSchemaParser.TryParse(
+					new[] { "id:int", "name:string" },
+					Array.Empty<IReadOnlyList<string>>(),
+					"EmptyTableSX",
+					out var schema,
+					out var warnings,
+					out var error);
+				Assert.That(ok, Is.True, error);
+
+				string source = SheetXCollectionGenerator.EmitRowTypes(settings, schema);
+
+				Assert.That(source, Does.Contain("public partial class EmptyTableSX"));
+				Assert.That(source, Does.Contain("public int id;"));
+				Assert.That(source, Does.Contain("public string name;"));
+			}
+			finally
+			{
+				ScriptableObject.DestroyImmediate(settings);
+			}
+		}
+
+		[Test]
+		public void try_parse_generated_schema_resolves_symbolic_ids_and_leaves_bindings_and_candidates_untouched()
+		{
+			var settings = SessionSettings();
+			try
+			{
+				int initialBindingsCount = settings.sheetBindings.Count;
+				var ids = new Dictionary<string, int>(StringComparer.Ordinal)
+				{
+					["CURRENCY_V_COIN"] = 2,
+					["ITEM_SWORD"] = 7,
+				};
+				var session = new SheetXCollectionExportSession(settings, ids: ids);
+
+				bool ok = session.TryParseGeneratedSchema(
+					"Rewards",
+					new[] { "rewardId", "rewardIds[]", "label", "forced:string" },
+					new IReadOnlyList<string>[]
+					{
+						new[]
+						{
+							"CURRENCY_V_COIN",
+							"CURRENCY_V_COIN|ITEM_SWORD",
+							"prefix_CURRENCY_V_COIN",
+							"CURRENCY_V_COIN",
+						},
+					},
+					out var schema,
+					out var warnings,
+					out string error);
+
+				Assert.That(ok, Is.True, error);
+				Assert.That(schema, Is.Not.Null);
+				Assert.That(schema.RowTypeName, Is.EqualTo("RewardsSX"));
+				var rewardIdCol = schema.Columns.FirstOrDefault(c => c.FieldName == "rewardId");
+				Assert.That(rewardIdCol, Is.Not.Null);
+				Assert.That(rewardIdCol.TypeName, Is.EqualTo("int"));
+				var rewardIdsCol = schema.Columns.FirstOrDefault(c => c.FieldName == "rewardIds");
+				Assert.That(rewardIdsCol, Is.Not.Null);
+				Assert.That(rewardIdsCol.TypeName, Is.EqualTo("int[]"));
+				var forcedCol = schema.Columns.FirstOrDefault(c => c.FieldName == "forced");
+				Assert.That(forcedCol, Is.Not.Null);
+				Assert.That(forcedCol.TypeName, Is.EqualTo("string"));
+
+				Assert.That(settings.sheetBindings.Count, Is.EqualTo(initialBindingsCount));
+				Assert.That(session.Flush(out error), Is.True, error);
+				// The sheet here is 'Rewards', so GenTable.txt could never exist and asserting on it proved
+				// nothing. Name the file this sheet would actually have written.
+				Assert.That(File.Exists(JsonFolder + "/Rewards.txt"), Is.False);
+				Assert.That(File.Exists(GeneratedSource), Is.False);
+			}
+			finally
+			{
+				Cleanup(settings);
 			}
 		}
 	}

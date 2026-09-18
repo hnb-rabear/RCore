@@ -139,6 +139,15 @@ namespace RCore.SheetX.Editor
 						if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, sheet.name))
 								sheet.selected = isOn;
 				}, m_settings, () => m_settings.excelSheetsPath.path);
+				SheetXHelper.AddStructureColumn(m_tableSheets, m_settings, () => new SheetXSheetSource
+				{
+					Kind = SheetXSourceKind.Excel,
+					Id = m_settings.excelSheetsPath.path,
+					Sheets = m_settings.excelSheetsPath.sheets,
+					// The Single File tab's own button runs ExportAll, which reads this workbook alone — so
+					// the preview beside it must too, even when this same path is also in the multi list.
+					Scope = SheetXPreviewScope.Local,
+				});
 				m_tableCollectionsEnabled = m_settings.enableCollections;
 				m_tableSourceId = sourceId;
 				foreach (var sheetPath in m_settings.excelSheetsPath.sheets)

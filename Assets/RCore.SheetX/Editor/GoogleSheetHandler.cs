@@ -1234,6 +1234,9 @@ namespace RCore.SheetX.Editor
 			=> m_settings.enableCollections && ConfigurationRouteEnabled
 				? new SheetXCollectionExportSession(
 					m_settings, m_writer.Warn, m_writer.Error, output: m_writer.Output, ids: m_allIds)
+				{
+					SuppressDialogs = m_writer.Detached,
+				}
 				: null;
 
 		private bool HasOrdinaryJsonSheets(
@@ -2610,6 +2613,341 @@ namespace RCore.SheetX.Editor
 			}
 
 			dict[fileName] = json;
+		}
+
+		/// <summary>
+		/// Reads what one sheet would export, without exporting anything: nothing is written, no binding is
+		/// created, no setting assigned, and neither <paramref name="metadata"/> nor
+		/// <paramref name="sheets"/> is modified. The caller owns the connection <paramref name="fetchRange"/>
+		/// uses, so the preview never authenticates or disposes on its own.
+		/// </summary>
+		/// <param name="metadata">Spreadsheet metadata, read only — never synced back into the settings.</param>
+		/// <param name="fetchRange">Reads one A1 range, the way the export's Values.Get does.</param>
+		/// <param name="spreadsheetId">Spreadsheet id, used only to name errors.</param>
+		/// <param name="sheets">Every sheet of the source. Only a selected '*IDs' sheet loads, as export does.</param>
+		/// <param name="sheetName">Sheet to preview.</param>
+		/// <param name="mode">Output mode the settings bind to this sheet.</param>
+		/// <param name="seedIds">
+		/// An ID namespace already built across the whole Export Multi Files list, used verbatim instead of
+		/// this spreadsheet's own '*IDs' sheets. Null keeps the single-spreadsheet pass. Copied rather than
+		/// held, so nothing downstream can write into the caller's cached map.
+		/// </param>
+		/// <param name="json">Row-array Json, in the legacy modes.</param>
+		/// <param name="schema">Parsed schema, in Generated Data Class mode.</param>
+		/// <param name="warnings">Problems that did not reject the preview.</param>
+		/// <param name="error">Why no preview could be produced, when this returns false.</param>
+		/// <returns>True when the sheet produced a complete preview.</returns>
+		internal bool TryPreviewSheet(
+			Spreadsheet metadata,
+			Func<string, IList<IList<object>>> fetchRange,
+			string spreadsheetId,
+			IReadOnlyList<SheetPath> sheets,
+			string sheetName,
+			SheetXSheetOutputMode mode,
+			IReadOnlyDictionary<string, int> seedIds,
+			out string json,
+			out SheetXCollectionSchema schema,
+			out IReadOnlyList<string> warnings,
+			out string error)
+		{
+			json = null;
+			schema = null;
+			warnings = Array.Empty<string>();
+			error = null;
+
+			if (metadata?.Sheets == null)
+			{
+				error = $"Could not read Google spreadsheet '{spreadsheetId}'.";
+				return false;
+			}
+			if (fetchRange == null)
+			{
+				error = "No range reader was supplied.";
+				return false;
+			}
+			if (!TryPreviewRange(metadata, spreadsheetId, sheetName, out var sheetInfo, out string range, out error))
+				return false;
+
+			ResetIdCaches();
+			if (seedIds != null)
+			{
+				// Built across the whole Export Multi Files list by the caller, which owns the cache. Copied
+				// so ResetIdCaches' invariant still holds: this handler must own the map it writes into.
+				foreach (var pair in seedIds)
+					m_allIds[pair.Key] = pair.Value;
+			}
+			else
+			{
+				// Same rule as GetSheetIDsValues, and deliberately unlike the Excel branch: an unchecked IDs
+				// sheet is not fetched, so the preview resolves exactly the references the export would.
+				foreach (var sheet in sheets ?? Array.Empty<SheetPath>())
+				{
+					if (sheet == null || !sheet.selected || sheet.name == null
+						|| !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+					{
+						continue;
+					}
+					// A listed IDs sheet the spreadsheet no longer has is skipped, as GetSheetIDsValues does.
+					if (!TryFindPreviewSheet(metadata, sheet.name, out _))
+						continue;
+					if (!TryPreviewRange(metadata, spreadsheetId, sheet.name, out _, out string idsRange, out error))
+						return false;
+					if (!TryPreviewFetch(fetchRange, idsRange, spreadsheetId, out var idsValues, out error))
+						return false;
+					LoadSheetIDsValues(idsValues, sheet.name);
+				}
+			}
+
+			if (!TryPreviewFetch(fetchRange, range, spreadsheetId, out var values, out error))
+				return false;
+
+			if (mode == SheetXSheetOutputMode.GeneratedDataClass)
+			{
+				ReadCollectionTable(values, out var headers, out var rows);
+				var session = new SheetXCollectionExportSession(m_settings, ids: m_allIds);
+				return session.TryParseGeneratedSchema(
+					sheetName, headers, rows, out schema, out warnings, out error);
+			}
+
+			// pEncrypt false: a preview reads structure, and ciphertext has none. pWriteFile false: a
+			// preview must never produce a file.
+			string fileName = SheetXCollectionNaming.NormalizeFileName(sheetName);
+			json = ConvertSheetToJson(sheetInfo, values, sheetName, fileName, pEncrypt: false, pWriteFile: false);
+			if (json == null)
+			{
+				error = $"Sheet '{sheetName}' produced invalid Json. "
+					+ "Check its cell values for unbalanced quotes or brackets.";
+				return false;
+			}
+			if (json == "{}")
+			{
+				error = $"Sheet '{sheetName}' has no header row.";
+				return false;
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// The sheet list <see cref="ExportAllFiles"/> would iterate, computed in memory instead of written
+		/// back. <see cref="ValidateSheetPaths"/> runs before that export's loop and leaves the saved list
+		/// holding: every saved entry the spreadsheet still has, in saved order, keeping its checkbox; then
+		/// every sheet the spreadsheet has that the saved list did not name, in metadata order, selected. A
+		/// preview must see the same list without performing the write.
+		/// <para>
+		/// Order is the whole point of reproducing this rather than simply iterating
+		/// <c>metadata.Sheets</c>: the IDs pass is first-wins, so putting a newly discovered sheet ahead of
+		/// a saved one would silently hand a duplicated key to the wrong definition.
+		/// </para>
+		/// </summary>
+		/// <param name="metadata">Spreadsheet metadata, read only — never synced back into the settings.</param>
+		/// <param name="saved">The saved entry's own sheet list, read only.</param>
+		internal static List<SheetPath> EffectiveSheetSelection(
+			Spreadsheet metadata, IEnumerable<SheetPath> saved)
+		{
+			var savedList = saved?.Where(sheet => sheet?.name != null).ToList() ?? new List<SheetPath>();
+			var remoteNames = metadata?.Sheets
+				?.Select(sheet => sheet?.Properties?.Title)
+				.Where(title => title != null)
+				.ToList() ?? new List<string>();
+
+			var effective = new List<SheetPath>();
+			// Surviving saved entries first, in saved order, each keeping its own checkbox. A saved entry the
+			// spreadsheet no longer has is dropped, as ValidateSheetPaths removes it.
+			foreach (var sheet in savedList)
+			{
+				if (remoteNames.Contains(sheet.name, StringComparer.Ordinal))
+					effective.Add(new SheetPath { name = sheet.name, selected = sheet.selected });
+			}
+			// Then whatever the spreadsheet has gained since, in metadata order, selected — what AddSheet
+			// would have defaulted them to.
+			foreach (string name in remoteNames)
+			{
+				if (!savedList.Any(sheet => string.Equals(sheet.name, name, StringComparison.Ordinal)))
+					effective.Add(new SheetPath { name = name, selected = true });
+			}
+			return effective;
+		}
+
+		/// <summary>
+		/// Loads one listed spreadsheet's '*IDs' sheets into <paramref name="ids"/>, using the rule
+		/// <see cref="ExportAllFiles"/> uses for Google and nothing else: a sheet is read only when it is
+		/// selected and its name ends with 'IDs', in the order
+		/// <see cref="EffectiveSheetSelection"/> reproduces.
+		/// <para>
+		/// Unlike the Excel multi-file walk, both checkboxes matter here, because Google's export loop
+		/// filters on <c>googleSheets.selected</c> and <c>sheet.selected</c> while Excel's ignores both.
+		/// </para>
+		/// <para>
+		/// Nothing here can fail the preview. A missing sheet, a missing column count, a failed fetch, a
+		/// non-integer value, and a duplicate key are all notes: <see cref="LoadSheetIDsValues"/> reports
+		/// the last two through <c>m_writer.Error</c> and <c>m_writer.Blocking</c>, which for
+		/// <see cref="GoogleSheetXWindow"/> — the only caller of <see cref="ExportAllFiles"/>, built with no
+		/// context — is a log line or a dialog the user clicks through while the export finishes and writes
+		/// its files, first definition winning. Through the preview's detached context the same calls become
+		/// result errors, which reject the whole snapshot. The preview must not be stricter than the export
+		/// it predicts.
+		/// </para>
+		/// </summary>
+		/// <param name="metadata">Spreadsheet metadata, read only — never synced back into the settings.</param>
+		/// <param name="fetchRange">Reads one A1 range, the way the export's Values.Get does.</param>
+		/// <param name="spreadsheetId">Spreadsheet id, used to name a note's origin.</param>
+		/// <param name="sheets">The listed entry's own saved sheet list, read only.</param>
+		/// <param name="ids">The ID map being built across the whole list. First definition wins.</param>
+		/// <param name="notes">Where every tolerated problem is recorded.</param>
+		/// <returns>
+		/// True when every '*IDs' sheet this spreadsheet was due to contribute was actually read. False
+		/// means the map is missing keys it should hold, which is the caller's signal not to cache it — a
+		/// tolerated duplicate note does not make a build incomplete, but an unread range does.
+		/// </returns>
+		internal static bool LoadPreviewIdsFromSpreadsheet(
+			Spreadsheet metadata,
+			Func<string, IList<IList<object>>> fetchRange,
+			string spreadsheetId,
+			IEnumerable<SheetPath> sheets,
+			Dictionary<string, int> ids,
+			List<string> notes)
+		{
+			if (metadata?.Sheets == null || fetchRange == null)
+			{
+				// No metadata means the IDs sheets could not even be enumerated, so whatever this
+				// spreadsheet was due to contribute is missing.
+				notes.Add($"IDs from Google spreadsheet '{spreadsheetId}' could not be read: "
+					+ "the spreadsheet returned no metadata.");
+				return false;
+			}
+
+			bool complete = true;
+			// The list the export would have iterated, including sheets added on the web since the settings
+			// were last saved. Computed in memory; nothing is written back.
+			foreach (var sheet in EffectiveSheetSelection(metadata, sheets))
+			{
+				if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
+					continue;
+				if (!TryPreviewRange(metadata, spreadsheetId, sheet.name, out _, out string range, out string error))
+				{
+					notes.Add(error);
+					complete = false;
+					continue;
+				}
+				if (!TryPreviewFetch(fetchRange, range, spreadsheetId, out var values, out error))
+				{
+					notes.Add(error);
+					complete = false;
+					continue;
+				}
+				LoadPreviewIdValues(values, sheet.name, spreadsheetId, ids, notes);
+			}
+			return complete;
+		}
+
+		// The ID pass of LoadSheetIDsValues with its reporting changed, and nothing else: first-wins, same
+		// 3-column stride, same header-row skip, same integer rule. See the remarks on
+		// LoadPreviewIdsFromSpreadsheet for why a defect is a note here.
+		private static void LoadPreviewIdValues(
+			IList<IList<object>> rowsData,
+			string sheetName,
+			string spreadsheetId,
+			Dictionary<string, int> ids,
+			List<string> notes)
+		{
+			if (rowsData == null || rowsData.Count <= 1)
+				return;
+
+			for (int row = 0; row < rowsData.Count; row++)
+			{
+				var rowData = rowsData[row];
+				if (rowData == null)
+					continue;
+				for (int col = 0; col < rowData.Count; col += 3)
+				{
+					var cellKey = rowData[col];
+					if (cellKey == null)
+						continue;
+					string key = cellKey.ToString().Trim();
+					if (row <= 0 || string.IsNullOrEmpty(key))
+						continue;
+					var cellValue = col + 1 < rowData.Count ? rowData[col + 1] : null;
+					if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString()))
+						continue;
+					if (!SheetXHelper.TryParseInt(cellValue.ToString().Trim(), out int value))
+					{
+						notes.Add($"Sheet {sheetName} in spreadsheet '{spreadsheetId}': "
+							+ $"ID {key} has a non-integer value '{cellValue}'.");
+						continue;
+					}
+					if (ids.TryGetValue(key, out int existing))
+					{
+						// First wins, and only a CONFLICTING repeat is worth saying out loud — mirroring
+						// BuildContentOfFileIDs (:238-243), which is what ExportAllFiles actually runs and
+						// which is silent when a key repeats with the same number.
+						if (existing != value)
+						{
+							notes.Add($"ID {key} is duplicated in sheet {sheetName} of spreadsheet "
+								+ $"'{spreadsheetId}'; the first definition in the Export Multi Files order "
+								+ "wins, as export does.");
+						}
+						continue;
+					}
+					ids[key] = value;
+				}
+			}
+		}
+
+		// The export's own range formula. ColumnCount is nullable and the export dereferences it with
+		// .Value, so a spreadsheet without one would fail a preview as a NullReferenceException.
+		private static bool TryPreviewRange(
+			Spreadsheet metadata,
+			string spreadsheetId,
+			string sheetName,
+			out Sheet sheet,
+			out string range,
+			out string error)
+		{
+			range = null;
+			error = null;
+			if (!TryFindPreviewSheet(metadata, sheetName, out sheet))
+			{
+				error = $"Google spreadsheet '{spreadsheetId}' has no sheet '{sheetName}'.";
+				return false;
+			}
+
+			int? columns = sheet.Properties?.GridProperties?.ColumnCount;
+			if (!columns.HasValue)
+			{
+				error = $"Google spreadsheet '{spreadsheetId}' sheet '{sheetName}' has no grid column count.";
+				return false;
+			}
+
+			range = $"{sheetName}!A1:{GetColumnLetter(columns.Value)}";
+			return true;
+		}
+
+		private static bool TryFindPreviewSheet(Spreadsheet metadata, string sheetName, out Sheet sheet)
+		{
+			sheet = metadata.Sheets.FirstOrDefault(candidate => string.Equals(
+				candidate?.Properties?.Title, sheetName, StringComparison.Ordinal));
+			return sheet != null;
+		}
+
+		private static bool TryPreviewFetch(
+			Func<string, IList<IList<object>>> fetchRange,
+			string range,
+			string spreadsheetId,
+			out IList<IList<object>> values,
+			out string error)
+		{
+			error = null;
+			try
+			{
+				values = fetchRange(range);
+				return true;
+			}
+			catch (Exception ex)
+			{
+				values = null;
+				error = $"Could not read Google spreadsheet '{spreadsheetId}': {ex.Message}";
+				return false;
+			}
 		}
 	}
 }

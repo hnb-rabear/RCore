@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
+using UnityEngine;
 
 namespace RCore.SheetX.Editor
 {
@@ -23,6 +24,8 @@ namespace RCore.SheetX.Editor
 			internal SheetXSheetBinding Binding;
 			internal SheetXCollectionGeneratedTable Table;
 			internal string Json;
+			/// <summary>Resolved row type of an Existing Data Class candidate; null for generated ones.</summary>
+			internal Type RowType;
 		}
 
 		private sealed class FileSnapshot
@@ -75,6 +78,27 @@ namespace RCore.SheetX.Editor
 				+ "silently becomes an empty copy — find and fix those by hand.",
 				"Change", "Cancel");
 
+		/// <summary>
+		/// Asks the developer to confirm an export whose JSON carries members the selected Existing Data
+		/// Class cannot receive. Injectable for the same reason as <see cref="ConfirmDepthChange"/>:
+		/// a headless or test run must never block on a dialog. Receives the aggregated message,
+		/// returns whether to write anyway.
+		/// </summary>
+		internal static Func<string, bool> ConfirmMemberMismatch = message =>
+			EditorUtility.DisplayDialog("Existing Data Class members", message, "Export Anyway", "Cancel");
+
+		/// <summary>
+		/// Reports whether this process runs without a user to answer a dialog. Injectable because the
+		/// Unity test runner is itself batch mode, so a test covering the dialog path has to say otherwise.
+		/// </summary>
+		internal static Func<bool> IsHeadless = () => Application.isBatchMode;
+
+		/// <summary>
+		/// True when this session must never show a dialog and should warn and continue instead. Set from
+		/// the writer's detached state, where no user is present to answer one.
+		/// </summary>
+		internal bool SuppressDialogs { get; set; }
+
 		private readonly SheetXSettings m_settings;
 		private readonly List<Candidate> m_candidates = new List<Candidate>();
 		private readonly List<Candidate> m_accepted = new List<Candidate>();
@@ -126,6 +150,23 @@ namespace RCore.SheetX.Editor
 				Table = table,
 			});
 			return true;
+		}
+
+		/// <summary>
+		/// Parses schema and warnings for a Generated Data Class sheet without recording bindings or candidates.
+		/// </summary>
+		internal bool TryParseGeneratedSchema(
+			string sheetName,
+			IReadOnlyList<string> headers,
+			IReadOnlyList<IReadOnlyList<string>> rows,
+			out SheetXCollectionSchema schema,
+			out IReadOnlyList<string> warnings,
+			out string error)
+		{
+			var resolvedRows = ResolveIds(rows);
+			return SheetXCollectionSchemaParser.TryParse(
+				headers, resolvedRows, SheetXCollectionNaming.RowTypeName(sheetName),
+				out schema, out warnings, out error);
 		}
 
 		/// <summary>Parses one Generated Data Class sheet into typed JSON without writing files.</summary>
@@ -212,7 +253,7 @@ namespace RCore.SheetX.Editor
 			}
 
 			string typeName = rowType.FullName?.Replace('+', '.') ?? rowType.Name;
-			Add(binding, json, table => table.ExistingRowTypeName = typeName);
+			Add(binding, json, table => table.ExistingRowTypeName = typeName, rowType);
 			return true;
 		}
 
@@ -329,6 +370,9 @@ namespace RCore.SheetX.Editor
 				return true;
 			}
 
+			if (!ConfirmUnmatchedMembers(out error))
+				return false;
+
 			RequiresScriptReload = SourcesChanged(sources);
 			var depthChanges = SheetXCollectionSettings.DetectDepthChanges(m_settings);
 			if (depthChanges.Count > 0)
@@ -442,6 +486,51 @@ namespace RCore.SheetX.Editor
 					m_settings, autoLoadOnly: true, AcceptedBindingIdentities(), out error)
 				: SheetXCollectionBaker.TryFinishPendingBake(
 					m_settings, autoLoadAfterExport: false, AcceptedBindingIdentities(), out error);
+		}
+
+		/// <summary>
+		/// Asks once for the whole flush when accepted Existing Data Class JSON carries members the chosen
+		/// row type cannot receive — those values are silently dropped on load, so the question comes before
+		/// anything is written rather than after. Only members present in the data and missing from the class
+		/// count: a class member the sheet never mentions proves nothing, and an unverifiable contract must
+		/// not raise a false alarm. Every finding reaches the warning sink whether or not a dialog is shown.
+		/// </summary>
+		private bool ConfirmUnmatchedMembers(out string error)
+		{
+			error = null;
+			var lines = new List<string>();
+			foreach (var candidate in m_accepted)
+			{
+				if (candidate.RowType == null)
+					continue;
+				var match = SheetXRowTypeMatch.CompareJson(candidate.Json, candidate.RowType);
+				if (!match.HasUnmatched)
+					continue;
+
+				string line = Context(candidate.Binding.sourceId, candidate.Binding.sheetName,
+					$"'{candidate.RowType.FullName}' has no destination for: "
+					+ string.Join(", ", match.UnmatchedJsonMembers)
+					+ ". These values are dropped when the data loads. "
+					+ "Fix: add the missing fields to the class, or rename the sheet columns to match it.");
+				lines.Add(line);
+				m_warn?.Invoke(line);
+			}
+			if (lines.Count == 0)
+				return true;
+
+			if (SuppressDialogs || IsHeadless())
+				return true;
+
+			string message = "Some exported values have no destination in the selected Existing Data Class "
+				+ "and will be dropped when the data loads:\n\n"
+				+ string.Join("\n\n", lines)
+				+ "\n\nExport anyway?";
+			if (ConfirmMemberMismatch(message))
+				return true;
+
+			error = "Collection export cancelled: unmatched Existing Data Class members were not confirmed.\n"
+				+ string.Join("\n", lines);
+			return false;
 		}
 
 		private List<FileSnapshot> CaptureSnapshots(
@@ -588,7 +677,9 @@ namespace RCore.SheetX.Editor
 			return true;
 		}
 
-		private void Add(SheetXSheetBinding binding, string json, Action<SheetXCollectionGeneratedTable> fill)
+		private void Add(
+			SheetXSheetBinding binding, string json, Action<SheetXCollectionGeneratedTable> fill,
+			Type rowType = null)
 		{
 			var table = new SheetXCollectionGeneratedTable
 			{
@@ -600,7 +691,10 @@ namespace RCore.SheetX.Editor
 				FieldName = SheetXCollectionSettings.ResolveFieldName(binding),
 			};
 			fill(table);
-			m_candidates.Add(new Candidate { Binding = binding, Table = table, Json = json });
+			m_candidates.Add(new Candidate
+			{
+				Binding = binding, Table = table, Json = json, RowType = rowType,
+			});
 		}
 
 		private bool SkipSheet(SheetXSheetBinding binding, string cause, out string error)

@@ -15,11 +15,15 @@
   "overrideReferences": true,
   "precompiledReferences": [
     "nunit.framework.dll",
+    "Newtonsoft.Json.dll",
     "NPOI.dll",
     "NPOI.OOXML.dll",
     "NPOI.OpenXml4Net.dll",
     "NPOI.OpenXmlFormats.dll",
-    "ICSharpCode.SharpZipLib.dll"
+    "ICSharpCode.SharpZipLib.dll",
+    "Google.Apis.dll",
+    "Google.Apis.Core.dll",
+    "Google.Apis.Sheets.v4.dll"
   ],
   "autoReferenced": false,
   "defineConstraints": [

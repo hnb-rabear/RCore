@@ -46,6 +46,15 @@ namespace RCore.SheetX.Editor
 						if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, sheetPath.name))
 								sheetPath.selected = isOn;
 				}, m_settings, () => m_excelSheetsPath.path);
+				SheetXHelper.AddStructureColumn(m_tableSheets, m_settings, () => new SheetXSheetSource
+				{
+					Kind = SheetXSourceKind.Excel,
+					Id = m_excelSheetsPath.path,
+					Sheets = m_excelSheetsPath.sheets,
+					// This window is only ever opened from the Export Multi Files tab's Select button, so a
+					// preview taken here predicts ExportAllFiles and resolves IDs across the whole list.
+					Scope = SheetXPreviewScope.Multi,
+				});
 				m_tableCollectionsEnabled = m_settings.enableCollections;
 				m_tableSourceId = sourceId;
 				foreach (var sheet in m_excelSheetsPath.sheets)

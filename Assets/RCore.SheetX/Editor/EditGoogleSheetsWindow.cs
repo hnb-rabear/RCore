@@ -72,6 +72,15 @@ namespace RCore.SheetX.Editor
 						if (!SheetXCollectionSettings.IsAutomaticConfiguration(m_settings, sheetPath.name))
 								sheetPath.selected = isOn;
 				}, m_settings, () => m_googleSheetsPath.id);
+				SheetXHelper.AddStructureColumn(m_tableSheets, m_settings, () => new SheetXSheetSource
+				{
+					Kind = SheetXSourceKind.Google,
+					Id = m_googleSheetsPath.id,
+					Sheets = m_googleSheetsPath.sheets,
+					// This window is only ever opened from the Export Multi Files tab, so a preview taken
+					// here predicts ExportAllFiles and resolves IDs across the whole list.
+					Scope = SheetXPreviewScope.Multi,
+				});
 				m_tableCollectionsEnabled = m_settings.enableCollections;
 				m_tableSourceId = sourceId;
 				foreach (var sheet in m_googleSheetsPath.sheets)

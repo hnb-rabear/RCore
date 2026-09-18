@@ -371,6 +371,21 @@ namespace RCore.SheetX.Editor
 			}
 		}
 
+		/// <summary>
+		/// Emits row and nested model classes for a single schema without paths or collection composition.
+		/// </summary>
+		internal static string EmitRowTypes(SheetXSettings settings, SheetXCollectionSchema schema)
+		{
+			if (schema == null)
+				return string.Empty;
+
+			var source = BeginSource(settings, includeSystem: true, includeUnityEngine: false);
+			string indent = SourceIndent(settings);
+			AppendRowTypes(source, indent, schema);
+			EndSource(source, settings);
+			return source.ToString();
+		}
+
 		private static void AppendRowTypes(StringBuilder source, string indent, SheetXCollectionSchema schema)
 		{
 			AppendSerializableClass(source, indent, schema.RowTypeName, MembersOf(schema, Array.Empty<string>()));
