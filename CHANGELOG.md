@@ -4,6 +4,10 @@ All notable changes to RevCore are documented here. Format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- `RCore.SheetX` **1.10.1**: the SheetX window toolbar now carries `Docs (EN)` and `Tài liệu (VI)` buttons, beside `Save` and `Load` and visible from every tab. Each opens the corresponding manual on GitHub rather than the copy shipped in the package — the local file opens in a plain text editor, where every screenshot in it is a broken link. The buttons carry Unity's `TextAsset` page icon, since 2022.3 ships no book icon and a question mark would read as "what is this control?" rather than "here is the manual"; it draws at 21px inside a 30px button so the buttons match `Save` and `Load` in height without matching them in icon size. A test pins both URLs to files that exist under the package and asserts the icon resolves, since a renamed manual would otherwise fail silently as a 404 in the user's browser and an unknown icon name would silently draw a label-only button. `Assets/RCore.SheetX/package.json` bumped 1.10.0 → 1.10.1, releasable as `sheetx-v1.10.1`.
+
 ### Changed
 
 - `.github/workflows/release.yml` now selects which `package.json` files a tag must agree with from the tag's own prefix, so each separately-versioned code base in this repository can be tagged on its own: `sheetx-v*` validates `Assets/RCore.SheetX`, `assetfilter-v*` validates `Assets/RCore.RAssetFilter`, `rhierarchy-v*` validates `Assets/RCore.RHierarchy`, and a bare `v*` still validates every `Assets/RevCore` package exactly as before, so existing tags keep their meaning. A scope matching no `package.json` now fails instead of publishing a release for a package that does not exist, and the prerelease flag keys off `-rc`/`-beta`/`-alpha` rather than any hyphen, which every prefixed tag contains.

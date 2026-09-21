@@ -29,6 +29,15 @@ namespace RCore.SheetX.Editor
 		public const string SETTINGS_SHEET = "Settings";
 		public const string LOCALIZATION_SHEET = "Localization";
 		public const string CONFIGURATION_SHEET = "Configuration";
+
+		/// <summary>Repository-relative path of the English manual, under the SheetX package root.</summary>
+		public const string DOCUMENT_EN_PATH = "Document/Document.md";
+		/// <summary>Repository-relative path of the Vietnamese manual, under the SheetX package root.</summary>
+		public const string DOCUMENT_VI_PATH = "Document/Document_VN.md";
+		// GitHub renders the markdown and its externally hosted screenshots; the local copy opens in a
+		// plain text editor where every image is a broken link, so the toolbar points at the remote view.
+		public const string DOCUMENT_EN_URL = "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.SheetX/" + DOCUMENT_EN_PATH;
+		public const string DOCUMENT_VI_URL = "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.SheetX/" + DOCUMENT_VI_PATH;
 	}
 
 	public enum ValueType

@@ -80,6 +80,30 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		public void toolbar_document_links_point_at_files_that_exist()
+		{
+			// The toolbar buttons open GitHub, so a renamed or moved manual cannot fail locally —
+			// it just serves a 404 to whoever clicked. Pin the remote URLs to the paths on disk.
+			var settings = SheetXSettings.Init();
+			string scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(settings));
+			string packageRoot = Path.GetDirectoryName(Path.GetDirectoryName(scriptPath))!.Replace('\\', '/');
+
+			foreach (string relative in new[] { SheetXConstants.DOCUMENT_EN_PATH, SheetXConstants.DOCUMENT_VI_PATH })
+			{
+				string full = $"{packageRoot}/{relative}";
+				Assert.IsTrue(File.Exists(full), $"Document link target '{full}' does not exist.");
+			}
+
+			StringAssert.EndsWith(SheetXConstants.DOCUMENT_EN_PATH, SheetXConstants.DOCUMENT_EN_URL);
+			StringAssert.EndsWith(SheetXConstants.DOCUMENT_VI_PATH, SheetXConstants.DOCUMENT_VI_URL);
+
+			// A built-in icon name Unity does not know resolves to null and draws a label-only
+			// button, which looks like a layout bug rather than a missing icon.
+			Assert.IsNotNull(EditorIcon.GetIcon(EditorIcon.Icon.Document),
+				"The toolbar document icon did not resolve to a built-in Unity icon.");
+		}
+
+		[Test]
 		public void credential_pref_key_does_not_depend_on_bundle_identifier()
 		{
 			var settings = SheetXSettings.Init();

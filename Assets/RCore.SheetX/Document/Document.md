@@ -21,6 +21,10 @@ Download the example project [Here](https://github.com/hnb-rabear/hnb-rabear.git
 - **JSON Export:** Convert data tables to JSON files for easy Unity integration.
 - **Flexible Data Formats:** Support a variety of data formats, adaptable to your design needs.
 
+### Opening this manual from Unity
+
+The SheetX window's toolbar carries a `Docs (EN)` and a `Tài liệu (VI)` button, visible from every tab. Each opens this manual on GitHub in your browser — the rendered view, because the copy inside the package opens in a plain text editor where every screenshot is a broken link.
+
 ## 3. Settings
 
 Navigate to the main menu and select: `RCore > Tools > SheetX > Settings`

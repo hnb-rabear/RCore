@@ -68,6 +68,7 @@ namespace RCore.SheetX.Editor
 			Edit,
 			Selected,
 			DefaultAsset,
+			Document,
 		}
 
 		public static readonly Dictionary<Icon, string> IconDictionary = new Dictionary<Icon, string>
@@ -128,6 +129,9 @@ namespace RCore.SheetX.Editor
 			{ Icon.Edit, "editicon.sml" },
 			{ Icon.Selected, "FilterSelectedOnly@2x" },
 			{ Icon.DefaultAsset, "DefaultAsset Icon" },
+			// A page of text. Unity ships no book icon, and the question mark reads as "what is
+			// this control?" rather than "here is the manual".
+			{ Icon.Document, "TextAsset Icon" },
 		};
 
 		private static Dictionary<Icon, Texture2D> m_Texture2Ds = new Dictionary<Icon, Texture2D>();

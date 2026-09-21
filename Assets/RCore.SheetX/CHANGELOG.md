@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-09-21
+
+### Added
+
+- `Docs (EN)` and `Tài liệu (VI)` buttons on the SheetX window toolbar, beside `Save` and `Load` and visible from every tab. Each opens the corresponding manual on GitHub rather than the copy inside the package: the local file opens in a plain text editor, where every screenshot in it is a broken link. A test pins both URLs to files that exist under the package, since a renamed manual would otherwise fail silently as a 404 in the user's browser. The buttons carry Unity's `TextAsset` page icon — 2022.3 ships no book icon, and a question mark would read as "what is this control?" rather than "here is the manual" — drawn at 21px inside a 30px button so it matches `Save` and `Load` in height without matching them in icon size.
+
 ## [1.10.0] - 2026-09-18
 
 ### Added

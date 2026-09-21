@@ -42,6 +42,15 @@ namespace RCore.SheetX.Editor
 			var iconLoad = EditorIcon.GetIcon(EditorIcon.Icon.FolderOpened);
 			if (EditorHelper.Button(null, iconLoad, default, 30, 30))
 				m_settingsWindow.Load();
+
+			GUILayout.FlexibleSpace();
+			var iconDocument = EditorIcon.GetIcon(EditorIcon.Icon.Document);
+			if (DocumentButton("Docs (EN)", iconDocument, 110,
+				    "Open the English SheetX manual on GitHub."))
+				Application.OpenURL(SheetXConstants.DOCUMENT_EN_URL);
+			if (DocumentButton("Tài liệu (VI)", iconDocument, 130,
+				    "Mở tài liệu SheetX tiếng Việt trên GitHub."))
+				Application.OpenURL(SheetXConstants.DOCUMENT_VI_URL);
 			GUILayout.EndHorizontal();
 
 			var tab = EditorHelper.Tabs($"{nameof(SheetXWindow)}", "Excel Spreadsheets", "Google Spreadsheets", "Settings");
@@ -59,6 +68,23 @@ namespace RCore.SheetX.Editor
 			}
 
 			GUILayout.EndScrollView();
+		}
+
+		// A button whose icon is smaller than its own height. GUIStyle scales the icon to the
+		// content rect, so the only way to keep the button at 30 and the icon below it is to
+		// pad the content rect back down — imagePosition alone would still draw it at full height.
+		private static bool DocumentButton(string label, Texture icon, int width, string tooltip)
+		{
+			var style = new GUIStyle(GUI.skin.button)
+			{
+				fixedWidth = width,
+				fixedHeight = 30,
+				// 30 tall, 21 of it icon: the remaining 9 is split top and bottom.
+				padding = new RectOffset(6, 6, 5, 4),
+				imagePosition = ImagePosition.ImageLeft,
+				alignment = TextAnchor.MiddleCenter
+			};
+			return GUILayout.Button(new GUIContent(label, icon, tooltip), style, GUILayout.MinHeight(30));
 		}
 
 		// Every tab mutates m_settings in place, so flush once on focus loss / close rather than

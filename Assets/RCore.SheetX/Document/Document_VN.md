@@ -22,6 +22,10 @@ Tải project ví dụ [Tại đây](https://github.com/hnb-rabear/hnb-rabear.gi
 - **Định dạng dữ liệu linh hoạt:** Hỗ trợ kiểu cơ bản, mảng, đối tượng lồng nhau, JSON thô và hệ thống Attribute đặc thù cho RPG.
 - **Data Config Collections:** Tự động tạo mã nguồn C# typed collections và bake dữ liệu trực tiếp vào ScriptableObject trong Unity Editor.
 
+### Mở tài liệu từ Unity
+
+Thanh công cụ của cửa sổ SheetX có hai nút `Docs (EN)` và `Tài liệu (VI)`, hiển thị ở mọi tab. Mỗi nút mở tài liệu tương ứng trên GitHub bằng trình duyệt — bản đã render, vì bản nằm trong package sẽ mở bằng trình soạn thảo văn bản thuần, nơi mọi ảnh minh họa đều là link hỏng.
+
 ## 3. Cấu hình (Settings)
 
 Mở từ menu chính: `RCore > Tools > SheetX > Settings`
