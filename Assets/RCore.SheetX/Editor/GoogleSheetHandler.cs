@@ -4,12 +4,15 @@
  */
 
 using System.Collections.Generic;
+using Google;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using System;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
@@ -86,12 +89,43 @@ namespace RCore.SheetX.Editor
 
 		private string ClientSecret => m_writer.Detached ? m_googleClientSecret : m_settings.ObfGoogleClientSecret;
 
+		/// <summary>
+		/// Google allows 60 read requests per minute per user. An export that trips the limit is not
+		/// broken data, only a request sent too soon, so a 429 waits and retries instead of failing the
+		/// run. Overridden by tests, which would otherwise wait over a minute per case.
+		/// </summary>
+		internal static Action<int> RetryDelay = Thread.Sleep;
+
+		private static readonly int[] s_retryDelaysMs = { 10000, 20000, 40000 };
+
+		/// <summary>Runs one Sheets request, backing off over a 'Read requests per minute' rejection.</summary>
+		internal static T ExecuteWithRetry<T>(Func<T> request, Action<string> log = null)
+		{
+			for (int attempt = 0; ; attempt++)
+			{
+				try
+				{
+					return request();
+				}
+				catch (GoogleApiException ex) when (
+					ex.HttpStatusCode == HttpStatusCode.TooManyRequests && attempt < s_retryDelaysMs.Length)
+				{
+					int delay = s_retryDelaysMs[attempt];
+					log?.Invoke(
+						$"Google Sheets read quota reached. Retrying in {delay / 1000}s "
+						+ $"({attempt + 1}/{s_retryDelaysMs.Length}).");
+					RetryDelay(delay);
+				}
+			}
+		}
+
 		private Spreadsheet GetCacheMetadata(GoogleSheetsPath googleSheetsPath)
 		{
 			if (m_cachedSpreadsheet.TryGetValue(googleSheetsPath.id, out var metadata))
 				return metadata;
 			var service = GetService();
-			var sheetMetadata = service.Spreadsheets.Get(googleSheetsPath.id).Execute();
+			var sheetMetadata = ExecuteWithRetry(
+				() => service.Spreadsheets.Get(googleSheetsPath.id).Execute(), m_writer.Warn);
 			// ValidateSheetPaths adds and removes entries in the settings' sheet list. That is right for
 			// the windows, which persist their selection, but a detached export must leave the caller's
 			// request untouched — so its selection is resolved into a throwaway list instead.
@@ -146,7 +180,7 @@ namespace RCore.SheetX.Editor
 
 				// Create a request to get the sheet data
 				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
+				var response = ExecuteWithRetry(() => request.Execute(), m_writer.Warn);
 				var values = response.Values;
 
 				//Load All IDs
@@ -359,7 +393,7 @@ namespace RCore.SheetX.Editor
 
 				// Create a request to get the sheet data
 				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
+				var response = ExecuteWithRetry(() => request.Execute(), m_writer.Warn);
 				var values = response.Values;
 				ids[sheet.name] = values;
 			}
@@ -507,7 +541,7 @@ namespace RCore.SheetX.Editor
 
 				// Create a request to get the sheet data
 				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
+				var response = ExecuteWithRetry(() => request.Execute(), m_writer.Warn);
 				var values = response.Values;
 
 				LoadSheetConstantsData(sheet.name, values);
@@ -749,7 +783,7 @@ namespace RCore.SheetX.Editor
 
 				// Create a request to get the sheet data
 				var request = service.Spreadsheets.Values.Get(m_settings.googleSheetsPath.id, range);
-				var response = request.Execute();
+				var response = ExecuteWithRetry(() => request.Execute(), m_writer.Warn);
 				var values = response.Values;
 
 				LoadSheetLocalizationData(sheetInfo, values, sheet.name);
@@ -1192,7 +1226,7 @@ namespace RCore.SheetX.Editor
 				var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
 				var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
 				var request = service.Spreadsheets.Values.Get(sourceId, range);
-				var values = request.Execute().Values;
+				var values = ExecuteWithRetry(() => request.Execute(), m_writer.Warn).Values;
 				string fileName = sheet.name.Trim().Replace(" ", "_");
 				var mode = session?.ModeOf(sourceId, sheet.name) ?? SheetXSheetOutputMode.JsonOnly;
 				if (mode != SheetXSheetOutputMode.JsonOnly)
@@ -1354,7 +1388,8 @@ namespace RCore.SheetX.Editor
 
 			int columnCount = sheet.Properties.GridProperties.ColumnCount.Value;
 			string range = $"{SheetXConstants.CONFIGURATION_SHEET}!A1:{GetColumnLetter(columnCount)}";
-			var values = service.Spreadsheets.Values.Get(spreadsheetId, range).Execute().Values;
+			var values = ExecuteWithRetry(
+				() => service.Spreadsheets.Values.Get(spreadsheetId, range).Execute()).Values;
 			return ReadConfigurationTable(values);
 		}
 
@@ -2035,38 +2070,61 @@ namespace RCore.SheetX.Editor
 			bool configurationWritten = false;
 			var session = CreateCollectionSession();
 
-			var service = GetService();
 			var googleSheetsPaths = m_settings.googleSheetsPaths;
+			// Every phase below reads from this one prefetch. Fetching per sheet per phase spent one
+			// request each and tripped the API's 60-reads-per-minute limit on a list of any size.
+			// Values are keyed by list entry, not id: two entries naming one spreadsheet keep their own
+			// selections. Metadata lives only for this run; m_cachedSpreadsheet stays owned by the
+			// single-spreadsheet exports, which validate their own sheet list when they fill it.
+			var metadataById = new Dictionary<string, Spreadsheet>(StringComparer.Ordinal);
+			var prefetched = new Dictionary<GoogleSheetsPath, Dictionary<string, IList<IList<object>>>>();
+			try
+			{
+				foreach (var googleSheets in googleSheetsPaths)
+				{
+					if (!googleSheets.selected)
+						continue;
+
+					if (!metadataById.TryGetValue(googleSheets.id, out var sheetMetadata))
+					{
+						var service = GetService();
+						sheetMetadata = ExecuteWithRetry(
+							() => service.Spreadsheets.Get(googleSheets.id).Execute(), m_writer.Warn);
+						metadataById[googleSheets.id] = sheetMetadata;
+					}
+					ValidateSheetPaths(sheetMetadata, googleSheets);
+					prefetched[googleSheets] = FetchSheetValues(
+						googleSheets.id,
+						BuildExportRanges(sheetMetadata, googleSheets.sheets, ConfigurationRouteEnabled));
+				}
+			}
+			catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.TooManyRequests)
+			{
+				// Every read happens above, before any file is written, so stopping here leaves no
+				// partial output behind.
+				m_writer.Error($"Google Sheets read quota still exceeded after retrying; nothing was exported. {ex.Message}");
+				return;
+			}
+
 			//Load and write Ids first
 			foreach (var googleSheets in googleSheetsPaths)
 			{
 				if (!googleSheets.selected)
 					continue;
 
-				// Get the sheet metadata to determine its dimensions
-				var sheetMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
-				ValidateSheetPaths(sheetMetadata, googleSheets);
+				var sheetMetadata = metadataById[googleSheets.id];
+				var values = prefetched[googleSheets];
 				foreach (var sheet in googleSheets.sheets)
 				{
 					if (!sheet.selected || !sheet.name.EndsWith(SheetXConstants.IDS_SHEET))
 						continue;
 
-					var sheetInfo = sheetMetadata.Sheets.FirstOrDefault(s => s.Properties.Title == sheet.name);
-					if (sheetInfo == null)
+					if (sheetMetadata.Sheets.All(s => s.Properties.Title != sheet.name))
 						continue;
 
-					var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-					// Construct the range dynamically based on row and column counts
-					var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-
-					// Create a request to get the sheet data
-					var request = service.Spreadsheets.Values.Get(googleSheets.id, range);
-					var response = request.Execute();
-					var values = response.Values;
-
 					// Build contents of file IDs and export to file if seperateIDs = true
-					if (BuildContentOfFileIDs(sheet.name, values) && m_settings.separateIDs)
+					if (BuildContentOfFileIDs(sheet.name, values.GetValueOrDefault(sheet.name))
+						&& m_settings.separateIDs)
 						m_writer.CreateFileIDs(sheet.name, m_idsBuilderDict[sheet.name].ToString());
 				}
 			}
@@ -2079,13 +2137,14 @@ namespace RCore.SheetX.Editor
 					if (!googleSheets.selected)
 						continue;
 
-					var metadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+					var metadata = metadataById[googleSheets.id];
 					if (metadata.Sheets.Any(sheet => string.Equals(
 						sheet.Properties.Title, SheetXConstants.CONFIGURATION_SHEET, StringComparison.Ordinal)))
 					{
 						session.TryAddConfiguration(
 							googleSheets.id,
-							ReadConfigurationTable(metadata, googleSheets.id, service),
+							ReadConfigurationTable(prefetched[googleSheets]
+								.GetValueOrDefault(SheetXConstants.CONFIGURATION_SHEET)),
 							out _);
 					}
 				}
@@ -2097,10 +2156,11 @@ namespace RCore.SheetX.Editor
 					if (!googleSheets.selected)
 						continue;
 
-					var metadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+					// A spreadsheet without Configuration has no prefetched range and appends nothing.
 					AppendConfigurationTable(
 						configurationTable,
-						ReadConfigurationTable(metadata, googleSheets.id, service));
+						ReadConfigurationTable(prefetched[googleSheets]
+							.GetValueOrDefault(SheetXConstants.CONFIGURATION_SHEET)));
 				}
 				TryExportConfiguration(configurationTable, out configurationWritten);
 			}
@@ -2117,8 +2177,8 @@ namespace RCore.SheetX.Editor
 						sheets.Add(sheet);
 				}
 
-				// Get the sheet metadata to determine its dimensions
-				var ggSheetsMetadata = service.Spreadsheets.Get(googleSheets.id).Execute();
+				var ggSheetsMetadata = metadataById[googleSheets.id];
+				var prefetchedValues = prefetched[googleSheets];
 				var allJsons = new Dictionary<string, string>();
 				foreach (var sheet in sheets)
 				{
@@ -2126,17 +2186,8 @@ namespace RCore.SheetX.Editor
 					if (sheetInfo == null)
 						continue;
 
-					var columnCount = sheetInfo.Properties.GridProperties.ColumnCount;
-
-					// Construct the range dynamically based on row and column counts
-					var range = $"{sheet.name}!A1:{GetColumnLetter(columnCount.Value)}";
-					if (sheet.name.EndsWith(SheetXConstants.CONSTANTS_SHEET))
-						range = $"{sheet.name}!A1:D";
-
-					// Create a request to get the sheet data
-					var request = service.Spreadsheets.Values.Get(googleSheets.id, range);
-					var response = request.Execute();
-					var values = response.Values;
+					// The same values the IDs pass read: one range per sheet serves every pass.
+					var values = prefetchedValues.GetValueOrDefault(sheet.name);
 
 					// Exact Configuration is exported by the typed route, not row-array Json.
 					bool ownedByConfigurationRoute = ConfigurationRouteEnabled && string.Equals(
@@ -2269,6 +2320,76 @@ namespace RCore.SheetX.Editor
 			ReportCollectionCompletion(session);
 		}
 
+		/// <summary>
+		/// Ranges <see cref="ExportAllFiles"/> reads from one spreadsheet, in the order the passes use
+		/// them: exact Configuration first when its route is on (read whether or not it is selected, as
+		/// before), then each selected sheet the spreadsheet has, each at most once. A Constants sheet
+		/// reads four columns; every other sheet reads its full grid width.
+		/// </summary>
+		internal static List<string> BuildExportRanges(
+			Spreadsheet metadata, IEnumerable<SheetPath> sheets, bool includeConfiguration)
+		{
+			var ranges = new List<string>();
+			var added = new HashSet<string>(StringComparer.Ordinal);
+			void Add(string name)
+			{
+				var sheetInfo = metadata.Sheets.FirstOrDefault(s => s.Properties.Title == name);
+				if (sheetInfo == null || !added.Add(name))
+					return;
+				ranges.Add(name.EndsWith(SheetXConstants.CONSTANTS_SHEET)
+					? $"{name}!A1:D"
+					: $"{name}!A1:{GetColumnLetter(sheetInfo.Properties.GridProperties.ColumnCount.Value)}");
+			}
+
+			if (includeConfiguration)
+				Add(SheetXConstants.CONFIGURATION_SHEET);
+			foreach (var sheet in sheets)
+				if (sheet.selected)
+					Add(sheet.name);
+			return ranges;
+		}
+
+		/// <summary>Splits ranges so no BatchGet URL grows past the request length limit.</summary>
+		internal static List<List<string>> SplitRanges(List<string> ranges, int batchSize)
+		{
+			var batches = new List<List<string>>();
+			for (int i = 0; i < ranges.Count; i += batchSize)
+				batches.Add(ranges.GetRange(i, Math.Min(batchSize, ranges.Count - i)));
+			return batches;
+		}
+
+		// ponytail: 50 ranges per call keeps the URL well under Google's limit for ordinary sheet names;
+		// lower it if a list with very long sheet names ever returns 414.
+		private const int BATCH_GET_RANGE_LIMIT = 50;
+
+		/// <summary>
+		/// Reads every range in as few requests as the batch limit allows, keyed by sheet name. BatchGet
+		/// returns its value ranges in request order, so they map back by index rather than by the
+		/// normalized range text Google echoes.
+		/// </summary>
+		private Dictionary<string, IList<IList<object>>> FetchSheetValues(string spreadsheetId, List<string> ranges)
+		{
+			var result = new Dictionary<string, IList<IList<object>>>(StringComparer.Ordinal);
+			var service = GetService();
+			foreach (var batch in SplitRanges(ranges, BATCH_GET_RANGE_LIMIT))
+			{
+				var response = ExecuteWithRetry(() =>
+				{
+					var request = service.Spreadsheets.Values.BatchGet(spreadsheetId);
+					request.Ranges = batch;
+					return request.Execute();
+				}, m_writer.Warn);
+				for (int i = 0; i < batch.Count; i++)
+				{
+					string sheetName = batch[i].Substring(0, batch[i].LastIndexOf('!'));
+					result[sheetName] = response.ValueRanges != null && i < response.ValueRanges.Count
+						? response.ValueRanges[i].Values
+						: null;
+				}
+			}
+			return result;
+		}
+
 		public static string GetColumnLetter(int columnNumber)
 		{
 			int dividend = columnNumber;
@@ -2356,8 +2477,9 @@ namespace RCore.SheetX.Editor
 			Spreadsheet metadata;
 			try
 			{
-				metadata = GetService()
-					.Spreadsheets.Get(source.SpreadsheetPath).Execute();
+				metadata = ExecuteWithRetry(
+					() => GetService().Spreadsheets.Get(source.SpreadsheetPath).Execute(),
+					m_writer.Warn);
 			}
 			catch (Exception ex)
 			{
@@ -2465,9 +2587,11 @@ namespace RCore.SheetX.Editor
 		private IList<IList<object>> BatchFetchValues(
 			SheetXBatchSourceState source,
 			string range)
-			=> GetService()
-				.Spreadsheets.Values.Get(source.SpreadsheetPath, range)
-				.Execute()
+			=> ExecuteWithRetry(
+					() => GetService()
+						.Spreadsheets.Values.Get(source.SpreadsheetPath, range)
+						.Execute(),
+					m_writer.Warn)
 				.Values;
 
 		internal void BatchLoadIds(

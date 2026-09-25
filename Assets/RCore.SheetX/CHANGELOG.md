@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-09-25
+
+### Fixed
+
+- `Export All` on the `Google Spreadsheets` tab no longer fails with `Quota exceeded for quota metric 'Read requests' ... [429]`. Google allows 60 read requests per minute per user; the export spent roughly `3 + 2 × sheet count` per spreadsheet, re-fetching metadata once per phase, reading each sheet in its own request, and reading every `*IDs` sheet twice. Each selected spreadsheet is now read with one metadata request plus one batched `values.batchGet` (chunked at 50 ranges), and every pass reads from memory. Against the bundled example spreadsheet, 8 selected sheets: 12 requests before, 2 after, all 24 exported files byte-identical. A `429` that still arrives retries after 10s, 20s, then 40s, logging each wait; one surviving all three reports `Google Sheets read quota still exceeded after retrying; nothing was exported.` and writes nothing, since every read precedes the first write. The single-spreadsheet exports and `SheetXExporter` batch reads share the same retry.
+
 ## [1.10.1] - 2026-09-21
 
 ### Added
