@@ -154,6 +154,50 @@ namespace RCore.SheetX.Tests
 		}
 
 		[Test]
+		public void write_file_overwrites_a_target_held_open_without_delete_sharing()
+		{
+			// An editor, indexer, or antivirus holding the target open without FILE_SHARE_DELETE made
+			// File.Replace throw "Unable to remove the file to be replaced".
+			string folder = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}");
+			try
+			{
+				SheetXHelper.WriteFile(folder, "Generated.cs", "first");
+				string path = Path.Combine(folder, "Generated.cs");
+				using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+					SheetXHelper.WriteFile(folder, "Generated.cs", "second");
+
+				Assert.That(File.ReadAllText(path), Is.EqualTo("second"));
+				Assert.That(Directory.GetFiles(folder), Has.Length.EqualTo(1));
+			}
+			finally
+			{
+				Directory.Delete(folder, true);
+			}
+		}
+
+		[Test]
+		public void write_file_leaves_no_temp_file_when_the_target_is_fully_locked()
+		{
+			// With no sharing at all both File.Replace and the Copy fallback fail; the error must still
+			// surface, but the .tmp must not be left for Unity to import.
+			string folder = Path.Combine(Path.GetTempPath(), $"sheetx-{Guid.NewGuid():N}");
+			try
+			{
+				SheetXHelper.WriteFile(folder, "Generated.cs", "first");
+				string path = Path.Combine(folder, "Generated.cs");
+				using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
+					Assert.That(() => SheetXHelper.WriteFile(folder, "Generated.cs", "second"), Throws.InstanceOf<IOException>());
+
+				Assert.That(File.ReadAllText(path), Is.EqualTo("first"));
+				Assert.That(Directory.GetFiles(folder), Has.Length.EqualTo(1));
+			}
+			finally
+			{
+				Directory.Delete(folder, true);
+			}
+		}
+
+		[Test]
 		public void add_namespace_keeps_a_constant_named_new_line_intact()
 		{
 			// NEW_LINE was an unescaped sentinel, so a constant that happens to be called NEW_LINE

@@ -65,10 +65,37 @@ namespace RCore.SheetX.Editor
 
 			// File.Replace needs the destination to exist and throws across volumes; the temp file is
 			// always on the same volume, so a plain Move covers the first-export case.
-			if (File.Exists(filePath))
-				File.Replace(tempPath, filePath, null);
-			else
-				File.Move(tempPath, filePath);
+			try
+			{
+				if (!File.Exists(filePath))
+					File.Move(tempPath, filePath);
+				else
+				{
+					try
+					{
+						File.Replace(tempPath, filePath, null);
+					}
+					catch (IOException)
+					{
+						// File.Replace must delete the target, so it fails ("Unable to remove the file to be replaced")
+						// while an IDE, indexer, or antivirus holds it open without delete sharing. An in-place
+						// overwrite only needs write sharing, which those readers grant.
+						// ponytail: this fallback is not atomic; a crash mid-copy can truncate the target.
+						File.Copy(tempPath, filePath, true);
+					}
+				}
+			}
+			finally
+			{
+				// Left behind after the Copy fallback, or when every path failed; under Assets/ Unity would
+				// import it as a stray asset. Never let cleanup mask the original exception.
+				try
+				{
+					File.Delete(tempPath);
+				}
+				catch (IOException) { }
+				catch (UnauthorizedAccessException) { }
+			}
 		}
 
 		/// <summary>
