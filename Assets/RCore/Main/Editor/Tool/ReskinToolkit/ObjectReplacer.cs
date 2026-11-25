@@ -6,9 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
-	/// <summary>
-	/// Helper class to replace references of specific objects with others in the project.
-	/// </summary>
+	/// <summary>Replaces every reference to old objects with a new object in the scope.</summary>
 	[Serializable]
 	public class ObjectReplacer
 	{
@@ -19,187 +17,78 @@ namespace RCore.Editor.Tool
 			public Object replace;
 		}
 
+		private const string SCAN_FILTER = "t:Object";
+
 		[SerializeField] private List<Input> m_inputs = new List<Input>();
+		[SerializeField] private ReplaceScope m_scope = new ReplaceScope();
+		private ReplaceFlow m_flow;
+
+		private List<(Object oldObj, Object newObj)> GetMappings()
+		{
+			var mappings = new List<(Object oldObj, Object newObj)>();
+			foreach (var input in m_inputs)
+			{
+				if (input.replace == null)
+					continue;
+				foreach (var target in input.targets)
+					if (target != null)
+						mappings.Add((target, input.replace));
+			}
+			return mappings;
+		}
 
 		public void Draw()
 		{
-			var btn = new GuiButton()
-			{
-				color = Color.yellow,
-				onPressed = () => m_inputs.Add(new Input()),
-				label = "Add Targets And Replace",
-			};
+			m_flow ??= new ReplaceFlow();
+			m_scope ??= new ReplaceScope();
 
-			if (EditorHelper.HeaderFoldout("Find And Replace Object", null, false, btn))
+			Input removeInput = null;
+			foreach (var input in m_inputs)
 			{
 				EditorGUILayout.BeginVertical("box");
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField("New object", GUILayout.Width(80));
+				input.replace = EditorGUILayout.ObjectField(input.replace, typeof(Object), false);
+				if (EditorHelper.ButtonColor("x", Color.red, 23))
+					removeInput = input;
+				EditorGUILayout.EndHorizontal();
+
+				// DropZone, not EditorHelper.DragDropBox: that one expands a dropped folder into every asset inside it.
+				var dropped = ReplaceFlow.DropZone("Drop OLD objects to replace", 24);
+				if (dropped != null)
+					foreach (var obj in dropped)
+						if (!input.targets.Contains(obj))
+							input.targets.Add(obj);
+				int removeTarget = -1;
+				for (int t = 0; t < input.targets.Count; t++)
 				{
-					foreach (var target in m_inputs)
-					{
-						EditorGUILayout.BeginHorizontal();
-						{
-							EditorGUILayout.BeginVertical();
-							{
-								EditorGUILayout.BeginHorizontal();
-								{
-									target.replace = EditorHelper.ObjectField<Object>(target.replace, "");
-									if (EditorHelper.ButtonColor("x", Color.red, 23))
-									{
-										m_inputs.Remove(target);
-										break;
-									}
-								}
-
-								EditorGUILayout.EndHorizontal();
-							}
-
-							EditorGUILayout.EndVertical();
-
-							if (EditorHelper.ButtonColor("+", Color.green, 23))
-								target.targets.Add(null);
-
-							for (int t = 0; t < target.targets.Count; t++)
-							{
-								EditorGUILayout.BeginVertical();
-								{
-									EditorGUILayout.BeginHorizontal();
-									{
-										target.targets[t] = EditorHelper.ObjectField<Object>(target.targets[t], "");
-										if (EditorHelper.ButtonColor("x", Color.red, 23))
-										{
-											target.targets.RemoveAt(t);
-											t--;
-										}
-									}
-
-									EditorGUILayout.EndHorizontal();
-								}
-
-								EditorGUILayout.EndVertical();
-							}
-						}
-						EditorGUILayout.EndHorizontal();
-						EditorGUILayout.Separator();
-					}
-
-					if (EditorHelper.Button("Find And Replace"))
-					{
-						AssetDatabase.StartAssetEditing();
-
-						var assetGUIDs = AssetDatabase.FindAssets("t:Object", new[] { "Assets" });
-						foreach (var target in m_inputs)
-						{
-							var result = EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, assetGUIDs);
-
-							foreach (var item in result)
-								Debug.Log($"{target.replace.name} is replaced in {item.Value}");
-						}
-
-						AssetDatabase.StopAssetEditing();
-						AssetDatabase.SaveAssets();
-						AssetDatabase.Refresh();
-					}
+					EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.LabelField("Old", GUILayout.Width(80));
+					input.targets[t] = EditorGUILayout.ObjectField(input.targets[t], typeof(Object), false);
+					if (EditorHelper.ButtonColor("x", Color.red, 23))
+						removeTarget = t;
+					EditorGUILayout.EndHorizontal();
+					var oldObj = input.targets[t];
+					if (oldObj != null && input.replace != null && oldObj.GetType() != input.replace.GetType())
+						EditorGUILayout.HelpBox($"Type differs: {oldObj.GetType().Name} -> {input.replace.GetType().Name}. References may break.", MessageType.Warning);
 				}
-
+				if (removeTarget >= 0)
+					input.targets.RemoveAt(removeTarget);
+				if (EditorHelper.ButtonColor("+ Old object", Color.green))
+					input.targets.Add(null);
 				EditorGUILayout.EndVertical();
 			}
-		}
-	}
+			if (removeInput != null)
+				m_inputs.Remove(removeInput);
+			if (EditorHelper.ButtonColor("+ Add mapping", Color.yellow))
+				m_inputs.Add(new Input());
 
-	[Serializable]
-	public class GenericObjectsReplacer<T> where T : Object
-	{
-		[Serializable]
-		private class Input
-		{
-			public List<T> targets = new List<T>();
-			public T replace;
-		}
-
-		[SerializeField] private List<Input> m_inputs = new List<Input>();
-		
-		public void Draw()
-		{
-			var btn = new GuiButton()
-			{
-				color = Color.yellow,
-				onPressed = () => m_inputs.Add(new Input()),
-				label = "Add Targets And Replace",
-			};
-
-			if (EditorHelper.HeaderFoldout("Find And Replace Object", null, false, btn))
-			{
-				EditorGUILayout.BeginVertical("box");
-				{
-					foreach (var target in m_inputs)
-					{
-						EditorGUILayout.BeginHorizontal();
-						{
-							EditorGUILayout.BeginVertical();
-							{
-								EditorGUILayout.BeginHorizontal();
-								{
-									target.replace = (T)EditorHelper.ObjectField<T>(target.replace, "");
-									if (EditorHelper.ButtonColor("x", Color.red, 23))
-									{
-										m_inputs.Remove(target);
-										break;
-									}
-								}
-
-								EditorGUILayout.EndHorizontal();
-							}
-
-							EditorGUILayout.EndVertical();
-
-							if (EditorHelper.ButtonColor("+", Color.green, 23))
-								target.targets.Add(null);
-
-							for (int t = 0; t < target.targets.Count; t++)
-							{
-								EditorGUILayout.BeginVertical();
-								{
-									EditorGUILayout.BeginHorizontal();
-									{
-										target.targets[t] = (T)EditorHelper.ObjectField<T>(target.targets[t], "");
-										if (EditorHelper.ButtonColor("x", Color.red, 23))
-										{
-											target.targets.RemoveAt(t);
-											t--;
-										}
-									}
-
-									EditorGUILayout.EndHorizontal();
-								}
-
-								EditorGUILayout.EndVertical();
-							}
-						}
-						EditorGUILayout.EndHorizontal();
-						EditorGUILayout.Separator();
-					}
-
-					if (EditorHelper.Button("Find And Replace"))
-					{
-						AssetDatabase.StartAssetEditing();
-
-						var assetGUIDs = AssetDatabase.FindAssets("t:Object", new string[] { "Assets" });
-						foreach (var target in m_inputs)
-						{
-							var result = EditorHelper.SearchAndReplaceGuid(target.targets, target.replace, assetGUIDs);
-
-							foreach (var item in result)
-								Debug.Log($"{target.replace.name} is replaced in {item.Value}");
-						}
-
-						AssetDatabase.StopAssetEditing();
-						AssetDatabase.SaveAssets();
-						AssetDatabase.Refresh();
-					}
-				}
-
-				EditorGUILayout.EndVertical();
-			}
+			EditorGUILayout.Space(6);
+			var mappings = GetMappings();
+			m_flow.Draw(nameof(ObjectReplacer), m_scope, ReplaceFlow.Fingerprint(m_scope, mappings),
+				mappings.Count == 0 ? "Add a mapping with at least one Old object and a New object." : null,
+				() => ReplaceFlow.ScanGuidRefs(mappings, m_scope.GetGuids(SCAN_FILTER)),
+				changes => ReplaceFlow.ApplyGuidRefs(mappings, changes));
 		}
 	}
 }

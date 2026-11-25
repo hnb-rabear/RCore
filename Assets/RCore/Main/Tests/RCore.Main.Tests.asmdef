@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "rcore.editor",
+        "rcore.runtime",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

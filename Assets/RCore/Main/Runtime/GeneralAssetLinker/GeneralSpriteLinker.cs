@@ -67,9 +67,10 @@ namespace RCore.Config
 
 		private void Awake()
 		{
-			if (m_AutoActive)
+			CacheTarget();
+			// A sprite already on the Image was set by code before first activation; the catalog must not overwrite it.
+			if (m_AutoActive && m_Image.sprite == null)
 			{
-				CacheTarget();
 				var sprite = AssetCatalog.Instance != null ? AssetCatalog.Instance.GetSprite(m_Key) : null;
 				if (sprite != null)
 					m_Image.sprite = sprite;
@@ -79,7 +80,7 @@ namespace RCore.Config
 #if UNITY_EDITOR
 		private void OnDestroy()
 		{
-			if (Application.isPlaying || m_Image == null)
+			if (Application.isPlaying || Application.isBatchMode || m_Image == null)
 				return;
 			m_Image.overrideSprite = null;
 			UnityEditor.EditorUtility.SetDirty(m_Image);
@@ -105,12 +106,19 @@ namespace RCore.Config
 
 		private void OnValidate()
 		{
-			Refresh();
+			if (Application.isBatchMode)
+				return;
+
+			UnityEditor.EditorApplication.delayCall += () =>
+			{
+				if (this != null)
+					Refresh();
+			};
 		}
 
 		public void Refresh()
 		{
-			if (Application.isPlaying)
+			if (Application.isPlaying || Application.isBatchMode)
 				return;
 			CacheTarget();
 			if (m_Image == null)

@@ -273,10 +273,12 @@ namespace RCore.UI
 			if (image1 == null || image1.sprite == null || image1.type != Image.Type.Sliced || m_perfectSpriteId == image1.sprite.GetInstanceID())
 				return;
 
+			// NOTE: use rect.size, not sizeDelta - sizeDelta is the offset from the anchors,
+			// so it reads (0,0) on stretched RectTransforms (anchorMin 0,0 / anchorMax 1,1).
 			if (perfectRatio == PerfectRatio.Width)
 			{
 				var nativeSize = image1.sprite.NativeSize();
-				var rectSize = rectTransform.sizeDelta;
+				var rectSize = image1.rectTransform.rect.size;
 				if (rectSize.x > 0 && rectSize.x < nativeSize.x)
 				{
 					var ratio = nativeSize.x / rectSize.x;
@@ -289,7 +291,7 @@ namespace RCore.UI
 			else if (perfectRatio == PerfectRatio.Height)
 			{
 				var nativeSize = image1.sprite.NativeSize();
-				var rectSize = rectTransform.sizeDelta;
+				var rectSize = image1.rectTransform.rect.size;
 				if (rectSize.y > 0 && rectSize.y < nativeSize.y)
 				{
 					var ratio = nativeSize.y / rectSize.y;

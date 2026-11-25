@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,9 +13,26 @@ namespace RCore.Editor.Tool
 		private FindAndReplaceAssetToolkit m_findAndReplaceAssetToolkit;
 		private string m_tab;
 
+		private static readonly Dictionary<string, string> m_TabHelp = new Dictionary<string, string>
+		{
+			["Replace Sprite"] = "Pair Old and New sprites, fix pivots, then swap Old for New in prefabs, scenes and assets.",
+			["Cut Sprite Sheet"] = "Export every sprite of a sheet as its own texture.",
+			["Update Image Property"] = "Set Image options on every Image that uses the listed sprites.",
+			["Replace Object"] = "Swap references to any asset for another asset.",
+			["Replace Font"] = "Swap TMP and legacy fonts in assets and in the open scene.",
+		};
+
 		private void OnEnable()
 		{
 			m_findAndReplaceAssetToolkit = FindAndReplaceAssetToolkit.Load();
+		}
+
+		private void OnDisable()
+		{
+			if (m_findAndReplaceAssetToolkit == null)
+				return;
+			EditorUtility.SetDirty(m_findAndReplaceAssetToolkit);
+			AssetDatabase.SaveAssetIfDirty(m_findAndReplaceAssetToolkit);
 		}
 
 		private void OnGUI()
@@ -22,6 +40,8 @@ namespace RCore.Editor.Tool
 			m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
 			m_findAndReplaceAssetToolkit ??= FindAndReplaceAssetToolkit.Load();
 			m_tab = EditorHelper.Tabs(nameof(FindAndReplaceAssetWindow), "Replace Sprite", "Cut Sprite Sheet", "Update Image Property", "Replace Object", "Replace Font");
+			if (m_tab != null && m_TabHelp.TryGetValue(m_tab, out var help))
+				EditorGUILayout.HelpBox(help, MessageType.None);
 			GUILayout.BeginVertical("box");
 			switch (m_tab)
 			{

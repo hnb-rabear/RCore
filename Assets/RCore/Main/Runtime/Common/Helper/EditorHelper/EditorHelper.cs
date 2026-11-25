@@ -298,6 +298,7 @@ namespace RCore.Editor
 
 		public static void RefreshAssets(string filter, string folderPath = null) => EditorAssetUtil.RefreshAssets(filter, folderPath);
 
+		[Obsolete("Not needed: SearchAndReplaceGuid scans on every call.")]
 		public static void BuildReferenceMapCache<T>(string[] assetGUIDs, List<T> cachedObjects) where T : Object => EditorAssetUtil.BuildReferenceMapCache(assetGUIDs, cachedObjects);
 
 		public static Dictionary<string, int> SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object => EditorAssetUtil.SearchAndReplaceGuid(oldObjects, newObject, assetGUIDs);

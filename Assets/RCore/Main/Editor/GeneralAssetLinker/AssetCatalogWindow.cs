@@ -210,8 +210,8 @@ namespace RCore.Editor
 			if (string.IsNullOrEmpty(assetPath))
 				return string.Empty;
 
-			var dir = Path.GetDirectoryName(assetPath);
-			return Path.Combine(dir ?? string.Empty, "AssetCatalog_Usages.json").Replace('\\', '/');
+			// Library, not next to the catalog: a catalog under Resources/ would ship this editor-only cache in the build.
+			return $"Library/AssetCatalog_Usages_{AssetDatabase.AssetPathToGUID(assetPath)}.json";
 		}
 
 		private string GetCacheFullPath()

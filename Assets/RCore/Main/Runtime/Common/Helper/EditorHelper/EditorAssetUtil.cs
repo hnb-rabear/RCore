@@ -506,190 +506,141 @@ namespace RCore.Editor
 			return results;
 		}
 
-		/// <summary>Caches a map of asset GUIDs to the paths of assets that reference them. Used for GUID replacement.</summary>
-		private static Dictionary<string, HashSet<string>> m_InverseReferenceMap;
-		/// <summary>The total number of references found when building the inverse reference map.</summary>
-		private static int m_ReferencesCount;
+		private static readonly Regex m_GuidRefRegex = new Regex(@"fileID: -?\d+, guid: [0-9a-f]{32}", RegexOptions.Compiled);
+
+		public class GuidReplaceResult
+		{
+			public int replaced;
+			public int skipped;
+			public int failed;
+			public int references;
+		}
+
+		/// <summary>Returns the "fileID: X, guid: Y" text Unity writes for a reference to this object, or null.</summary>
+		public static string GetGuidRef(Object pObj)
+		{
+			if (pObj == null || !AssetDatabase.TryGetGUIDAndLocalFileIdentifier(pObj, out string guid, out long fileId))
+				return null;
+			return $"fileID: {fileId}, guid: {guid}";
+		}
+
+		/// <summary>Builds old ref -> new ref text pairs. Skips null objects and pairs that are already equal.</summary>
+		public static Dictionary<string, string> BuildGuidRefs(IEnumerable<(Object oldObj, Object newObj)> pMappings)
+		{
+			var refs = new Dictionary<string, string>();
+			foreach (var (oldObj, newObj) in pMappings)
+			{
+				string oldRef = GetGuidRef(oldObj);
+				string newRef = GetGuidRef(newObj);
+				if (oldRef != null && newRef != null && oldRef != newRef)
+					refs[oldRef] = newRef;
+			}
+			return refs;
+		}
+
+		/// <summary>Replaces every old ref in one pass (swapped pairs never chain). Returns how many refs were replaced.</summary>
+		public static int ReplaceInText(ref string pContent, IReadOnlyDictionary<string, string> pRefs)
+		{
+			int count = 0;
+			pContent = m_GuidRefRegex.Replace(pContent, match =>
+			{
+				if (!pRefs.TryGetValue(match.Value, out var newRef))
+					return match.Value;
+				count++;
+				return newRef;
+			});
+			return count;
+		}
+
+		/// <summary>Read-only scan. Returns asset path -> number of old refs found in that file, or null if the user cancels.</summary>
+		public static Dictionary<string, int> FindGuidReferences(IReadOnlyDictionary<string, string> pRefs, string[] pScopeGuids)
+		{
+			var result = new Dictionary<string, int>();
+			if (pRefs.Count == 0)
+				return result;
+			// A ref ends with its 32-char guid.
+			var oldGuids = new HashSet<string>(pRefs.Keys.Select(r => r.Substring(r.Length - 32)));
+			try
+			{
+				for (int i = 0; i < pScopeGuids.Length; i++)
+				{
+					string path = AssetDatabase.GUIDToAssetPath(pScopeGuids[i]);
+					if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path) || result.ContainsKey(path))
+						continue;
+					if (EditorUtility.DisplayCancelableProgressBar("Scanning references", path, (float)i / pScopeGuids.Length))
+						return null; // a partial result would look complete in the preview
+					if (!AssetDatabase.GetDependencies(path, false).Any(d => oldGuids.Contains(AssetDatabase.AssetPathToGUID(d))))
+						continue;
+					string text = File.ReadAllText(path);
+					int count = ReplaceInText(ref text, pRefs);
+					if (count > 0)
+						result[path] = count;
+				}
+			}
+			finally
+			{
+				EditorUtility.ClearProgressBar();
+			}
+			return result;
+		}
+
+		/// <summary>Rewrites old refs in the given files. A file with no match is skipped; a file that throws is logged and counted as failed.</summary>
+		public static GuidReplaceResult ReplaceGuidReferences(IReadOnlyDictionary<string, string> pRefs, IList<string> pPaths)
+		{
+			var result = new GuidReplaceResult();
+			AssetDatabase.SaveAssets(); // otherwise Refresh() reloads dirty assets from disk and drops their unsaved edits
+			AssetDatabase.StartAssetEditing();
+			try
+			{
+				for (int i = 0; i < pPaths.Count; i++)
+				{
+					string path = pPaths[i];
+					EditorUtility.DisplayProgressBar("Replacing references", path, (float)i / pPaths.Count);
+					try
+					{
+						string text = File.ReadAllText(path);
+						int count = ReplaceInText(ref text, pRefs);
+						if (count == 0)
+						{
+							result.skipped++;
+							continue;
+						}
+						File.WriteAllText(path, text);
+						result.replaced++;
+						result.references += count;
+					}
+					catch (Exception e)
+					{
+						UnityEngine.Debug.LogError($"[Replace] {path}: {e.Message}");
+						result.failed++;
+					}
+				}
+			}
+			finally
+			{
+				AssetDatabase.StopAssetEditing();
+				EditorUtility.ClearProgressBar();
+				AssetDatabase.Refresh();
+			}
+			return result;
+		}
 
 		/// <summary>
-		/// Searches the project for all references to a list of old objects and replaces them with a reference to a new object.
-		/// This works by directly modifying the GUID and FileID strings in serialized asset files.
+		/// Replaces every reference to the old objects with the new object in the given assets (null = all of Assets/).
+		/// Returns referencing asset path -> number of refs replaced.
 		/// </summary>
-		/// <typeparam name="T">The type of the objects.</typeparam>
-		/// <param name="oldObjects">A list of objects whose references should be replaced.</param>
-		/// <param name="newObject">The object to reference instead.</param>
-		/// <param name="assetGUIDs">An optional list of asset GUIDs to search within. If null, the entire project is scanned.</param>
-		/// <returns>A dictionary mapping the paths of updated assets to the number of replacements made in each.</returns>
 		public static Dictionary<string, int> SearchAndReplaceGuid<T>(List<T> oldObjects, T newObject, string[] assetGUIDs) where T : Object
 		{
-			// If no specific assets to search are provided, search the entire project.
-			if (assetGUIDs == null)
-			{
-				const string searchFilter = "t:Object";
-				string[] searchDirectories = { "Assets" };
-				assetGUIDs = AssetDatabase.FindAssets(searchFilter, searchDirectories);
-			}
-			var updatedAssets = new Dictionary<string, int>();
-
-			if (oldObjects.Count == 0)
-				return updatedAssets;
-
-			var inverseReferenceMap = new Dictionary<string, HashSet<string>>();
-			int referencesCount = 0;
-			// If an inverse reference map is not already cached, build one.
-			if (m_InverseReferenceMap == null)
-			{
-				// Initialize map to store all paths that have a reference to our old objects.
-				foreach (var selectedObj in oldObjects)
-				{
-					if (selectedObj == null)
-						continue;
-					string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
-					string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
-					inverseReferenceMap[selectedGuid] = new HashSet<string>();
-				}
-
-				// Scan all specified assets and store the inverse reference if it contains a reference to any old object.
-				var scanProgress = 0;
-				foreach (var guid in assetGUIDs)
-				{
-					scanProgress++;
-					var path = AssetDatabase.GUIDToAssetPath(guid);
-					if (IsDirectory(path))
-						continue;
-
-					var dependencies = AssetDatabase.GetDependencies(path);
-					foreach (var dependency in dependencies)
-					{
-						EditorUtility.DisplayProgressBar("Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
-
-						var dependencyGuid = AssetDatabase.AssetPathToGUID(dependency);
-						if (inverseReferenceMap.ContainsKey(dependencyGuid))
-						{
-							inverseReferenceMap[dependencyGuid].Add(path);
-
-							// The commented-out code below could be used to also include .meta files in the search,
-							// which can be useful for certain asset types like FBXs with external materials.
-							// var metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
-							// inverseReferenceMap[dependencyGUID].Add(metaPath);
-
-							referencesCount++;
-						}
-					}
-				}
-			}
-			else
-			{
-				// Use the pre-built cache.
-				inverseReferenceMap = m_InverseReferenceMap;
-				referencesCount = m_ReferencesCount;
-			}
-
-			// Get the GUID and FileID for the new object that will replace the old ones.
-			string newPath = AssetDatabase.GetAssetPath(newObject);
-			string newGuid = AssetDatabase.AssetPathToGUID(newPath);
-			AssetDatabase.TryGetGUIDAndLocalFileIdentifier(newObject, out string assetId, out long newFileId);
-			var countProgress = 0;
-			int countReplaced = 0;
-			// Iterate through each old object to be replaced.
-			foreach (var selectedObj in oldObjects)
-			{
-				if (selectedObj == null)
-					continue;
-				bool found = false;
-				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
-				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
-				AssetDatabase.TryGetGUIDAndLocalFileIdentifier(selectedObj, out assetId, out long selectedFileId);
-				var referencePaths = inverseReferenceMap[selectedGuid];
-				// Iterate through all assets that reference the current old object.
-				foreach (var referencePath in referencePaths)
-				{
-					if (referencePath == selectedPath)
-						continue;
-
-					countProgress++;
-
-					EditorUtility.DisplayProgressBar($"Replacing GUID: {selectedPath}", referencePath, (float)countProgress / referencesCount);
-
-					if (IsDirectory(referencePath))
-						continue;
-
-					var contents = File.ReadAllText(referencePath);
-
-					// Perform the text-based replacement of the GUID and FileID pair.
-					if (contents.Contains($"fileID: {selectedFileId}, guid: {selectedGuid}"))
-					{
-						contents = contents.Replace($"fileID: {selectedFileId}, guid: {selectedGuid}", $"fileID: {newFileId}, guid: {newGuid}");
-						File.WriteAllText(referencePath, contents);
-						countReplaced++;
-						found = true;
-					}
-				}
-
-				UnityEngine.Debug.Log($"Replace GUID in: {selectedPath}");
-				updatedAssets.Add(selectedPath, countReplaced);
-
-				if (found)
-					EditorUtility.SetDirty(selectedObj);
-			}
-			return updatedAssets;
+			assetGUIDs ??= AssetDatabase.FindAssets("t:Object", new[] { "Assets" });
+			var refs = BuildGuidRefs(oldObjects.Select(o => ((Object)o, (Object)newObject)));
+			var found = FindGuidReferences(refs, assetGUIDs) ?? new Dictionary<string, int>();
+			if (found.Count > 0)
+				ReplaceGuidReferences(refs, found.Keys.ToList());
+			return found;
 		}
 
-		/// <summary>
-		/// Scans the project to build a cache of which assets reference a given list of objects.
-		/// This is a preparatory step that populates the internal `m_InverseReferenceMap` for later use by `SearchAndReplaceGuid`.
-		/// </summary>
-		/// <typeparam name="T">The type of the objects to track references to.</typeparam>
-		/// <param name="assetGUIDs">An optional list of asset GUIDs to search within. If null, the entire project is scanned.</param>
-		/// <param name="cachedObjects">The list of objects whose references should be tracked.</param>
-		public static void BuildReferenceMapCache<T>(string[] assetGUIDs, List<T> cachedObjects) where T : Object
-		{
-			if (assetGUIDs == null)
-			{
-				const string searchFilter = "t:Object";
-				string[] searchDirectories = { "Assets" };
-				assetGUIDs = AssetDatabase.FindAssets(searchFilter, searchDirectories);
-			}
-
-			m_InverseReferenceMap = new Dictionary<string, HashSet<string>>();
-			m_ReferencesCount = 0;
-
-			// Initialize map to store all paths that have a reference to our selectedGuids
-			foreach (var selectedObj in cachedObjects)
-			{
-				string selectedPath = AssetDatabase.GetAssetPath(selectedObj);
-				string selectedGuid = AssetDatabase.AssetPathToGUID(selectedPath);
-				m_InverseReferenceMap[selectedGuid] = new HashSet<string>();
-			}
-
-			// Scan all assets and store the inverse reference if it contains a reference to any selectedGuid...
-			var scanProgress = 0;
-			foreach (var guid in assetGUIDs)
-			{
-				scanProgress++;
-				var path = AssetDatabase.GUIDToAssetPath(guid);
-				if (IsDirectory(path))
-					continue;
-
-				var dependencies = AssetDatabase.GetDependencies(path);
-				foreach (var dependency in dependencies)
-				{
-					EditorUtility.DisplayProgressBar("Scanning guid references on:", path, (float)scanProgress / assetGUIDs.Length);
-
-					var dependencyGuid = AssetDatabase.AssetPathToGUID(dependency);
-					if (m_InverseReferenceMap.ContainsKey(dependencyGuid))
-					{
-						m_InverseReferenceMap[dependencyGuid].Add(path);
-
-						// Also include .meta path. This fixes broken references when an FBX uses external materials
-						// var metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
-						// inverseReferenceMap[dependencyGUID].Add(metaPath);
-
-						m_ReferencesCount++;
-					}
-				}
-			}
-		}
+		[Obsolete("Not needed: SearchAndReplaceGuid scans on every call.")]
+		public static void BuildReferenceMapCache<T>(string[] assetGUIDs, List<T> cachedObjects) where T : Object { }
 
 		/// <summary>
 		/// Finds all assets matching a filter in a specified folder, marks them as dirty, and saves them.

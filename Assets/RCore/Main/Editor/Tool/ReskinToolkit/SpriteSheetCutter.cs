@@ -52,61 +52,67 @@ namespace RCore.Editor.Tool
 		public void Draw()
 		{
 			m_spriteSheets ??= new List<Texture2D>();
-			m_renameSprites = EditorHelper.Toggle(m_renameSprites, "Rename sprites",150);
+			m_renameSprites = EditorGUILayout.ToggleLeft("Rename exported sprites", m_renameSprites, EditorStyles.boldLabel);
 			if (m_renameSprites)
 			{
-				m_spriteNamePattern = EditorHelper.TextField(m_spriteNamePattern, "Sprite name pattern", 150);
-				m_stringRemovedInName = EditorHelper.TextField(m_stringRemovedInName, "String removed in name", 150);
-				m_prefix = EditorHelper.TextField(m_prefix, "Prefix in name", 150);
-				m_suffix = EditorHelper.TextField(m_suffix, "Suffix in name", 150);
-				m_renameOrigin = EditorHelper.Toggle(m_renameOrigin, "Rename originals", 150);
+				EditorGUI.indentLevel++;
+				m_spriteNamePattern = EditorGUILayout.TextField("Name pattern", m_spriteNamePattern);
+				m_stringRemovedInName = EditorGUILayout.TextField("Remove from name", m_stringRemovedInName);
+				m_prefix = EditorGUILayout.TextField("Prefix", m_prefix);
+				m_suffix = EditorGUILayout.TextField("Suffix", m_suffix);
+				m_renameOrigin = EditorGUILayout.Toggle("Rename originals", m_renameOrigin);
+				var first = m_spriteSheets.FirstOrDefault(x => x != null);
+				EditorGUILayout.LabelField("Preview", GetCustomName(first != null ? first.name : "SheetName"));
+				EditorGUI.indentLevel--;
 			}
-			bool renameOrigin = m_renameSprites && m_renameOrigin;
-			EditorHelper.DragDropBox<Texture2D>("Sprite sheet", objs =>
+
+			EditorHelper.DragDropBox<Texture2D>("Sprite sheets", objs =>
 			{
 				foreach (var obj in objs)
-				{
 					if (!m_spriteSheets.Contains(obj))
 						m_spriteSheets.Add(obj);
-				}
 			});
-			if (m_spriteSheets.Count > 0)
+
+			int remove = -1;
+			for (int i = 0; i < m_spriteSheets.Count; i++)
 			{
-				for (int i = 0; i < m_spriteSheets.Count; i++)
+				EditorGUILayout.BeginHorizontal();
+				m_spriteSheets[i] = (Texture2D)EditorGUILayout.ObjectField(m_spriteSheets[i], typeof(Texture2D), false);
+				var sheet = m_spriteSheets[i];
+				if (sheet != null)
 				{
-					EditorGUILayout.BeginHorizontal();
-					var spriteSheet = m_spriteSheets[i];
-					spriteSheet = (Texture2D)EditorHelper.ObjectField<Texture2D>(spriteSheet, null);
 					if (m_renameSprites)
-						EditorGUILayout.LabelField(GetCustomName(spriteSheet.name));
-					if (spriteSheet != null)
+						GUILayout.Label(GetCustomName(sheet.name));
+					if (EditorHelper.Button("Export", 60))
 					{
-						if (EditorHelper.Button("Export sprites", 100))
-						{
-							string customName = GetCustomName(spriteSheet.name);
-							EditorHelper.ExportSpritesFromTexture(spriteSheet, null, m_renameSprites ? customName : null, renameOrigin);
-						}
-						if (EditorHelper.ButtonColor("x", Color.red, 23))
-						{
-							m_spriteSheets.RemoveAt(i);
-							i--;
-						}
-					}
-					EditorGUILayout.EndHorizontal();
-				}
-				if (EditorHelper.Button("Export sprites"))
-				{
-					foreach (var spriteSheet in m_spriteSheets)
-					{
-						string customName = GetCustomName(spriteSheet.name);
-						EditorHelper.ExportSpritesFromTexture(spriteSheet, null, m_renameSprites ? customName : null, renameOrigin);
+						Export(sheet);
+						GUIUtility.ExitGUI(); // export refreshes the AssetDatabase mid-layout
 					}
 				}
-				if (EditorHelper.Button("Sort"))
-					m_spriteSheets = m_spriteSheets.OrderBy(x => x.name).ToList();
-				if (EditorHelper.Button("Remove sprite sheets"))
-					m_spriteSheets.Clear();
+				if (EditorHelper.ButtonColor("x", Color.red, 23))
+					remove = i;
+				EditorGUILayout.EndHorizontal();
 			}
+			if (remove >= 0)
+				m_spriteSheets.RemoveAt(remove);
+
+			if (m_spriteSheets.Count == 0)
+				return;
+			EditorGUILayout.BeginHorizontal();
+			if (EditorHelper.Button("Export all"))
+			{
+				foreach (var sheet in m_spriteSheets.Where(x => x != null).ToList())
+					Export(sheet);
+				GUIUtility.ExitGUI();
+			}
+			if (EditorHelper.Button("Sort"))
+				m_spriteSheets = m_spriteSheets.Where(x => x != null).OrderBy(x => x.name).ToList();
+			if (EditorHelper.ButtonColor("Clear", Color.red))
+				m_spriteSheets.Clear();
+			EditorGUILayout.EndHorizontal();
 		}
+
+		private void Export(Texture2D pSheet)
+			=> EditorHelper.ExportSpritesFromTexture(pSheet, null, m_renameSprites ? GetCustomName(pSheet.name) : null, m_renameSprites && m_renameOrigin);
 	}
 }

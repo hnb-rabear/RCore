@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
@@ -11,7 +13,7 @@ namespace RCore.Editor.Tool
 {
 	/// <summary>
 	/// Unified font replacer that handles both TMP_FontAsset and legacy Font replacement.
-	/// Supports folder-scoped scanning based on Unity Selection, with fallback to all Assets.
+	/// Scans assets in the shared scope (empty = all of Assets/) plus the open scene, which supports Undo.
 	/// </summary>
 	[Serializable]
 	public class UnifiedFontReplacer
@@ -32,140 +34,23 @@ namespace RCore.Editor.Tool
 
 		[SerializeField] private List<TMPInput> m_tmpInputs = new List<TMPInput>();
 		[SerializeField] private List<LegacyInput> m_legacyInputs = new List<LegacyInput>();
-		[SerializeField] private List<string> m_scopeFolders = new List<string>();
+		[SerializeField] private ReplaceScope m_scope = new ReplaceScope();
+		private ReplaceFlow m_flow;
 
 		public void Draw()
 		{
-			// --- Scope display ---
-			DrawScopeInfo();
-
-			EditorGUILayout.Space(4);
-
-			// --- TMP Font Section ---
+			m_flow ??= new ReplaceFlow();
+			m_scope ??= new ReplaceScope();
 			DrawTMPSection();
-
 			EditorGUILayout.Space(8);
-
-			// --- Legacy Font Section ---
 			DrawLegacySection();
-
 			EditorGUILayout.Space(8);
-
-			// --- Action Buttons ---
-			DrawActionButtons();
+			var mappings = GetMappings();
+			m_flow.Draw(nameof(UnifiedFontReplacer), m_scope, ReplaceFlow.Fingerprint(m_scope, mappings),
+				mappings.Count == 0 ? "Add a TMP or Legacy mapping with a New font and at least one Old font." : null,
+				() => Scan(mappings),
+				changes => Apply(mappings, changes));
 		}
-
-		#region Scope
-
-		private string[] GetSearchFolders()
-		{
-			return m_scopeFolders.Count > 0 ? m_scopeFolders.ToArray() : new[] { "Assets" };
-		}
-
-		private void DrawScopeInfo()
-		{
-			EditorGUILayout.BeginVertical("box");
-			{
-				// Header
-				EditorGUILayout.BeginHorizontal();
-				{
-					EditorGUILayout.LabelField("📁 Scan Scope", EditorStyles.boldLabel);
-					if (m_scopeFolders.Count > 0)
-					{
-						if (EditorHelper.ButtonColor("Clear All", Color.red, 70))
-						{
-							m_scopeFolders.Clear();
-						}
-					}
-				}
-				EditorGUILayout.EndHorizontal();
-
-				// Drag-and-drop area
-				var dropArea = GUILayoutUtility.GetRect(0, 50, GUILayout.ExpandWidth(true));
-				var dropStyle = new GUIStyle("box")
-				{
-					alignment = TextAnchor.MiddleCenter,
-					fontStyle = FontStyle.Italic,
-					normal = { textColor = new Color(0.7f, 0.7f, 0.7f) }
-				};
-
-				if (m_scopeFolders.Count == 0)
-				{
-					GUI.Box(dropArea, "Drag & drop folders here\n(empty = scan all Assets)", dropStyle);
-				}
-				else
-				{
-					GUI.Box(dropArea, $"Drag & drop to add more folders\n({m_scopeFolders.Count} folder(s) selected)", dropStyle);
-				}
-
-				// Handle drag-and-drop
-				HandleDragAndDrop(dropArea);
-
-				// Show selected folders
-				if (m_scopeFolders.Count > 0)
-				{
-					EditorGUILayout.Space(2);
-					for (int i = 0; i < m_scopeFolders.Count; i++)
-					{
-						EditorGUILayout.BeginHorizontal();
-						{
-							EditorGUILayout.LabelField($"  📂 {m_scopeFolders[i]}", EditorStyles.miniLabel);
-							if (EditorHelper.ButtonColor("x", Color.red, 20))
-							{
-								m_scopeFolders.RemoveAt(i);
-								i--;
-							}
-						}
-						EditorGUILayout.EndHorizontal();
-					}
-				}
-				else
-				{
-					EditorGUILayout.LabelField("  ⚡ Will scan: All Assets/", EditorStyles.miniLabel);
-				}
-			}
-			EditorGUILayout.EndVertical();
-		}
-
-		private void HandleDragAndDrop(Rect dropArea)
-		{
-			var evt = Event.current;
-			if (!dropArea.Contains(evt.mousePosition))
-				return;
-
-			switch (evt.type)
-			{
-				case EventType.DragUpdated:
-					bool hasFolder = false;
-					foreach (var obj in DragAndDrop.objectReferences)
-					{
-						string path = AssetDatabase.GetAssetPath(obj);
-						if (AssetDatabase.IsValidFolder(path))
-						{
-							hasFolder = true;
-							break;
-						}
-					}
-					DragAndDrop.visualMode = hasFolder ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Rejected;
-					evt.Use();
-					break;
-
-				case EventType.DragPerform:
-					DragAndDrop.AcceptDrag();
-					foreach (var obj in DragAndDrop.objectReferences)
-					{
-						string path = AssetDatabase.GetAssetPath(obj);
-						if (AssetDatabase.IsValidFolder(path) && !m_scopeFolders.Contains(path))
-						{
-							m_scopeFolders.Add(path);
-						}
-					}
-					evt.Use();
-					break;
-			}
-		}
-
-		#endregion
 
 		#region TMP Section
 
@@ -313,157 +198,77 @@ namespace RCore.Editor.Tool
 
 		#region Actions
 
-		private void DrawActionButtons()
+		private const string SCAN_FILTER = "t:GameObject t:ScriptableObject t:Scene";
+		private const string SCENE_ROW_PREFIX = "Open scene: ";
+
+		private List<(Object oldObj, Object newObj)> GetMappings()
 		{
-			bool hasAnyInput = m_tmpInputs.Count > 0 || m_legacyInputs.Count > 0;
-
-			GUI.enabled = hasAnyInput;
-
-			if (EditorHelper.ButtonColor("Scan & Replace", new Color(0.4f, 0.8f, 0.4f)))
-			{
-				ReplaceInProject();
-				ReplaceInScene();
-			}
-
-			GUI.enabled = true;
-		}
-
-		private void ReplaceInProject()
-		{
-			var folders = GetSearchFolders();
-			var assetGUIDs = AssetDatabase.FindAssets("t:GameObject t:ScriptableObject t:Scene", folders);
-
-			if (assetGUIDs.Length == 0)
-			{
-				Debug.LogWarning("[FontReplacer] No assets found in selected folders.");
-				return;
-			}
-
-			AssetDatabase.StartAssetEditing();
-
-			try
-			{
-				int totalReplaced = 0;
-
-				// TMP replacements
-				foreach (var input in m_tmpInputs)
-				{
-					if (input.replace == null)
-						continue;
-					var validTargets = input.targets.Where(t => t != null).ToList();
-					if (validTargets.Count == 0)
-						continue;
-
-					var result = EditorHelper.SearchAndReplaceGuid(validTargets, input.replace, assetGUIDs);
-					foreach (var item in result)
-					{
-						Debug.Log($"[FontReplacer] TMP: {input.replace.name} replaced in {item.Value} asset(s) — {item.Key}");
-						totalReplaced += item.Value;
-					}
-				}
-
-				// Legacy replacements
-				foreach (var input in m_legacyInputs)
-				{
-					if (input.replace == null)
-						continue;
-					var validTargets = input.targets.Where(t => t != null).ToList();
-					if (validTargets.Count == 0)
-						continue;
-
-					var result = EditorHelper.SearchAndReplaceGuid(validTargets, input.replace, assetGUIDs);
-					foreach (var item in result)
-					{
-						Debug.Log($"[FontReplacer] Legacy: {input.replace.name} replaced in {item.Value} asset(s) — {item.Key}");
-						totalReplaced += item.Value;
-					}
-				}
-
-				Debug.Log($"[FontReplacer] Done. Total: {totalReplaced} replacement(s) in {string.Join(", ", folders)}");
-			}
-			finally
-			{
-				EditorUtility.ClearProgressBar();
-				AssetDatabase.StopAssetEditing();
-				AssetDatabase.SaveAssets();
-				AssetDatabase.Refresh();
-			}
-		}
-
-		private void ReplaceInScene()
-		{
-			// Build lookup sets from inputs to avoid O(n) Contains calls per component
-			var tmpMap = new Dictionary<TMP_FontAsset, TMP_FontAsset>();
+			var mappings = new List<(Object oldObj, Object newObj)>();
 			foreach (var input in m_tmpInputs)
-			{
-				if (input.replace == null)
-					continue;
-				foreach (var target in input.targets)
-				{
-					if (target != null && target != input.replace)
-						tmpMap[target] = input.replace;
-				}
-			}
-
-			var legacyMap = new Dictionary<Font, Font>();
+				if (input.replace != null)
+					mappings.AddRange(input.targets.Where(t => t != null && t != input.replace).Select(t => ((Object)t, (Object)input.replace)));
 			foreach (var input in m_legacyInputs)
-			{
-				if (input.replace == null)
-					continue;
-				foreach (var target in input.targets)
-				{
-					if (target != null && target != input.replace)
-						legacyMap[target] = input.replace;
-				}
-			}
+				if (input.replace != null)
+					mappings.AddRange(input.targets.Where(t => t != null && t != input.replace).Select(t => ((Object)t, (Object)input.replace)));
+			return mappings;
+		}
 
-			if (tmpMap.Count == 0 && legacyMap.Count == 0)
-			{
-				Debug.LogWarning("[FontReplacer] No valid font mappings to replace in scene.");
-				return;
-			}
+		private List<ReplaceChange> Scan(List<(Object oldObj, Object newObj)> pMappings)
+		{
+			var changes = ReplaceFlow.ScanGuidRefs(pMappings, m_scope.GetGuids(SCAN_FILTER));
+			if (changes == null) // cancelled
+				return null;
+			int sceneCount = ProcessOpenScene(pMappings, false);
+			if (sceneCount > 0)
+				changes.Insert(0, new ReplaceChange { path = SCENE_ROW_PREFIX + SceneManager.GetActiveScene().name, count = sceneCount });
+			return changes;
+		}
 
-			// Use root objects to avoid double-counting from GetComponentsInChildren
-			var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-			var rootObjects = scene.GetRootGameObjects();
+		private static string Apply(List<(Object oldObj, Object newObj)> pMappings, List<ReplaceChange> pChanges)
+		{
+			bool scene = pChanges.RemoveAll(c => c.path.StartsWith(SCENE_ROW_PREFIX)) > 0;
+			string summary = pChanges.Count > 0 ? ReplaceFlow.ApplyGuidRefs(pMappings, pChanges) : "No files changed";
+			if (scene)
+				summary += $" · open scene: {ProcessOpenScene(pMappings, true)} text components (Ctrl+Z works)";
+			return summary;
+		}
+
+		/// <summary>Counts, or with pApply replaces, fonts on TMP_Text and Text components in the active scene.</summary>
+		private static int ProcessOpenScene(List<(Object oldObj, Object newObj)> pMappings, bool pApply)
+		{
+			var map = new Dictionary<Object, Object>();
+			foreach (var (oldObj, newObj) in pMappings)
+				map[oldObj] = newObj;
+			var scene = SceneManager.GetActiveScene();
 			int count = 0;
-			var modifiedObjects = new HashSet<GameObject>();
-
-			foreach (var root in rootObjects)
+			foreach (var root in scene.GetRootGameObjects())
 			{
-				// TMP replacements — TextMeshProUGUI (Canvas) + TextMeshPro (3D)
-				var tmps = root.GetComponentsInChildren<TMP_Text>(true);
-				foreach (var com in tmps)
+				foreach (var com in root.GetComponentsInChildren<TMP_Text>(true))
 				{
-					if (com.font != null && tmpMap.TryGetValue(com.font, out var newFont))
+					if (com.font == null || !map.TryGetValue(com.font, out var newFont))
+						continue;
+					count++;
+					if (pApply)
 					{
-						com.font = newFont;
-						count++;
-						var go = com.gameObject;
-						EditorUtility.SetDirty(go);
-						modifiedObjects.Add(go);
+						Undo.RecordObject(com, "Replace font");
+						com.font = (TMP_FontAsset)newFont;
 					}
 				}
-
-				// Legacy replacements
-				var texts = root.GetComponentsInChildren<Text>(true);
-				foreach (var com in texts)
+				foreach (var com in root.GetComponentsInChildren<Text>(true))
 				{
-					if (com.font != null && legacyMap.TryGetValue(com.font, out var newFont))
+					if (com.font == null || !map.TryGetValue(com.font, out var newFont))
+						continue;
+					count++;
+					if (pApply)
 					{
-						com.font = newFont;
-						count++;
-						var go = com.gameObject;
-						EditorUtility.SetDirty(go);
-						modifiedObjects.Add(go);
+						Undo.RecordObject(com, "Replace font");
+						com.font = (Font)newFont;
 					}
 				}
 			}
-
-			Selection.objects = modifiedObjects.ToArray();
-			AssetDatabase.SaveAssets();
-
-			Debug.Log($"[FontReplacer] Scene: Replaced {count} font reference(s) in {modifiedObjects.Count} object(s)");
+			if (pApply && count > 0)
+				EditorSceneManager.MarkSceneDirty(scene);
+			return count;
 		}
 
 		#endregion

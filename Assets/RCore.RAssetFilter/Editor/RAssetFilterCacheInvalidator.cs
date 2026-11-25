@@ -63,13 +63,10 @@ namespace RCore.RAssetFilter.Editor
 
             // A delete only removes one asset's forward/reverse edges; every other cached edge is
             // unchanged. Forget just the deleted paths instead of discarding the whole scan, mirroring
-            // the incremental move/import handling above. RAssetFilter.ForgetAssets no-ops when the
-            // cache isn't ready, so there's nothing to fall back to invalidating in that case.
+            // the incremental move/import handling above. RAssetFilter.ForgetAssets queues the paths
+            // when the cache isn't restored yet. Imports in the same batch must still be applied.
             if (HasRelevantPath(deletedAssets))
-            {
                 RAssetFilter.ForgetAssets(FilterRelevant(deletedAssets).ToArray());
-                return;
-            }
 
             if (HasRelevantPath(importedAssets))
             {

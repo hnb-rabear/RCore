@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -7,159 +8,118 @@ using Object = UnityEngine.Object;
 
 namespace RCore.Editor.Tool
 {
-	/// <summary>
-	/// Helper class to batch update Image properties (RaycastTarget, Maskable, etc.) for selected sprites or objects.
-	/// </summary>
-	[System.Serializable]
+	/// <summary>Sets Image properties (raycast target, sprite mesh, maskable, perfect ratio) on every Image that uses the listed sprites.</summary>
+	[Serializable]
 	public class ImagePropertyFixer
 	{
-		private bool m_displayIcon;
-		private List<Sprite> m_sprites = new List<Sprite>();
-		private List<GameObject> m_targets = new List<GameObject>();
-		private YesNoNone m_useSpriteMesh;
-		private YesNoNone m_raycastTarget;
-		private YesNoNone m_maskable;
-		private PerfectRatio m_perfectRatio;
+		private const string SCAN_FILTER = "t:GameObject";
+		private static readonly string[] m_PropertyOptions = { "Leave", "Off", "On" }; // YesNoNone order: None, No, Yes
 
-		private bool CanSubmit()
-		{
-			return m_useSpriteMesh != YesNoNone.None || m_raycastTarget != YesNoNone.None || m_maskable != YesNoNone.None || m_perfectRatio != PerfectRatio.None;
-		}
+		[SerializeField] private bool m_displayIcon;
+		[SerializeField] private List<Sprite> m_sprites = new List<Sprite>();
+		[SerializeField] private ReplaceScope m_scope = new ReplaceScope();
+		[SerializeField] private YesNoNone m_useSpriteMesh;
+		[SerializeField] private YesNoNone m_raycastTarget;
+		[SerializeField] private YesNoNone m_maskable;
+		[SerializeField] private PerfectRatio m_perfectRatio;
+		private ReplaceFlow m_flow;
+
+		private bool HasAnyProperty() => m_useSpriteMesh != YesNoNone.None || m_raycastTarget != YesNoNone.None
+			|| m_maskable != YesNoNone.None || m_perfectRatio != PerfectRatio.None;
+
+		private static YesNoNone PropertyField(string pLabel, YesNoNone pValue) => (YesNoNone)EditorGUILayout.Popup(pLabel, (int)pValue, m_PropertyOptions);
 
 		public void Draw()
 		{
-			var btnClearSprites = new GuiButton
-			{
-				label = "Clear sprites",
-				onPressed = () => m_sprites.Clear(),
-				color = Color.red
-			};
-			var btnClearTargets = new GuiButton
-			{
-				label = "Clear targets",
-				onPressed = () => this.m_targets.Clear(),
-				color = Color.red
-			};
+			m_flow ??= new ReplaceFlow();
+			m_scope ??= new ReplaceScope();
 			m_sprites ??= new List<Sprite>();
-			EditorHelper.DragDropBox<Object>("Sprite or Texture", objs =>
-			{
-				foreach (var obj in objs)
-				{
-					if (obj is Texture2D || obj is Sprite)
-					{
-						string path = AssetDatabase.GetAssetPath(obj);
-						var tempSprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
-						foreach (var sprite in tempSprites)
-							if (!m_sprites.Contains(sprite))
-								m_sprites.Add(sprite);
-					}
-					else if (obj is GameObject)
-					{
-						var images = (obj as GameObject).GetComponentsInChildren<Image>(true);
-						foreach (var image in images)
-							if (!m_sprites.Contains(image.sprite))
-								m_sprites.Add(image.sprite);
-						var spriteRenderers = (obj as GameObject).GetComponentsInChildren<SpriteRenderer>(true);
-						foreach (var image in spriteRenderers)
-						    if (!m_sprites.Contains(image.sprite))
-						        m_sprites.Add(image.sprite);
-					}
-				}
-			});
-			m_displayIcon = EditorHelper.Toggle(m_displayIcon, "Display icon");
-			EditorHelper.PagesForList(m_sprites.Count, nameof(m_sprites), i =>
-			{
-				EditorGUILayout.BeginHorizontal();
-				{
-					if (m_displayIcon)
-					{
-						m_sprites[i] = (Sprite)EditorHelper.ObjectField<Sprite>(m_sprites[i], "", 0, 60, showAsBox: true);
-						EditorHelper.TextField(m_sprites[i] != null ? m_sprites[i].name : "", "", 0, 200);
-					}
-					else
-						m_sprites[i] = (Sprite)EditorHelper.ObjectField<Sprite>(m_sprites[i], "");
-					if (EditorHelper.ButtonColor("-", Color.red, 23))
-						m_sprites.RemoveAt(i);
-				}
-				EditorGUILayout.EndHorizontal();
-			}, new IDraw[] { btnClearSprites }, new IDraw[] { btnClearSprites });
-			EditorHelper.DragDropBox<Object>("Searching sources", objs =>
-			{
-				foreach (var obj in objs)
-				{
-					if (obj is GameObject gameObject)
-						if (!m_targets.Contains(obj))
-							m_targets.Add(gameObject);
-				}
-			});
-			EditorGUILayout.HelpBox("If the searching sources is empty, the tool will scan all the objects in Assets folder", MessageType.Info);
-			EditorHelper.PagesForList(m_targets.Count, nameof(m_targets), i =>
-			{
-				EditorGUILayout.BeginHorizontal();
-				{
-					EditorGUILayout.ObjectField(m_targets[i], typeof(Object), false);
-					if (EditorHelper.ButtonColor("-", Color.red, 23))
-						m_targets.RemoveAt(i);
-				}
-				EditorGUILayout.EndHorizontal();
-			}, new IDraw[] { btnClearTargets }, new IDraw[] { btnClearTargets });
 
-			if (m_sprites.Count > 0)
+			var dropped = ReplaceFlow.DropZone("Drop the sprites whose Images to update\n(sprites, textures, prefabs, folders)");
+			if (dropped != null)
+				foreach (var sprite in SpriteReplacer.CollectSprites(dropped))
+					if (!m_sprites.Contains(sprite))
+						m_sprites.Add(sprite);
+
+			m_displayIcon = EditorGUILayout.Toggle("Icons", m_displayIcon);
+			int remove = -1;
+			EditorHelper.PagesForList(m_sprites.Count, $"{nameof(ImagePropertyFixer)}.sprites", i =>
 			{
-				m_raycastTarget = EditorHelper.DropdownListEnum(m_raycastTarget, "Raycast target", 100);
-				m_useSpriteMesh = EditorHelper.DropdownListEnum(m_useSpriteMesh, "Use sprite mesh", 100);
-				m_maskable = EditorHelper.DropdownListEnum(m_maskable, "Maskable", 100);
-				m_perfectRatio = EditorHelper.DropdownListEnum(m_perfectRatio, "Perfect ratio", 100);
-				if (EditorHelper.Button("Find images and apply"))
+				EditorGUILayout.BeginHorizontal();
+				if (m_displayIcon)
 				{
-					if (!CanSubmit())
-					{
-						EditorUtility.DisplayDialog("Error", "Please select an option", "OK");
-						return;
-					}
-					m_targets ??= new List<GameObject>();
-					if (m_targets.Count == 0)
-					{
-						bool ok = EditorUtility.DisplayDialog("Error", "If the searching sources is empty, the tool will scan all the objects in Assets folder", "Scan all", "Cancel");
-						if (!ok)
-							return;
-						var assetGUIDs = AssetDatabase.FindAssets("t:GameObject", new string[] { "Assets" });
-						foreach (var guiD in assetGUIDs)
-						{
-							var path = AssetDatabase.GUIDToAssetPath(guiD);
-							var obj = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-							m_targets.Add(obj);
-						}
-					}
-					foreach (var target in m_targets)
-					{
-						bool dirty = false;
-						var images = target.GetComponentsInChildren<Image>(true);
-						foreach (var image in images)
-						{
-							if (m_sprites.Contains(image.sprite))
-							{
-								if (m_raycastTarget != YesNoNone.None)
-									image.raycastTarget = m_raycastTarget == YesNoNone.Yes;
-								if (m_useSpriteMesh != YesNoNone.None)
-									image.useSpriteMesh = m_useSpriteMesh == YesNoNone.Yes;
-								if (m_maskable != YesNoNone.None)
-									image.maskable = m_maskable == YesNoNone.Yes;
-								if (m_perfectRatio == PerfectRatio.Height)
-									RUtil.PerfectRatioImageByHeight(image);
-								else if (m_perfectRatio == PerfectRatio.Width)
-									RUtil.PerfectRatioImageByWidth(image);
-								dirty = true;
-							}
-						}
-						if (dirty)
-							EditorUtility.SetDirty(target);
-					}
-					AssetDatabase.SaveAssets();
+					m_sprites[i] = (Sprite)EditorGUILayout.ObjectField(m_sprites[i], typeof(Sprite), false, GUILayout.Width(60), GUILayout.Height(60));
+					GUILayout.Label(m_sprites[i] != null ? m_sprites[i].name : "(empty)");
 				}
+				else
+					m_sprites[i] = (Sprite)EditorGUILayout.ObjectField(m_sprites[i], typeof(Sprite), false);
+				if (EditorHelper.ButtonColor("x", Color.red, 23))
+					remove = i;
+				EditorGUILayout.EndHorizontal();
+			});
+			if (remove >= 0)
+				m_sprites.RemoveAt(remove);
+			if (m_sprites.Count > 0 && EditorHelper.ButtonColor("Clear sprites", Color.red))
+				m_sprites.Clear();
+
+			EditorGUILayout.Space(6);
+			EditorGUILayout.LabelField("Set on matching Images", EditorStyles.boldLabel);
+			m_raycastTarget = PropertyField("Raycast target", m_raycastTarget);
+			m_useSpriteMesh = PropertyField("Use sprite mesh", m_useSpriteMesh);
+			m_maskable = PropertyField("Maskable", m_maskable);
+			m_perfectRatio = (PerfectRatio)EditorGUILayout.EnumPopup("Perfect ratio", m_perfectRatio);
+
+			EditorGUILayout.Space(6);
+			string reason = m_sprites.Count == 0 ? "Add sprites first." : !HasAnyProperty() ? "Set at least one property (not \"Leave\")." : null;
+			string fingerprint = ReplaceFlow.Fingerprint(m_scope, m_sprites.Select(x => ((Object)x, (Object)null)).ToList())
+				+ $"#{m_raycastTarget}{m_useSpriteMesh}{m_maskable}{m_perfectRatio}";
+			m_flow.Draw(nameof(ImagePropertyFixer), m_scope, fingerprint, reason, Scan, Apply);
+		}
+
+		private List<ReplaceChange> Scan()
+		{
+			var sprites = new HashSet<Sprite>(m_sprites.Where(x => x != null));
+			var changes = new List<ReplaceChange>();
+			foreach (var guid in m_scope.GetGuids(SCAN_FILTER))
+			{
+				string path = AssetDatabase.GUIDToAssetPath(guid);
+				var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+				if (prefab == null)
+					continue;
+				int count = prefab.GetComponentsInChildren<Image>(true).Count(x => sprites.Contains(x.sprite));
+				if (count > 0)
+					changes.Add(new ReplaceChange { path = path, count = count });
 			}
-			else
-				EditorGUILayout.HelpBox("Missing Sprites or Textures to the box,\n Missing searching sources", MessageType.Warning);
+			return changes;
+		}
+
+		private string Apply(List<ReplaceChange> pChanges)
+		{
+			var sprites = new HashSet<Sprite>(m_sprites.Where(x => x != null));
+			int images = 0;
+			foreach (var change in pChanges)
+			{
+				var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(change.path);
+				foreach (var image in prefab.GetComponentsInChildren<Image>(true))
+				{
+					if (!sprites.Contains(image.sprite))
+						continue;
+					if (m_raycastTarget != YesNoNone.None)
+						image.raycastTarget = m_raycastTarget == YesNoNone.Yes;
+					if (m_useSpriteMesh != YesNoNone.None)
+						image.useSpriteMesh = m_useSpriteMesh == YesNoNone.Yes;
+					if (m_maskable != YesNoNone.None)
+						image.maskable = m_maskable == YesNoNone.Yes;
+					if (m_perfectRatio == PerfectRatio.Height)
+						RUtil.PerfectRatioImageByHeight(image);
+					else if (m_perfectRatio == PerfectRatio.Width)
+						RUtil.PerfectRatioImageByWidth(image);
+					images++;
+				}
+				EditorUtility.SetDirty(prefab);
+			}
+			AssetDatabase.SaveAssets();
+			return $"{images} Images updated in {pChanges.Count} prefabs";
 		}
 	}
 }

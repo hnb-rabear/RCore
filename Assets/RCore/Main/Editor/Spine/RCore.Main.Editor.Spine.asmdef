@@ -1,0 +1,21 @@
+{
+    "name": "rcore.editor.spine",
+    "rootNamespace": "RCore.Editor",
+    "references": [
+        "spine-unity",
+        "spine-unity-editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "SPINE_ANIMATION"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

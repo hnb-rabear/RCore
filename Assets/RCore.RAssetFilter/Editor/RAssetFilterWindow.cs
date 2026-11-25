@@ -394,6 +394,79 @@ namespace RCore.RAssetFilter.Editor
 		private int m_leakInGroupIndex;
 		private int m_leakOutGroupIndex;
 
+		// List Sorting (shared by every asset list)
+		private enum SortMode { Path, Name, Size }
+
+		/// <summary>Sort state of one asset table; every table sorts on its own from its clickable header.</summary>
+		private class ListSort
+		{
+			private readonly string m_prefKey;
+			public SortMode mode;
+			public bool descending;
+
+			public ListSort(string pPrefKey) { m_prefKey = pPrefKey; }
+
+			public void Load()
+			{
+				mode = (SortMode)EditorPrefs.GetInt(m_prefKey + "_Mode", 0);
+				descending = EditorPrefs.GetBool(m_prefKey + "_Desc", false);
+			}
+
+			/// <summary>Draws one header cell; returns true when the click changed the order.</summary>
+			public bool HeaderButton(SortMode pMode, string pLabel, params GUILayoutOption[] pOptions)
+			{
+				string arrow = mode == pMode ? (descending ? " ▼" : " ▲") : "";
+				if (!GUILayout.Button(pLabel + arrow, EditorStyles.toolbarButton, pOptions))
+					return false;
+
+				if (mode == pMode)
+					descending = !descending;
+				else
+				{
+					mode = pMode;
+					descending = pMode == SortMode.Size; // biggest first is what a size sort is for
+				}
+				EditorPrefs.SetInt(m_prefKey + "_Mode", (int)mode);
+				EditorPrefs.SetBool(m_prefKey + "_Desc", descending);
+				return true;
+			}
+
+			/// <summary>Ties fall back to full path so the order stays stable.</summary>
+			public int Compare(string a, string b)
+			{
+				int result = 0;
+				if (mode == SortMode.Name)
+					result = string.Compare(Path.GetFileName(a), Path.GetFileName(b), System.StringComparison.OrdinalIgnoreCase);
+				else if (mode == SortMode.Size)
+					result = RAssetFilter.GetAssetSize(a).CompareTo(RAssetFilter.GetAssetSize(b));
+				if (result == 0)
+					result = string.Compare(a, b, System.StringComparison.OrdinalIgnoreCase);
+				return descending ? -result : result;
+			}
+		}
+
+		/// <summary>Draws the Name column (file name) and the Path column (folder) side by side; both tooltips hold the full path.</summary>
+		private static void DrawNameAndPath(Rect pRect, string pPath)
+		{
+			GUI.Label(new Rect(pRect.x, pRect.y, NAME_WIDTH - 5, pRect.height), new GUIContent(Path.GetFileName(pPath), pPath));
+			string folder = Path.GetDirectoryName(pPath)?.Replace('\\', '/') ?? "";
+			if (folder.StartsWith("Assets/"))
+				folder = folder.Substring("Assets/".Length); // display only; root-level assets keep "Assets"
+			GUI.Label(new Rect(pRect.x + NAME_WIDTH, pRect.y, pRect.width - NAME_WIDTH, pRect.height), new GUIContent(folder, pPath));
+		}
+
+		private const float CHECK_WIDTH = 20f;
+		private const float INDEX_WIDTH = 40f;
+		private const float NAME_WIDTH = 240f;
+		private const int REPORT_DIALOG_LINES = 20;
+		private readonly HashSet<string> m_leakInChecked = new HashSet<string>();
+		private readonly HashSet<string> m_leakOutChecked = new HashSet<string>();
+		private readonly ListSort m_cleanerSort = new ListSort("RAssetFilter_SortCleaner");
+		private readonly ListSort m_refSort = new ListSort("RAssetFilter_SortRef");
+		private readonly ListSort m_leakInSort = new ListSort("RAssetFilter_SortLeakIn");
+		private readonly ListSort m_leakOutSort = new ListSort("RAssetFilter_SortLeakOut");
+		private GUIStyle m_indexStyle;
+
 		// Settings/Style
 		private GUIStyle m_boxStyle;
 
@@ -403,6 +476,10 @@ namespace RCore.RAssetFilter.Editor
 		private void OnEnable()
 		{
 			IsOpen = true;
+			m_cleanerSort.Load();
+			m_refSort.Load();
+			m_leakInSort.Load();
+			m_leakOutSort.Load();
 			RAssetFilter.CacheInvalidated += OnCacheInvalidated;
 			RAssetFilter.CacheChanged += OnCacheChanged;
 			// Load cache
@@ -460,8 +537,7 @@ namespace RCore.RAssetFilter.Editor
 			if (RAssetFilter.HasUnusedData)
 			{
 				m_unusedAssets = new List<string>(RAssetFilter.UnusedAssetsCache);
-				CalculateTypeStats();
-				m_filteredAssets.Clear();
+				CalculateTypeStats(); // rebuilds m_filteredAssets
 				m_pageCacheList.Clear();
 				m_cachedPage = -1;
 				m_currentPage = 0;
@@ -471,12 +547,7 @@ namespace RCore.RAssetFilter.Editor
 				FindReferences(true);
 
 			// Leak reports derive from dependency edges and cannot survive an incremental graph update.
-			m_leakedIn.Clear();
-			m_leakedOut.Clear();
-			m_leakFoldouts.Clear();
-			m_leakScanned = false;
-			m_leakInGroupIndex = 0;
-			m_leakOutGroupIndex = 0;
+			ClearLeakResults();
 
 			Repaint();
 		}
@@ -500,11 +571,8 @@ namespace RCore.RAssetFilter.Editor
 			m_referenceFilteredAssets = m_referencingAssets;
 			m_usageDetails.Clear();
 			m_foldoutStates.Clear();
-			m_leakedIn.Clear();
-			m_leakedOut.Clear();
-			m_leakFoldouts.Clear();
+			ClearLeakResults();
 			m_leakLastSelection.Clear();
-			m_leakScanned = false;
 			m_scanned = false;
 			m_currentPage = 0;
 			m_cachedPage = -1;
@@ -597,9 +665,10 @@ namespace RCore.RAssetFilter.Editor
 			{
 				GUILayout.Space(10);
 				GUILayout.Label($"Found {m_unusedAssets.Count} unused assets. Total Size: {RAssetFilter.GetTotalSizeFormatted(m_unusedAssets)}");
+				EditorGUILayout.HelpBox("Unused = no project reference found. Assets loaded by path or name in code, and dead reference cycles, are not detected. Review before deleting.", MessageType.Warning);
 
 				DrawTypeFilters();
-				
+
 				// Calculate pagination
 				m_totalPages = Mathf.CeilToInt((float)m_filteredAssets.Count / m_itemsPerPage);
 				if (m_totalPages == 0) m_totalPages = 1;
@@ -618,11 +687,15 @@ namespace RCore.RAssetFilter.Editor
 				
 				// Header
 				EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+				GUILayout.Label("#", GUILayout.Width(INDEX_WIDTH));
 				GUILayout.Label("", GUILayout.Width(20)); // Icon space
-				GUILayout.Label("Path", GUILayout.ExpandWidth(true));
-				GUILayout.Label("Size", GUILayout.Width(60));
+				bool sortChanged = m_cleanerSort.HeaderButton(SortMode.Name, "Name", GUILayout.Width(NAME_WIDTH));
+				sortChanged |= m_cleanerSort.HeaderButton(SortMode.Path, "Path", GUILayout.ExpandWidth(true));
+				sortChanged |= m_cleanerSort.HeaderButton(SortMode.Size, "Size", GUILayout.Width(60));
 				GUILayout.Label("Action", GUILayout.Width(60));
 				EditorGUILayout.EndHorizontal();
+				if (sortChanged)
+					ApplyFilter();
 
 				m_scrollPos = GUILayout.BeginScrollView(m_scrollPos);
 
@@ -649,25 +722,27 @@ namespace RCore.RAssetFilter.Editor
 						EditorGUI.DrawRect(rowRect, new Color(0, 0, 0, 0.1f));
 					
 					// Columns
-					Rect iconRect = new Rect(rowRect.x, y + 2, 20, 20);
-					Rect pathRect = new Rect(rowRect.x + 25, y + 2, rowRect.width - 25 - 130, 20); 
+					Rect indexRect = new Rect(rowRect.x, y + 2, INDEX_WIDTH - 4, 20);
+					Rect iconRect = new Rect(rowRect.x + INDEX_WIDTH, y + 2, 20, 20);
+					Rect pathRect = new Rect(rowRect.x + INDEX_WIDTH + 25, y + 2, rowRect.width - INDEX_WIDTH - 25 - 130, 20);
 					Rect sizeRect = new Rect(rowRect.width - 125, y + 2, 60, 20);
 					Rect btnRect = new Rect(rowRect.width - 60, y + 2, 55, 20);
 
+					GUI.Label(indexRect, (startIndex + i + 1).ToString(), IndexStyle);
 					if (item.icon != null) GUI.Label(iconRect, item.icon);
-					GUI.Label(pathRect, item.path);
+					DrawNameAndPath(pathRect, item.path);
 					GUI.Label(sizeRect, item.sizeStr);
 
 					if (GUI.Button(btnRect, "Del")) // Shortened for space
 					{
-						if (EditorUtility.DisplayDialog("Delete Asset", $"Are you sure you want to delete {item.path}?", "Delete", "Cancel"))
+						if (EditorUtility.DisplayDialog("Delete Asset", $"Move {item.path} to the OS trash?", "Move to Trash", "Cancel"))
 						{
 							// Deleting from this list keeps the cache correct, so skip the import-driven invalidation.
 							bool deleted;
 							RAssetFilter.BeginInternalAssetEdit();
 							try
 							{
-								deleted = AssetDatabase.DeleteAsset(item.path);
+								deleted = AssetDatabase.MoveAssetToTrash(item.path);
 							}
 							finally
 							{
@@ -683,9 +758,13 @@ namespace RCore.RAssetFilter.Editor
 								RAssetFilter.ForgetAsset(item.path);
 								m_unusedAssets = new List<string>(RAssetFilter.UnusedAssetsCache);
 								RAssetFilter.SaveCache(m_unusedAssets);
+								// Stay on this page; the draw pass clamps it and rebuilds rows from the shrunk list.
+								int page = m_currentPage;
 								CalculateTypeStats();
-								BuildPageCache(startIndex, endIndex);
+								m_currentPage = page;
+								m_cachedPage = -1;
 							}
+							GUIUtility.ExitGUI(); // the row loop is iterating a page that no longer matches the list
 						}
 					}
 					
@@ -850,14 +929,19 @@ namespace RCore.RAssetFilter.Editor
 				// Header
 				EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 				GUILayout.Label("", GUILayout.Width(25)); // Foldout
+				GUILayout.Label("#", GUILayout.Width(INDEX_WIDTH));
 				GUILayout.Label("", GUILayout.Width(20)); // Icon
-				GUILayout.Label("Referencing Asset", GUILayout.ExpandWidth(true));
+				bool refSortChanged = m_refSort.HeaderButton(SortMode.Name, "Name", GUILayout.Width(NAME_WIDTH));
+				refSortChanged |= m_refSort.HeaderButton(SortMode.Path, "Path", GUILayout.ExpandWidth(true));
+				refSortChanged |= m_refSort.HeaderButton(SortMode.Size, "Size", GUILayout.Width(60));
 				GUILayout.Label("Type", GUILayout.Width(90));
 #if ADDRESSABLES
 				GUILayout.Label("Addressable", GUILayout.Width(130));
 #endif
 				GUILayout.Label("Action", GUILayout.Width(60));
 				EditorGUILayout.EndHorizontal();
+				if (refSortChanged)
+					UpdateReferenceFilter();
 
 				m_refScrollPos = GUILayout.BeginScrollView(m_refScrollPos);
 				
@@ -879,14 +963,17 @@ namespace RCore.RAssetFilter.Editor
 					bool isExpanded = m_foldoutStates[refPath];
 					
 					Rect foldoutRect = new Rect(rowRect.x, rowRect.y, 25, rowRect.height);
-					Rect iconRect = new Rect(rowRect.x + 25, rowRect.y, 20, 20);
+					Rect indexRect = new Rect(rowRect.x + 25, rowRect.y, INDEX_WIDTH - 4, rowRect.height);
+					Rect iconRect = new Rect(rowRect.x + 25 + INDEX_WIDTH, rowRect.y, 20, 20);
 #if ADDRESSABLES
-					Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 65 - 90 - 130, rowRect.height);
+					Rect pathRect = new Rect(rowRect.x + 50 + INDEX_WIDTH, rowRect.y, rowRect.width - 50 - INDEX_WIDTH - 65 - 65 - 90 - 130, rowRect.height);
+					Rect sizeRect = new Rect(rowRect.width - 60 - 130 - 90 - 65, rowRect.y, 60, rowRect.height);
 					Rect typeRect = new Rect(rowRect.width - 60 - 130 - 90, rowRect.y, 85, rowRect.height);
 					Rect addressableRect = new Rect(rowRect.width - 60 - 130, rowRect.y, 125, rowRect.height);
 					Rect btnRect = new Rect(rowRect.width - 60, rowRect.y, 55, 18);
 #else
-					Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 65 - 90, rowRect.height);
+					Rect pathRect = new Rect(rowRect.x + 50 + INDEX_WIDTH, rowRect.y, rowRect.width - 50 - INDEX_WIDTH - 65 - 65 - 90, rowRect.height);
+					Rect sizeRect = new Rect(rowRect.width - 60 - 90 - 65, rowRect.y, 60, rowRect.height);
 					Rect typeRect = new Rect(rowRect.width - 60 - 90, rowRect.y, 85, rowRect.height);
 					Rect btnRect = new Rect(rowRect.width - 60, rowRect.y, 55, 18);
 #endif
@@ -900,9 +987,11 @@ namespace RCore.RAssetFilter.Editor
 						}
 					}
 
+					GUI.Label(indexRect, (i + 1).ToString(), IndexStyle);
 					var icon = AssetDatabase.GetCachedIcon(refPath);
 					if (icon != null) GUI.Label(iconRect, icon);
-					GUI.Label(pathRect, refPath);
+					DrawNameAndPath(pathRect, refPath);
+					GUI.Label(sizeRect, EditorUtility.FormatBytes(RAssetFilter.GetAssetSize(refPath)));
 					GUI.Label(typeRect, asset.GetType().Name);
 #if ADDRESSABLES
 					GUI.Label(addressableRect, GetAddressableGroupLabel(refPath));
@@ -1005,10 +1094,7 @@ namespace RCore.RAssetFilter.Editor
 				CalculateTypeStats();
 				m_currentPage = 0;
 				m_scanned = true;
-				m_leakedIn.Clear();
-				m_leakedOut.Clear();
-				m_leakFoldouts.Clear();
-				m_leakScanned = false;
+				ClearLeakResults();
 				EditorApplication.RepaintProjectWindow();
 			}
 			EditorGUILayout.EndHorizontal();
@@ -1032,14 +1118,14 @@ namespace RCore.RAssetFilter.Editor
 			m_leakedInExpanded = EditorGUILayout.Foldout(m_leakedInExpanded,
 				$"Leaked In ({m_leakedIn.Count}) - {RAssetFilter.GetTotalSizeFormatted(leakedInPaths)} - referenced from outside selection", true);
 			if (m_leakedInExpanded)
-				DrawLeakSection(m_leakedIn, "Referenced by", ref m_leakInGroupIndex);
+				DrawLeakSection(m_leakedIn, "Referenced by", ref m_leakInGroupIndex, m_leakInSort, m_leakInChecked);
 
 			GUILayout.Space(10);
 			var leakedOutPaths = m_leakedOut.Select(l => l.assetPath).ToList();
 			m_leakedOutExpanded = EditorGUILayout.Foldout(m_leakedOutExpanded,
 				$"Leaked Out ({m_leakedOut.Count}) - {RAssetFilter.GetTotalSizeFormatted(leakedOutPaths)} - external assets pulled into selection", true);
 			if (m_leakedOutExpanded)
-				DrawLeakSection(m_leakedOut, "Pulled in by", ref m_leakOutGroupIndex);
+				DrawLeakSection(m_leakedOut, "Pulled in by", ref m_leakOutGroupIndex, m_leakOutSort, m_leakOutChecked);
 
 			GUILayout.EndScrollView();
 		}
@@ -1053,13 +1139,29 @@ namespace RCore.RAssetFilter.Editor
 			var leaks = RAssetFilterLeak.DetectLeaks(boundary);
 			m_leakedIn = leaks.Where(l => l.direction == LeakDirection.LeakedIn).ToList();
 			m_leakedOut = leaks.Where(l => l.direction == LeakDirection.LeakedOut).ToList();
+			SortLeaks(m_leakedIn, m_leakInSort);
+			SortLeaks(m_leakedOut, m_leakOutSort);
 			m_leakFoldouts.Clear();
+			m_leakInChecked.Clear();
+			m_leakOutChecked.Clear();
 			m_leakInGroupIndex = 0;
 			m_leakOutGroupIndex = 0;
 			m_leakScanned = true;
 		}
 
-		private void DrawLeakSection(List<LeakEntry> pEntries, string pRelatedLabel, ref int pGroupIndex)
+		private void ClearLeakResults()
+		{
+			m_leakedIn.Clear();
+			m_leakedOut.Clear();
+			m_leakFoldouts.Clear();
+			m_leakInChecked.Clear();
+			m_leakOutChecked.Clear();
+			m_leakScanned = false;
+			m_leakInGroupIndex = 0;
+			m_leakOutGroupIndex = 0;
+		}
+
+		private void DrawLeakSection(List<LeakEntry> pEntries, string pRelatedLabel, ref int pGroupIndex, ListSort pSort, HashSet<string> pChecked)
 		{
 			if (pEntries.Count == 0)
 			{
@@ -1072,10 +1174,157 @@ namespace RCore.RAssetFilter.Editor
 			pGroupIndex = Mathf.Clamp(pGroupIndex, 0, groups.Count - 1);
 			pGroupIndex = GUILayout.Toolbar(pGroupIndex, tabLabels);
 			GUILayout.Space(5);
-			DrawLeakEntries(groups[pGroupIndex].ToList(), pRelatedLabel);
+
+			EditorGUI.BeginDisabledGroup(pChecked.Count == 0);
+			if (GUILayout.Button($"Move {pChecked.Count} Selected To...", GUILayout.Width(200)))
+			{
+				MoveCheckedAssets(pChecked);
+				GUIUtility.ExitGUI(); // modal dialogs and cleared results invalidate this frame's layout
+			}
+			EditorGUI.EndDisabledGroup();
+
+			var tabEntries = groups[pGroupIndex].ToList();
+			EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+			bool allChecked = tabEntries.All(e => pChecked.Contains(e.assetPath));
+			if (GUILayout.Toggle(allChecked, GUIContent.none, GUILayout.Width(CHECK_WIDTH)) != allChecked)
+			{
+				foreach (var e in tabEntries)
+				{
+					if (allChecked) pChecked.Remove(e.assetPath);
+					else pChecked.Add(e.assetPath);
+				}
+			}
+			GUILayout.Label("", GUILayout.Width(25)); // Foldout
+			GUILayout.Label("#", GUILayout.Width(INDEX_WIDTH));
+			GUILayout.Label("", GUILayout.Width(20)); // Icon
+			bool sortChanged = pSort.HeaderButton(SortMode.Name, "Name", GUILayout.Width(NAME_WIDTH));
+			sortChanged |= pSort.HeaderButton(SortMode.Path, "Path", GUILayout.ExpandWidth(true));
+			sortChanged |= pSort.HeaderButton(SortMode.Size, "Size", GUILayout.Width(60));
+			GUILayout.Label("Action", GUILayout.Width(60));
+			EditorGUILayout.EndHorizontal();
+			// GroupBy keeps source order, so sorting the whole section re-sorts every type tab.
+			if (sortChanged)
+				SortLeaks(pEntries, pSort);
+
+			DrawLeakEntries(tabEntries, pRelatedLabel, pChecked);
 		}
 
-		private void DrawLeakEntries(List<LeakEntry> pEntries, string pRelatedLabel)
+		/// <summary>Moves every checked asset into one picked folder. Never overwrites: a taken name is skipped and reported.</summary>
+		private void MoveCheckedAssets(HashSet<string> pChecked)
+		{
+			string picked = EditorUtility.OpenFolderPanel("Move Selected Assets To", "Assets", "");
+			if (string.IsNullOrEmpty(picked))
+				return;
+
+			string folder = ToProjectAssetsFolder(picked);
+			if (folder == null)
+			{
+				EditorUtility.DisplayDialog("Move Assets", "Pick a folder inside this project's Assets folder.", "OK");
+				return;
+			}
+
+			var sources = pChecked.OrderBy(p => p, System.StringComparer.Ordinal).ToList();
+			if (!EditorUtility.DisplayDialog("Move Assets",
+				$"Move {sources.Count} assets to {folder}?\n\nGUID references are kept, but code that loads by path or folder name may break.\nCtrl+Z cannot undo this.", "Move", "Cancel"))
+				return;
+
+			var moved = new Dictionary<string, string>();
+			var claimed = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+			var alreadyThere = new List<string>();
+			var skipped = new List<string>();
+			var failed = new List<string>();
+
+			AssetDatabase.StartAssetEditing();
+			try
+			{
+				foreach (var source in sources)
+				{
+					string sourceFolder = Path.GetDirectoryName(source)?.Replace('\\', '/');
+					if (string.Equals(sourceFolder, folder, System.StringComparison.OrdinalIgnoreCase))
+					{
+						alreadyThere.Add(source);
+						continue;
+					}
+
+					string destination = folder + "/" + Path.GetFileName(source);
+					if (claimed.Contains(destination) || File.Exists(destination) || Directory.Exists(destination))
+					{
+						skipped.Add(source);
+						continue;
+					}
+
+					string error = AssetDatabase.MoveAsset(source, destination);
+					if (!string.IsNullOrEmpty(error))
+					{
+						failed.Add($"{source}: {error}");
+						continue;
+					}
+					claimed.Add(destination);
+					moved[source] = destination;
+				}
+			}
+			finally
+			{
+				AssetDatabase.StopAssetEditing();
+			}
+
+			// A directly scanned prefab that moved must keep its place in the scan boundary for Rescan.
+			for (int i = 0; i < m_leakLastSelection.Count; i++)
+			{
+				if (moved.TryGetValue(m_leakLastSelection[i], out var newPath))
+					m_leakLastSelection[i] = newPath;
+			}
+
+			// Results are stale once dependency paths change; the user presses Rescan.
+			ClearLeakResults();
+
+			string summary = $"Moved {moved.Count} of {sources.Count} assets to {folder}.";
+			if (skipped.Count + alreadyThere.Count + failed.Count > 0)
+				Debug.Log(BuildMoveReport(summary, skipped, alreadyThere, failed, int.MaxValue));
+			EditorUtility.DisplayDialog("Move Assets", BuildMoveReport(summary, skipped, alreadyThere, failed, REPORT_DIALOG_LINES), "OK");
+		}
+
+		/// <summary>Absolute picker path to "Assets[/...]", or null when it is not a folder inside this project's Assets.</summary>
+		private static string ToProjectAssetsFolder(string pAbsolutePath)
+		{
+			string assetsRoot = Path.GetFullPath(Application.dataPath).Replace('\\', '/').TrimEnd('/');
+			string picked = Path.GetFullPath(pAbsolutePath).Replace('\\', '/').TrimEnd('/');
+
+			string folder = null;
+			if (string.Equals(picked, assetsRoot, System.StringComparison.OrdinalIgnoreCase))
+				folder = "Assets";
+			else if (picked.StartsWith(assetsRoot + "/", System.StringComparison.OrdinalIgnoreCase))
+				folder = "Assets" + picked.Substring(assetsRoot.Length);
+
+			return folder != null && AssetDatabase.IsValidFolder(folder) ? folder : null;
+		}
+
+		private static string BuildMoveReport(string pSummary, List<string> pSkipped, List<string> pAlreadyThere, List<string> pFailed, int pMaxLines)
+		{
+			var sb = new System.Text.StringBuilder(pSummary);
+			AppendReportSection(sb, "Skipped (name already exists at destination)", pSkipped, pMaxLines);
+			AppendReportSection(sb, "Already in destination", pAlreadyThere, pMaxLines);
+			AppendReportSection(sb, "Failed", pFailed, pMaxLines);
+			return sb.ToString();
+		}
+
+		private static void AppendReportSection(System.Text.StringBuilder pSb, string pTitle, List<string> pItems, int pMaxLines)
+		{
+			if (pItems.Count == 0)
+				return;
+			pSb.Append($"\n\n{pTitle} ({pItems.Count}):");
+			foreach (var item in pItems.Take(pMaxLines))
+				pSb.Append("\n").Append(item);
+			if (pItems.Count > pMaxLines)
+				pSb.Append($"\n...and {pItems.Count - pMaxLines} more (full list in Console)");
+		}
+
+		private static void SortLeaks(List<LeakEntry> pEntries, ListSort pSort)
+		{
+			pEntries.Sort((a, b) => pSort.Compare(a.assetPath, b.assetPath));
+		}
+
+		private void DrawLeakEntries(List<LeakEntry> pEntries, string pRelatedLabel, HashSet<string> pChecked)
 		{
 			if (pEntries.Count == 0)
 			{
@@ -1096,18 +1345,29 @@ namespace RCore.RAssetFilter.Editor
 					m_leakFoldouts[foldKey] = false;
 				bool isExpanded = m_leakFoldouts[foldKey];
 
-				Rect foldoutRect = new Rect(rowRect.x, rowRect.y, 25, rowRect.height);
-				Rect iconRect = new Rect(rowRect.x + 25, rowRect.y, 20, 20);
-				Rect pathRect = new Rect(rowRect.x + 50, rowRect.y, rowRect.width - 50 - 130, rowRect.height);
+				float x = rowRect.x + CHECK_WIDTH;
+				Rect checkRect = new Rect(rowRect.x + 2, rowRect.y, CHECK_WIDTH - 2, rowRect.height);
+				Rect foldoutRect = new Rect(x, rowRect.y, 25, rowRect.height);
+				Rect indexRect = new Rect(x + 25, rowRect.y, INDEX_WIDTH - 4, rowRect.height);
+				Rect iconRect = new Rect(x + 25 + INDEX_WIDTH, rowRect.y, 20, 20);
+				Rect pathRect = new Rect(x + 50 + INDEX_WIDTH, rowRect.y, rowRect.width - CHECK_WIDTH - 50 - INDEX_WIDTH - 130, rowRect.height);
 				Rect sizeRect = new Rect(rowRect.width - 125, rowRect.y, 60, rowRect.height);
 				Rect btnRect = new Rect(rowRect.width - 60, rowRect.y, 55, 18);
+
+				bool isChecked = pChecked.Contains(entry.assetPath);
+				if (GUI.Toggle(checkRect, isChecked, GUIContent.none) != isChecked)
+				{
+					if (isChecked) pChecked.Remove(entry.assetPath);
+					else pChecked.Add(entry.assetPath);
+				}
 
 				if (GUI.Button(foldoutRect, isExpanded ? "▼" : "▶", EditorStyles.label))
 					m_leakFoldouts[foldKey] = !isExpanded;
 
+				GUI.Label(indexRect, (i + 1).ToString(), IndexStyle);
 				var icon = AssetDatabase.GetCachedIcon(entry.assetPath);
 				if (icon != null) GUI.Label(iconRect, icon);
-				GUI.Label(pathRect, entry.assetPath);
+				DrawNameAndPath(pathRect, entry.assetPath);
 				GUI.Label(sizeRect, EditorUtility.FormatBytes(RAssetFilter.GetAssetSize(entry.assetPath)));
 
 				if (GUI.Button(btnRect, "Select"))
@@ -1198,9 +1458,9 @@ namespace RCore.RAssetFilter.Editor
 				}
 			}
 
-			m_referencingAssets = references.OrderBy(x => x).ToList();
-#if ADDRESSABLES
+			m_referencingAssets = references.ToList();
 			UpdateReferenceFilter();
+#if ADDRESSABLES
 			m_addressableChains.Clear();
 			if (m_autoFindAddressableChain)
 			{
@@ -1208,14 +1468,12 @@ namespace RCore.RAssetFilter.Editor
 				if (chain.Count > 0)
 					m_addressableChains.Add(chain);
 			}
-#else
-			m_referenceFilteredAssets = m_referencingAssets;
 #endif
 		}
 
-#if ADDRESSABLES
 		private void UpdateReferenceFilter()
 		{
+#if ADDRESSABLES
 			switch (m_referenceFilterIndex)
 			{
 				case 1:
@@ -1225,11 +1483,18 @@ namespace RCore.RAssetFilter.Editor
 					m_referenceFilteredAssets = m_referencingAssets.Where(IsAddressableAsset).ToList();
 					break;
 				default:
-					m_referenceFilteredAssets = m_referencingAssets;
+					m_referenceFilteredAssets = new List<string>(m_referencingAssets);
 					break;
 			}
+#else
+			m_referenceFilteredAssets = new List<string>(m_referencingAssets);
+#endif
+			m_referenceFilteredAssets.Sort(m_refSort.Compare);
 		}
 
+		private GUIStyle IndexStyle => m_indexStyle ??= new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.MiddleRight };
+
+#if ADDRESSABLES
 		private bool IsAddressableAsset(string path)
 		{
 			string guid = AssetDatabase.AssetPathToGUID(path);
@@ -1479,9 +1744,10 @@ namespace RCore.RAssetFilter.Editor
 				if (EditorUtility.DisplayCancelableProgressBar("Calculating Type Statistics", 
 					$"Processing {index}/{total} assets...", (float)index / total))
 				{
-					// User cancelled
+					// User cancelled: stats stay empty, but the list must still reflect m_unusedAssets.
 					EditorUtility.ClearProgressBar();
 					m_typeStats.Clear();
+					ApplyFilter();
 					return;
 				}
 			}
@@ -1512,6 +1778,7 @@ namespace RCore.RAssetFilter.Editor
 					m_filteredAssets.Add(path);
 				}
 			}
+			m_filteredAssets.Sort(m_cleanerSort.Compare);
 			m_currentPage = 0; // Reset to first page when filter changes
 			m_cachedPage = -1; // Invalidate cache
 		}

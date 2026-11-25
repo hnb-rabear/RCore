@@ -75,6 +75,15 @@ namespace RCore.Editor
             DrawPreviewPathOverlay(r);
         }
 
+        // AssetPreview.GetAssetPreview and Project window thumbnails call this; without the forward they stay empty.
+        public override Texture2D RenderStaticPreview(string assetPath, UnityEngine.Object[] subAssets, int width, int height)
+        {
+            CreateDefaultEditor();
+            return m_DefaultEditor != null
+                ? m_DefaultEditor.RenderStaticPreview(assetPath, subAssets, width, height)
+                : base.RenderStaticPreview(assetPath, subAssets, width, height);
+        }
+
         public override void OnPreviewSettings()
         {
             CreateDefaultEditor();
@@ -107,7 +116,7 @@ namespace RCore.Editor
             DrawExtraInfo();
         }
 
-        protected static void DrawSelectableLabel(string label, string value)
+        public static void DrawSelectableLabel(string label, string value)
         {
             if (string.IsNullOrEmpty(value))
                 value = "-";
@@ -148,15 +157,24 @@ namespace RCore.Editor
         }
     }
 
-    [CustomEditor(typeof(TextureImporter))]
-    [CanEditMultipleObjects]
-    public class TextureImporterPathPreviewEditor : AssetPathPreviewEditorBase
+    /// <summary>
+    /// Shows the asset path in the importer header. Must NOT be a CustomEditor for
+    /// TextureImporter: overriding an AssetImporterEditor swallows its Apply/Revert footer.
+    /// </summary>
+    [InitializeOnLoad]
+    internal static class AssetImporterPathHeader
     {
-        protected override string DefaultEditorTypeName => "UnityEditor.TextureImporterInspector, UnityEditor";
-
-        protected override string GetPathLabel()
+        static AssetImporterPathHeader()
         {
-            return AssetDatabase.GetAssetPath(target);
+            UnityEditor.Editor.finishedDefaultHeaderGUI += OnHeaderGUI;
+        }
+
+        private static void OnHeaderGUI(UnityEditor.Editor editor)
+        {
+            if (editor.targets.Length != 1 || !(editor.target is AssetImporter importer))
+                return;
+
+            AssetPathPreviewEditorBase.DrawSelectableLabel("Asset Path", importer.assetPath);
         }
     }
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0] - 2026-11-25
+
+### Added
+
+- Row numbers and sortable Name / Path / Size headers in every table. Sort choice is saved per table.
+- Separate Name and Path columns, and a Size column in the reference list.
+- Bulk move for leaked assets.
+
+### Fixed
+
+- Assets that are still needed no longer show in the unused list.
+- Cache updates after move, import and delete are correct.
+
 ## [1.0.0] - 2026-08-21
 
 Initial release. Extracted from `Assets/RCore/Main/Editor/Tool/AssetCleaner/` and renamed

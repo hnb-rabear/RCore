@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.5.0] - 2026-11-25
+
+### Changed
+
+- **Asset path in importer headers** is drawn through `Editor.finishedDefaultHeaderGUI` instead of a `TextureImporter` custom editor, so the importer's Apply/Revert footer is back. `TextureImporterPathPreviewEditor` is removed.
+
+- **Find And Replace Assets**: Replace Sprite, Replace Object, Replace Font and Update Image Property share one Scope → Scan → Preview → Apply flow. Scan lists every asset that would change; untick rows to skip them. Apply is disabled when inputs change after a scan, and files open in a scene or prefab stage are locked.
+- **Replace Sprite**: columns are now Old (in use) → New (replacement), in three steps: Pairs, Pivots & TexturePacker, Replace. Drop zones accept sprites, textures, prefabs and folders. New "Unmatched only" filter and name search.
+- **`EditorAssetUtil.SearchAndReplaceGuid`** scans on every call. `BuildReferenceMapCache` is obsolete and does nothing.
+
+### Added
+
+- **EdgeAlignedHorizontalLayoutGroup — Middle Bias** (-1..1 slider): -1 packs the middle children against the first child, 1 against the last, using Spacing as the gap (capped at the equal gap); 0 keeps the equal spread.
+- `EditorAssetUtil.ReplaceInText`, `FindGuidReferences`, `ReplaceGuidReferences`, `BuildGuidRefs`, `GetGuidRef`.
+- **Spine Edit Mode preview** for `SkeletonAnimation` and `SkeletonGraphic` (`rcore.editor.spine`, needs `SPINE_ANIMATION`). `SpineDefineSymbolSetup` adds that define when Spine is in the project.
+
+### Fixed
+
+- Asset Catalog usage cache moves to `Library/AssetCatalog_Usages_<guid>.json`, so a catalog under `Resources/` no longer ships it in the build.
+- `JustButton.CheckPerfectRatio` uses the Rect size instead of `sizeDelta`.
+- `GeneralSpriteLinker` no longer crashes on a re-entrant import in batch mode.
+- Sprite path preview: Transfer Pivots NRE and blank previews.
+
+- Replace Object / Replace Font threw `KeyNotFoundException` after a Replace Sprite run (stale static cache).
+- Replace counts in logs no longer add up across objects; the progress bar always closes.
+- Write Old pivots to .tps finds the sprite list by key instead of a fixed index, and shows an error instead of throwing.
+- Replace Font in the open scene supports Undo and marks the scene dirty.
+- Update Image Property keeps its inputs after recompiling and skips Images without a sprite.
+- Cut Sprite Sheet keeps row edits and no longer throws on an empty row.
+- Tab inputs are saved to `FindAndReplaceAssetToolkit.asset` when the window closes (before, they were lost when Unity restarted).
+
+### Removed
+
+- `GenericObjectsReplacer<T>` (unused).
+
 ## [1.4.0] - 2026-08-18
 
 ### Added

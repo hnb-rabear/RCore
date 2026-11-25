@@ -27,6 +27,16 @@ namespace RCore.RAssetFilter.Editor
 		private static readonly HashSet<string> PendingImportedAssets = new HashSet<string>(StringComparer.Ordinal);
 		private static readonly List<string> PendingMovedFromPaths = new List<string>();
 		private static readonly List<string> PendingMovedToPaths = new List<string>();
+		private static readonly HashSet<string> PendingDeletedAssets = new HashSet<string>(StringComparer.Ordinal);
+
+		/// <summary>Files that are only referenced from code or shader includes; the dependency graph cannot see their users.</summary>
+		private static readonly HashSet<string> CodeRootExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+		{
+			".cs", ".asmdef", ".asmref", ".dll", ".cginc", ".hlsl"
+		};
+
+		private static readonly System.Text.RegularExpressions.Regex GuidRegex =
+			new System.Text.RegularExpressions.Regex(@"guid:\s*([0-9a-fA-F]{32})", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
 		private static bool m_cacheReady;
 		private static bool m_unusedDataReady;
@@ -63,9 +73,7 @@ namespace RCore.RAssetFilter.Editor
 			if (hadPersistedData)
 				DiscardCacheFile();
 
-			PendingImportedAssets.Clear();
-			PendingMovedFromPaths.Clear();
-			PendingMovedToPaths.Clear();
+			ClearPendingChanges();
 			ClearCacheState();
 			CacheInvalidated?.Invoke();
 			EditorApplication.RepaintProjectWindow();
@@ -85,7 +93,15 @@ namespace RCore.RAssetFilter.Editor
 
 		private static bool HasPendingCapacity(int additional)
 		{
-			return PendingImportedAssets.Count + PendingMovedFromPaths.Count + additional <= MAX_PENDING_CHANGES;
+			return PendingImportedAssets.Count + PendingMovedFromPaths.Count + PendingDeletedAssets.Count + additional <= MAX_PENDING_CHANGES;
+		}
+
+		private static void ClearPendingChanges()
+		{
+			PendingImportedAssets.Clear();
+			PendingMovedFromPaths.Clear();
+			PendingMovedToPaths.Clear();
+			PendingDeletedAssets.Clear();
 		}
 
 		private static void DropCacheState()
@@ -96,9 +112,7 @@ namespace RCore.RAssetFilter.Editor
 				|| SizeCache.Count > 0
 				|| UnusedAssetsCache.Count > 0
 				|| FolderStatsCache.Count > 0;
-			PendingImportedAssets.Clear();
-			PendingMovedFromPaths.Clear();
-			PendingMovedToPaths.Clear();
+			ClearPendingChanges();
 			ClearCacheState();
 
 			if (hadRuntimeData)
@@ -143,12 +157,44 @@ namespace RCore.RAssetFilter.Editor
 		/// <summary>
 		/// Batch-removes multiple deleted assets from the cache incrementally: removes each path's
 		/// forward and reverse edges, refreshes unused/folder stats once, persists the cache, and
-		/// fires <see cref="CacheChanged"/>. No-op when the cache is not ready.
+		/// fires <see cref="CacheChanged"/>. Before the cache is restored the paths are queued for
+		/// <see cref="LoadCache"/>; a graph-only cache (Leak Checker) drops the edges without persisting.
 		/// </summary>
 		public static void ForgetAssets(string[] paths)
 		{
-			if (paths == null || paths.Length == 0 || !m_cacheReady || !m_unusedDataReady)
+			if (paths == null || paths.Length == 0)
 				return;
+
+			if (!m_cacheReady)
+			{
+				// Deleting while the persisted cache is not restored must not let LoadCache resurrect the paths.
+				var relevant = paths.Where(p => !string.IsNullOrEmpty(p) && IsInScope(p) && !PendingDeletedAssets.Contains(p)).ToList();
+				if (!HasPendingCapacity(relevant.Count))
+				{
+					ClearPendingChanges();
+					DiscardCacheFile();
+					return;
+				}
+				foreach (var path in relevant)
+					PendingDeletedAssets.Add(path);
+				return;
+			}
+
+			if (!m_unusedDataReady)
+			{
+				// Graph-only build never persists, so dropping the edges is the whole update.
+				bool graphChanged = false;
+				foreach (var path in paths)
+					if (!string.IsNullOrEmpty(path))
+						graphChanged |= RemoveAssetFromCache(path);
+				if (graphChanged)
+				{
+					CacheGeneration++;
+					CacheChanged?.Invoke();
+					EditorApplication.RepaintProjectWindow();
+				}
+				return;
+			}
 
 			bool changed = false;
 			foreach (var path in paths)
@@ -208,11 +254,10 @@ namespace RCore.RAssetFilter.Editor
 			var projectAssets = allAssets.Where(p => p.StartsWith("Assets/")).ToArray();
 			int index = 0;
 			int total = projectAssets.Length;
+			var addressableRoots = CollectAddressableRoots();
 
 			// 2. Identify Unused Assets
 			foreach (var assetPath in projectAssets)
-
-
 			{
 				if (index % 100 == 0)
 					EditorUtility.DisplayProgressBar("Scanning Assets", $"Checking usage: {Path.GetFileName(assetPath)}", (float)index / total);
@@ -221,7 +266,7 @@ namespace RCore.RAssetFilter.Editor
 				if (AssetDatabase.IsValidFolder(assetPath)) continue;
 				if (IsIgnored(assetPath, ignorePaths)) continue;
 
-				bool isRoot = IsRootAsset(assetPath);
+				bool isRoot = IsRootAsset(assetPath, addressableRoots);
 
 				// If it is NOT in the ReferenceCache, it means no one depends on it.
 				if (!ReferenceCache.ContainsKey(assetPath))
@@ -236,9 +281,7 @@ namespace RCore.RAssetFilter.Editor
 			UnusedAssetsCache = new HashSet<string>(unusedAssets);
 			CalculateFolderStats(unusedAssets);
 			m_unusedDataReady = true;
-			PendingImportedAssets.Clear();
-			PendingMovedFromPaths.Clear();
-			PendingMovedToPaths.Clear();
+			ClearPendingChanges();
 
 			return unusedAssets;
 		}
@@ -255,9 +298,12 @@ namespace RCore.RAssetFilter.Editor
 			// snapshot and silently overwrite the fresher in-memory edges this build just produced.
 			if (!refreshUnusedData && File.Exists(CACHE_PATH))
 				DiscardCacheFile();
-			var allAssets = AssetDatabase.GetAllAssetPaths();
-			// Include ProjectSettings to find references like App Icon, Splash Screen, etc.
-			var projectAssets = allAssets.Where(p => p.StartsWith("Assets/") || p.StartsWith("ProjectSettings/")).ToArray();
+			// AssetDatabase does not list ProjectSettings files, so they are read from disk to catch
+			// references such as App Icon or Splash Screen.
+			var projectAssets = AssetDatabase.GetAllAssetPaths()
+				.Where(p => p.StartsWith("Assets/"))
+				.Concat(GetProjectSettingsFiles())
+				.ToArray();
 			int index = 0;
 			int total = projectAssets.Length;
 
@@ -272,7 +318,7 @@ namespace RCore.RAssetFilter.Editor
 					// Skip directories
 					if (AssetDatabase.IsValidFolder(assetPath)) continue;
 
-					var dependencies = AssetDatabase.GetDependencies(assetPath, false);
+					var dependencies = GetAssetDependencies(assetPath);
 					DependencyCache[assetPath] = new List<string>(dependencies);
 					foreach (var dep in dependencies)
 					{
@@ -298,9 +344,7 @@ namespace RCore.RAssetFilter.Editor
 				// This full rescan already reflects every queued path directly from AssetDatabase,
 				// regardless of whether it also refreshed the unused-asset snapshot, so the queues
 				// can never be left populated with no future drain path.
-				PendingImportedAssets.Clear();
-				PendingMovedFromPaths.Clear();
-				PendingMovedToPaths.Clear();
+				ClearPendingChanges();
 
 				if (refreshUnusedData)
 				{
@@ -336,9 +380,7 @@ namespace RCore.RAssetFilter.Editor
 					// An unbounded backlog (window never opened while the project churns) would hold
 					// every changed path in memory forever. Drop the queues so a later scan or cache
 					// restore starts clean, since the snapshot on disk is now stale anyway.
-					PendingImportedAssets.Clear();
-					PendingMovedFromPaths.Clear();
-					PendingMovedToPaths.Clear();
+					ClearPendingChanges();
 					DiscardCacheFile();
 					return;
 				}
@@ -351,6 +393,7 @@ namespace RCore.RAssetFilter.Editor
 			bool changesApplied = false;
 			bool dependencyChanged = false;
 			bool sizeChanged = false;
+			bool membershipChanged = false;
 			for (int i = 0; i < importedAssets.Count; i++)
 			{
 				string path = importedAssets[i];
@@ -361,13 +404,15 @@ namespace RCore.RAssetFilter.Editor
 				changesApplied |= UpdateAssetDependencies(path, out assetDependencyChanged, out assetSizeChanged);
 				dependencyChanged |= assetDependencyChanged;
 				sizeChanged |= assetSizeChanged && UnusedAssetsCache.Contains(path);
+				membershipChanged |= IsAddressableSettingsAsset(path);
 			}
 
-			if (changesApplied)
+			// A saved Addressable group changes which assets are roots without changing any dependency edge.
+			if (changesApplied || membershipChanged)
 			{
 				if (m_unusedDataReady)
 				{
-					if (dependencyChanged)
+					if (dependencyChanged || membershipChanged)
 						RefreshUnusedAndFolderStats();
 					else if (sizeChanged)
 						CalculateFolderStats(new List<string>(UnusedAssetsCache));
@@ -439,9 +484,7 @@ namespace RCore.RAssetFilter.Editor
 					// An unbounded backlog (window never opened while the project churns) would hold
 					// every moved pair in memory forever. Drop the queues so a later scan or cache
 					// restore starts clean, since the snapshot on disk is now stale anyway.
-					PendingImportedAssets.Clear();
-					PendingMovedFromPaths.Clear();
-					PendingMovedToPaths.Clear();
+					ClearPendingChanges();
 					DiscardCacheFile();
 					return false;
 				}
@@ -576,7 +619,7 @@ namespace RCore.RAssetFilter.Editor
 
 			sizeChanged = SizeCache.Remove(path);
 			bool changed = sizeChanged;
-			var newDependencies = AssetDatabase.GetDependencies(path, false) ?? new string[0];
+			var newDependencies = GetAssetDependencies(path) ?? new string[0];
 			var newSet = new HashSet<string>(newDependencies, StringComparer.Ordinal);
 			newSet.Remove(path);
 
@@ -639,6 +682,7 @@ namespace RCore.RAssetFilter.Editor
 			var ignorePaths = RAssetFilterSettings.Instance.ignorePaths;
 			var unusedAssets = new List<string>();
 			var allAssets = AssetDatabase.GetAllAssetPaths();
+			var addressableRoots = CollectAddressableRoots();
 			foreach (var path in allAssets)
 			{
 				if (!path.StartsWith("Assets/"))
@@ -647,7 +691,7 @@ namespace RCore.RAssetFilter.Editor
 					continue;
 				if (IsIgnored(path, ignorePaths))
 					continue;
-				if (!ReferenceCache.ContainsKey(path) && !IsRootAsset(path))
+				if (!ReferenceCache.ContainsKey(path) && !IsRootAsset(path, addressableRoots))
 					unusedAssets.Add(path);
 			}
 			UnusedAssetsCache = new HashSet<string>(unusedAssets);
@@ -696,7 +740,8 @@ namespace RCore.RAssetFilter.Editor
 			return folderStats;
 		}
 
-		private static bool IsRootAsset(string path)
+		/// <summary>Assets kept even with no dependency edge pointing at them.</summary>
+		public static bool IsRootAsset(string path, AddressableRoots addressableRoots)
 		{
 			// Scenes, Resources, StreamingAssets, EditorDefaultResources are roots
 			if (path.EndsWith(".unity")) return true;
@@ -704,7 +749,130 @@ namespace RCore.RAssetFilter.Editor
 			if (path.Contains("/Editor/")) return true; // Editor scripts often not referenced but used
 			if (path.Contains("/StreamingAssets/")) return true;
 			if (path.Contains("/Plugins/")) return true; // Plugins are often entry points
+			if (CodeRootExtensions.Contains(Path.GetExtension(path))) return true;
+			return addressableRoots != null && addressableRoots.Contains(path);
+		}
+
+		/// <summary>Addressable entries included in the build: explicit files plus every file under an addressable folder.</summary>
+		public class AddressableRoots
+		{
+			public readonly HashSet<string> files = new HashSet<string>(StringComparer.Ordinal);
+			public readonly List<string> folders = new List<string>();
+
+			public bool Contains(string path)
+			{
+				if (files.Contains(path))
+					return true;
+				foreach (var folder in folders)
+					if (IsUnderFolder(path, folder))
+						return true;
+				return false;
+			}
+		}
+
+		/// <summary>Separator-bounded, so "Assets/A" does not contain "Assets/AB/x.png".</summary>
+		public static bool IsUnderFolder(string path, string folder)
+		{
+			return path.Length > folder.Length + 1
+				&& path.StartsWith(folder, StringComparison.Ordinal)
+				&& path[folder.Length] == '/';
+		}
+
+		private static AddressableRoots CollectAddressableRoots()
+		{
+			var roots = new AddressableRoots();
+#if ADDRESSABLES
+			var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+			if (settings == null)
+				return roots;
+
+			foreach (var group in settings.groups)
+			{
+				// Same exclusion rule as AddressableEditorHelper.IncludedInBuild.
+				if (group == null || group.Name == "Excluded Content")
+					continue;
+				foreach (var entry in group.entries)
+				{
+					if (entry == null || string.IsNullOrEmpty(entry.AssetPath))
+						continue;
+					if (AssetDatabase.IsValidFolder(entry.AssetPath))
+						roots.folders.Add(entry.AssetPath.TrimEnd('/'));
+					else
+						roots.files.Add(entry.AssetPath);
+				}
+			}
+#endif
+			return roots;
+		}
+
+		private static bool IsAddressableSettingsAsset(string path)
+		{
+#if ADDRESSABLES
+			if (!path.EndsWith(".asset", StringComparison.OrdinalIgnoreCase))
+				return false;
+			var type = AssetDatabase.GetMainAssetTypeAtPath(path);
+			return type == typeof(UnityEditor.AddressableAssets.Settings.AddressableAssetGroup)
+				|| type == typeof(UnityEditor.AddressableAssets.Settings.AddressableAssetSettings);
+#else
 			return false;
+#endif
+		}
+
+		/// <summary>ProjectSettings/*.asset files, which AssetDatabase.GetAllAssetPaths does not list.</summary>
+		private static List<string> GetProjectSettingsFiles()
+		{
+			if (!Directory.Exists("ProjectSettings"))
+				return new List<string>();
+			return Directory.GetFiles("ProjectSettings", "*.asset")
+				.Select(p => p.Replace('\\', '/'))
+				.ToList();
+		}
+
+		/// <summary>Direct dependencies; ProjectSettings files are parsed as YAML text since AssetDatabase cannot read them.</summary>
+		private static string[] GetAssetDependencies(string path)
+		{
+			if (!path.StartsWith("ProjectSettings/", StringComparison.Ordinal))
+				return AssetDatabase.GetDependencies(path, false);
+
+			string text;
+			try
+			{
+				text = File.ReadAllText(path);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogWarning($"Asset Cleaner could not read {path}: {ex.Message}");
+				return new string[0];
+			}
+			if (!text.StartsWith("%YAML", StringComparison.Ordinal))
+			{
+				Debug.LogWarning($"Asset Cleaner skipped {path}: not text-serialized, its references are not tracked.");
+				return new string[0];
+			}
+
+			var result = new List<string>();
+			foreach (var guid in ExtractGuids(text))
+			{
+				string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+				// Built-in resources (e.g. 0000000000000000f000000000000000) have no Assets/ path.
+				if (!string.IsNullOrEmpty(assetPath) && assetPath.StartsWith("Assets/", StringComparison.Ordinal))
+					result.Add(assetPath);
+			}
+			return result.ToArray();
+		}
+
+		/// <summary>Distinct lower-case GUIDs referenced in serialized YAML text.</summary>
+		public static List<string> ExtractGuids(string text)
+		{
+			var guids = new List<string>();
+			var seen = new HashSet<string>(StringComparer.Ordinal);
+			foreach (System.Text.RegularExpressions.Match match in GuidRegex.Matches(text))
+			{
+				string guid = match.Groups[1].Value.ToLowerInvariant();
+				if (seen.Add(guid))
+					guids.Add(guid);
+			}
+			return guids;
 		}
 
 		private static bool IsIgnored(string path, List<string> ignorePaths)
@@ -950,7 +1118,8 @@ namespace RCore.RAssetFilter.Editor
 		private const string CACHE_PATH = "Library/RAssetFilterCache.json";
 		private const string CACHE_TEMP_PATH = CACHE_PATH + ".tmp";
 		private const string CACHE_INVALID_PATH = CACHE_PATH + ".invalid";
-		private const int CACHE_FORMAT_VERSION = 4;
+		// 5: unused lists now honor Addressable/code roots and ProjectSettings edges; v4 snapshots are stale.
+		private const int CACHE_FORMAT_VERSION = 5;
 
 		[System.Serializable]
 		private class CacheData
@@ -1081,10 +1250,23 @@ namespace RCore.RAssetFilter.Editor
 			m_unusedDataReady = true;
 			MarkCacheReady();
 
-			// Imports and moves that arrived before the persisted cache restored can now be applied
-			// against it. Both queues must drain here: returning after only one would silently
-			// orphan the other, since m_cacheReady is now true and future callbacks stop queuing.
-			bool hadPending = false;
+			// Deletions, imports and moves that arrived before the persisted cache restored can now be
+			// applied against it. Every queue must drain here: returning after only one would silently
+			// orphan the others, since m_cacheReady is now true and future callbacks stop queuing.
+			if (PendingDeletedAssets.Count > 0)
+			{
+				// The queues do not record event order, so a path both deleted and moved cannot be replayed.
+				if (PendingDeletedAssets.Overlaps(PendingMovedFromPaths) || PendingDeletedAssets.Overlaps(PendingMovedToPaths))
+				{
+					InvalidateCache();
+					return null;
+				}
+				var deleted = PendingDeletedAssets.ToArray();
+				PendingDeletedAssets.Clear();
+				// Ready now, so this removes, refreshes and persists: a later reload cannot resurrect them.
+				ForgetAssets(deleted);
+			}
+
 			if (PendingMovedFromPaths.Count > 0)
 			{
 				var from = new List<string>(PendingMovedFromPaths);
@@ -1118,18 +1300,22 @@ namespace RCore.RAssetFilter.Editor
 					// instead of returning a hollow empty list that looks like a valid empty scan.
 					return null;
 				}
-				hadPending = true;
 			}
 
 			if (PendingImportedAssets.Count > 0)
 			{
-				var pending = new List<string>(PendingImportedAssets);
+				// An import queued before its file was deleted must not recreate the entry; a file
+				// recreated at a deleted path still exists and gets fresh edges here.
+				var pending = PendingImportedAssets.Where(File.Exists).ToList();
 				PendingImportedAssets.Clear();
 				UpdateCacheForChangedAssets(pending);
-				hadPending = true;
 			}
 
-			return hadPending ? new List<string>(UnusedAssetsCache) : unusedAssets;
+			// ProjectSettings edits are not reliably reported to the postprocessor, so re-diff them on every restore.
+			// ponytail: a settings change made while the tool stays open shows after the next domain reload or Scan; add a timestamp check if that matters.
+			UpdateCacheForChangedAssets(GetProjectSettingsFiles());
+
+			return new List<string>(UnusedAssetsCache);
 		}
 
 		private static bool TryBuildCacheState(
@@ -1210,4 +1396,4 @@ namespace RCore.RAssetFilter.Editor
 
 #endregion
 	}
-}
+}
