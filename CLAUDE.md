@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-One Unity 2022.3.62f2 project holding **three separately-versioned code bases**:
+One Unity 2022.3.62f3 project holding **three separately-versioned code bases**:
 
 | Path | What | Version | Status |
 | --- | --- | --- | --- |
@@ -42,12 +42,15 @@ python scripts/check-benchmark-regression.py --results Library/ --baseline scrip
 
 Unity Test Runner is the primary path: **EditMode → Run All** (~160 tests, ~25s). Performance benchmarks live under the `Performance` NUnit category — run that category separately, then feed `Library/PerformanceTestResults.json` to the regression script above.
 
-Headless, when `Unity.exe` is on PATH:
+Headless, only when no Editor has this project open (Unity refuses a second instance):
 
 ```powershell
-Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults TestResults.xml -quit
-Unity.exe -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults TestResults-PlayMode.xml -quit
+$unity = "D:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Unity.exe"
+Start-Process $unity -Wait -ArgumentList '-batchmode','-projectPath','.','-runTests','-testPlatform','EditMode','-testResults','TestResults.xml','-logFile','TestRun.log'
+Start-Process $unity -Wait -ArgumentList '-batchmode','-projectPath','.','-runTests','-testPlatform','PlayMode','-testResults','TestResults-PlayMode.xml','-logFile','TestRun-PlayMode.log'
 ```
+
+Use `Start-Process -Wait`: `& Unity.exe` returns at once in PowerShell, before the tests run. Do not add `-quit`: with `-runTests` Unity can exit before the tests run. The editor path is this PC's Hub install; on another machine, read `m_EditorVersion` from `ProjectSettings/ProjectVersion.txt` and find that version under the Hub `Editor` folder.
 
 Single test / subset: add `-testFilter "RevCore.Tests.BigNumberTests"` or `-testCategory "Performance"`. In the Editor, filter by typing the class name into the Test Runner search box.
 
