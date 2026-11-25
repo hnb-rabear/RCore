@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0] - 2026-11-26
+
+### Changed
+
+- **Replace Sprite → Write Old pivots to .tps…** now writes through the **RCore Atlas Migration** package (`com.rabear.rcore.atlasmigration`), found by reflection. It edits the `.tps` as XML text and keeps every other setting and the file's line endings, writes 9-slice borders too, and turns on `writePivotPoints`. The sprite-name match needs exactly one key (before, the first match won), and the error box lists every Old sprite with no key. Without the package, the button is disabled and shows the install URL.
+- The Format dropdown and the "Match numbered frames" option are removed; the `.error.txt` file is no longer written. `SpriteReplacer.Tps`, `GetDirective` and the saved fields stay.
+
+### Fixed
+
+- Writing pivots no longer drops `.tps` settings the old parser did not know (`<true/>`, `<int>`, `<enum>`), and no longer fails on non-integer `<double>` values.
+- Pivots written through the package are read from the full sprite rect, so Tight-mesh sprites with transparent margins keep the right pivot (before, the window read it from the mesh bounds).
+
 ## [1.5.0] - 2026-11-25
 
 ### Changed
