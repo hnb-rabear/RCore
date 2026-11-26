@@ -2,18 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-#if !TPS_BYTE_DECIMAL && !TPS_DECIMAL_BYTE
-using tpsByteByte;
-#elif TPS_BYTE_DECIMAL
-using tpsByteDecimal;
-#elif TPS_DECIMAL_BYTE
-using tpsDecimalByte;
-#endif
 
 namespace RCore.Editor.Tool
 {
@@ -273,7 +266,7 @@ namespace RCore.Editor.Tool
 		}
 
 		/// <summary>Same name, or one name is "{folder}-{name}" of the other (e.g. "Core-AS_227" and "Core/AS_227").</summary>
-		private static bool IsNameMatch(Sprite pA, Sprite pB)
+		internal static bool IsNameMatch(Sprite pA, Sprite pB)
 			=> pA.name == pB.name
 				|| pA.name.EndsWith($"{EditorHelper.GetObjectFolderName(pB)}-{pB.name}")
 				|| pB.name.EndsWith($"{EditorHelper.GetObjectFolderName(pA)}-{pA.name}");
@@ -332,27 +325,14 @@ namespace RCore.Editor.Tool
 				return;
 			EditorGUILayout.BeginVertical("box");
 			m_tpsSaveFile = EditorGUILayout.ObjectField(".tps file", m_tpsSaveFile, typeof(Object), false);
-			m_detectNamePattern = EditorGUILayout.Toggle(new GUIContent("Match numbered frames", "Walk_1 and Walk_2 count as the same name, so one custom pivot fills the whole animation."), m_detectNamePattern);
-
-			EditorGUILayout.BeginHorizontal();
-			m_tps = (Tps)EditorGUILayout.EnumPopup(new GUIContent("Format", "Number types in the .tps XML. Change it only if loading fails."), m_tps);
-			if (GUILayout.Button(new GUIContent("Change", "Sets a scripting define. Scripts recompile."), GUILayout.Width(70)))
-			{
-				foreach (Tps val in Enum.GetValues(typeof(Tps)))
-					if (val != m_tps && GetDirective(val) != "")
-						EditorHelper.RemoveDirective(GetDirective(val));
-				if (GetDirective(m_tps) != "")
-					EditorHelper.AddDirective(GetDirective(m_tps));
-			}
-			EditorGUILayout.EndHorizontal();
 
 			bool isTps = m_tpsSaveFile != null && AssetDatabase.GetAssetPath(m_tpsSaveFile).EndsWith(".tps");
 			bool hasOld = m_inputs.Any(x => x.spriteOriginal != null);
-			string reason = !isTps ? "Set a .tps file." : !hasOld ? "Add Old sprites in step 1." : null;
+			string reason = FindAtlasMigration() == null ? ATLAS_MIGRATION_HELP : !isTps ? "Set a .tps file." : !hasOld ? "Add Old sprites in step 1." : null;
 			if (reason != null)
 				EditorGUILayout.HelpBox(reason, MessageType.Info);
 			using (new EditorGUI.DisabledScope(reason != null))
-				if (GUILayout.Button(new GUIContent("Write Old pivots to .tps…", "Copies each Old sprite's pivot into the matching sprite entry of the .tps file, then asks where to save.")))
+				if (GUILayout.Button(new GUIContent("Write Old pivots to .tps…", "Copies each Old sprite's pivot and 9-slice border into the matching sprite entry of the .tps file, then asks where to save. Needs the RCore Atlas Migration package.")))
 				{
 					m_tpsError = WritePivotsToTps(); // assign before ExitGUI so the error still shows
 					GUIUtility.ExitGUI();
@@ -362,84 +342,54 @@ namespace RCore.Editor.Tool
 			EditorGUILayout.EndVertical();
 		}
 
+		private const string ATLAS_MIGRATION_ASSEMBLY = "RCore.AtlasMigration.Editor";
+		private const string ATLAS_MIGRATION_HELP = "Writing pivots to a .tps needs the RCore Atlas Migration package. Install or update it: https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.AtlasMigration";
+		private static MethodInfo s_writeTpsForWindow;
+		private static bool s_atlasMigrationResolved;
+
+		/// <summary>The package's WriteTpsForWindow, found by reflection so rcore.editor needs no reference to the package. Null when the package is missing or too old. Looked up once per domain reload.</summary>
+		internal static MethodInfo FindAtlasMigration()
+		{
+			if (s_atlasMigrationResolved)
+				return s_writeTpsForWindow;
+			s_atlasMigrationResolved = true;
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				if (assembly.GetName().Name != ATLAS_MIGRATION_ASSEMBLY)
+					continue;
+				var method = assembly.GetType("RCore.Editor.Tool.AtlasMigration")?.GetMethod("WriteTpsForWindow",
+					BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(Sprite[]), typeof(string) }, null);
+				if (method != null && method.ReturnType == typeof(string[]))
+					s_writeTpsForWindow = method;
+				break;
+			}
+			return s_writeTpsForWindow;
+		}
+
 		/// <summary>Returns an error message, or null on success or cancel.</summary>
 		private string WritePivotsToTps()
 		{
-			var oldSprites = m_inputs.Select(x => x.spriteOriginal).Where(x => x != null).ToList();
-			string path = Path.GetFullPath(AssetDatabase.GetAssetPath(m_tpsSaveFile));
-			data obj;
-			try
-			{
-				obj = EditorHelper.LoadXMLFile<data>(path);
-			}
-			catch (Exception e)
-			{
-				return $"Can't read the .tps file with format {m_tps}. Try another format. ({e.Message})";
-			}
-			var map = FindSpriteSettings(obj);
-			if (map == null)
-				return "The .tps file has no 'individualSpriteSettings' list.";
-
-			var defaultPivot = new Vector2(0.5f, 0.5f);
-			var errorLogs = new List<string>();
-			for (int i = 0; i < map.Items.Length - 1; i++)
-			{
-				if (!(map.Items[i] is dataStructMapKey key))
-					continue;
-				string fileName = Path.GetFileNameWithoutExtension(key.Value.Split('/').Last());
-				var settings = map.Items[i + 1] as dataStructMapStruct;
-				if (settings == null)
-				{
-					// Several keys can share one settings block. Give this key its own copy.
-					var shared = map.Items.Skip(i + 2).OfType<dataStructMapStruct>().FirstOrDefault();
-					if (shared != null)
-					{
-						settings = new dataStructMapStruct(shared);
-						var list = map.Items.ToList();
-						list.Insert(i + 1, settings);
-						map.Items = list.ToArray();
-					}
-				}
-
-				foreach (var sprite in oldSprites)
-				{
-					var pivot = sprite.NormalizedPivot();
-					bool match = sprite.name == fileName
-						|| (m_detectNamePattern && pivot != defaultPivot && RemoveEndNumber(sprite.name) == RemoveEndNumber(fileName));
-					if (!match)
-						continue;
-					int pivotIndex = settings == null ? -1 : Array.IndexOf(settings.Items, "pivotPoint");
-					if (pivotIndex >= 0 && pivotIndex + 1 < settings.Items.Length)
-						settings.Items[pivotIndex + 1] = FormattableString.Invariant($"{pivot.x},{1 - pivot.y}"); // TexturePacker y goes down; invariant so vi-VN doesn't write "0,5"
-					else if (pivot != defaultPivot)
-						errorLogs.Add($"{fileName} x:{pivot.x},y:{pivot.y}");
-					break;
-				}
-			}
-
-			string savePath = EditorUtility.SaveFilePanel("Save .tps", Path.GetDirectoryName(path), Path.GetFileName(path), "tps");
+			var method = FindAtlasMigration();
+			if (method == null)
+				return ATLAS_MIGRATION_HELP;
+			string path = AssetDatabase.GetAssetPath(m_tpsSaveFile);
+			string savePath = EditorUtility.SaveFilePanel("Save .tps", Path.GetDirectoryName(Path.GetFullPath(path)), Path.GetFileName(path), "tps");
 			if (string.IsNullOrEmpty(savePath))
 				return null;
-			EditorHelper.SaveXMLFile(savePath, obj);
-			if (errorLogs.Count > 0)
+			var oldSprites = m_inputs.Select(x => x.spriteOriginal).Where(x => x != null).ToArray();
+			string[] notes;
+			try
 			{
-				File.WriteAllLines($"{savePath}.error.txt", errorLogs);
-				return $"{errorLogs.Count} sprites have a custom pivot but no settings block in the .tps. See {Path.GetFileName(savePath)}.error.txt.";
+				notes = (string[])method.Invoke(null, new object[] { path, oldSprites, savePath });
 			}
-			Debug.Log($"[SpriteReplacer] Pivots written to {savePath}");
-			return null;
+			catch (TargetInvocationException e)
+			{
+				return e.InnerException?.Message ?? e.Message;
+			}
+			Debug.Log($"[SpriteReplacer] {string.Join("\n", notes)}");
+			var problems = notes.Where(n => !n.StartsWith("Wrote ") && !n.StartsWith("writePivotPoints")).ToList();
+			return problems.Count == 0 ? null : string.Join("\n", problems);
 		}
-
-		private static dataStructMap FindSpriteSettings(data pData)
-		{
-			var items = pData?.@struct?.Items;
-			if (items == null)
-				return null;
-			int index = Array.IndexOf(items, "individualSpriteSettings");
-			return index >= 0 && index + 1 < items.Length ? items[index + 1] as dataStructMap : null;
-		}
-
-		private static string RemoveEndNumber(string pInput) => Regex.Replace(pInput, @"\d+$", "");
 
 		public static string GetDirective(Tps pType)
 		{

@@ -207,7 +207,7 @@ namespace RCore.Editor.Tool
 			}
 		}
 
-		private static bool IsOpen(string pPath)
+		internal static bool IsOpen(string pPath)
 		{
 			for (int i = 0; i < SceneManager.sceneCount; i++)
 				if (SceneManager.GetSceneAt(i).path == pPath)

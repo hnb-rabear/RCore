@@ -1,0 +1,21 @@
+{
+  "name": "com.rabear.rcore.atlasmigration",
+  "version": "1.0.0",
+  "displayName": "RCore Atlas Migration",
+  "description": "Editor-only tool and AI agent skill that move loose sprite textures to a packed TexturePacker atlas while keeping each sprite's pivot and 9-slice border. Writes the values into the .tps, then swaps sprite references in prefabs, scenes and assets.",
+  "unity": "2022.3",
+  "changelogUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.AtlasMigration/CHANGELOG.md",
+  "author": {
+    "name": "HNB RaBear",
+    "email": "nbhung71711@gmail.com",
+    "url": "https://github.com/hnb-rabear"
+  },
+  "keywords": [
+    "texturepacker",
+    "atlas",
+    "sprite",
+    "pivot",
+    "editor tool"
+  ],
+  "documentationUrl": "https://github.com/hnb-rabear/RCore/blob/main/Assets/RCore.AtlasMigration/README.md"
+}
