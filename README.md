@@ -34,6 +34,11 @@ Add packages via Unity Package Manager → "Add package from git URL...":
     https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.SheetX
     ```
     [Read Documentation](Assets/RCore.SheetX/Document/Document.md)
+5.  **RCore Atlas Migration** (Optional, editor-only, works with any RCore version)
+    ```
+    https://github.com/hnb-rabear/RCore.git?path=Assets/RCore.AtlasMigration
+    ```
+    [Read Documentation](Assets/RCore.AtlasMigration/README.md)
 
 ---
 
@@ -232,6 +237,9 @@ Identifies and removes unused assets by analyzing project dependency graphs. Fea
 
 ### RHierarchy
 Enhances the Hierarchy window with configurable overlays: visibility toggle, component icons, vertex/triangle counts, children count, tag/layer display, static flag, and alternating row colors.
+
+### RCore Atlas Migration
+Editor-only package (`Assets/RCore.AtlasMigration`). Moves a project from loose sprite textures to a packed TexturePacker atlas while keeping each sprite's pivot and 9-slice border, driven by an AI agent through UnityMCP. Replace Sprite's **Write Old pivots to .tps…** button uses it when it is installed. See [`Assets/RCore.AtlasMigration/README.md`](Assets/RCore.AtlasMigration/README.md).
 
 ### Other Tools
 *   **Reskin Toolkit** — Batch find-and-replace for assets, sprites, and objects. Includes **Unified Font Replacer** supporting both TMP and Legacy font replacement with folder-scoped project scanning and active scene replacement.

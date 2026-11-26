@@ -13,8 +13,11 @@ One Unity 2022.3.62f3 project holding **three separately-versioned code bases**:
 | `Assets/RCore.SheetX/` | Editor-only spreadsheet→code/JSON exporter | 1.1.0 | Own CHANGELOG, own release cadence. |
 | `Assets/RCore.RAssetFilter/` | Editor-only asset auditing package: reverse references, unused/leak scans, overlay; optional Addressables | 1.0.0 | Active, separate release cadence. |
 | `Assets/RCore.RHierarchy/` | Editor-only Hierarchy window enhancer | 1.0.0 | Active, separate release cadence. |
+| `Assets/RCore.AtlasMigration/` | Editor-only TexturePacker atlas migration + AI agent skill; no dependencies | 1.0.0 | Active, separate release cadence. |
 
-`AssetCatalogWindow` remains in frozen legacy RCore. Its Direct Usage feature optionally reflects `RCore.RAssetFilter.Editor` at runtime; never add an asmdef reference from `rcore.editor` to that package, because projects may install RCore without RAsset Filter. Both sibling packages sit outside RevCore architecture and RevCore doc-coverage/PublicAPI/release gates.
+`AssetCatalogWindow` remains in frozen legacy RCore. Its Direct Usage feature optionally reflects `RCore.RAssetFilter.Editor` at runtime; never add an asmdef reference from `rcore.editor` to that package, because projects may install RCore without RAsset Filter. These sibling packages (RAsset Filter, RHierarchy, Atlas Migration) sit outside RevCore architecture and RevCore doc-coverage/PublicAPI/release gates.
+
+The Replace Sprite window in `rcore.editor` calls `RCore.AtlasMigration.Editor` by reflection (`SpriteReplacer.FindAtlasMigration`); never add an asmdef reference from `rcore.editor` to it. Both assemblies use the namespace `RCore.Editor.Tool`, so never add a type to one whose name already exists in the other.
 
 Namespaces don't collide (`RevCore` flat vs `RCore.*` nested), so both frameworks compile side by side. Migration is opt-in with no deadline.
 

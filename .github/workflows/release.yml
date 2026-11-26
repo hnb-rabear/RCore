@@ -7,6 +7,7 @@ on:
       - "sheetx-v*"
       - "assetfilter-v*"
       - "rhierarchy-v*"
+      - "atlasmigration-v*"
 
 permissions:
   contents: write
@@ -29,6 +30,7 @@ jobs:
             sheetx-v*)      SCOPE="Assets/RCore.SheetX";      TAG="${GITHUB_REF_NAME#sheetx-v}" ;;
             assetfilter-v*) SCOPE="Assets/RCore.RAssetFilter"; TAG="${GITHUB_REF_NAME#assetfilter-v}" ;;
             rhierarchy-v*)  SCOPE="Assets/RCore.RHierarchy";   TAG="${GITHUB_REF_NAME#rhierarchy-v}" ;;
+            atlasmigration-v*) SCOPE="Assets/RCore.AtlasMigration"; TAG="${GITHUB_REF_NAME#atlasmigration-v}" ;;
             v*)             SCOPE="Assets/RevCore";            TAG="${GITHUB_REF_NAME#v}" ;;
             *)              echo "::error::unrecognised tag $GITHUB_REF_NAME"; exit 1 ;;
           esac
